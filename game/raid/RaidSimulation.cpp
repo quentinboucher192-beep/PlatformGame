@@ -162,6 +162,7 @@ RaidSimulation::Group& RaidSimulation::form(int branch, int zone, const std::str
     t.invincible = setup_.invincible;
     t.players = 1 + setup_.bots;  // the administrator's free place and the simulated players
     t.startPhase = branch == heart_ && setup_.heartStartPhase > 0 ? setup_.heartStartPhase : setup_.startPhase;
+    t.difficulty = setup_.difficulty;  // titan 13
     g->session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g->session->setSkill(setup_.skill);
     g->session->setBotsInvincible(setup_.botsInvincible);
@@ -183,6 +184,7 @@ void RaidSimulation::moveGroup(Group& g, int branch, int zone) {
     t.invincible = setup_.invincible;
     t.players = 1 + setup_.bots;
     t.startPhase = branch == heart_ && setup_.heartStartPhase > 0 ? setup_.heartStartPhase : setup_.startPhase;
+    t.difficulty = setup_.difficulty;  // titan 13
     if (g.session) g.past.push_back({g.branch, g.session->run().contributions().raidTable(), g.session->run().finishes()});  // 2.79: display only
     g.session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g.session->setSkill(setup_.skill);

@@ -1332,6 +1332,510 @@
   },
   {
    "id": "o78",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1200.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o79",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o80",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2288.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o81",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2832.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o82",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3376.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o83",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    896.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o84",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1456.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o85",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2016.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o86",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2576.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o87",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3120.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o88",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3680.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o89",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1200.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o90",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o91",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2288.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o92",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2832.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o93",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3376.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o94",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    896.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o95",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1456.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o96",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2000.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o97",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2576.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o98",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3120.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o99",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3680.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o100",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1200.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o101",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o102",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2000.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o103",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2576.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o104",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3136.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o105",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3680.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o106",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    912.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o107",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1456.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o108",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1984.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o109",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2208.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o110",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2432.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o111",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2960.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o112",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3472.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o113",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3696.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o114",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1346,7 +1850,7 @@
    }
   },
   {
-   "id": "o79",
+   "id": "o115",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1361,7 +1865,7 @@
    }
   },
   {
-   "id": "o80",
+   "id": "o116",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1376,7 +1880,7 @@
    }
   },
   {
-   "id": "o81",
+   "id": "o117",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1545,6 +2049,7 @@
     "hpPerPlayer": 0.55,
     "weakHpPerPlayer": 0.25,
     "pressurePerPlayer": 0.06,
+    "hpScale": 0.85,
     "boss": "o75",
     "name": "Dreadfang",
     "objective": "bg_dreadfang",
@@ -1632,7 +2137,7 @@
      }
     ],
     "hold": 2.5,
-    "reopen": 12.0,
+    "reopen": 18.0,
     "exposed": 10.0,
     "exposedMult": 2.0,
     "jet": {

@@ -25,16 +25,20 @@ int steps(float seconds) { return static_cast<int>(std::lround(seconds * static_
 }  // namespace
 
 float Gigaboss::healthFactor(const GigabossRules& r, int players) {
-    return 1.0f + r.hpPerPlayer * static_cast<float>(std::clamp(players, 1, 8) - 1);
+    return r.hpScale * (1.0f + r.hpPerPlayer * static_cast<float>(std::clamp(players, 1, 8) - 1));  // titan 13: × its raid's base
 }
 
 void Gigaboss::begin(GameWorld& w, const GigabossRules& rules, bool fallen, Contributions& c) {
     const int testPlayers = testPlayers_, testPhase = testPhase_;  // kept from one zone to the next
+    const float healthScale = healthScale_, damageScale = damageScale_;
     *this = Gigaboss{};
     testPlayers_ = testPlayers;
     testPhase_ = testPhase;
+    healthScale_ = healthScale;
+    damageScale_ = damageScale;
     if (!rules.present) return;
     rules_ = &rules;
+    w.setHurtScale(damageScale_);  // titan 13: the difficulty's damage in its arena
     for (const Rect& r : rules.vents) vents_.push_back(Vent{r});
     routine_ = GigabossRoutine::make(rules.routine);  // 2.69 (phase 4B): Voidworm, Graviton, Titanus
     if (routine_) routine_->begin(w, rules);
@@ -112,7 +116,8 @@ void Gigaboss::after(GameWorld& w, Contributions& c) {
     for (int i = 0; i < w.teamSize(); ++i) seated += w.coop() && w.member(i).presence != GameWorld::Presence::Vacant ? 1 : 0;
     seated = std::clamp(std::max(seated, testPlayers_), 1, 8);
     if (seated > scaledFor_) {
-        const float before = scaledFor_ > 0 ? healthFactor(*rules_, scaledFor_) : 1.0f;
+        // Titan 13: the difficulty's health with the first scaling (the next ones change the seats only).
+        const float before = scaledFor_ > 0 ? healthFactor(*rules_, scaledFor_) : 1.0f / healthScale_;
         b->scaleHealth(healthFactor(*rules_, seated) / before);
         if (scaledFor_ > 0) alert("GIGABOSS · Un joueur arrive : " + rules_->name + " se renforce.", AlertKind::Group);
         scaledFor_ = seated;
@@ -233,7 +238,7 @@ void Gigaboss::expose(GameWorld& w, Contributions& c, Enemy& b) {
     stage_ = Stage::Exposed;
     exposedTicks_ = steps(rules_->exposed);
     weak_.clear();
-    const float factor = 1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor_ - 1));
+    const float factor = (1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor_ - 1))) * healthScale_;
     for (size_t k = 0; k < rules_->weakSpots.size(); ++k) {
         const Vec2 at = spotFeet(b.box, b.facing, rules_->weakSpots[k]);  // 2.75: the sheets' diagram reads the same
         if (Enemy* e = w.spawnEnemy(rules_->weakEnemyAt(k), at, b.facing < 0.0f)) {

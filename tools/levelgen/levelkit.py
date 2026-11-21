@@ -278,6 +278,58 @@ class Level:
     def bounce(self, x, y_ground, power=430):
         return self.obj("bounce_pad", [x * T - 16, y_ground * T - 16, 32, 16], "gameplay", {"power": power})
 
+    def footholds(self, x0, x1, rows, style, keep=(), w=6, sub_gap=12, min_gap=18, clear=3):
+        """Titan 13: more footholds in a boss arena. On each row (a tile row, the ledges' surface), every
+        free span of at least `min_gap` tiles between x0 and x1 gets evenly spaced ledges `w` wide, so that
+        no gap left on that row is wider than `sub_gap` (a plain jump). A ledge is never put in a keep-out
+        rectangle (tiles: x0, y0, x1, y1: a mechanism, the boss's room…), on the path of a moving platform,
+        in a solid or a ladder, or less than `clear` rows over or under another surface it overlaps.
+        Reads the objects already placed: call it last. Returns the ids of the ledges added."""
+        def tiles(o):
+            r = o["rect"]
+            return r[0] / T, r[1] / T, (r[0] + r[2]) / T, (r[1] + r[3]) / T
+        blocks, surfaces = [list(k) for k in keep], []
+        for o in self.data["objects"]:
+            t = o["type"]
+            if t in ("oneway", "crumble_platform"):
+                surfaces.append(tiles(o))
+            elif t == "moving_platform":
+                a, b, c, d = tiles(o)
+                dx, dy = o["props"]["dx"] / T, o["props"]["dy"] / T
+                blocks.append([min(a, a + dx) - 2, min(b, b + dy) - 3, max(c, c + dx) + 2, max(d, d + dy) + 3])
+            elif t in ("solid", "ladder"):
+                a, b, c, d = tiles(o)
+                if t == "solid" and o.get("props", {}).get("collision") is False:
+                    continue
+                blocks.append([a - 1, b - 2, c + 1, d + 1])
+                surfaces.append((a, b, c, b + 1))
+        added = []
+        for row in rows:
+            used = sorted((a, c) for a, b, c, _ in surfaces if b == row and c > x0 and a < x1)
+            spans, at = [], x0
+            for a, c in used:
+                if a > at:
+                    spans.append((at, a))
+                at = max(at, c)
+            if x1 > at:
+                spans.append((at, x1))
+            for a, c in spans:
+                gap = c - a
+                if gap < min_gap:
+                    continue
+                n = max(1, int(-(-(gap - sub_gap) // (w + sub_gap))))
+                step = (gap - n * w) / float(n + 1)
+                for k in range(n):
+                    px = int(round(a + step * (k + 1) + w * k))
+                    box = (px, row, px + w, row + 1)
+                    if any(box[0] < b[2] and box[2] > b[0] and box[1] < b[3] and box[3] > b[1] for b in blocks):
+                        continue
+                    if any(abs(sb - row) < clear and sb != row and px < sc and px + w > sa for sa, sb, sc, _ in surfaces):
+                        continue
+                    added.append(self.oneway(px, px + w, row, style))
+                    surfaces.append((px, row, px + w, row + 1))
+        return added
+
     def ladder(self, x, y0, y1, w_tiles=1):
         return self.obj("ladder", [x * T, y0 * T, w_tiles * T, (y1 - y0) * T], "gameplay")
 

@@ -15,9 +15,10 @@ namespace cosmic::raid {
 namespace {
 
 /// A whole number of the server's copy within [lo, hi], or nothing.
-std::optional<int> intIn(const Json& j, const char* key, int lo, int hi) {
+std::optional<int> intIn(const Json& j, const char* key, int lo, int hi, std::optional<int> def = std::nullopt) {
     if (!j.is_object()) return std::nullopt;
     auto it = j.find(key);
+    if ((it == j.end() || it->is_null()) && def) return def;
     if (it == j.end() || !it->is_number_integer()) return std::nullopt;
     const int64_t v = it->get<int64_t>();
     if (v < lo || v > hi) return std::nullopt;
@@ -41,7 +42,8 @@ InputFrame vacantFrame() {
 }  // namespace
 
 Json RelayedTestConfig::toJson() const {
-    Json c = {{"skill", std::clamp(skill, 0, 2)}, {"invincible", invincible}, {"bots_invincible", botsInvincible}};
+    Json c = {{"skill", std::clamp(skill, 0, 2)}, {"invincible", invincible}, {"bots_invincible", botsInvincible},
+              {"difficulty", std::clamp(difficulty, kDifficultyMin, kDifficultyMax)}};
     if (fullRaid) {
         c["groups"] = std::clamp(groups, 1, 14);
         c["bots"] = std::clamp(bots, 1, kMaxInstancePlayers - 1);
@@ -68,6 +70,10 @@ std::optional<RelayedTestConfig> RelayedTestConfig::fromJson(const std::string& 
     c.skill = *skill;
     c.invincible = *inv;
     c.botsInvincible = *botsInv;
+    // Titan 13: its difficulty (absent before: the base, 3/5).
+    const auto difficulty = intIn(j, "difficulty", kDifficultyMin, kDifficultyMax, kDifficultyDefault);
+    if (!difficulty) return std::nullopt;
+    c.difficulty = *difficulty;
     if (c.fullRaid) {
         const auto groups = intIn(j, "groups", 1, 14), bots = intIn(j, "bots", 1, kMaxInstancePlayers - 1);
         const auto full = boolOf(j, "full_groups", false);
@@ -100,6 +106,7 @@ std::unique_ptr<TestSession> buildZoneTest(const WorldServices& services, const 
     t.invincible = c.invincible;
     t.players = c.players;
     t.startPhase = c.startPhase;
+    t.difficulty = c.difficulty;  // titan 13
     auto session = std::make_unique<TestSession>(services, *branch, t);
     session->setSkill(static_cast<BotSkill>(std::clamp(c.skill, 0, 2)));  // 2.77
     session->setBotsInvincible(c.botsInvincible);
@@ -124,6 +131,7 @@ std::unique_ptr<RaidSimulation> buildRaidSimulation(const WorldServices& service
     s.botsInvincible = c.botsInvincible;
     s.skill = static_cast<BotSkill>(std::clamp(c.skill, 0, 2));
     s.background = background;
+    s.difficulty = c.difficulty;  // titan 13
     auto sim = std::make_unique<RaidSimulation>(services, s);
     if (!sim->begin()) return nullptr;
     return sim;

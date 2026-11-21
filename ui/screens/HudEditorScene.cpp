@@ -889,7 +889,13 @@ private:
             raidhud::drawLineBox(ui, at(RE::Contributions), k(RE::Contributions), "Dégâts 120 · Mécanismes 2 · Sauvetages 1 · Dégâts évités 30", kText,
                                  false);
         raidhud::drawLineBox(ui, at(RE::Status), k(RE::Status), "TEST ADMIN · non classé · 8 joueurs (7 simulés)", kGold, true);
-        if (shown(RE::Timer)) raidhud::drawTimer(ui, at(RE::Timer), k(RE::Timer), 754.36f, 201.07f);
+        if (shown(RE::Timer)) {
+            raidhud::RaidClock c;  // titan 13: a countdown (an hour's event, 12 min in)
+            c.deadline = true;
+            c.end = 3600.0f;
+            c.now = 754.36f;
+            raidhud::drawTimer(ui, at(RE::Timer), k(RE::Timer), c, 201.07f);
+        }
         // 2.74 (phase 6): the Cœur d'Asterion's elements (shown in its arena only).
         if (shown(RE::Heart)) {
             raidhud::HeartBar h;

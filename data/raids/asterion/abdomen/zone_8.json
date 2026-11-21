@@ -876,7 +876,7 @@
    "layer": "terrain",
    "rect": [
     2016.0,
-    416.0,
+    352.0,
     320.0,
     16.0
    ],
@@ -890,7 +890,7 @@
    "layer": "terrain",
    "rect": [
     1824.0,
-    464.0,
+    400.0,
     160.0,
     16.0
    ],
@@ -904,7 +904,7 @@
    "layer": "terrain",
    "rect": [
     2368.0,
-    464.0,
+    400.0,
     160.0,
     16.0
    ],
@@ -914,6 +914,34 @@
   },
   {
    "id": "o55",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1696.0,
+    448.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o56",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2528.0,
+    448.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o57",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -931,7 +959,7 @@
    }
   },
   {
-   "id": "o56",
+   "id": "o58",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
@@ -942,14 +970,14 @@
    ],
    "props": {
     "doors": "",
-    "waves": "o55",
+    "waves": "o57",
     "lockCamera": false,
     "music": "music/mycelia_boss.ogg",
     "announce": false
    }
   },
   {
-   "id": "o57",
+   "id": "o59",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -966,12 +994,12 @@
    }
   },
   {
-   "id": "o58",
+   "id": "o60",
    "type": "light",
    "layer": "gameplay",
    "rect": [
     2168.0,
-    376.0,
+    312.0,
     16.0,
     16.0
    ],
@@ -983,7 +1011,7 @@
    }
   },
   {
-   "id": "o59",
+   "id": "o61",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1000,7 +1028,7 @@
    }
   },
   {
-   "id": "o60",
+   "id": "o62",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1015,7 +1043,7 @@
    }
   },
   {
-   "id": "o61",
+   "id": "o63",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1030,7 +1058,7 @@
    }
   },
   {
-   "id": "o62",
+   "id": "o64",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1045,7 +1073,7 @@
    }
   },
   {
-   "id": "o63",
+   "id": "o65",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1060,7 +1088,7 @@
    }
   },
   {
-   "id": "o64",
+   "id": "o66",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -1075,7 +1103,7 @@
    }
   },
   {
-   "id": "o65",
+   "id": "o67",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -1090,12 +1118,12 @@
    }
   },
   {
-   "id": "o66",
+   "id": "o68",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
     2170.0,
-    378.0,
+    314.0,
     12.0,
     12.0
    ],
@@ -1105,7 +1133,7 @@
    }
   },
   {
-   "id": "o67",
+   "id": "o69",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -1120,7 +1148,7 @@
    }
   },
   {
-   "id": "o68",
+   "id": "o70",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -1135,12 +1163,12 @@
    }
   },
   {
-   "id": "o69",
+   "id": "o71",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
     1914.0,
-    426.0,
+    362.0,
     12.0,
     12.0
    ],
@@ -1150,12 +1178,12 @@
    }
   },
   {
-   "id": "o70",
+   "id": "o72",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
     2426.0,
-    426.0,
+    362.0,
     12.0,
     12.0
    ],
@@ -1165,7 +1193,7 @@
    }
   },
   {
-   "id": "o71",
+   "id": "o73",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1184,7 +1212,7 @@
    }
   },
   {
-   "id": "o72",
+   "id": "o74",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1203,7 +1231,7 @@
    }
   },
   {
-   "id": "o73",
+   "id": "o75",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1222,7 +1250,7 @@
    }
   },
   {
-   "id": "o74",
+   "id": "o76",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1241,7 +1269,7 @@
    }
   },
   {
-   "id": "o75",
+   "id": "o77",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1258,7 +1286,7 @@
    }
   },
   {
-   "id": "o76",
+   "id": "o78",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1275,7 +1303,7 @@
    }
   },
   {
-   "id": "o77",
+   "id": "o79",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1292,7 +1320,7 @@
    }
   },
   {
-   "id": "o78",
+   "id": "o80",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1309,7 +1337,7 @@
    }
   },
   {
-   "id": "o79",
+   "id": "o81",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1326,7 +1354,7 @@
    }
   },
   {
-   "id": "o80",
+   "id": "o82",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1343,7 +1371,7 @@
    }
   },
   {
-   "id": "o81",
+   "id": "o83",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -1360,7 +1388,7 @@
    }
   },
   {
-   "id": "o82",
+   "id": "o84",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1375,7 +1403,7 @@
    }
   },
   {
-   "id": "o83",
+   "id": "o85",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -1394,7 +1422,7 @@
    }
   },
   {
-   "id": "o84",
+   "id": "o86",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -1408,7 +1436,455 @@
    }
   },
   {
-   "id": "o85",
+   "id": "o87",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o88",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o89",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o90",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o91",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2608.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o92",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3024.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o93",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o94",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o95",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1136.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o96",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1552.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o97",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2048.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o98",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2304.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o99",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2800.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o100",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3216.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o101",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o102",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o103",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o104",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o105",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2608.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o106",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3024.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o107",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o108",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o109",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1136.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o110",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1552.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o111",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1968.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o112",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2384.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o113",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2800.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o114",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3216.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o115",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o116",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o117",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3024.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o118",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o119",
    "type": "liquid",
    "layer": "gameplay",
    "rect": [
@@ -1422,7 +1898,7 @@
    }
   },
   {
-   "id": "o86",
+   "id": "o120",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1437,7 +1913,7 @@
    }
   },
   {
-   "id": "o87",
+   "id": "o121",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1452,7 +1928,7 @@
    }
   },
   {
-   "id": "o88",
+   "id": "o122",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1467,7 +1943,7 @@
    }
   },
   {
-   "id": "o89",
+   "id": "o123",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1485,13 +1961,13 @@
  "events": [
   {
    "id": "ev1",
-   "source": "o55",
+   "source": "o57",
    "trigger": "bossPhase",
    "once": true,
    "actions": [
     {
      "type": "spawn",
-     "target": "o64,o65,o66"
+     "target": "o66,o67,o68"
     },
     {
      "type": "shake",
@@ -1514,13 +1990,13 @@
   },
   {
    "id": "ev2",
-   "source": "o55",
+   "source": "o57",
    "trigger": "bossPhase",
    "once": true,
    "actions": [
     {
      "type": "spawn",
-     "target": "o67,o68,o69,o70"
+     "target": "o69,o70,o71,o72"
     },
     {
      "type": "shake",
@@ -1543,7 +2019,7 @@
   },
   {
    "id": "ev3",
-   "source": "o55",
+   "source": "o57",
    "trigger": "bossDefeated",
    "once": true,
    "actions": [
@@ -1607,7 +2083,7 @@
    "objectives": [
     {
      "id": "abd_voidworm",
-     "source": "o55",
+     "source": "o57",
      "trigger": "killed"
     }
    ],
@@ -1629,7 +2105,8 @@
     "players": 8
    },
    "gigaboss": {
-    "boss": "o55",
+    "hpScale": 0.35,
+    "boss": "o57",
     "name": "Voidworm",
     "objective": "abd_voidworm",
     "routine": "voidworm",
@@ -1647,7 +2124,7 @@
       "id": "crochet_couronne",
       "rect": [
        2152.0,
-       400,
+       336,
        48,
        16
       ]
@@ -1666,10 +2143,10 @@
      2,
      3
     ],
-    "hold": 3.0,
-    "reopen": 14.0,
-    "exposed": 10.0,
-    "exposedMult": 2.0,
+    "hold": 2.0,
+    "reopen": 30.0,
+    "exposed": 14.0,
+    "exposedMult": 2.5,
     "jet": {
      "name": "Geyser d'acide",
      "period": 6.0,

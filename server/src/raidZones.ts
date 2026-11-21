@@ -26,7 +26,7 @@ import { requireAuth } from "./auth";
 import { ask, stub, MAX_TICKS } from "./coop";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
-import { ambushesIn, catalogById, doneOf, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
+import { ambushesIn, catalogById, difficultyOf, doneOf, levelHashFor, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
 import { grantWorldFor, journalDuplicate, reportHalt, requireEntry } from "./raidWorld";
 import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHeart, heartFallenIn, heartOpenIn, isHeart, storeHeartDamage, wakeHeartRelays } from "./raidHeart";
@@ -292,6 +292,7 @@ export async function branchMaskOf(db: D1Database, eventId: string, branch: stri
 interface EventRow {
     id: string;
     kind: string;
+    difficulty?: number | null; // titan 13: the Gigaboss' and the Heart's (1 to 5)
     clan_id: string | null;
     starts_at: string;
     lock_at: string;
@@ -409,7 +410,7 @@ export async function joinInstance(ctx: Ctx): Promise<Response> {
     await ask(ctx.env, inst.id, "/create", {
         id: inst.id,
         host: me,
-        level: { source: "raid", id: BRANCH_LEVEL, hash: levelHashOf(BRANCH as unknown as Catalog), title: "Asterion · " + BRANCH.name },
+        level: { source: "raid", id: BRANCH_LEVEL, hash: levelHashFor(BRANCH as unknown as Catalog, e), title: "Asterion · " + BRANCH.name },
         raid: { instance_id: inst.id, event_id: e.id, branch: BRANCH.id, revision: BRANCH.revision },
     });
     const tag = await db.prepare("SELECT tag FROM clans WHERE id = ?1").bind(inst.clan_id).first<{ tag: string }>();
@@ -465,12 +466,14 @@ export async function report(ctx: Ctx): Promise<Response> {
     // 2.80 (raidTests.ts): an administrator's test with invited players is never an instance: a report
     // naming it is refused whoever sends it (the administrator or an invited player).
     if (await isTest(db, id)) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
-    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage", "seats"]);
+    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage", "seats", "difficulty"]);
     const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart", "zone_table", "wipe", "zones"] as const)!;
     const objective = v.str("objective", { min: 1, max: 64, pattern: /^[a-z0-9_]{1,64}$/, optional: kind !== "objective" });
     const zone = v.int("zone", { min: 1, max: BRANCH.zones.length })!;
     const tick = v.int("tick", { min: 0, max: MAX_TICKS })!;
     const hash = v.str("hash", { min: 16, max: 16, pattern: HASH16_RE })!;
+    // Titan 13: the difficulty the game played at (game/raid/Difficulty.h, from the relay's GO); checked below.
+    const difficulty = v.int("difficulty", { min: 1, max: 5, optional: true });
     // 2.68: the gigaboss's phase reached (1 to 4: its fall), the table of the contributions.
     const phase = v.int("phase", { min: 1, max: 4, optional: kind !== "boss" });
     // 2.74 (phase 6): the part of the Cœur d'Asterion's shared health this instance took (ten-thousandths).
@@ -540,6 +543,9 @@ export async function report(ctx: Ctx): Promise<Response> {
         return reject("groupe éliminé : ses joueurs ne font plus que regarder");
     }
     // Plausibility first: nothing impossible reaches the consensus.
+    // Titan 13: a game that played the Gigaboss or the Heart at another difficulty than its event's (its health, its
+    // damage) has nothing to report: refused, whatever it says. Every report of a game of titan 13 names it.
+    if (difficulty !== undefined && difficulty !== difficultyOf(e)) return reject("difficulté différente de celle de l'événement");
     const state = raidState(e, now);
     if (state !== "en_cours" && !(state === "termine" && Date.parse(now) - Date.parse(e.ends_at) < 10 * 60000))
         return reject("le raid n'est pas en cours");

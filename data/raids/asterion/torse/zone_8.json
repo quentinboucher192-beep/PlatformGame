@@ -1099,6 +1099,230 @@
   },
   {
    "id": "o65",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1104.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o66",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o67",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1296.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o68",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3312.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o69",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3728.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o70",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1104.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o71",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o72",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1296.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o73",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3312.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o74",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3728.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o75",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    880.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o76",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1072.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o77",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1616.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o78",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2960.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o79",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o80",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3696.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o81",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1113,7 +1337,7 @@
    }
   },
   {
-   "id": "o66",
+   "id": "o82",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1128,7 +1352,7 @@
    }
   },
   {
-   "id": "o67",
+   "id": "o83",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1143,7 +1367,7 @@
    }
   },
   {
-   "id": "o68",
+   "id": "o84",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1308,6 +1532,7 @@
     "hpPerPlayer": 0.55,
     "weakHpPerPlayer": 0.25,
     "pressurePerPlayer": 0.06,
+    "hpScale": 0.2,
     "boss": "o62",
     "name": "Heartbreaker",
     "objective": "torse_heartbreaker",
@@ -1344,8 +1569,8 @@
        -78.0
       ]
      ],
-     "window": 20.0,
-     "share": 0.02
+     "window": 30.0,
+     "share": 0.05
     },
     "beats": {
      "periods": [
@@ -1396,9 +1621,9 @@
      }
     ],
     "hold": 2.5,
-    "reopen": 4.0,
-    "exposed": 8.0,
-    "exposedMult": 2.5,
+    "reopen": 12.0,
+    "exposed": 16.0,
+    "exposedMult": 3.0,
     "jet": {
      "name": "Jet de plasma",
      "period": 8.0,

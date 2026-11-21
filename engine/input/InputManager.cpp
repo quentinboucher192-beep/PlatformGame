@@ -361,6 +361,7 @@ void InputManager::update(float dt) {
             if (v >= threshold) h = true;
         }
         if (blockKeys && i < kFirstMenuAction) h = h && lastDevice_ == InputDevice::Gamepad;
+        if (simHeld_[i]) h = true;  // titan 13: a key held in a test
         // A power slot whose key changed while held: not held until released.
         if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0 && slotWaitRelease_[static_cast<size_t>(s)]) {
             if (h) h = false;

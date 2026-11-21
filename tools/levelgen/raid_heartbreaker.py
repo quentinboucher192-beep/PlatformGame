@@ -53,17 +53,19 @@ def lair(A, spec):
                    "Heartbreaker is defeated: the torso's cage opens, the way to Asterion's heart is free."),
                   ("Heartbreaker vaincu", "Heartbreaker defeated"))
     z.raid["gigaboss"] = dict(K.SCALING, **{
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.20,
         "boss": boss, "name": "Heartbreaker", "objective": "torse_heartbreaker", "routine": "heartbreaker",
         # « Côtes-pièges »: ribs rise around each player in play and snap shut (the rules' fists).
         "fists": {"name": tr("Côtes-pièges", "Rib traps"), "periods": [9.0, 7.5, 6.0], "warn": 1.3, "width": 112.0, "damage": 1.0, "rise": True},
         # « La cuirasse » (phase 1): its four plates, to break within `window` seconds of the first (else they grow back).
         "plates": {"enemy": "heartbreaker_plaque", "spots": [[-150.0, -248.0], [150.0, -248.0], [-160.0, -78.0], [160.0, -78.0]],
-                   "window": 20.0, "share": 0.02},
+                   "window": 30.0, "share": 0.05},
         # « Battements »: a beat every period (by phase); the strong ones (every Nth) send a wave along the floor.
         "beats": {"periods": [2.0, 1.6, 1.25], "strong": [4, 3, 2], "speed": 520.0, "height": 40.0, "damage": 1.0,
                   "floor": F * T, "from": [-170.0, 170.0], "span": [ax0 * T, ax1 * T]},
         # « La cage thoracique » (phase 2): its two ribs held open together bare the light of its heart.
-        "carapace": [2, 3], "vents": ribs, "hold": 2.5, "reopen": 4.0, "exposed": 8.0, "exposedMult": 2.5,
+        "carapace": [2, 3], "vents": ribs, "hold": 2.5, "reopen": 12.0, "exposed": 16.0, "exposedMult": 3.0,
         "jet": {"name": tr("Jet de plasma", "Plasma jet"), "period": 8.0, "warn": 1.2, "duration": 0.8, "height": 96.0, "damage": 1.0},
         "weakEnemy": "heartbreaker_coeur", "weakSpots": [[0.0, -148.0]], "weakShare": 0.08,
         "fx": "animations/heartbreaker_fx.json",
@@ -73,4 +75,7 @@ def lair(A, spec):
                       "Break its 4 plates together (several groups), then pry its ribs open from both sides at once to strike its heart."),
     })
     L.emitter(ax0 + 20, 10, ax1 - 20, F, spec.theme["dust"], 2.0)
+    # Titan 13: more footholds on every storey, none against the torso (its towers stay the way to its ribs and plates).
+    z.L.footholds(ax0 + 2, ax1 - 2, [F - 6 * k for k in range(1, 6)], z.th["ledge"], min_gap=16,
+                  keep=[(ax0 + 66, 6, ax0 + 134, F)])
     return z.save()

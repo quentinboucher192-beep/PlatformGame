@@ -162,6 +162,10 @@ public:
     /// 2.80: the seats invincible in a raid's test (bit = seat; 1, the administrator, unless told
     /// otherwise): a player the administrator invited and ticked « Invincible » (docs/RAIDS.md « Tester avec des joueurs invités »).
     bool invinciblePlayer() const { return invincible() && (!raidMode_ || ((invincibleSeats_ >> (curIndex_ & 31)) & 1u)); }
+    /// Titan 13: the damage the players take here scaled (a raid's difficulty in the arena of a Gigaboss or of the
+    /// Heart: 0.6 to 1.5); 1: as the level says. Each player carries the fractions from one blow to the next.
+    void setHurtScale(float s) { hurtScale_ = s; }
+    float hurtScale() const { return hurtScale_; }
     void setInvincibleSeats(uint32_t seats) { invincibleSeats_ = seats; }
     uint32_t invincibleSeats() const { return invincibleSeats_; }
     /// Puts an invincible Nova back on her last solid ground (instead of a fall); false when not invincible.
@@ -605,6 +609,7 @@ private:
     int coopVersion_ = kCoopSimulationVersion;  // 2.75
     std::vector<PlayerInput> teamInputs_;
     bool raidMode_ = false;
+    float hurtScale_ = 1.0f;  // titan 13: setHurtScale
     bool raidGroupRule_ = false;  // 2.78
     int cameraFollow_ = -1;
     void loadTeam();

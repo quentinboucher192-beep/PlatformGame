@@ -339,7 +339,7 @@ ordinateur) :
   en jeu**, le même pas (8 joueurs : 8 poings), puis un poing de magma tombe sur chaque marque 1,4 s plus tard.
   Avec la pluie de magma, les éruptions, la marée de magma (seules les corniches restent sûres) et les poings
   météores, il attaque tout le groupe à la fois.
-* **Mise à l'échelle** : sa vie × (1 + 0,55 × (sièges occupés − 1)) au début du combat (2 à 8 joueurs), et encore
+* **Mise à l'échelle** : sa vie × (1 + 0,55 × (sièges occupés − 1)) (titan 13 : puis × `hpScale` et la difficulté, §37) au début du combat (2 à 8 joueurs), et encore
   quand un joueur prend un siège pendant le combat (jamais à la baisse) ; ses temps de recharge ÷ (1 + 0,06 ×
   (joueurs en jeu − 1)).
 * **Carapace** (phase 2) : rien ne le blesse (`Enemy::setRaidGuard`) tant qu'un de ses **3 évents** est ouvert. Un
@@ -2779,6 +2779,130 @@ pouvait aller à l'embuscade suivante en laissant celle-ci derrière.
   Les zones 1 (la garde de l'entrée) et le Nid des parasites étaient déjà fermées (titan 9).
 * **Versions** : `TITAN_REVISION` passe à **12** (catalogues, `raidTitan.json` et `raidBranches.json` régénérés, empreintes
   des zones) ; `kSimulationVersion` et `kRankingGeneration` restent (rien ne change en solo ni en coopération).
+
+## 37. Titan 13 : des décomptes, plus de plateformes, des onglets qui ne défilent plus, des Gigaboss à leur mesure
+
+### Des décomptes, pas des chronomètres
+
+*Demandé* : « dans des raids c'est plutôt des décomptes pas des chronomètres ». **Affichage seulement** (la simulation ne
+change pas) :
+
+* **Le chronomètre du HUD** (`raidhud::drawTimer`, `raidhud::RaidClock`) montre le **temps qui reste au raid** et compte à
+  rebours. Sa fin : celle de l'événement (`ends_at` : son début plus la durée de son format, 30, 60 ou 90 min), lue une fois
+  (`GET /raids/events/{id}`, horloge du serveur corrigée par `skewOf`) et rapportée aux secondes du raid (ses pas) ; dans un
+  test (aucun événement), la durée du format par défaut du catalogue (Standard : 60 min) depuis le début du test. Sous le
+  temps : « Reste du raid · zone : 3:21 écoulées » (une zone n'a pas de limite : son temps reste écoulé, nommé). Dans la
+  **dernière minute**, le temps passe au **rouge et bat** (deux fois par seconde, un cadre rouge autour du bloc). Sans fin
+  connue (événement pas encore lu, hors ligne), le temps écoulé, marqué « Écoulé depuis le début ».
+* **Le menu du raid** : « Reste 47:30 » à droite du titre (mesuré d'abord, le titre dans ce qui reste), rouge et battant dans la
+  dernière minute ; le **journal** et les tableaux des zones datent chaque ligne du décompte d'alors (« reste 47:30 »).
+* **Le panneau d'un test complet** (« Événements du monde ») : chaque événement daté de même.
+* Aucune zone, aucun antre, aucun combat du Cœur n'a de limite de temps à lui (seule la fin de l'événement en est une).
+
+### Plus de plateformes dans les antres et l'arène du Cœur
+
+*Demandé* : « ajoute plus de plateformes pour combattre plus facilement ». Généré (`tools/levelgen`, jamais à la main) :
+`levelkit.Level.footholds` comble, rangée par rangée, chaque trou de plus de 16 à 18 cases entre deux surfaces d'un étage par
+des corniches de 6 cases (aucun trou laissé plus large qu'un saut simple), ou pose un étage nouveau ; jamais dans une zone
+interdite (un mécanisme, la salle du boss), sur la course d'une plateforme mobile, dans un mur ou une échelle, ni à moins de
+3 rangées au-dessus ou au-dessous d'une surface qu'elle chevauche. Appelée en dernier, elle ne décale aucun identifiant.
+
+| Arène | Corniches avant → après | Ce qui est ajouté, ce qui est gardé |
+|---|---|---|
+| Skullmaw (Crâne) | 27 → 61 | chaque étage comblé, la rangée des balcons des miroirs devient un étage ; colonnes intactes |
+| Dreadfang (Bras gauche) | 27 → 63 | chaque étage comblé (ses balayages traversent toujours des étages entiers), les étages hauts complétés |
+| Heartbreaker (Torse) | 31 → 47 | rien contre le torse (ses tours restent le chemin des côtes et des plaques) |
+| Voidworm (Abdomen) | 37 → 71 | rien près de la couronne (son crochet reste là-haut, voir plus bas : au-dessus de son corps, deux marches de chaque côté) ; les hauts restent les seuls au sec |
+| Graviton (Jambe gauche) | 42 → 75 | rien près des îles des générateurs hauts ; les abris sous la voûte inchangés |
+| Titanus (Jambe droite) | 37 → 72 | étages comblés ; aucune corniche basse (ses ondes de choc se sautent toujours) |
+| Pyroclast (Bras droit) | 9 → 18 | un étage bas entre les tours et un second loin des monte-charges : la plateforme haute et son évent ne s'atteignent toujours que par eux ; le magma des fosses inchangé |
+| Le Cœur (arène) | 68 → 89 | un étage entre le 6e et le plus haut (un double saut de chacun), un autre au-dessus ; rien dans la salle du cœur ni sur les navettes, bacs et ascenseurs |
+
+Les antres n'ont pas d'embuscade : l'audit des barrages (`tests/test_raid_ambush_gates.cpp`) et celui des mécanismes
+(`tests/test_raid_mechanisms.cpp`) passent comme avant.
+
+### Tab en avançant : les onglets ne défilent plus
+
+*Signalé* : « je fais Tab pour ouvrir le menu tout en avançant, ça va changer d'onglets à l'infini ». La flèche tenue pour
+avancer est aussi « Droite » des menus, que l'`InputManager` répète tant qu'elle est tenue : chaque répétition changeait
+d'onglet. **Correctif** (`FreshKeys`, `engine/input/InputManager.h`) : un onglet (ou un tri) ne change qu'à un **nouvel appui**,
+jamais à la répétition d'une direction tenue, et **toute touche tenue à l'ouverture est ignorée jusqu'à ce qu'on la lâche**
+(on peut ouvrir le menu en courant). Appliqué au menu du raid (sections, défilement), au « Tableau des contributions » (ses
+onglets, ses parties, son tri), au panneau d'un test complet (ses onglets, son tableau), à la pause du raid et à la pause des
+niveaux (le focus ne bouge pas, la carte ne défile pas avec une direction tenue depuis l'ouverture). La souris n'est pas
+concernée. Test : `tests/test_raid_menu.cpp` (droite tenue, Tab, 60 images : aucun changement alors que l'entrée se répète ;
+lâchée puis appuyée : exactement un onglet ; tenue 60 images de plus : toujours un ; un appui bref compte une fois ; le
+tableau des contributions de même). `InputManager::simulateHeld` tient une touche dans un test.
+
+### Les Gigaboss à leur mesure : environ 10 minutes pour un bon groupe
+
+*Demandé* : « 10 minutes pour le tuer en jouant bien, nerf tous les gigaboss ». Mesuré : un administrateur invincible
+faisait 15 % d'un Gigaboss en 15 min ; huit joueurs simulés Expert **invincibles** (le banc : `COSMIC_GOAT_INVINCIBLE=1
+COSMIC_GOAT_LIMIT=<s> cosmic_tests "raid GOAT (2.79): <boss>"`, l'indicateur d'un bon groupe humain) battaient Dreadfang en
+11 min et mettaient de 17 min à plus d'une heure pour les autres. Visé à **3 / 5** : 10 à 12 min de jeu pour eux.
+
+* **Leviers** (générés par `tools/levelgen`, dans `metadata.raid.gigaboss` de chaque antre et de l'arène du Cœur) :
+  `hpScale` (nouveau : la vie de sa définition × ce nombre dans le raid ; `Gigaboss::healthFactor` le compte, les fiches et
+  leurs statistiques aussi), les fenêtres (`exposed`, `exposedMult`, `reopen`, `hold`), la part des plaques de
+  Heartbreaker (`plates.share` : sa phase 1 ne descend que par elles), la fenêtre des entraves de Titanus. Chaque boss garde
+  ses mécanismes ; les dégâts des boss ne changent pas à 3 / 5 (la difficulté les règle).
+* **Voidworm** : le crochet de sa couronne était **dans son corps** (le haut de son corps à la rangée 25, la couronne à la
+  26) : personne ne le tenait sans le toucher, et les joueurs simulés jamais (phase 2 sans fin). La couronne monte à la rangée
+  22, au-dessus de lui, avec deux marches de chaque côté (sauts simples) depuis les racines hautes.
+
+| Gigaboss (3 / 5) | `hpScale` et fenêtres | Avant (titan 12, une mesure) | Après (titan 13 : trois mesures, `hpScale` ± 0,02) |
+|---|---|---|---|
+| Pyroclast | 0,40 ; `hold` 2,5 s, `exposed` 14 s | 30 min 8 s | 8 min 17, **9 min 54**, 19 min 28 |
+| Skullmaw | 0,25 ; aveuglé 14 s, × 3 | debout à 60 min (phase 3, 32 %) | 10 min 22, **11 min 21**, 12 min 45 |
+| Dreadfang | 0,85 ; chaînes 18 s | 10 min 54 | 8 min 57, **14 min 20**, debout à 30 min (phase 2) |
+| Titanus | 0,40 ; à nu 15 s, entraves 3 s d'écart | 34 min 19 | 10 min 48, **11 min 55**, 14 min 55 |
+| Voidworm | 0,35 ; crochets 2 s, 30 s tenus, à nu 14 s × 2,5 | debout à 60 min (phase 2, 66 %) | 9 min 24, **11 min 44**, 22 min 13 |
+| Graviton | 0,48 | 17 min 14 | 9 min 13, **12 min 00**, 12 min 55 |
+| Heartbreaker | 0,55 ; plaques 30 s, part 5 % ; côtes 12 s, à nu 16 s × 3 | debout à 60 min (phase 2, 41 %) | 12 min 16, **12 min 17**, 12 min 31 |
+| Le Cœur (un seul groupe) | 0,18 ; artères 24 s, à nu 14 s | debout à 60 min (phase 3, 48 %) | 8 min 05, **10 min 51**, 12 min 09 |
+
+En gras : la valeur retenue. Un combat est chaotique (un pas de différence change tout) : d'une mesure à l'autre, ± 50 %
+n'est pas rare ; les joueurs simulés de cette version restent parfois bloqués aux chaînes de Dreadfang (leur plan de combat
+plus fin est à venir, §36 de la branche des joueurs simulés). Le Cœur partage sa vie entre toutes les instances : avec
+plusieurs groupes, il tombe plus vite.
+
+### La difficulté d'un événement, réelle
+
+Jusqu'ici, « Difficulté » (1 à 5) n'était qu'enregistrée et affichée. Elle règle maintenant **les combats des Gigaboss et
+du Cœur**, de façon déterministe (`game/raid/Difficulty.h`) :
+
+| Difficulté | Vie des Gigaboss et du Cœur (points faibles, plaques, entraves compris) | Dégâts qu'ils infligent | Combat visé (bon groupe de 8) |
+|---|---|---|---|
+| 1 / 5 | 60 % | 60 % | ≈ 6 min |
+| 2 / 5 | 80 % | 80 % | ≈ 8 min |
+| **3 / 5** | **100 %** (la base ci-dessus) | **100 %** | **≈ 10 min** |
+| 4 / 5 | 125 % | 125 % | ≈ 13 min |
+| 5 / 5 | 150 % | 150 % | ≈ 15 min |
+
+* **Le chemin** : l'événement (`raid_events.difficulty`) → le serveur donne au relais de chaque instance le hachage de
+  niveau « 3.13.d4 » (`levelHashFor` : la version de la branche, puis la difficulté) → le `GO` du relais → chaque jeu le lit
+  (`raid::readLevelHash`) et règle sa partie (`RaidRun::setDifficulty` : `Gigaboss::setDifficulty`, la vie à sa première mise
+  à l'échelle, ses parties ; `GameWorld::setHurtScale` dans son arène : chaque joueur reporte les fractions d'un coup à
+  l'autre, `Player::hurtCarry`, le total exact sans jamais arrondir vers le haut). Un jeu d'un autre titan refuse le `GO`
+  (« mettez le jeu à jour »).
+* **Le serveur** : chaque rapport d'un jeu de titan 13 dit sa difficulté ; un rapport joué à une autre que celle de
+  l'événement est refusé (« difficulté différente de celle de l'événement », journalisé) ; la difficulté ne change plus
+  une fois l'événement commencé. Les bornes de plausibilité (dégâts par pas, temps) ne dépendent pas de la vie des boss :
+  elles restent.
+* **Les tests** : ADMINISTRATION › Raids › « Tester le raid » (une zone ou le raid complet) a sa ligne « Difficulté 1 / 5 à
+  5 / 5 », ce qu'elle change écrit dessous ; elle passe aux joueurs invités (`config.difficulty`, défaut 3).
+* **À l'écran** : sous « Difficulté » de « Programmer un événement mondial » (mesuré, dans la hauteur du défilement), sur la
+  page de l'événement (« Difficulté 3 / 5 — Vie des Gigaboss : 100 % · Dégâts reçus : 100 % · combat visé ≈ 10 min ») et dans
+  l'aperçu de chaque fiche de Gigaboss (1, 3 et 5 / 5).
+* **Tests** : `tests/test_raid.cpp` (« raid difficulty » : la table, le hachage, la vie et les dégâts du combat à chaque
+  niveau, un test), `server/test/raidZones.test.ts` (rapport refusé à une autre difficulté), `server/test/raidMap.test.ts`
+  (le hachage « .d3 »).
+
+### Versions
+
+`TITAN_REVISION` passe à **13** (catalogues, `titan.json`, `raidTitan.json` régénérés, empreintes des zones) : les jeux
+d'avant refusent les instances. `kSimulationVersion` et `kRankingGeneration` restent (rien ne change en solo ni en
+coopération).
 
 ---
 

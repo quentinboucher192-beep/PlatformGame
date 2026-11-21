@@ -729,8 +729,10 @@ def zone_8():
     # The arena (metadata.raid.arena, the format of the seven branches' lairs: the arena camera reads it).
     z.raid["arena"] = {"rect": [23 * T, 0, 183 * T, (f + 2) * T], "floor": f * T, "door": "", "entry": [30 * T, f * T], "players": 8}
     z.raid["gigaboss"] = {
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.36,
         "boss": boss, "name": "Pyroclast", "objective": "main_pyroclast", "vents": vents, "carapace": [2, 3],
-        "hold": 3.0, "reopen": 15.0, "exposed": 10.0, "exposedMult": 2.0,
+        "hold": 2.5, "reopen": 15.0, "exposed": 14.0, "exposedMult": 2.0,
         "jet": {"period": 6.0, "warn": 1.2, "duration": 1.0, "height": 112.0, "damage": 1.0},
         "fists": {"periods": [9.0, 7.0, 5.5], "warn": 1.4, "width": 64.0, "damage": 1.0},
         "weakEnemy": "pyroclast_noyau", "weakSpots": [[100.0, -262.0], [60.0, -300.0], [20.0, -310.0]], "weakShare": 0.04,
@@ -743,6 +745,11 @@ def zone_8():
         L.light(lx, 18, "#ffd27a", 170, flicker=0.3)
     L.emitter(60, 10, 170, f, "embers_rising", 3.0)
     L.orb("health_orb", 20, 30)
+    # Titan 13: more footholds between the towers (a low storey and, away from the lifts, a second one): the
+    # high platform and its vent stay out of reach but by the lifts, the pits' magma under the towers stays.
+    L.footholds(54, 174, [31], "basalt_ledge", sub_gap=10, min_gap=16)
+    L.footholds(54, 84, [26], "basalt_ledge", sub_gap=10, min_gap=16)
+    L.footholds(146, 174, [26], "basalt_ledge", sub_gap=10, min_gap=16)
     z.save()
 
 

@@ -78,6 +78,8 @@ def lair(A, spec):
     z.raid["arena"] = {"rect": [ax0 * T, 6 * T, ARENA_W * T, (FLOOR - 6) * T], "floor": FLOOR * T, "door": "",
                        "entry": [(ax0 + 6) * T, FLOOR * T], "players": 8}
     z.raid["gigaboss"] = {
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.48,
         "boss": boss, "name": "Graviton", "objective": "jg_graviton", "routine": "graviton", "carapace": [2, 4],
         "hold": 2.5, "reopen": 15.0, "exposed": 12.0, "exposedMult": 2.0,
         "fists": {"name": tr("Chute de débris", "Falling debris"), "periods": [8.5, 7.5, 6.0], "warn": 1.4, "width": 80.0, "damage": 1.0},
@@ -103,4 +105,7 @@ def lair(A, spec):
     L.decor(th["deco_tall"][0], x0 + 2, FLOOR)
     L.orb("health_orb", x0 + 14, FLOOR - 2)
     z.x = ax1 + 2
+    # Titan 13: more footholds on every storey of bridges, none by the islands of the high generators.
+    z.L.footholds(ax0 + 2, ax1 - 2, [FLOOR - 6 * k for k in range(1, 6)], z.th["ledge"], min_gap=16,
+                  keep=[(gx - 18, gy - 4, gx + 18, gy + 7) for _, gx, gy in gens if gy != FLOOR])
     return z.save()

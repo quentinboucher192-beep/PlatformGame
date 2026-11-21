@@ -20651,6 +20651,18 @@
    ]
   },
   {
+   "fr": "Difficulté de l'événement : 1 / 5 : {0} ; 3 / 5 (les chiffres ci-dessous) : {1} ; 5 / 5 : {2}.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "difficulté différente de celle de l'événement",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Difficulté {0}   —   {1}",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -35201,6 +35213,12 @@
    "fr": "l'évent",
    "where": [
     "game/raid/bots/BossTactic.cpp"
+   ]
+  },
+  {
+   "fr": "L'événement a commencé : sa difficulté ne change plus.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -60438,9 +60456,27 @@
    ]
   },
   {
+   "fr": "Reste du raid · zone : {0} écoulées",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "Reste en bas (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Reste {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "reste {0}",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -69016,6 +69052,12 @@
    ]
   },
   {
+   "fr": "Temps du raid écoulé · zone : {0}",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "TEMPS GAGNABLE",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -76603,6 +76645,12 @@
    ]
   },
   {
+   "fr": "Vie des Gigaboss : {0} · Dégâts reçus : {1} · combat visé ≈ {2} min",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Vie du boss",
    "where": [
     "saves/HudLayout.cpp"
@@ -78977,12 +79025,6 @@
    "fr": "Zone 5 — Le Cœur. L'Astrarque attend.",
    "where": [
     "data/levels/noyau_02.json"
-   ]
-  },
-  {
-   "fr": "Zone : {0}",
-   "where": [
-    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -85754,6 +85796,18 @@
    "fr": "Écorce d'Asterion argentée",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Écoulé depuis le début · zone : {0}",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Écoulé {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {

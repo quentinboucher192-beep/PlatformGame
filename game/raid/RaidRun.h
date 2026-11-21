@@ -62,6 +62,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/raid/Contributions.h"
+#include "game/raid/Difficulty.h"
 #include "game/raid/Gigaboss.h"
 #include "game/raid/RaidBranch.h"
 
@@ -205,8 +206,13 @@ public:
         bool invincible = false;
         int players = 2;
         int startPhase = 1;
+        int difficulty = kDifficultyDefault;  // titan 13: the difficulty tested (1 to 5)
     };
     void setTest(const Test& t);
+    /// Titan 13: the event's difficulty (1 to 5, game/raid/Difficulty.h), the same on every computer of the instance
+    /// (it comes with the relay's GO): the Gigaboss' and the Heart's health and damage. Set before the first step.
+    void setDifficulty(int level);
+    int difficulty() const { return difficulty_; }
     bool test() const { return test_.on; }
     const Test& testSetup() const { return test_; }
     /// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the invincible seats of a test (bit = seat): the administrator's
@@ -338,6 +344,7 @@ private:
     Contributions contrib_;      // 2.68
     uint32_t lastResult_ = UINT32_MAX;  // 2.68: the step of the last table reported
     Test test_;                         // 2.68: an administrator's test (never reported)
+    int difficulty_ = kDifficultyDefault;  // titan 13: setDifficulty
     uint32_t invincibleSeats_ = 0;      // 2.80: the invincible seats of a test
     HeartShared heart_;                 // 2.74 (phase 6): given with the step (RAID_STATE)
     int heartObjective_ = -1;           // 2.72: the heart's objective (its branch only)

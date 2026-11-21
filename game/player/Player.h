@@ -83,6 +83,7 @@ public:
     Vec2 vel;
     float facing = 1.0f;
     int health = 5;
+    float hurtCarry = 0.0f;  // titan 13: the fraction of a blow not taken yet (GameWorld::hurtScale)
     float energy = 100.0f;
 
     // -------------------------------------------------- damage / heal

@@ -83,6 +83,7 @@ public:
 
     void step(GameWorld& w, Contributions& c, Gigaboss& g, Enemy& b) override {
         scaledFor_ = scaledFor(g);
+        healthScale_ = g.healthScale();  // titan 13: the difficulty
         stepWaves(w, g, b);
         stepBoulders(w, g, b);
         const GigabossRules& r = *rules_;
@@ -243,7 +244,7 @@ private:
 
     /// Its restraints forged again on its ankles (all of them, or those missing).
     void forge(GameWorld& w, Contributions& c, Enemy& b, bool all) {
-        const float factor = 1.0f + 0.25f * static_cast<float>(std::max(0, scaledFor_ - 1));
+        const float factor = (1.0f + 0.25f * static_cast<float>(std::max(0, scaledFor_ - 1))) * healthScale_;
         for (size_t k = 0; k < spots_.size(); ++k) {
             const Enemy* e = restraint_[k] ? w.findEnemy(restraint_[k]) : nullptr;
             if (e && e->alive()) continue;
@@ -413,6 +414,7 @@ private:
     std::vector<int> brokeAt_, breaker_;
     Vec2 anchor_[4];
     int scaledFor_ = 1;
+    float healthScale_ = 1.0f;
     bool linkTold_ = false;
 };
 

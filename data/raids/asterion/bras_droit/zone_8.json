@@ -1709,6 +1709,132 @@
    "props": {
     "amount": 2
    }
+  },
+  {
+   "id": "o96",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1024.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o97",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o98",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o99",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2272.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o100",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2528.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o101",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    960.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o102",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1152.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o103",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2416.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o104",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2608.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
   }
  ],
  "events": [
@@ -1896,6 +2022,7 @@
     "players": 8
    },
    "gigaboss": {
+    "hpScale": 0.36,
     "boss": "o64",
     "name": "Pyroclast",
     "objective": "main_pyroclast",
@@ -1932,9 +2059,9 @@
      2,
      3
     ],
-    "hold": 3.0,
+    "hold": 2.5,
     "reopen": 15.0,
-    "exposed": 10.0,
+    "exposed": 14.0,
     "exposedMult": 2.0,
     "jet": {
      "period": 6.0,
