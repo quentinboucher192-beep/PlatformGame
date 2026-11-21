@@ -2946,6 +2946,14 @@ Dreadfang : 0 / 8, 38 % de sa vie ôtée, 3 départs sur 8 tiennent les 15 min (
 bloque : sa phase 2 avance à peine (de 66 à 55-65 %) — ses chaînes tenues et ses jointures frappées sous ses coups, des
 expositions qui ôtent la moitié de la vie de ses jointures — et la phase 1 prend 350 à 420 s (240 s invincibles).
 
+Troisième tour (8 départs) : à nu, tous sur **une jointure à la fois** (`Plan::focusWeak`) ; **tirer en esquivant** quand une
+onde atteint (`Plan::fireOnTheRun`) ; une place d'où tirer se cherche à portée de la **boîte** de sa cible (son bras flotte
+haut : à portée de son centre, aucune place du sol ni des étages bas ne convenait, et ils attendaient à 1 000 px de lui) ;
+sans place, ils attendent entre 170 et 340 px de son corps ; le bouclier gardé ne cède plus devant son contact quand un
+balayage est annoncé ou pour qui tient une chaîne. Dreadfang : **0 / 8, 43 % de sa vie ôtée** (avant 39 %), 2 départs
+sur 8 tiennent 15 min (il lui reste 42 et 44 %). Ses balayages reprennent la tête des morts (les joueurs sur ses chaînes,
+qui ne changent pas d'étage), avec sa poigne et ses griffes sous la glace au contact.
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`

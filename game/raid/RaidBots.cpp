@@ -581,7 +581,10 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
         auto ok = [&](int i) {
             const NavGraph::Node& nd = nav->node(i);
             if (nd.mover >= 0 || nd.ladder) return false;
-            if (std::fabs(nd.feet.x - tc.x) > kWaveRange + 20.0f || std::fabs(nd.feet.y - 11.0f - tc.y) > kWaveRange + 20.0f) return false;
+            // In a wave's reach of its target (2.84: of its box — a big arm's centre is far from its edge).
+            if (std::max({0.0f, target.x - nd.feet.x, nd.feet.x - target.right()}) > kWaveRange + 20.0f ||
+                std::max({0.0f, target.y - (nd.feet.y - 11.0f), (nd.feet.y - 11.0f) - target.bottom()}) > kWaveRange + 20.0f)
+                return false;
             const Vec2 c{nd.feet.x, nd.feet.y - 11.0f};
             const float fromTarget = (c - tc).length();
             // 2.84: never on another's place (a group on one pixel is swept, crushed, burnt together).
@@ -1571,13 +1574,15 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 if (bossFight && nav && b.role != Role::Lure) {
                     const int here = nav->locate(feet, 96.0f);
                     const Rect off = bossBody_.expanded(hide ? 320.0f : 170.0f);
-                    if (here >= 0 && (b.standOff < 0 || off.contains(nav->node(b.standOff).feet) || !safeSpot(w, seat, nav->node(b.standOff).feet, 36)))
+                    const Rect near = bossBody_.expanded(hide ? 700.0f : 340.0f);  // and not out of the fight either
+                    if (here >= 0 && (b.standOff < 0 || off.contains(nav->node(b.standOff).feet) || !near.contains(nav->node(b.standOff).feet) ||
+                                      !safeSpot(w, seat, nav->node(b.standOff).feet, 36)))
                         b.standOff = nav->search(
                             here, [&](int i) {
                                 const NavGraph::Node& nd = nav->node(i);
-                                return nd.mover < 0 && !nd.ladder && !off.contains(nd.feet) && safeSpot(w, seat, nd.feet, 36);
+                                return nd.mover < 0 && !nd.ladder && !off.contains(nd.feet) && near.contains(nd.feet) && safeSpot(w, seat, nd.feet, 36);
                             },
-                            3000.0f);
+                            4000.0f);
                     if (b.standOff >= 0) {
                         b.goalNode = b.standOff;
                         b.goal = nav->node(b.standOff).feet;
@@ -2063,8 +2068,11 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         const Rect near = me.box.expanded(8.0f);
         // 2.84 (fight plan): its shield kept for one blow — except against the boss's own body and blows (its touch).
         const bool reserve = view_.plan.reserveShield && me.health > 4;
+        // Its touch first, unless a sweep is on its way (announced) or it holds its place (no storey to change to).
+        bool sweepDue = holding;
+        for (const Danger& d : dangers_) sweepDue = sweepDue || d.kind == Danger::Kind::Storey || (d.shieldFirst && d.in > 0);
         for (const Danger& d : dangers_) {
-            if (reserve && !d.body && !d.attack) continue;
+            if (reserve && (sweepDue || (!d.body && !d.attack))) continue;
             if ((d.seat >= 0 && d.seat != seat) || d.in > (d.attack ? kSimHz / 4 : 20)) continue;  // its own blows: from their wind-up
             bool hit = false;
             switch (d.kind) {
