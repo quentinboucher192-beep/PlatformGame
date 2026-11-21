@@ -151,3 +151,51 @@ TEST_CASE("news: a newer installer is offered once") {
     CHECK(updates == 1);
     CHECK(n.items().front().download == "/api/v1/client/download/9.9.9");
 }
+
+TEST_CASE("news: a new version is looked for live and announced once per session") {
+    const std::string sha(64, 'a');
+    ReleaseWatch w;
+    // Cosmic Online off: never asked.
+    CHECK(!w.tick(1.0f, false, false));
+    // It becomes usable: asked at once, then not before 10 minutes.
+    CHECK(w.tick(0.016f, true, false));
+    w.sent();
+    CHECK(!w.tick(1.0f, true, false));
+    CHECK(w.busy());
+    w.answered(true);
+    CHECK(!w.tick(ReleaseWatch::kPeriodSeconds - 2.0f, true, false));
+    CHECK(w.tick(2.0f, true, false));
+    w.sent();
+    // The server cannot be reached: tried again 2 minutes later, not 10.
+    w.answered(false);
+    CHECK(!w.tick(ReleaseWatch::kRetrySeconds - 1.0f, true, true));
+    CHECK(w.tick(1.0f, true, true));
+    w.sent();
+    w.answered(false);
+    // The connection comes back (another request went through): asked at once.
+    CHECK(w.tick(0.016f, true, false));
+    w.sent();
+    w.answered(true);
+    CHECK(!w.tick(1.0f, true, false));
+    // A login wakes it; a check under way is never doubled.
+    w.wake();
+    CHECK(w.tick(0.016f, true, false));
+    w.sent();
+    w.wake();
+    CHECK(!w.tick(0.016f, true, false));
+    w.answered(true);
+    CHECK(!w.tick(0.016f, true, false));
+    // Cosmic Online turned off then on again (settings): asked at once.
+    CHECK(!w.tick(1.0f, false, false));
+    CHECK(w.tick(0.016f, true, false));
+    // Once per version and per session; a doubtful answer is never announced.
+    CHECK(w.announce("2.83.0", sha));
+    CHECK(!w.announce("2.83.0", sha));
+    CHECK(w.announce("2.84.0", sha));
+    CHECK(!w.announce("2.85.0", "abc"));
+    CHECK(!w.announce("2.85.0", std::string(64, 'z')));
+    CHECK(!w.announce("2.85", sha));
+    CHECK(!w.announce("2.85.0 <b>", sha));
+    CHECK(!w.announce("", sha));
+    CHECK(w.announce("2.85.0", sha));
+}

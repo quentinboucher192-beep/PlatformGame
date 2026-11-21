@@ -182,9 +182,12 @@ position, ni le pays masqué, ni les messages privés.
 
 ## Vérification des mises à jour
 
-Au démarrage (Cosmic Online activé) et à l'ouverture des Notifications, le jeu demande
-`GET /client/latest` : aucune donnée de compte, aucun identifiant ni numéro de version n'est
-envoyé (le serveur voit seulement l'adresse IP de la requête, comme pour toute requête, et n'en
+Au démarrage (Cosmic Online activé), quand Cosmic Online redevient accessible, après une
+connexion, à l'ouverture des Notifications et toutes les 10 minutes (2 après un échec), le jeu
+demande `GET /client/latest` pour annoncer aussitôt une nouvelle version (une notification à
+l'écran, une seule fois par version et par session) : aucune donnée de compte ni aucun
+identifiant n'est envoyé, seulement la version du jeu (`since`, pour recevoir les notes des
+versions publiées depuis ; le serveur voit l'adresse IP de la requête, comme pour toute requête, et n'en
 garde qu'une empreinte salée pour la limitation de débit). Le téléchargement de l'installateur
 n'a lieu que sur demande du joueur, et le fichier n'est proposé à l'exécution qu'après
 vérification de son empreinte SHA-256.

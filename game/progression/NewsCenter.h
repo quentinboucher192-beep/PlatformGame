@@ -86,4 +86,36 @@ private:
 /// "2.10.0" > "2.4.1" (numeric parts).
 bool versionNewer(const std::string& a, const std::string& b);
 
+/// When to ask Cosmic Online for a newer installer (GameServices::updateReleaseCheck),
+/// so that a version published while the game runs is announced at once: when Cosmic Online
+/// becomes usable, when the connection comes back, after a login (wake), then every 10 minutes
+/// (2 after a failure). Each new version gets its toast once per session. No clock, no network:
+/// the caller says what happened (tested in tests/test_news.cpp).
+class ReleaseWatch {
+public:
+    static constexpr float kPeriodSeconds = 600.0f;
+    static constexpr float kRetrySeconds = 120.0f;
+    /// Every frame: true when a check should be sent now. `usable`: Cosmic Online on and
+    /// configured; `offline`: its last request failed (the server could not be reached).
+    bool tick(float dt, bool usable, bool offline);
+    /// A login (or anything that makes a check worth it): checked at the next tick.
+    void wake() { due_ = true; }
+    /// A check was sent / answered (`ok`: the server answered; a failure tries again sooner).
+    void sent();
+    void answered(bool ok);
+    bool busy() const { return busy_; }
+    /// True the first time this session that `version` (a plausible « x.y.z », with a SHA-256
+    /// of 64 hexadecimal digits for its installer) is offered: its toast is shown.
+    bool announce(const std::string& version, const std::string& sha256);
+
+private:
+    float sinceCheck_ = 0.0f;  // seconds since the last check was sent
+    float period_ = kPeriodSeconds;
+    bool due_ = false;
+    bool busy_ = false;
+    bool usable_ = false;
+    bool offline_ = false;
+    std::set<std::string> announced_;
+};
+
 }  // namespace cosmic

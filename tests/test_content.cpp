@@ -1,6 +1,8 @@
 // Integrity of the shipped content: every enemy, power, planet and level references
 // assets, clips, projectiles and ids that exist.
 
+#include <algorithm>
+
 #include "engine/audio/AudioSystem.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
@@ -194,4 +196,22 @@ TEST_CASE("content: every official level is complete and coherent") {
     }
     report();
     CHECK(levels >= 9);
+}
+
+TEST_CASE("content: the campaign's planets in the order they are played (main menu)") {
+    ContentDatabase content;
+    content.reload();
+    std::vector<std::string> ids;
+    for (const PlanetData* p : content.campaignPlanets()) ids.push_back(p->id);
+    // Every shipped world with levels, once; the adventure starts on Sylvanox.
+    CHECK(ids.size() == content.planets().size());
+    CHECK(!ids.empty() && ids.front() == "sylvanox");
+    for (const char* id : {"sylvanox", "pyralis", "glacior", "aethra", "noyau", "confins"})
+        CHECK(std::count(ids.begin(), ids.end(), std::string(id)) == 1);
+    // Each after the planets it waits for.
+    auto at = [&](const std::string& id) { return std::find(ids.begin(), ids.end(), id) - ids.begin(); };
+    CHECK(at("sylvanox") < at("pyralis"));
+    CHECK(at("pyralis") < at("glacior"));
+    CHECK(at("glacior") < at("aethra"));
+    CHECK(at("glacior") < at("noyau"));
 }
