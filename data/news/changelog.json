@@ -1,4 +1,15 @@
 {
+  "2.83.0": [
+    "Notifications : une nouvelle version publiée pendant que vous jouez s'annonce aussitôt, où que vous soyez (notification à l'écran, compteur Notifications du menu principal à jour) ; le jeu la cherche au démarrage, quand Cosmic Online redevient accessible, après une connexion, puis toutes les 10 minutes.",
+    "Menu principal : la ligne sous le titre nomme les six planètes dans l'ordre de la campagne (Noyau stellaire et Les Confins compris), lue dans le contenu du jeu ; la bande-annonce aussi.",
+    "Menu principal redessiné : planètes en parallaxe qui défilent toutes les 15 s avec un saut hyperespace, titre chromé et néon avec Nova en orbite, plaques de cockpit (Continuer avec bannière et progression), rangée d'icônes à badges, carte holographique avec un aperçu animé de chaque entrée (vraies données seulement), Nova qui court et saute ; respecte le tremblement d'écran et la qualité des particules.",
+    "Carte des planètes : décor de la planète choisie, système entier dans sa zone, fiche holographique et plaque Explorer.",
+    "Niveaux d'une planète : cartes-plaques (record, étoiles de la médaille, EXTRÊME, boss), détails dans une carte holographique, Jouer et losanges Fantômes / Touches.",
+    "Pause (solo et coop) : panneau holographique, titre chrome et plaques, rapide et lisible sur le niveau assombri.",
+    "Fin de niveau : chrono qui défile, NOUVEAU RECORD en chrome quand il est vrai, étoiles qui se remplissent, victoire de Nova, décor du niveau.",
+    "COSMIC ONLINE : menu en plaques (pastilles et CADEAUX gardés), titre néon, planètes derrière le globe.",
+    "Défis, Coopération, Succès, Collection, Statistiques, Paramètres, Notifications et ADMINISTRATION prennent le style du nouveau menu principal : planètes en parallaxe, titres chromés, onglets et boutons en plaques de cockpit, « Retour » en losange, panneaux holographiques, animations selon les réglages de mouvement."
+  ],
   "2.82.0": [
     "CLASSEMENTS › NIVEAU : sur un niveau EXTRÊME, le panneau de droite montre la course à la vérification (Solo, Duo, Trio : rang, joueurs, meilleure progression, temps et date) tant que le niveau n'est pas vérifié ; ensuite ses records reviennent, la course restant au choix.",
     "Le nom de chaque pouvoir s'affiche au-dessus de ses tablettes et stations dans tous les niveaux, en solo et en coopération (avec son icône et son coût quand il y a la place), jamais sur le HUD.",
