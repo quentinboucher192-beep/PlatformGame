@@ -117,7 +117,7 @@ CosmicPlatformer --headless --coop-test confins_02:3 --spawns "1320,618;1380,618
 ```
 
 * `--raid-test <branche>:<zone>[:<joueurs>[:<phase>[:<invincible 0|1>]]]` : le test des
-  administrateurs (ADMINISTRATION › Raids › « Tester Asterion »), sans compte : seul, en local,
+  administrateurs (ADMINISTRATION › Raids › « Tester le raid »), sans compte : seul, en local,
   jamais rapporté, badge « TEST ADMIN · non classé » ; le gigaboss réglé pour `<joueurs>` (2 à 8)
   et commencé à `<phase>` ; invincible par défaut. `<zone>` = `vestiaire` : le vestiaire de la
   branche (2.76.2). 2.78 : `--raid-contrib` ouvre le « Tableau des contributions » par-dessus le menu du raid
@@ -126,7 +126,7 @@ CosmicPlatformer --headless --coop-test confins_02:3 --spawns "1320,618;1380,618
   par texte (avec `--lang en` : ce qui reste en français ; voir [I18N.md](I18N.md)).
 * `--raid-sim <groupes>:<joueurs simulés>[:<vitesse 1|2|4>[:<onglet 0-3>]]` (2.77) : « Simuler un raid complet »
   sans compte (en local, rien n'est envoyé), vous dans le groupe 1 ; l'onglet ouvre le panneau du raid (groupes,
-  contributions, événements du monde, carte du titan). `--raid-sim-menu` : ses réglages, tels que « Tester Asterion »
+  contributions, événements du monde, carte du titan). `--raid-sim-menu` : ses réglages, tels que « Tester le raid »
   les montre (rien n'est lancé).
 * `--coop-test <niveau>[:<joueurs>]` : une équipe de 2 ou 3 sur un même PC, sur un niveau EXTRÊME
   (hors classement, comme toute partie sur un même PC).

@@ -1398,7 +1398,6 @@
   {
    "fr": "Abdomen",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -4109,11 +4108,11 @@
   {
    "fr": "Asterion",
    "where": [
+    "data/raids/asterion.json",
     "game/content/AssetCatalog.cpp",
     "game/online/Gifts.cpp",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -4719,7 +4718,7 @@
   {
    "fr": "Asterion, le Dévoreur de mondes",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -8670,6 +8669,7 @@
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/tutorial/Tutorial.cpp",
     "saves/HudLayout.cpp",
     "saves/RaidHudLayout.cpp",
@@ -9179,7 +9179,6 @@
   {
    "fr": "Bras droit",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -9206,7 +9205,6 @@
   {
    "fr": "Bras gauche",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -17584,7 +17582,7 @@
   {
    "fr": "Court",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -17910,7 +17908,6 @@
   {
    "fr": "Crâne",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -20188,6 +20185,7 @@
     "game/online/AsterionBody.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
+    "game/raid/RaidCatalog.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -20504,6 +20502,12 @@
    "fr": "Difficulté {0} / 5",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Difficulté {0} à {1}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -26799,6 +26803,12 @@
    ]
   },
   {
+   "fr": "Fiche du raid ›",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Fiche provisoire : en attente de validation",
    "where": [
     "game/online/RaidRecap.cpp"
@@ -27868,11 +27878,11 @@
     "game/progression/NewBadges.cpp",
     "game/progression/NewsCenter.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidCatalog.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
     "saves/SaveFile.cpp",
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/ProjectsScene.cpp",
@@ -31464,6 +31474,7 @@
     "game/race/Race.cpp",
     "game/raid/Aftermath.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/online/RaidTestGuests.cpp",
@@ -32019,6 +32030,7 @@
    "fr": "image",
    "where": [
     "game/content/BossStories.cpp",
+    "game/raid/RaidCatalog.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/studio/Studio.cpp",
@@ -33483,7 +33495,6 @@
   {
    "fr": "Jambe droite",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -33504,7 +33515,6 @@
   {
    "fr": "Jambe gauche",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -37486,6 +37496,12 @@
    ]
   },
   {
+   "fr": "le Cœur",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
    "fr": "Le Cœur a cédé sous les coups de tous les groupes.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -37918,6 +37934,7 @@
   {
    "fr": "Le Dévoreur de mondes",
    "where": [
+    "data/raids/asterion.json",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -40126,12 +40143,6 @@
    ]
   },
   {
-   "fr": "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : {0} groupes de {1} joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) ou regardez-le.",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
    "fr": "Les administrateurs du jeu ouvriront les inscriptions.",
    "where": [
     "game/online/Raids.cpp"
@@ -41558,6 +41569,12 @@
    ]
   },
   {
+   "fr": "Les {0} branches et toutes leurs zones (vestiaire compris), puis {1} avec tous les groupes : {2} groupes de {3} joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) ou regardez-le.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Les {0} emplacements sont pris : retirez d'abord un badge.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -42596,7 +42613,7 @@
   {
    "fr": "Légendaire",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -44323,6 +44340,7 @@
    "fr": "minutes",
    "where": [
     "game/GameServices.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/RaidBranchScene.cpp"
@@ -50474,7 +50492,7 @@
    ]
   },
   {
-   "fr": "Parties du titan simulées comme tombées (leurs effets sur le Cœur) :",
+   "fr": "Parties du titan simulées comme tombées (leurs effets sur {0}) :",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -50520,6 +50538,7 @@
    "where": [
     "game/online/AsterionBody.cpp",
     "game/online/RaidRecap.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/raid/RaidTestRelay.cpp",
     "main.cpp",
     "ui/screens/AdminBackups.cpp"
@@ -57166,6 +57185,12 @@
    "where": [
     "game/online/Raids.cpp",
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "RAID MONDIAL",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -65155,7 +65180,7 @@
    ]
   },
   {
-   "fr": "SIMULER UN RAID COMPLET (TESTER ASTERION)",
+   "fr": "SIMULER UN RAID COMPLET (TESTER LE RAID)",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -66442,7 +66467,7 @@
    "fr": "Standard",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -69819,12 +69844,6 @@
    ]
   },
   {
-   "fr": "Tester Asterion",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
    "fr": "Tester Asterion (administration) : dans le test d'une zone comme dans « Simuler un raid complet », l'administrateur peut inviter de vrais joueurs, administrateurs ou non. « Inviter des joueurs connectés… » ouvre la liste des joueurs connectés, avec une recherche par nom ; chaque invité prend la place d'un joueur simulé de son groupe (jamais un de plus) et l'administrateur choisit son groupe dans le raid complet.",
    "where": [
     "data/news/changelog.json"
@@ -69855,12 +69874,6 @@
    ]
   },
   {
-   "fr": "TESTER ASTERION · ADMINISTRATEURS",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
    "fr": "Tester Asterion › « Simuler un raid complet » : le réglage devient « Joueurs par groupe (vous compris) ». Tous les groupes ont la même taille : le vôtre, c'est vous et N − 1 joueurs simulés, les autres en ont N. En rejoignant un autre groupe, vous y remplacez un joueur simulé. Le test d'une zone garde « Joueurs simulés (sans vous) ».",
    "where": [
     "data/news/changelog.json"
@@ -69876,6 +69889,18 @@
    "fr": "Tester ici",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Tester le raid",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "TESTER LE RAID · ADMINISTRATEURS",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -70555,7 +70580,6 @@
   {
    "fr": "Torse",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -73393,6 +73417,7 @@
   {
    "fr": "Un titan cosmique avale les planètes de la bordure. Les clans l'affronteront ensemble, branche par branche, sur son propre corps, jusqu'à son cœur.",
    "where": [
+    "data/raids/asterion.json",
     "server/src/raids.ts"
    ]
   },
@@ -76185,7 +76210,7 @@
    ]
   },
   {
-   "fr": "Vide : le texte d'Asterion",
+   "fr": "Vide : le texte du raid",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -81098,7 +81123,14 @@
   {
    "fr": "{0} Gigaboss",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} Gigaboss + {1}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -82040,8 +82072,15 @@
    ]
   },
   {
+   "fr": "{0} partie",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} parties",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
   },

@@ -399,7 +399,14 @@ Migration **0143_raid_gigaboss.sql** : `raid_instance_members.seat_from`, `raid_
   bas à droite, la carte de sa chute (« Résultats du raid »).
 * **Résultats du raid** (maquette « Résultats ») : depuis la fiche de l'événement et à la chute de Pyroclast.
 * **CLANS › RAIDS** : « Récompenses à récupérer » avec « Récupérer ».
-* **ADMINISTRATION › Raids › « Tester Asterion »** (administrateurs) : une branche du catalogue
+* **ADMINISTRATION › Raids, générique (2.83)** : tout ce que l'écran dit d'un raid vient du **catalogue des raids**
+  (`game/raid/RaidCatalog`, objet `catalog` de chaque `data/raids/<raid>.json` : titre, nom, sous-titre, accroche, icône et
+  affiche — des découpes d'images existantes —, formats et leurs minutes, plage de difficulté, cœur, fiche) ; ses compteurs
+  (parties, gigaboss, cœur) sont ceux de ses `parts`. La liste « Raid » montre chaque raid du catalogue avec son icône,
+  l'affiche du raid choisi suit (« Fiche du raid › » ouvre sa fiche), les plaques « Format » et la difficulté sont les
+  siennes ; « Tester le raid » porte son icône, chaque événement l'icône et « Raid — Format » de son raid. Aucun nom de
+  raid dans le code de l'écran (`tests/test_admin_raids.cpp`). Un raid s'ajoute par ses données.
+* **ADMINISTRATION › Raids › « Tester le raid »** (administrateurs) : une branche du catalogue
   (`raid::Branch::all`, les branches ajoutées plus tard y apparaissent seules), une zone (le combat de Pyroclast par
   défaut), « Invincible (admin) · non classé », 2 à 8 joueurs simulés, phase de départ ; seul et en local
   (`RaidRun::setTest`) : aucun rapport n'est jamais produit, et le serveur refuse tout rapport marqué `test`.
@@ -765,7 +772,7 @@ combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas su
 
 ### Le test des administrateurs (`game/raid/RaidTest`)
 
-« Tester Asterion » se joue comme une vraie instance, seul sur l'ordinateur (`raid::TestSession`) :
+« Tester le raid » se joue comme une vraie instance, seul sur l'ordinateur (`raid::TestSession`) :
 
 * **l'état de la branche** est gardé d'une zone à l'autre dans la structure de `RAID_STATE` (les objectifs faits, un
   bit chacun) : ce que le groupe fait est « accepté » aussitôt et redonné au pas suivant, comme le relais le ferait après
@@ -941,7 +948,7 @@ L'issue mondiale « Asterion est tombé » (`raidWorld.ts`, §14) exige désorma
 
 ### Test des administrateurs
 
-ADMINISTRATION › Raids › « Tester Asterion » liste le cœur après les sept branches : sa phase de départ (1 à 4), les
+ADMINISTRATION › Raids › « Tester le raid » liste le cœur après les sept branches : sa phase de départ (1 à 4), les
 parties du titan simulées comme tombées (leurs liens `modifier` allumés dans l'état de la branche du test), les reliques ;
 seul, en local, invincible si demandé, **jamais aucun rapport** ; sa chute y est sa victoire (le film se lance). Le test
 se joue comme une vraie instance (`raid::TestSession`, §15) : les liens choisis et les reliques sont donnés à chaque pas
@@ -1265,7 +1272,7 @@ les empreintes de référence ne changent pas.
 
 ### Les joueurs simulés jouent la zone (`game/raid/RaidBots`, `game/raid/RaidNav`)
 
-Dans « Tester Asterion », les joueurs simulés ne suivent plus l'administrateur : ils **jouent la zone eux-mêmes**, qu'il
+Dans « Tester le raid », les joueurs simulés ne suivent plus l'administrateur : ils **jouent la zone eux-mêmes**, qu'il
 soit là, absent ou AFK. Une IA à objectifs, déterministe, qui répond à chaque pas par une `InputFrame` par siège (jamais
 l'horloge, l'écran ni le réseau) :
 
@@ -1293,7 +1300,7 @@ l'horloge, l'écran ni le réseau) :
 * **Réanimer** le joueur à terre le plus proche (l'administrateur compris), en **maintenant « Interagir »** près de l'âme ;
   **choisir ses pouvoirs** au vestiaire : chacun saute sur la tablette de son vœu (les impairs : triple saut, les pairs :
   boomerang) et répond à la fenêtre de choix par `InputFrame::choice` (il laisse l'impulsion).
-* **Niveau des joueurs simulés** (réglage de « Tester Asterion » et du raid complet) : **Débutant** (réagit en 0,3 s,
+* **Niveau des joueurs simulés** (réglage de « Tester le raid » et du raid complet) : **Débutant** (réagit en 0,3 s,
   60 % de ses coups et tirs partent au bon moment), **Confirmé** (0,15 s, 85 %), **Expert** (0,05 s, toujours). Rien
   d'autre ne change.
 * **Pilote automatique** : 15 s sans aucune commande, la place de l'administrateur est jouée par la même IA jusqu'à ce
@@ -1325,7 +1332,7 @@ l'horloge, l'écran ni le réseau) :
 <img src="media/raid_sim.png" width="49%" alt="Le raid en cours : le groupe 1 dans la Mâchoire du Crâne, ses joueurs simulés, les événements des autres branches dans les alertes et le bandeau « TEST LOCAL — rien n'est envoyé »">
 </p>
 
-ADMINISTRATION › Raids › Tester Asterion › **« Simuler un raid complet »** : tout le raid de clan **en local**. Réglages :
+ADMINISTRATION › Raids › Tester le raid › **« Simuler un raid complet »** : tout le raid de clan **en local**. Réglages :
 nombre de groupes (1 à 14), joueurs simulés par groupe (1 à 7, sans compter l'administrateur ; chaque groupe a en plus une
 **place libre**, la sienne), niveau des joueurs simulés, invincible (admin), **joueurs simulés invincibles** (un réglage de
 test : leurs cœurs reviennent à chaque pas, une chute dans le vide les met encore à terre), vitesse des groupes non
@@ -1910,7 +1917,7 @@ changent pas ; aucune migration.
 
 ## 28. Joueurs simulés : terrain et anticipation (2.79)
 
-Les joueurs simulés de « Tester Asterion » et de « Simuler un raid complet » se déplacent désormais comme un **très bon
+Les joueurs simulés de « Tester le raid » et de « Simuler un raid complet » se déplacent désormais comme un **très bon
 joueur** : ils lisent le terrain en simulant leur propre physique, essaient leurs mouvements quelques dizaines de pas à
 l'avance sur une copie légère de la zone, utilisent **tous** leurs mouvements (double et triple saut, ruée au sol et en
 l'air, impulsion, saut mural, traversée d'une plateforme vers le bas) et disent ce qu'ils font. Leurs décisions de
@@ -2296,7 +2303,7 @@ empreintes de référence (solo, coopération, raid sans joueurs simulés) ne ch
 
 ## 30. Tester avec des joueurs invités (2.80)
 
-ADMINISTRATION › Raids › « Tester Asterion » : dans le test d'**une zone** comme dans **« Simuler un raid complet »**,
+ADMINISTRATION › Raids › « Tester le raid » : dans le test d'**une zone** comme dans **« Simuler un raid complet »**,
 l'administrateur peut **inviter de vrais joueurs**, administrateurs ou joueurs classiques. Chacun prend la place d'un
 joueur simulé, avec sa case **« Invincible »** (décochée par défaut) que seul l'administrateur coche et décoche, avant
 comme pendant le test. **Sans invité, le test reste exactement comme avant : local, hors ligne, rien n'est envoyé.**
@@ -2488,7 +2495,7 @@ cyan, « · votre clan » après son nom, et toujours montré. Sans données (ho
   par-dessus : la notification l'offre (NOTIFICATIONS › « Regarder le film »), et un message l'annonce à la fin de la
   partie. Il ne se lance de lui-même que **dans les menus** (au plus tôt 15 s avant l'heure, avec son compte à rebours), une
   seule fois, ou après le film de la victoire dans l'instance du Cœur. Il se quitte (Échap, Ⓑ) comme tout film.
-* **Le test des administrateurs** (« Tester Asterion », le Cœur) : sa chute lance le film de la victoire puis celui-ci,
+* **Le test des administrateurs** (« Tester le raid », le Cœur) : sa chute lance le film de la victoire puis celui-ci,
   avec le texte générique, depuis le début ; rien n'est demandé au serveur, rien n'est rapporté.
 
 ### Le revoir (débloqué)
@@ -2573,7 +2580,7 @@ genre et durée, « où » sur deux lignes au plus, le bouton ; testé en 1280 �
   ouvre, et l'atteint une fois en marche ; `COSMIC_MECH_AUDIT=1` affiche chaque défaut sans s'arrêter.
 * **Interface** : le bouton du HUD ne montre plus que la touche (« Tab », ou le bouton de la manette) ; les onglets du panneau du
   raid simulé et du menu du raid ont une seule largeur (le plus long nom mesuré) et le panneau garde sa taille d'un onglet à
-  l'autre (`raidui::tabs`) ; ADMINISTRATION › Raids › Tester Asterion commence par une liste « Raid à tester » (`raidui::dropdown`,
+  l'autre (`raidui::tabs`) ; ADMINISTRATION › Raids › Tester le raid commence par une liste « Raid à tester » (`raidui::dropdown`,
   Asterion pour l'instant). Le tableau des contributions applique les clics sur une partie après l'image (choisir une partie
   « PAS DÉCOUVERT » plantait) et dit pourquoi une partie est vide (« Pas encore découvert : aucun groupe n'y est entré. »).
 * **Versions** : `TITAN_REVISION` passe à **11** (les catalogues et `raidTitan.json` régénérés) ; `kSimulationVersion` et

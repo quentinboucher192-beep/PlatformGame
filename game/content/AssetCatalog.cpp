@@ -22,6 +22,7 @@
 #include "game/cosmetics/Collection.h"
 #include "game/levels/ObjectTypes.h"
 #include "game/levels/TerrainRenderer.h"
+#include "game/raid/RaidCatalog.h"
 #include "packaging/Package.h"
 
 namespace cosmic {
@@ -549,6 +550,11 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
                 for (const StorySfx& fx : shot.stage->sounds) uses.add(fx.sound, AssetUseKind::Story, "asterion", "Asterion", false);
             }
     }
+
+    // 2.83: the raid catalogue (data/raids, game/raid/RaidCatalog): each raid's icon and poster (ADMINISTRATION › Raids).
+    for (const raid::CatalogEntry& e : raid::loadCatalog(dataDir / "raids"))
+        for (const raid::CatalogArt* a : {&e.icon, &e.poster})
+            if (a->valid()) uses.add(a->image, AssetUseKind::Story, e.id, e.name, false);
 
     // The suits of the Vestiaire (the standard one is Nova's own sheet).
     CosmeticCatalog cosmetics;

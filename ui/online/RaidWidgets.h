@@ -5,6 +5,7 @@
 // times shown in the computer's own zone (the titan: ui/widgets/AsterionFigure).
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -47,16 +48,19 @@ Color stateFill(raids::State s);
 Color stateText(raids::State s);
 /// Toggle chips that wrap from (x, y) to `right`: each measured to its label. Returns the index
 /// clicked (-1 when none) and sets `bottom` under the last row.
+/// 2.83: `iconAt` (-1: none) has an icon at its left, drawn by `icon` in the square it is given (the chip widened for it).
 int chips(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, const std::vector<bool>& on,
-          float& bottom, bool enabled = true);
+          float& bottom, bool enabled = true, int iconAt = -1, const std::function<void(const Rect&)>& icon = {});
 /// 2.81.2: tabs of ONE width (the widest label, measured in the language shown, plus its padding), wrapped from
 /// (x, y) to `right`: choosing one never resizes the row. Their rectangles (and `bottom` under the last row).
 std::vector<Rect> tabRects(UIContext& ui, float x, float y, float right, const std::vector<std::string>& labels, float& bottom);
 /// 2.81.2: a drop-down list. Its button (« caption : choice », its arrow drawn: « ▼ » is not in every font) opens
 /// it; open, its options are rows under it (each a button: keyboard, gamepad and mouse), pushing what follows down
 /// (nothing drawn over anything); a choice closes it. Returns the y under it (the options included when open).
+/// 2.83: an empty `caption` shows the choice alone; `icon`, when given, draws option `i`'s icon in the square it is
+/// given, at the left of the button and of each option (their text after it, measured into what is left).
 float dropdown(UIContext& ui, const std::string& id, const Rect& r, const std::string& caption, const std::vector<std::string>& options, int& index,
-               bool& open);
+               bool& open, const std::function<void(int, const Rect&)>& icon = {});
 /// Draws them (`selected` lit); the index clicked, -1 none.
 int tabs(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, int selected, float& bottom);
 
