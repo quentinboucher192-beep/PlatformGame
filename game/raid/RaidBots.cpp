@@ -898,6 +898,13 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         bool first = true;
         for (int d : down) {
             const Vec2 soul = w.member(d).soul;
+            // 2.84: a soul under a liquid that rises or is up (Voidworm's acid) waits for it to fall again: its reviver
+            // would kneel in it.
+            bool drowned = false;
+            for (const bots::Danger& dg : dangers_)
+                drowned = drowned || (dg.kind == bots::Danger::Kind::Flood && fight_ && soul.x > dg.area.x - 10.0f && soul.x < dg.area.right() + 10.0f &&
+                                      soul.y > dg.area.y - 12.0f);
+            if (drowned && ord != bots::OrderKind::Revive) continue;
             // The reviver first; else (a small group, or more souls than revivers) the nearest free player.
             int s = nearestFree(soul, [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Reviver; });
             if (s < 0 && (!fight_ || drivers.size() <= 2 || ord == bots::OrderKind::Revive || freeCount() > 2)) s = nearestFree(soul);
