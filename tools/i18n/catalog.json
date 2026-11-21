@@ -8943,6 +8943,12 @@
    ]
   },
   {
+   "fr": "bouclier contre la lame",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "bouclier contre le rayon",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -12335,6 +12341,12 @@
    "fr": "champs attendus",
    "where": [
     "server/src/live.ts"
+   ]
+  },
+  {
+   "fr": "change d'étage avant la lame",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {

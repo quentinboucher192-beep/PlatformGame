@@ -69,6 +69,7 @@ public:
         Task task = Task::Follow;
         Vec2 goal;
         Rect mechanism;       // the plate or vent it was sent to (Task::Mechanism)
+        bool mechanismClosed = false;  // 2.84: that vent is shut for now (kept, not held)
         int mechanismSteps = 0;  // steps since it was sent there without standing on it
         // 2.77
         uint32_t target = 0;  // the enemy it strikes (uid), 0 none
@@ -106,7 +107,9 @@ public:
         int cross = 0;        // 2.84: steps left of a crossing through the boss's body under its shield
         int crossDir = 0;
         int blocked = 0;
-        int push = 0;         // 2.84: steps left going on through what is coming under its shield      // 2.84: steps held back at the edge of what is coming          // 2.84: armoured, where its weak point will be once bare (its place is chosen for it)          // 2.84: a jump (1) or a double jump (2) to fire from its top
+        int push = 0;
+        int standOff = -1;
+        int storeyNode = -1;  // 2.84: the place on another storey it goes to before a sweep    // 2.84: where it waits off the boss's body while no place lets it fire         // 2.84: steps left going on through what is coming under its shield      // 2.84: steps held back at the edge of what is coming          // 2.84: armoured, where its weak point will be once bare (its place is chosen for it)          // 2.84: a jump (1) or a double jump (2) to fire from its top
         uint32_t revivee = 0; // the seat it revives + 1 (0 none)
         bots::Thought thought;
         std::string intent;   // its task's intention (the plan's), shown unless it reacts to something

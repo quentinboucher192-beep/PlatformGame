@@ -49,6 +49,16 @@ struct BossView {
     /// Players a routine holds (swallowed, nailed): no use striking near them, a rescue to make.
     std::vector<int> held;
     std::string phase;  // what the group does now (« Voile psychique : 4 miroirs sur 4 »), for the thoughts
+    /// 2.84: the fight plan of this boss at this step (game/raid/bots/FightPlan), what its tactic sets beyond what is
+    /// coming: how the group stands and spends its shield.
+    struct Plan {
+        bool reserveShield = false;  // the shield kept for the blows marked shieldFirst (and a player at 4 hearts or less)
+        float elevate = 0.0f;        // the strikers stand this much above the floor under the boss (its floor blows)
+        float keepOff = -1.0f;       // the strikers' distance to its body (< 0: the default)
+        bool lureOnFloor = false;    // the lure stays on its floor (its blows aimed at the nearest go there)
+        bool freeOnClosed = false;   // a player on a closed place dodges and jumps around it (else it stays on it)
+        bool hideArmoured = false;   // its body closed to blows: the strikers wait far off it (not where its weak points will be)
+    } plan;
 };
 
 class BossTactic {

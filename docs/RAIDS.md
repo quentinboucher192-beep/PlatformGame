@@ -2913,7 +2913,30 @@ Toujours aucun combat gagné ; la moyenne ne bouge pas (31 % de vie ôtée). Gar
 
 Essayés et retirés (aucun gain sur 3 départs, ou des groupes éliminés plus tôt) : les places en hauteur contre un boss au
 sol, la fissure du séisme lue dès son annonce, la charge lue en deux temps, laisser une âme sous le corps du boss.
-Avec invincibilité, depuis leur phase 2, Dreadfang, Heartbreaker **et Voidworm** tombent maintenant (le test les garde).
+Avec invincibilité, depuis leur phase 2, Dreadfang et Heartbreaker tombent, Voidworm finit entre 0 et 48 % selon la
+version (le test demande 55 % au plus).
+
+### Plans de combat : Dreadfang d'abord
+
+Une couche **plan de combat** par Gigaboss au-dessus de la tactique (`BossView::Plan`, rempli par `game/raid/bots/Tactic*.cpp`) :
+garder son bouclier pour un coup (`reserveShield`, et `Danger::shieldFirst` pour ce coup), se placer à une hauteur au-dessus
+du sol du boss (`elevate`), garder l'appât au sol (`lureOnFloor`), se tenir loin de son corps quand il est blindé
+(`hideArmoured`), une distance au corps (`keepOff`). Dreadfang, le combat le plus proche (invincibles, ils le battent en
+586 s depuis sa phase 1), est le premier :
+
+* **ses balayages** (une lame à 1 500 px/s sur 1 à 3 étages, annoncés 1,6 s avant) : « changez d'étage » — chacun monte
+  ou descend sur un étage qui n'est pas balayé (`Danger::Kind::Storey`), le bouclier gardé pour la lame s'il ne le peut
+  pas ; ils ne sont presque plus touchés par la lame ;
+* les frappeurs sur les étages au-dessus de son bras, l'appât au sol ;
+* pour tous : jamais deux joueurs sur la même place, une place fermée gardée sans la « tenir » (son joueur esquive et
+  saute), un joueur sans place d'où tirer attend loin du boss au lieu d'aller vers lui, un orbe de vie dès 6 cœurs ou
+  moins.
+
+Mesuré (5 départs, sans invincibilité) : Dreadfang 0 / 5 (avant 0 / 5) ; ils tiennent plus longtemps (798 / 900 / 563 /
+737 / 534 s au lieu de 514 / 664 / 537 / 256 / 603 s) et lui ôtent 40 % de sa vie (avant 37 %), mais la phase 2 reste un
+carnage : ses coups au contact (sa ruée, ses griffes sous la glace, son éventail de lames : le bras touche ceux qui sont près
+de lui) et ses griffes clouantes mettent le groupe à terre pendant que ses chaînes sont tenues. Attendre loin de lui
+pendant son armure a été essayé (des groupes éliminés plus tôt).
 
 ### Versions
 

@@ -330,6 +330,7 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
             s.plate = vt.area;
             s.need = 1;
             s.priority = vt.closed ? 9 : 10;
+            s.closed = vt.closed;
             // What it is, as a player names it (its rules' id is not a name).
             const std::string routine = gb.rules() ? gb.rules()->routine : std::string();
             s.label = routine == "dreadfang"      ? "la chaîne"
