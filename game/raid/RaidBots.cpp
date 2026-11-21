@@ -1878,7 +1878,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         if (stay && !navi_.pilot(seat).committed()) dir = 0;
         // Never into what is coming (a mark, a cloud, a column, the boss's body): it waits at its edge, the way
         // it was going, until it has passed — out of a danger it may cross (it is getting out).
-        if (dir != 0 && me.grounded() && !holding && !crossing && !pushing && !(station.w > 0.0f && me.box.expanded(48.0f).intersects(station))) {
+        if (dir != 0 && me.grounded() && !holding && !crossing && !pushing && !fleeing && !(station.w > 0.0f && me.box.expanded(48.0f).intersects(station))) {
             const Rect next = me.box.translated({static_cast<float>(dir) * 10.0f, 0.0f}).expanded(3.0f);
             if (threatened(w, seat, next, 100) && !threatened(w, seat, me.box.expanded(3.0f), 100)) {
                 dir = 0;
@@ -2095,6 +2095,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 case Danger::Kind::Area: hit = d.area.intersects(near) && !d.unblockable; break;
                 case Danger::Kind::Line: hit = hitsLine(d, near); break;
                 case Danger::Kind::Pull: hit = d.area.intersects(near); break;  // 2.84: dragged to its core: its touch under the shield
+                case Danger::Kind::Flood: hit = d.area.intersects(me.box) && fleeing; break;  // 2.84: caught by the liquid on its way up
                 case Danger::Kind::FloorWave: {
                     if (!me.grounded() || feet.y > d.floorY + 6.0f || feet.y < d.floorY - 30.0f || d.speed == 0.0f) break;
                     const float gap = d.speed > 0.0f ? me.box.x - d.area.right() : d.area.x - me.box.right();
