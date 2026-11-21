@@ -568,6 +568,12 @@
    ]
   },
   {
+   "fr": "2 ou 3 joueurs sur les niveaux EXTRÊME.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "2 ou 3 joueurs · niveaux EXTRÊME",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -1897,7 +1903,8 @@
     "editors/level_editor/LevelEditorScene.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/MainMenuScene.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/widgets/CosmicStyle.cpp"
    ]
   },
   {
@@ -3765,7 +3772,8 @@
   {
    "fr": "Argent {0} · Or {1}",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -8659,7 +8667,6 @@
     "saves/HudLayout.cpp",
     "saves/RaidHudLayout.cpp",
     "ui/online/RaidHud.cpp",
-    "ui/screens/MainMenuScene.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -14032,6 +14039,12 @@
    ]
   },
   {
+   "fr": "Classements, clans, raids et niveaux de la communauté.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Classique",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -14429,7 +14442,8 @@
    "where": [
     "game/GameServices.cpp",
     "game/online/ProgressMerge.cpp",
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/widgets/CosmicStyle.cpp"
    ]
   },
   {
@@ -14877,6 +14891,12 @@
    "fr": "Combinaisons des événements mondiaux",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaisons, traînées, cadres, titres, effets de victoire et badges de profil.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -15368,6 +15388,12 @@
    "fr": "Compte lié à « {0} »",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Compte requis",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -16671,7 +16697,8 @@
    "fr": "COSMIC",
    "where": [
     "ui/screens/BossStoryScene.cpp",
-    "ui/screens/MenuBackground.cpp"
+    "ui/screens/MenuBackground.cpp",
+    "ui/widgets/CosmicStyle.cpp"
    ]
   },
   {
@@ -16679,6 +16706,7 @@
    "where": [
     "ui/screens/ClanScene.cpp",
     "ui/screens/GiftsScene.cpp",
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ProjectsScene.cpp",
@@ -21271,6 +21299,12 @@
    ]
   },
   {
+   "fr": "Duo ou trio",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Dupliquer",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
@@ -22240,6 +22274,7 @@
    "fr": "Défi de la semaine",
    "where": [
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
   },
@@ -22272,6 +22307,7 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
@@ -22306,6 +22342,7 @@
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/SpectateScene.cpp"
    ]
   },
@@ -29662,6 +29699,12 @@
    ]
   },
   {
+   "fr": "Graphismes, audio, clavier, manette et langue.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Grappin",
    "where": [
     "data/powers/grapple.json",
@@ -33977,7 +34020,7 @@
    ]
   },
   {
-   "fr": "joueurs · défis · journal",
+   "fr": "Joueurs, défis et journal.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
    ]
@@ -38240,6 +38283,12 @@
    "fr": "Le jeu est en pause tant que tu n'as pas lu.",
    "where": [
     "ui/screens/TutorialScenes.h"
+   ]
+  },
+  {
+   "fr": "Le jeu reste jouable sans compte.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -46267,6 +46316,12 @@
    ]
   },
   {
+   "fr": "Niveau pas encore terminé",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau publié",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -46336,6 +46391,12 @@
    "fr": "NIVEAU TERMINÉ",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau terminé",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -49226,6 +49287,12 @@
    ]
   },
   {
+   "fr": "Outils admin",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouvert",
    "where": [
     "ui/screens/GiftsScene.cpp"
@@ -50756,6 +50823,12 @@
    "fr": "Pas encore rencontrée.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore terminé",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -52784,12 +52857,6 @@
    ]
   },
   {
-   "fr": "planètes et niveaux",
-   "where": [
-    "ui/screens/MainMenuScene.cpp"
-   ]
-  },
-  {
    "fr": "Plaque basse",
    "where": [
     "game/raid/bots/TacticHeartbreaker.cpp"
@@ -52949,7 +53016,8 @@
    "fr": "PLATFORMER",
    "where": [
     "ui/screens/BossStoryScene.cpp",
-    "ui/screens/MenuBackground.cpp"
+    "ui/screens/MenuBackground.cpp",
+    "ui/widgets/CosmicStyle.cpp"
    ]
   },
   {
@@ -56505,6 +56573,12 @@
    ]
   },
   {
+   "fr": "Quitter le jeu ?",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Quitter le mode Film",
    "where": [
     "ui/screens/BossStoryScene.cpp"
@@ -59728,6 +59802,7 @@
    "where": [
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/DeviceLostUi.cpp",
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -60546,6 +60621,12 @@
    ]
   },
   {
+   "fr": "Rien de nouveau",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Rien de nouveau pour l'instant. Les nouveaux niveaux, pouvoirs, monstres et boss, les records à refaire après une modification et les nouvelles versions du jeu apparaîtront ici.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -60962,10 +61043,12 @@
     "ui/screens/AdminCreations.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CreatureArt.cpp",
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/RewardsScene.cpp",
     "ui/screens/TutorialScenes.cpp",
     "ui/studio/StudioDoc.cpp",
     "ui/studio/StudioFrise.cpp",
+    "ui/widgets/CosmicStyle.cpp",
     "ui/widgets/HitPartsView.cpp"
    ]
   },
@@ -61701,6 +61784,7 @@
    "fr": "Réglages",
    "where": [
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/NotificationsScene.cpp"
    ]
   },
@@ -67561,8 +67645,7 @@
   {
    "fr": "Sylvanox · Pyralis · Glacior · Aethra",
    "where": [
-    "data/trailer/trailer.json",
-    "ui/screens/MainMenuScene.cpp"
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -69800,7 +69883,8 @@
     "game/levels/DecorAtlas.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/TerrainRenderer.cpp",
-    "packaging/DependencyCollector.cpp"
+    "packaging/DependencyCollector.cpp",
+    "ui/widgets/CosmicStyle.cpp"
    ]
   },
   {
@@ -72656,6 +72740,12 @@
    ]
   },
   {
+   "fr": "Un défi chaque jour, chaque semaine et chaque mois.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "un défi de la semaine",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -75219,6 +75309,18 @@
    ]
   },
   {
+   "fr": "Validez encore pour quitter",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Validez une seconde fois pour confirmer.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "validé par le serveur",
    "where": [
     "ui/online/ContribTable.cpp"
@@ -76245,6 +76347,12 @@
    ]
   },
   {
+   "fr": "Visible seulement pour un compte admin",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Visiteur",
    "where": [
     "data/achievements/achievements.json"
@@ -77127,6 +77235,12 @@
    "fr": "Votre meilleur : rang {0} · {1}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre meilleur temps : {0}",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -79989,6 +80103,18 @@
    ]
   },
   {
+   "fr": "{0} ami",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} amis",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} assets",
    "where": [
     "ui/screens/AdminAssets.cpp"
@@ -80382,6 +80508,12 @@
    "fr": "{0} dans {1} s · {2} !",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} de jeu",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -81450,12 +81582,14 @@
   {
    "fr": "{0} message non lu",
    "where": [
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
   {
    "fr": "{0} messages non lus",
    "where": [
+    "ui/screens/MainMenuScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -81698,6 +81832,12 @@
    ]
   },
   {
+   "fr": "{0} niveaux terminés sur {1}",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} nombres attendus",
    "where": [
     "server/src/admin.ts"
@@ -81881,6 +82021,18 @@
    "fr": "{0} placés sur {1} inscrits",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} planètes",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} planètes · {1} / {2} niveaux",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -82795,6 +82947,12 @@
    "fr": "{0} · natif",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · niveau {1} sur {2}",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {

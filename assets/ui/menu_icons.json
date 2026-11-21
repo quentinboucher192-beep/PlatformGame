@@ -1,0 +1,19 @@
+{
+ "texture": "ui/menu_icons.png",
+ "cell": 24,
+ "icons": {
+  "continue": 0,
+  "campaign": 1,
+  "challenges": 2,
+  "coop": 3,
+  "online": 4,
+  "news": 5,
+  "achievements": 6,
+  "collection": 7,
+  "stats": 8,
+  "settings": 9,
+  "quit": 10,
+  "admin": 11
+ },
+ "comment": "Written by tools/assetgen/environment/menu_icons.py: never edit by hand."
+}
