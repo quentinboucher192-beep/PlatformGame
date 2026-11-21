@@ -1,4 +1,8 @@
 {
+  "2.87.0": [
+    "Joueurs simulés contre Heartbreaker : ses Côtes-pièges prises sous le bouclier quand il est prêt, et ses plaques brisées dès que possible au lieu d'attendre de les casser ensemble ; il tombe dans 5 départs sur 8 (avant : 2), 89 % de sa vie ôtée en moyenne.",
+    "Joueurs simulés contre Skullmaw : ses regards traqueurs sautés au moment où ils tirent, hors du rayon de leurs voisins, les miroirs rejoints avant l'éclair, et loin de son crâne pendant son voile ; il tombe dans 6 départs sur 8 (avant : aucun)."
+  ],
   "2.86.0": [
     "Joueurs simulés : une branche entière jusqu'à l'antre sans aide, la relique d'abord (prise d'un saut), puis la zone des embuscades ; les créatures en l'air ou hors d'atteinte visées à l'onde ; un joueur bloqué ne retient plus le groupe.",
     "Liquides qui montent (acide de Voidworm, marée de plasma du Cœur, crues de lave, de plasma et d'eau des abysses des boss, reflux d'acide de l'abdomen) : ils remplissent désormais toute leur largeur et jusqu'au sol, avec une houle animée, de l'écume, un dégradé plus sombre en profondeur et une légère transparence, au lieu d'un mince ruban flottant.",

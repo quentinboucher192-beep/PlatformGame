@@ -34311,6 +34311,18 @@
    ]
   },
   {
+   "fr": "Joueurs simulés contre Heartbreaker : ses Côtes-pièges prises sous le bouclier quand il est prêt, et ses plaques brisées dès que possible au lieu d'attendre de les casser ensemble ; il tombe dans 5 départs sur 8 (avant : 2), 89 % de sa vie ôtée en moyenne.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Joueurs simulés contre Skullmaw : ses regards traqueurs sautés au moment où ils tirent, hors du rayon de leurs voisins, les miroirs rejoints avant l'éclair, et loin de son crâne pendant son voile ; il tombe dans 6 départs sur 8 (avant : aucun).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Joueurs simulés invincibles",
    "where": [
     "ui/screens/AdminRaids.cpp"
