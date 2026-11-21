@@ -2982,6 +2982,29 @@ retombée (`Plan::reviveWindow`). **5 / 8** (85 %) ; les trois départs perdus :
 morsures et son crachat au contact, près de son corps), un en phase 3. Heartbreaker : son appât aussi au-dessus de ses
 ondes, 2 / 8 avec moins de morts.
 
+### Mesure complète (difficulté 3 / 5, 8 départs, un processus par départ)
+
+**Un départ par processus** : dans un même processus, le cache des graphes de navigation (`RaidNav`) a déjà le graphe
+de l'antre au deuxième combat (il est prêt plus tôt), ce qui change la suite ; chaque départ se mesure donc dans son propre
+processus (`COSMIC_GOAT_SEED0=k COSMIC_GOAT_SEEDS=1`), toujours le même résultat pour la même graine.
+
+| Combat | vaincu | vie ôtée (moyenne) | temps de chaque départ |
+|---|---|---|---|
+| Pyroclast | 0 / 8 | 39 % | 197 à 442 s |
+| Skullmaw | 0 / 8 | 70 % | 308 à 900 s (presque tous en phase 3) |
+| Dreadfang | 0 / 8 | 41 % | 200 à 615 s |
+| Titanus | 0 / 8 | 33 % | 122 à 288 s |
+| Voidworm | **4 / 8** | 83 % | 362 à 502 s |
+| Graviton | 0 / 8 | 39 % | 210 à 466 s |
+| Heartbreaker | **2 / 8** | 67 % | 464 à 688 s |
+| Cœur d'Asterion | 0 / 8 | 47 % | 238 à 900 s |
+
+Depuis la ligne précédente : un orbe de vie suspendu se prend d'un saut (ils restaient dessous), jamais sous le sol des ondes
+ou de l'acide ; chaque miroir de Skullmaw garde son joueur pour tout le voile, ses joueurs relevés d'abord
+(`Plan::fixedHolders`) ; bouclier au regard de mort même caché. Essayés et retirés : les côtes de Heartbreaker prises
+avant la fin de ses plaques, ses frappeurs plus espacés, la dernière place d'une carapace tenue seulement une fois tout le
+monde relevé.
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
