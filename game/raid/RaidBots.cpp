@@ -949,7 +949,8 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         float bd = 700.0f * 700.0f;
         for (const auto& e : w.entities())
             if (!e->removed && e->active && e->visible && e->type() == "health_orb" && (e->box.center() - p.center()).lengthSq() < bd &&
-                safeSpot(w, s, e->box.bottomCenter(), 60)) {
+                safeSpot(w, s, e->box.bottomCenter(), 60) &&
+                !(view_.plan.elevate > 0.0f && e->box.bottom() > view_.plan.floorY - view_.plan.elevate)) {  // 2.84: not down under its waves, its acid
                 bd = (e->box.center() - p.center()).lengthSq();
                 orb = e.get();
             }
@@ -2065,6 +2066,15 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             else if (sh->ready(me) && !(b.prevHeld & (1u << keyBit(sh))) && noise(seat + 8 * static_cast<int>(seed_), tick_ + 13) < lv.precision + 0.1f) held |= 1u << keyBit(sh);
         }
     }
+    // 2.84: an orb hanging in the air (over a floor, a platform): under it, a jump (or a double jump) to take it.
+    if (b.task == Task::Objective && b.act == Enter && !fleeing && me.grounded())
+        if (const LevelEntity* e = w.entity(b.thing); e && e->type() == "health_orb" && std::fabs(e->box.center().x - me.center().x) < 12.0f &&
+                                                     e->box.bottom() < me.box.y && e->box.bottom() > me.box.y - 110.0f && b.jumpHold <= 0 &&
+                                                     !(b.prevHeld & (1u << kJump))) {
+            b.jumpHold = 46;
+            b.airJump = e->box.bottom() > me.box.y - me.config().jumpHeight + 4.0f;  // a jump is enough: no double jump
+            b.hop = b.airJump ? 0 : 2;
+        }
     if (b.act == Interact && !fleeing) {
         if (LevelEntity* e = w.entity(b.thing); e && e->box.expanded(8.0f).intersects(me.box)) {
             dir = 0;

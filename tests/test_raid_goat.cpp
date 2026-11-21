@@ -285,6 +285,15 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                         std::printf("        large : type %d (%.0f, %.0f, %.0f × %.0f) dans %d\n", static_cast<int>(d.kind), d.area.x, d.area.y, d.area.w, d.area.h, d.in);
             }
         }
+        if (std::getenv("COSMIC_GOAT_ORBS") && steps % (20 * kSimHz) == 0) {  // tuning runs: the health orbs shown and the group's hearts
+            const GameWorld& w = session.run().world();
+            int vis = 0, hid = 0;
+            for (const auto& e : w.entities())
+                if (!e->removed && e->type() == "health_orb") ++(e->active && e->visible ? vis : hid);
+            int hp = 0;
+            for (int k = 0; k < w.teamSize(); ++k) hp += w.member(k).presence == GameWorld::Presence::Playing ? w.playerAt(k).health : 0;
+            std::printf("      ORBS %d s visibles %d cachés %d · cœurs du groupe %d\n", steps / kSimHz, vis, hid, hp);
+        }
         if (heart ? session.run().heartWon() : gb.stage() == raid::Gigaboss::Stage::Fallen) {
             out.won = true;
             break;
