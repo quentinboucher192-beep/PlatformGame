@@ -63114,6 +63114,12 @@
    ]
   },
   {
+   "fr": "s'écarte sur sa plaque",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "s'éloigne du puits",
    "where": [
     "game/raid/RaidBots.cpp"

@@ -1716,6 +1716,23 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             // Holding a plate or reviving: it stays (its shield takes the blow); otherwise out by the nearest safe side.
             if ((holding || staysPut || (shot && shieldReady)) && !hit->unblockable) {
                 if (hit->in <= 14) raiseShield = true;
+                // 2.84: a beam on a player holding its place (Skullmaw's gazes on the mirrors): a step aside on the plate itself,
+                // to its edge away from the beam — still on it, out of the line.
+                if (holding && hit->kind == Danger::Kind::Line && b.mechanism.w > 24.0f && me.grounded()) {
+                    const Vec2 ab = hit->to - hit->from;
+                    if (std::fabs(ab.y) > std::fabs(ab.x) * 0.5f) {
+                        const float len2 = std::max(1.0f, ab.lengthSq());
+                        const float t = std::clamp(((me.center() - hit->from).x * ab.x + (me.center() - hit->from).y * ab.y) / len2, 0.0f, 1.0f);
+                        const float away = me.center().x - (hit->from.x + ab.x * t);
+                        const int side = std::fabs(away) > 0.5f ? (away > 0.0f ? 1 : -1) : (me.center().x < b.mechanism.center().x ? -1 : 1);
+                        const float edge = side > 0 ? b.mechanism.right() - 4.0f : b.mechanism.x + 4.0f;
+                        if ((edge - me.center().x) * static_cast<float>(side) > 2.0f) {
+                            forced = side;
+                            dodging = true;
+                            react = "s'écarte sur sa plaque";
+                        }
+                    }
+                }
             } else if (seen && noise(seat + 8 * static_cast<int>(seed_), tick_ / 30) < std::max(0.55f, lv.precision)) {
                 int side = 0;
                 if (hit->kind == Danger::Kind::Line) {
