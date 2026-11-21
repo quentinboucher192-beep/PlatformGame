@@ -19,6 +19,7 @@
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/FilmCatalog.h"
 #include "ui/screens/BossStoryScene.h"
@@ -163,6 +164,7 @@ public:
 
     void update(float dt) override {
         t_ += dt;
+        bg_.update(dt);
         // Jukebox: next track at the end of a non-repeating one.
         if (playing_ && !loop_ && g_.app.audio().musicEnded()) step(1, true);
         // Trail preview: an emitter going round in front of Nova.
@@ -176,12 +178,12 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         Renderer& r = ui.r();
-        r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{8, 11, 24, 255});
+        bg_.render(g_, 0.7f);
         ui.pushId("col");
         const float m = ui.s(40);
         float y = ui.s(26);
         // Header: title, sections, stars, back.
-        ui.label("COLLECTION", {m, y + ui.s(24)}, 32, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        cframe::title(ui, "COLLECTION", {m, y + ui.s(24)}, 32, Align::Left, VAlign::Middle);
         float x = m + ui.text().measure("COLLECTION", FontFace::Title, ui.s(32)).x + ui.s(24);
         static const char* kTabs[kTabCount] = {"Vestiaire", "Route des étoiles", "Musiques", "Galerie", "Replays"};
         float backW = ui.s(140);
@@ -198,22 +200,20 @@ public:
             st.small = true;
             st.selected = tab_ == i;
             st.fontSize = tabFont;
-            if (ui.button("tab" + std::to_string(i), {x, y + ui.s(4), w, ui.s(42)}, kTabs[i], st)) tab_ = i;
+            if (cframe::button(ui, "tab" + std::to_string(i), {x, y + ui.s(4), w, ui.s(42)}, kTabs[i], st)) tab_ = i;
             // « NOUVEAU » while a reward added by an update waits in it (data/news/new_features.json).
             static const char* const kTabFeatures[kTabCount] = {"collection.tab.wardrobe", "collection.tab.route", "collection.tab.music",
                                                                 "collection.tab.gallery", "collection.tab.replays"};
             ui.newBadge("tab" + std::to_string(i), {x, y + ui.s(4), w, ui.s(42)}, kTabFeatures[i], true, true);
             x += w + ui.s(8);
         }
-        UIContext::ButtonStyle bs;
-        bs.small = true;
-        bool back = ui.button("back", {ui.screenW() - m - backW, y + ui.s(4), backW, ui.s(42)}, "Retour", bs);
+        bool back = cframe::back(ui, "back", {ui.screenW() - m - backW, y + ui.s(4), backW, ui.s(42)});
         std::string st = std::to_string(progress_.stars) + " / " + std::to_string(progress_.totalStars);
         float stW = ui.text().measure(st, FontFace::Bold, ui.s(20)).x + ui.text().measure("étoiles", FontFace::Body, ui.s(15)).x + ui.s(64);
         Rect chip{ui.screenW() - m - backW - ui.s(14) - stW, y + ui.s(4), stW, ui.s(42)};
         if (chip.x > x + ui.s(8)) {
-            r.fillRoundedRect(chip, ui.s(10), Color{10, 16, 34, 230});
-            r.drawRoundedRect(chip, ui.s(10), kGold.withAlpha(140), std::max(1.0f, ui.s(1.5f)));
+            cstyle::fillPolyH(ui, cstyle::chamfer(chip, ui.s(10)), Color{30, 26, 18, 230}, Color{10, 16, 34, 210});
+            cstyle::strokePoly(ui, cstyle::chamfer(chip, ui.s(10)), kGold.withAlpha(160), std::max(1.0f, ui.s(1.5f)));
             Vec2 c{chip.x + ui.s(22), chip.center().y};
             drawStar(r, c, ui.s(10), kGold);
             float tx = c.x + ui.s(16);
@@ -263,7 +263,7 @@ private:
             UIContext::ButtonStyle st;
             st.selected = cat_ == static_cast<int>(i);
             st.align = Align::Left;
-            if (ui.button("cat" + std::to_string(i), b, "", st)) {
+            if (cframe::button(ui, "cat" + std::to_string(i), b, "", st)) {
                 cat_ = static_cast<int>(i);
                 selItem_.clear();
             }
@@ -278,7 +278,7 @@ private:
             UIContext::ButtonStyle st;
             st.selected = cat_ == badgesCat;
             st.align = Align::Left;
-            if (ui.button("catbadges", b, "", st)) cat_ = badgesCat;
+            if (cframe::button(ui, "catbadges", b, "", st)) cat_ = badgesCat;
             ui.newBadge("catbadges", b, "collection.cat.badges", true, true);
             ui.label(ui.elide("Badges du profil", FontFace::Bold, 19, lw - ui.s(32)), {b.x + ui.s(16), b.y + ui.s(10)}, 19, ui.theme().text, Align::Left,
                      FontFace::Bold);
@@ -341,7 +341,7 @@ private:
 
         // Detail of the selected item.
         Rect det{prev.x, prev.bottom() + ui.s(16), prev.w, area.bottom() - prev.bottom() - ui.s(16)};
-        ui.panel(det, false, 14);
+        cframe::panel(ui, det, false, 14);
         if (sel) {
             bool unlocked = cosmeticUnlocked(*sel, progress_);
             float dx = det.x + ui.s(20), dy = det.y + ui.s(18);
@@ -373,7 +373,7 @@ private:
                 UIContext::ButtonStyle st;
                 st.primary = !isEq;
                 st.selected = isEq;
-                if (ui.button("equip", {dx, by, ui.s(170), ui.s(48)}, isEq ? "Équipé" : "Équiper", st) && !isEq) {
+                if (cframe::button(ui, "equip", {dx, by, ui.s(170), ui.s(48)}, isEq ? "Équipé" : "Équiper", st) && !isEq) {
                     g_.collection.equip(catId, sel->id);
                     g_.collection.markAnnounced(sel->id);
                     g_.collection.save();
@@ -710,7 +710,7 @@ private:
         }
 
         // ---- The selected achievement: « Afficher sur le profil » / « Retirer du profil ».
-        ui.panel(det, false, 14);
+        cframe::panel(ui, det, false, 14);
         const float dx = det.x + ui.s(20), dwIn = det.w - ui.s(40);
         const float by = det.bottom() - ui.s(66);
         if (slots == 0) {
@@ -765,7 +765,7 @@ private:
             }
             const float bw = std::min(dwIn * 0.55f, ui.text().measure(label, FontFace::Bold, ui.s(20)).x + ui.s(48));
             st.fontSize = ui.fitFont(label, FontFace::Bold, 20, bw - ui.s(24));
-            if (ui.button("badgeact", {dx, by, bw, ui.s(48)}, label, st)) {
+            if (cframe::button(ui, "badgeact", {dx, by, bw, ui.s(48)}, label, st)) {
                 std::vector<std::string> chosen = shown;
                 if (at >= 0) chosen.erase(chosen.begin() + at);
                 else chosen.push_back(sel->id);
@@ -908,7 +908,7 @@ private:
         };
         // Progress band.
         Rect band{area.x, area.y, area.w, ui.s(104)};
-        ui.panel(band, false, 14);
+        cframe::panel(ui, band, false, 14);
         float bx = band.x + ui.s(20), bw = band.w - ui.s(40);
         Vec2 sz = ui.label(std::to_string(progress_.stars), {bx, band.y + ui.s(30)}, 24, kGold, Align::Left, FontFace::Bold, VAlign::Middle);
         std::string lead = " étoiles sur " + std::to_string(progress_.totalStars) + " · rien ne s'achète, tout se gagne avec les succès";
@@ -1266,7 +1266,7 @@ private:
         ui.endScroll();
 
         // Player.
-        ui.panel(player, false, 16);
+        cframe::panel(ui, player, false, 16);
         if (!cur) {
             ui.labelWrapped("Aucun morceau entendu pour l'instant : jouez un niveau.", {player.x + ui.s(20), player.y + ui.s(24)}, player.w - ui.s(40),
                             fz(ui, 16), ui.theme().textDim);
@@ -1309,16 +1309,16 @@ private:
         Rect prevR = Rect::fromCenter({cx - big * 0.5f - ui.s(14) - bsz * 0.5f, y + big * 0.5f}, {bsz, bsz});
         Rect nextR = Rect::fromCenter({cx + big * 0.5f + ui.s(14) + bsz * 0.5f, y + big * 0.5f}, {bsz, bsz});
         Rect playR = Rect::fromCenter({cx, y + big * 0.5f}, {big, big});
-        if (ui.button("prev", prevR, "", st)) step(-1, false);
+        if (cframe::button(ui, "prev", prevR, "", st)) step(-1, false);
         UIContext::ButtonStyle pst;
         pst.primary = true;
         bool showPause = isPlaying && !au.musicPaused();
-        if (ui.button("play", playR, "", pst)) {
+        if (cframe::button(ui, "play", playR, "", pst)) {
             if (!isPlaying) play(*cur);
             else if (au.musicPaused()) au.resumeMusic();
             else au.pauseMusic();
         }
-        if (ui.button("next", nextR, "", st)) step(1, false);
+        if (cframe::button(ui, "next", nextR, "", st)) step(1, false);
         {
             // Transport icons drawn (the game font has no such symbols).
             Color ic = ui.theme().text;
@@ -1350,7 +1350,7 @@ private:
         Rect mb{art.x, player.bottom() - ui.s(96), art.w, ui.s(46)};
         std::string ml = isMenu ? "Musique du menu principal (choisie)" : "Jouer ce morceau au menu principal";
         mst.fontSize = ui.fitFont(ml, FontFace::Bold, 17, mb.w - ui.s(24));
-        if (ui.button("menu", mb, ml, mst) && !isMenu) {
+        if (cframe::button(ui, "menu", mb, ml, mst) && !isMenu) {
             g_.collection.menuMusic = cur->file;
             g_.collection.save();
             g_.achievements.stats().add("menu_music");  // 2.24: « Programmateur »
@@ -1508,7 +1508,7 @@ private:
             st.small = true;
             st.selected = galTab_ == i;
             st.fontSize = subPx;
-            if (ui.button("gal" + std::to_string(i), {x, left.y, w, ui.s(40)}, lbl, st)) {
+            if (cframe::button(ui, "gal" + std::to_string(i), {x, left.y, w, ui.s(40)}, lbl, st)) {
                 galTab_ = i;
                 galSel_.clear();
                 animClip_ = 0;
@@ -1579,7 +1579,7 @@ private:
         ui.endScroll();
 
         // Detail.
-        ui.panel(det, false, 16);
+        cframe::panel(ui, det, false, 16);
         if (!sel) return;
         Rect big{det.x + ui.s(18), det.y + ui.s(18), det.w - ui.s(36), std::min(ui.s(270), det.h * 0.4f)};
         r.fillRoundedRect(big, ui.s(12), Color{11, 18, 38, 255});
@@ -1620,7 +1620,7 @@ private:
         if (sel->known && sel->planet) {
             UIContext::ButtonStyle st;
             st.primary = true;
-            if (ui.button("export", {dx, by, dwid, ui.s(46)}, "Enregistrer en image (PNG)", st)) exportPlanet(*sel->planet);
+            if (cframe::button(ui, "export", {dx, by, dwid, ui.s(46)}, "Enregistrer en image (PNG)", st)) exportPlanet(*sel->planet);
             if (exportedTimer_ > 0.0f)
                 ui.labelWrapped(exportedMsg_, {dx, by - ui.s(46)}, dwid, fz(ui, 13), kGreen);
         } else {
@@ -1642,12 +1642,12 @@ private:
             if (anim) {
                 UIContext::ButtonStyle st;
                 std::string lbl = "Animation suivante (" + std::to_string(animClip_ % static_cast<int>(clips.size()) + 1) + " / " + std::to_string(clips.size()) + ")";
-                if (ui.button("anim", animR, lbl, st)) animClip_ = (animClip_ + 1) % static_cast<int>(clips.size());
+                if (cframe::button(ui, "anim", animR, lbl, st)) animClip_ = (animClip_ + 1) % static_cast<int>(clips.size());
             }
             if (story) {
                 UIContext::ButtonStyle st;
                 st.primary = true;
-                if (ui.button("story", storyR, "Revoir l'histoire", st))
+                if (cframe::button(ui, "story", storyR, "Revoir l'histoire", st))
                     if (auto scene = makeBossStory(g_, sel->id)) {
                         g_.bossStats.markStorySeen(sel->id);
                         g_.bossStats.save();
@@ -1661,6 +1661,7 @@ private:
     }
 
     GameServices& g_;
+    cframe::Backdrop bg_;  // 2.83: the planets of the main menu
     int tab_ = 0;
     OnlineUi online_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);

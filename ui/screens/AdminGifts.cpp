@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminGifts.h"
 
 #include <algorithm>
@@ -418,7 +419,7 @@ void AdminGifts::drawPlayers(const Rect& col) {
     if (moreH > 0) {
         UIContext::ButtonStyle st;
         st.small = true;
-        if (ui.button("more", {col.x, col.bottom() - ui.s(46), col.w, ui.s(46)}, busy_ ? "Chargement…" : "Afficher plus", st) && !busy_) loadPlayers(true);
+        if (cframe::button(ui, "more", {col.x, col.bottom() - ui.s(46), col.w, ui.s(46)}, busy_ ? "Chargement…" : "Afficher plus", st) && !busy_) loadPlayers(true);
     }
 }
 
@@ -491,7 +492,7 @@ void AdminGifts::drawSend(const Rect& col) {
         UIContext::ButtonStyle pv;
         pv.enabled = !rewards_.empty();
         pv.fontSize = ui.fitFont(rects[0], FontFace::Bold, 18, half - ui.s(24), 0.6f);
-        if (ui.button("preview", {col.x, y, half, bh}, rects[0], pv)) {
+        if (cframe::button(ui, "preview", {col.x, y, half, bh}, rects[0], pv)) {
             GiftOpening o;
             o.preview = true;
             o.gift.id = 1;
@@ -506,7 +507,7 @@ void AdminGifts::drawSend(const Rect& col) {
         sd.primary = true;
         sd.enabled = total > 0 && !sending_;
         sd.fontSize = ui.fitFont(sendLabel, FontFace::Bold, 18, half - ui.s(24), 0.6f);
-        if (ui.button("send", {col.x + half + ui.s(10), y, half, bh}, sendLabel, sd)) {
+        if (cframe::button(ui, "send", {col.x + half + ui.s(10), y, half, bh}, sendLabel, sd)) {
             confirm_ = true;
             ui.setFocus("ok");
         }
@@ -519,10 +520,10 @@ void AdminGifts::drawSend(const Rect& col) {
         ok.primary = true;
         ok.enabled = !sending_;
         ok.fontSize = 17;
-        if (ui.button("ok", {col.right() - 2 * bw - ui.s(10), y, bw, bh}, "Confirmer", ok)) send();
+        if (cframe::button(ui, "ok", {col.right() - 2 * bw - ui.s(10), y, bw, bh}, "Confirmer", ok)) send();
         UIContext::ButtonStyle ko;
         ko.fontSize = 17;
-        if (ui.button("ko", {col.right() - bw, y, bw, bh}, "Annuler", ko)) confirm_ = false;
+        if (cframe::button(ui, "ko", {col.right() - bw, y, bw, bh}, "Annuler", ko)) confirm_ = false;
     }
     y += bh + ui.s(16);
     // « Derniers envois »: each send, its gifts opened, the unopened ones withdrawn on demand.
@@ -556,7 +557,7 @@ void AdminGifts::drawSend(const Rect& col) {
             st.danger = asking;
             st.fontSize = 14;
             const float bw = std::min(ui.s(118), row.w * 0.3f);
-            if (ui.button("cancel/" + std::to_string(id), {right - bw, row.y + ui.s(8), bw, rowH - ui.s(16)}, label, st)) {
+            if (cframe::button(ui, "cancel/" + std::to_string(id), {right - bw, row.y + ui.s(8), bw, rowH - ui.s(16)}, label, st)) {
                 if (asking) cancelSend(id);
                 else cancelAsk_ = id;
             }

@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminCampaign.h"
 
 #include <algorithm>
@@ -173,7 +174,7 @@ void AdminCampaign::draw(const Rect& in) {
     rs.small = true;
     rs.enabled = !busy_;
     float rw = ui.text().measure("Actualiser", FontFace::Bold, ui.s(17)).x + ui.s(44);
-    if (ui.button("refresh", {in.right() - rw, y, rw, bh}, "Actualiser", rs)) {
+    if (cframe::button(ui, "refresh", {in.right() - rw, y, rw, bh}, "Actualiser", rs)) {
         load();
         if (!selected_.empty()) loadHistory(selected_);
     }
@@ -237,12 +238,12 @@ void AdminCampaign::drawLevels(const Rect& r) {
             es.primary = true;
             es.fontSize = 16;
             es.enabled = !opening_;
-            if (ui.button("edit" + id, eb, "Modifier dans l'éditeur", es)) edit(l);
+            if (cframe::button(ui, "edit" + id, eb, "Modifier dans l'éditeur", es)) edit(l);
             UIContext::ButtonStyle hs;
             hs.small = true;
             hs.fontSize = 16;
             hs.selected = sel;
-            if (ui.button("hist" + id, hb, "Historique", hs)) loadHistory(id);
+            if (cframe::button(ui, "hist" + id, hb, "Historique", hs)) loadHistory(id);
             float tx = row.x + ui.s(14), room = eb.x - ui.s(14) - tx;
             // Name (the game's, translated) and the revision pill.
             std::string name = jstr(l, "name");
@@ -272,8 +273,7 @@ void AdminCampaign::drawLevels(const Rect& r) {
 
 void AdminCampaign::drawHistory(const Rect& r) {
     UIContext& ui = g_.ui;
-    ui.r().fillRoundedRect(r, ui.s(12), Color{14, 20, 42, 235});
-    ui.r().drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1));
+    cframe::panel(ui, r, false, 12);
     Rect in{r.x + ui.s(16), r.y + ui.s(14), r.w - ui.s(32), r.h - ui.s(28)};
     const Json* l = selected_.empty() ? nullptr : levelById(selected_);
     if (!l) {
@@ -315,7 +315,7 @@ void AdminCampaign::drawHistory(const Rect& r) {
             bs.fontSize = 15;
             bs.enabled = !reverting_ && jstr(rev, "compatibility_status") != "disabled";
             Rect b{row.right() - ui.s(10) - revertW, row.center().y - ui.s(20), revertW, ui.s(40)};
-            if (ui.button("revert" + std::to_string(v), b, "Revenir à cette révision", bs)) {
+            if (cframe::button(ui, "revert" + std::to_string(v), b, "Revenir à cette révision", bs)) {
                 revertVersion_ = v;
                 revertChoice_ = -1;
                 ui.setFocus("revert/cancel");
@@ -382,7 +382,7 @@ void AdminCampaign::drawModal() {
     h += ui.s(10) + buttonsH + ui.s(26);
     h = std::min(h, ui.screenH() - ui.s(32));
     Rect box{(ui.screenW() - bw) * 0.5f, (ui.screenH() - h) * 0.5f, bw, h};
-    ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+    cframe::panel(ui, box, true, 18);
     ui.r().drawRoundedRect(box, ui.s(18), ui.theme().warm.withAlphaF(0.8f), ui.s(1.5f));
     ui.pushId("revert");
     float x = box.x + pad, y = box.y + pad;
@@ -399,7 +399,7 @@ void AdminCampaign::drawModal() {
         os.align = Align::Left;
         os.danger = i == 0 && revertChoice_ == 0;
         std::string label = (revertChoice_ == i ? "(•) " : "( ) ") + opt[i];
-        if (ui.button(i == 0 ? "reset" : "keep", {x, y, w, optH}, label, os)) revertChoice_ = i;
+        if (cframe::button(ui, i == 0 ? "reset" : "keep", {x, y, w, optH}, label, os)) revertChoice_ = i;
         y += optH + ui.s(6);
         ui.labelWrapped(desc[i], {x + ui.s(20), y}, w - ui.s(20), 15, ui.theme().textDim);
         y += descH[i] + ui.s(14);
@@ -409,10 +409,10 @@ void AdminCampaign::drawModal() {
     UIContext::ButtonStyle ok;
     ok.primary = true;
     ok.enabled = revertChoice_ >= 0 && !reverting_;
-    if (ui.button("cancel", {box.right() - pad - ow - ui.s(14) - cw, by, cw, buttonsH}, "Annuler") || ui.backPressed()) {
+    if (cframe::button(ui, "cancel", {box.right() - pad - ow - ui.s(14) - cw, by, cw, buttonsH}, "Annuler") || ui.backPressed()) {
         revertVersion_ = 0;
         revertChoice_ = -1;
-    } else if (ui.button("ok", {box.right() - pad - ow, by, ow, buttonsH}, reverting_ ? "Envoi…" : "Revenir à la révision " + v, ok)) {
+    } else if (cframe::button(ui, "ok", {box.right() - pad - ow, by, ow, buttonsH}, reverting_ ? "Envoi…" : "Revenir à la révision " + v, ok)) {
         revert();
     }
     ui.popId();

@@ -157,6 +157,8 @@ ID_FIRST_ARG = {"button", "toggle", "slider", "sliderInt", "cycle", "textField",
                 "tabs", "beginScroll", "value", "jstr", "jget", "header",
                 # 2.61 Studio de Créations (ui/studio): its own widgets, their id first.
                 "smallButton", "chip", "check", "tip", "mouseClick"}
+# 2.83, the Cosmic frame (ui/widgets/CosmicFrame): cframe::button(ui, id, rect, "shown"…), the id second.
+CFRAME_ID_SECOND = {"button", "tabs", "back", "diamond"}
 
 
 def load_ignore():
@@ -522,6 +524,8 @@ def extract_cpp(path, words, out):
             if not (base in ("jstr", "jget", "value") and arg >= 2):  # jstr(j, "key", "défaut affiché")
                 continue
         if base in ID_FIRST_ARG and arg == 0:
+            continue
+        if name and name.startswith("cframe::") and base in CFRAME_ID_SECOND and arg == 1:
             continue
         # plural(n, "favori", "favoris"): « {0} favori », « {0} favoris ».
         if base == "plural" and arg in (1, 2) and b - a == 1:

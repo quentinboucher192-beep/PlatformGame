@@ -19,6 +19,7 @@
 #include "engine/core/Paths.h"
 #include "game/GameServices.h"
 #include "packaging/Sha256.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/AsterionFilm.h"
@@ -130,7 +131,7 @@ public:
         float W = std::min(ui.screenW() - ui.s(120), ui.s(1240));
         float x0 = (ui.screenW() - W) * 0.5f;
         float y = ui.s(48);
-        ui.label("NOTIFICATIONS", {x0, y}, 44, ui.theme().text, Align::Left, FontFace::Title);
+        cframe::title(ui, "NOTIFICATIONS", {x0, y + ui.s(26)}, 44, Align::Left, VAlign::Middle, W - ui.s(280) - ui.s(196) - ui.s(20));
         ui.pushId("news");
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top;
@@ -138,11 +139,11 @@ public:
         st.small = true;
         st.enabled = tab_ == 0 ? g_.news.unread() > 0 : g_.online.unreadNotifications() > 0;
         float bw = ui.s(280);
-        if (ui.button("readall", {x0 + W - bw - ui.s(196), y, bw, ui.s(52)}, "Tout marquer comme lu", st)) {
+        if (cframe::button(ui, "readall", {x0 + W - bw - ui.s(196), y, bw, ui.s(52)}, "Tout marquer comme lu", st)) {
             if (tab_ == 0) g_.news.markAllRead();
             else readAll();
         }
-        if (ui.button("back", {x0 + W - ui.s(180), y, ui.s(180), ui.s(52)}, "Retour") || ui.backPressed()) {
+        if (cframe::back(ui, "back", {x0 + W - ui.s(180), y, ui.s(180), ui.s(52)}) || ui.backPressed()) {
             g_.app.switchScene(makeMainMenu(g_), 0.3f);
             ui.inputEnabled = true;
             ui.popId();
@@ -160,13 +161,13 @@ public:
             UIContext::ButtonStyle is;
             is.primary = true;
             is.fontSize = ui.fitFont(t, FontFace::Bold, 22, std::min(W, ui.s(900)) - ui.s(24));
-            if (ui.button("raidtest", {x0, y, std::min(W, ui.s(900)), ui.s(50)}, t, is)) g_.app.pushScene(makeRaidTestInvites(g_));
+            if (cframe::button(ui, "raidtest", {x0, y, std::min(W, ui.s(900)), ui.s(50)}, t, is)) g_.app.pushScene(makeRaidTestInvites(g_));
             y += ui.s(64);
         }
         {
             int localN = g_.news.unread(), onlineN = g_.online.loggedIn() ? g_.online.unreadNotifications() : 0;
             int tab = tab_;
-            ui.tabs("source", {x0, y, std::min(W, ui.s(720)), ui.s(46)},
+            cframe::tabs(ui, "source", {x0, y, std::min(W, ui.s(720)), ui.s(46)},
                     {"Nouveautés du jeu" + (localN > 0 ? " (" + std::to_string(localN) + ")" : std::string()),
                      "Cosmic Online" + (onlineN > 0 ? " (" + std::to_string(onlineN) + ")" : std::string())},
                     tab);
@@ -217,7 +218,7 @@ public:
             cy += heights[i] + ui.s(12);
             if (card.bottom() < view.y || card.y > view.bottom()) continue;
             KindStyle k = styleOf(it.kind);
-            ui.panel(card, !it.read, 12);
+            cframe::panel(ui, card, !it.read, 12);
             if (!it.read) ui.r().fillRoundedRect({card.x, card.y + ui.s(10), ui.s(4), card.h - ui.s(20)}, ui.s(2), k.color);
             Vec2 ic{card.x + ui.s(52), card.y + ui.s(48)};
             ui.r().drawGlow(ic, ui.s(40), k.color.withAlpha(it.read ? 40 : 90));
@@ -457,15 +458,14 @@ private:
         // Filters and settings.
         int filter = filter_;
         float fw = std::min(W - ui.s(240), ui.s(860));
-        ui.tabs("filter", {x0, y, fw, ui.s(42)}, {"Toutes", "Non lues", "Créateurs", "Commentaires", "Projets"}, filter);
+        cframe::tabs(ui, "filter", {x0, y, fw, ui.s(42)}, {"Toutes", "Non lues", "Créateurs", "Commentaires", "Projets"}, filter);
         if (filter != filter_) {
             filter_ = filter;
             loadOnline(false);
         }
-        UIContext::ButtonStyle ss;
-        ss.small = true;
-        ss.selected = settingsOpen_;
-        if (ui.button("settings", {x0 + W - ui.s(220), y, ui.s(220), ui.s(42)}, settingsOpen_ ? "Fermer les réglages" : "Réglages", ss)) {
+        if (cframe::diamond(ui, "settings", {x0 + W - ui.s(220), y, ui.s(220), ui.s(42)}, settingsOpen_ ? "Fermer les réglages" : "Réglages", "settings",
+                            settingsOpen_)) {
+            ui.app().resources().playSound("sounds/ui_confirm.wav", 0.6f);
             settingsOpen_ = !settingsOpen_;
             if (settingsOpen_) loadSettings();
         }
@@ -510,7 +510,7 @@ private:
             if (card.bottom() < view.y || card.y > view.bottom()) continue;
             const OnlineKind k = onlineKind(jstr(n, "kind"));
             bool unread = !jget<bool>(n, "read", false);
-            ui.panel(card, unread, 12);
+            cframe::panel(ui, card, unread, 12);
             if (unread) ui.r().fillRoundedRect({card.x, card.y + ui.s(10), ui.s(4), card.h - ui.s(20)}, ui.s(2), k.color);
             Vec2 ic{card.x + ui.s(50), card.y + ui.s(46)};
             if (n.contains("actor") && n["actor"].is_object()) {
@@ -536,14 +536,14 @@ private:
             if (!go.empty()) {
                 UIContext::ButtonStyle ps = st;
                 ps.primary = true;
-                if (ui.button("open" + id, {bx, by, bw, ui.s(30)}, go, ps)) open(n);
+                if (cframe::button(ui, "open" + id, {bx, by, bw, ui.s(30)}, go, ps)) open(n);
                 by += ui.s(34);
             }
-            if (unread && ui.button("read" + id, {bx, by, bw, ui.s(30)}, "Marquer comme lue", st)) markRead(id);
+            if (unread && cframe::button(ui, "read" + id, {bx, by, bw, ui.s(30)}, "Marquer comme lue", st)) markRead(id);
             if (unread) by += ui.s(34);
             UIContext::ButtonStyle ds = st;
             ds.danger = true;
-            if (ui.button("del" + id, {bx, by, bw, ui.s(30)}, "Supprimer", ds)) {
+            if (cframe::button(ui, "del" + id, {bx, by, bw, ui.s(30)}, "Supprimer", ds)) {
                 g_.online.send("DELETE", "/api/v1/notifications/" + id, Json(), OnlineService::guard(life_, [this](const ApiResult& r) {
                                    if (!r.ok) return say(r.message, true);
                                    loadOnline(false);
@@ -554,7 +554,7 @@ private:
             UIContext::ButtonStyle st;
             st.small = true;
             st.enabled = !busy_;
-            if (ui.button("more", {view.center().x - ui.s(160), cy + ui.s(8), ui.s(320), ui.s(42)}, busy_ ? "Chargement…" : "Plus de notifications", st))
+            if (cframe::button(ui, "more", {view.center().x - ui.s(160), cy + ui.s(8), ui.s(320), ui.s(42)}, busy_ ? "Chargement…" : "Plus de notifications", st))
                 loadOnline(true);
         }
         ui.endScroll();
@@ -598,7 +598,7 @@ private:
         UIContext::ButtonStyle st;
         st.small = true;
         if (it.kind == "level" || it.kind == "level_changed" || it.kind == "record") {
-            if (g_.content.level(it.target) && ui.button("play" + it.id, b, it.kind == "record" ? "Refaire un record" : "Jouer", st))
+            if (g_.content.level(it.target) && cframe::button(ui, "play" + it.id, b, it.kind == "record" ? "Refaire un record" : "Jouer", st))
                 g_.app.switchScene(makeGameScene(g_, it.target), 0.5f);
             return;
         }
@@ -625,10 +625,10 @@ private:
             ui.r().fillRoundedRect({bar.x, bar.y, bar.w * k, bar.h}, ui.s(4), ui.theme().accent);
         } else if (us == UpdateInstaller::State::Ready) {
             st.primary = true;
-            if (ui.button("run" + it.id, b, "Lancer l'installateur", st) && g_.updates.launch(version)) g_.app.quit();
+            if (cframe::button(ui, "run" + it.id, b, "Lancer l'installateur", st) && g_.updates.launch(version)) g_.app.quit();
             UIContext::ButtonStyle s2;
             s2.small = true;
-            if (ui.button("dir" + it.id, {b.x, b.bottom() + ui.s(8), b.w, ui.s(42)}, "Ouvrir le dossier", s2)) {
+            if (cframe::button(ui, "dir" + it.id, {b.x, b.bottom() + ui.s(8), b.w, ui.s(42)}, "Ouvrir le dossier", s2)) {
                 std::string path = Paths::toUtf8(g_.updates.file(version).parent_path());
                 std::replace(path.begin(), path.end(), '\\', '/');
                 std::string url = (path.rfind('/', 0) == 0 ? "file://" : "file:///") + path;
@@ -638,7 +638,7 @@ private:
             st.primary = true;
             st.enabled = g_.online.usable() && !it.download.empty();
             std::string label = "Télécharger (.exe" + (it.size > 0 ? ", " + sizeText(it.size) : std::string()) + ")";
-            if (ui.button("dl" + it.id, b, label, st)) g_.updates.download(it, false);
+            if (cframe::button(ui, "dl" + it.id, b, label, st)) g_.updates.download(it, false);
             if (std::string err = g_.updates.error(version); !err.empty())
                 ui.labelWrapped(err, {b.x, b.bottom() + ui.s(6)}, b.w, 15, ui.theme().danger);
         }
@@ -646,7 +646,7 @@ private:
 
     GameServices& g_;
     OnlineUi ui_;
-    MenuBackground bg_;
+    cframe::Backdrop bg_;
     int tab_ = 0;
     // Cosmic Online centre.
     int filter_ = 0;

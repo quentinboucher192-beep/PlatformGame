@@ -588,6 +588,7 @@
    "ui/screens/BossStoryScene.cpp": 1,
    "ui/screens/CoopLobbyScene.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 2,
+   "ui/widgets/CosmicFrame.cpp": 1,
    "ui/widgets/UIContext.cpp": 1
   },
   "sounds/ui_confirm.wav": {
@@ -602,6 +603,7 @@
    "ui/screens/GhostSetupScene.cpp": 1,
    "ui/screens/GiftsScene.cpp": 2,
    "ui/screens/LevelPowerKeysScene.cpp": 4,
+   "ui/screens/NotificationsScene.cpp": 1,
    "ui/screens/OnlineRankingScene.cpp": 2,
    "ui/screens/PauseScene.cpp": 1,
    "ui/screens/ReplayScene.cpp": 1,

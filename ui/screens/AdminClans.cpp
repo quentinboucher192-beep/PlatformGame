@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminClans.h"
 
 #include <algorithm>
@@ -120,7 +121,7 @@ void AdminClans::draw(const Rect& in) {
         UIContext::ButtonStyle st;
         st.small = true;
         st.enabled = !busy_;
-        if (ui.button("more", {in.right() - ui.s(220), in.bottom() - ui.s(46), ui.s(220), ui.s(44)}, "Plus de clans", st)) load(true);
+        if (cframe::button(ui, "more", {in.right() - ui.s(220), in.bottom() - ui.s(46), ui.s(220), ui.s(44)}, "Plus de clans", st)) load(true);
     }
     ui.popId();
 }
@@ -138,7 +139,7 @@ void AdminClans::drawRow(const Json& c, const Rect& row) {
         s2.danger = danger;
         const float bw = ui.text().measure(label, FontFace::Bold, ui.s(15)).x + ui.s(30);
         bx -= bw;
-        bool clicked = ui.button(key + id, {bx, row.y + ui.s(11), bw, ui.s(36)}, label, s2);
+        bool clicked = cframe::button(ui, key + id, {bx, row.y + ui.s(11), bw, ui.s(36)}, label, s2);
         bx -= ui.s(8);
         return clicked;
     };
@@ -186,7 +187,7 @@ void AdminClans::drawModal() {
     const float fieldsH = rename ? 3 * ui.s(76) : ui.s(76);
     const float h = ui.s(80) + th + ui.s(16) + fieldsH + ui.s(34) + ui.s(76);
     Rect box{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
-    ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+    cframe::panel(ui, box, true, 18);
     ui.r().drawRoundedRect(box, ui.s(18), rename ? ui.theme().accent.withAlphaF(0.55f) : ui.theme().danger, ui.s(1.5f));
     ui.pushId("admin/clans/modal");
     const float x = box.x + ui.s(30);
@@ -219,8 +220,8 @@ void AdminClans::drawModal() {
     const std::string okLabel = rename ? "Renommer" : "Dissoudre";
     const float okW = ui.text().measure(okLabel, FontFace::Bold, ui.s(17)).x + ui.s(44);
     const float cW = ui.text().measure("Annuler", FontFace::Bold, ui.s(17)).x + ui.s(44);
-    const bool go = ui.button("ok", {box.right() - ui.s(30) - okW, by, okW, ui.s(48)}, okLabel, ok);
-    const bool cancel = ui.button("cancel", {box.right() - ui.s(30) - okW - ui.s(12) - cW, by, cW, ui.s(48)}, "Annuler") ||
+    const bool go = cframe::button(ui, "ok", {box.right() - ui.s(30) - okW, by, okW, ui.s(48)}, okLabel, ok);
+    const bool cancel = cframe::button(ui, "cancel", {box.right() - ui.s(30) - okW - ui.s(12) - cW, by, cW, ui.s(48)}, "Annuler") ||
                         (ui.backPressed() && !ui.editingText());
     ui.popId();
     if (cancel) {
