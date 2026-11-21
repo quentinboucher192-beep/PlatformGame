@@ -34305,6 +34305,12 @@
    ]
   },
   {
+   "fr": "Joueurs simulés : une branche entière jusqu'à l'antre sans aide, la relique d'abord (prise d'un saut), puis la zone des embuscades ; les créatures en l'air ou hors d'atteinte visées à l'onde ; un joueur bloqué ne retient plus le groupe.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Joueurs simulés invincibles",
    "where": [
     "ui/screens/AdminRaids.cpp"

@@ -1,5 +1,6 @@
 {
   "2.86.0": [
+    "Joueurs simulés : une branche entière jusqu'à l'antre sans aide, la relique d'abord (prise d'un saut), puis la zone des embuscades ; les créatures en l'air ou hors d'atteinte visées à l'onde ; un joueur bloqué ne retient plus le groupe.",
     "Liquides qui montent (acide de Voidworm, marée de plasma du Cœur, crues de lave, de plasma et d'eau des abysses des boss, reflux d'acide de l'abdomen) : ils remplissent désormais toute leur largeur et jusqu'au sol, avec une houle animée, de l'écume, un dégradé plus sombre en profondeur et une légère transparence, au lieu d'un mince ruban flottant.",
     "Contributions : chaque partie d'Asterion affiche la barre de vie de son Gigaboss (et du Cœur), avec la vraie vie restante et la phase (« 62 % · phase 2 »), « Vaincu » une fois tombé, rien sans donnée ; Tab (menu du raid) ne fait plus rien sur cet écran, Entrée / A passe à la zone suivante."
   ],
