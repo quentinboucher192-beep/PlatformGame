@@ -2955,6 +2955,27 @@ balayage est annoncé ou pour qui tient une chaîne. Dreadfang : **0 / 8, 43 % d
 sur 8 tiennent 15 min (il lui reste 42 et 44 %). Ses balayages reprennent la tête des morts (les joueurs sur ses chaînes,
 qui ne changent pas d'étage), avec sa poigne et ses griffes sous la glace au contact.
 
+### Après le titan 13 (difficulté 3 / 5, 8 départs, sans invincibilité)
+
+| Combat | titan 13, avant ces réglages | après |
+|---|---|---|
+| Pyroclast | 0 / 8, 40 % | 0 / 8, 40 % |
+| Skullmaw | 0 / 8, 68 % | 0 / 8, 63 % (6 départs sur 8 tiennent 15 min, la plupart en phase 3) |
+| Dreadfang | 0 / 8, 45 % | 0 / 8, 42 % |
+| Titanus | 0 / 8, 33 % | 0 / 8, 33 % |
+| Voidworm | 0 / 8, 71 % | **3 / 8**, 82 % |
+| Graviton | 0 / 8, 39 % | 0 / 8, 39 % |
+| Heartbreaker | 1 / 8, 52 % | **2 / 8**, 54 % |
+| Cœur d'Asterion | 0 / 8, 44 % | 0 / 8, 45 % |
+
+(% : la vie ôtée en moyenne.) Ce qui a changé : pendant une carapace, les frappeurs gardent ceux qui tiennent ses places
+(ses créatures près d'elles d'abord — les parasites de Voidworm mordaient ses porteurs de crochets) ; pas de réanimation
+sous un liquide qui monte ou se tient (l'acide de Voidworm), bouclier quand il rattrape un joueur qui monte ; sur sa plaque,
+un pas de côté hors d'un rayon (les regards traqueurs de Skullmaw sur ses miroirs) ; les frappeurs de Heartbreaker au-dessus
+du sol de ses ondes (`Plan::floorY`). Essayés puis retirés (moins bons) : deux joueurs par chaîne de Dreadfang, sa poigne lue
+comme une aspiration, le crochet contre le corps de Voidworm pris en dernier, les miroirs hauts de Skullmaw donnés d'abord,
+pas d'appât contre Heartbreaker.
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
