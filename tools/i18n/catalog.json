@@ -7872,6 +7872,19 @@
    ]
   },
   {
+   "fr": "barrage",
+   "where": [
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Barrage — {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Barre de progression",
    "where": [
     "saves/HudLayout.cpp"
@@ -23715,7 +23728,8 @@
   {
    "fr": "Embuscades restantes : {0} sur {1}",
    "where": [
-    "game/raid/RaidBranch.cpp"
+    "game/raid/RaidBranch.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -30137,6 +30151,12 @@
    ]
   },
   {
+   "fr": "GROUPE · L'embuscade est vaincue : le barrage s'ouvre",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · La gravité revient : attention à la chute !",
    "where": [
     "game/raid/GravitonRoutine.cpp"
@@ -34590,6 +34610,12 @@
    "fr": "L'effet de victoire se joue dès que Nova atteint la sortie, pendant la scène de fin du niveau (il commençait après elle et le passage aux résultats le cachait).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'embuscade est vaincue : le barrage s'ouvre",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -45926,6 +45952,60 @@
    "fr": "Nettoyage",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 1 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 2 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 3 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 4 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer les Gaines : vaincre leur embuscade",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {

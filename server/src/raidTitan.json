@@ -1,6 +1,6 @@
 {
  "format": "cosmic.raid_titan",
- "revision": 11,
+ "revision": 12,
  "raid": "asterion",
  "comment": "Written by tools/levelgen/raid_asterion.py: the seven branches of Asterion and the links between them (an objective of one branch acts on another), its heart (the final fight, 2.72: raid_coeur.py) and the links of kind « modifier » that the parts' falls give it. Never edit by hand.",
  "branches": [
@@ -546,7 +546,7 @@
      "secret": false,
      "boss": false,
      "groups_required": 1,
-     "minutes": 14.2
+     "minutes": 14.9
     },
     {
      "id": 8,
@@ -742,6 +742,42 @@
      "optional": false,
      "role": "ambush",
      "pair": ""
+    },
+    {
+     "id": "crane_galerie_1",
+     "index": 13,
+     "zone": 7,
+     "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "crane_galerie_2",
+     "index": 14,
+     "zone": 7,
+     "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "crane_galerie_3",
+     "index": 15,
+     "zone": 7,
+     "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "crane_galerie_4",
+     "index": 16,
+     "zone": 7,
+     "label": "Nettoyer la galerie 4 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
     }
    ]
   },
@@ -873,7 +909,7 @@
      "secret": false,
      "boss": false,
      "groups_required": 1,
-     "minutes": 14.3
+     "minutes": 15.0
     },
     {
      "id": 8,
@@ -1069,6 +1105,42 @@
      "optional": false,
      "role": "ambush",
      "pair": ""
+    },
+    {
+     "id": "bg_galerie_1",
+     "index": 13,
+     "zone": 7,
+     "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "bg_galerie_2",
+     "index": 14,
+     "zone": 7,
+     "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "bg_galerie_3",
+     "index": 15,
+     "zone": 7,
+     "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "bg_galerie_4",
+     "index": 16,
+     "zone": 7,
+     "label": "Nettoyer la galerie 4 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
     }
    ]
   },
@@ -1200,7 +1272,7 @@
      "secret": false,
      "boss": false,
      "groups_required": 1,
-     "minutes": 14.1
+     "minutes": 14.9
     },
     {
      "id": 8,
@@ -1399,6 +1471,42 @@
      "optional": false,
      "role": "ambush",
      "pair": ""
+    },
+    {
+     "id": "torse_galerie_1",
+     "index": 14,
+     "zone": 7,
+     "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "torse_galerie_2",
+     "index": 15,
+     "zone": 7,
+     "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "torse_galerie_3",
+     "index": 16,
+     "zone": 7,
+     "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "torse_galerie_4",
+     "index": 17,
+     "zone": 7,
+     "label": "Nettoyer la galerie 4 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
     }
    ]
   },
@@ -1535,7 +1643,7 @@
      "secret": false,
      "boss": false,
      "groups_required": 1,
-     "minutes": 13.6
+     "minutes": 14.4
     },
     {
      "id": 8,
@@ -1731,6 +1839,42 @@
      "optional": false,
      "role": "ambush",
      "pair": ""
+    },
+    {
+     "id": "abd_galerie_1",
+     "index": 13,
+     "zone": 7,
+     "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "abd_galerie_2",
+     "index": 14,
+     "zone": 7,
+     "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "abd_galerie_3",
+     "index": 15,
+     "zone": 7,
+     "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "abd_galerie_4",
+     "index": 16,
+     "zone": 7,
+     "label": "Nettoyer la galerie 4 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
     }
    ]
   },
@@ -1862,7 +2006,7 @@
      "secret": false,
      "boss": false,
      "groups_required": 1,
-     "minutes": 14.2
+     "minutes": 14.9
     },
     {
      "id": 8,
@@ -2058,6 +2202,42 @@
      "optional": false,
      "role": "ambush",
      "pair": ""
+    },
+    {
+     "id": "jg_galerie_1",
+     "index": 13,
+     "zone": 7,
+     "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "jg_galerie_2",
+     "index": 14,
+     "zone": 7,
+     "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "jg_galerie_3",
+     "index": 15,
+     "zone": 7,
+     "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "jg_galerie_4",
+     "index": 16,
+     "zone": 7,
+     "label": "Nettoyer la galerie 4 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
     }
    ]
   },
@@ -2189,7 +2369,7 @@
      "secret": false,
      "boss": false,
      "groups_required": 1,
-     "minutes": 14.6
+     "minutes": 15.4
     },
     {
      "id": 8,
@@ -2385,6 +2565,42 @@
      "optional": false,
      "role": "ambush",
      "pair": ""
+    },
+    {
+     "id": "jd_galerie_1",
+     "index": 13,
+     "zone": 7,
+     "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "jd_galerie_2",
+     "index": 14,
+     "zone": 7,
+     "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "jd_galerie_3",
+     "index": 15,
+     "zone": 7,
+     "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
+    },
+    {
+     "id": "jd_galerie_4",
+     "index": 16,
+     "zone": 7,
+     "label": "Nettoyer la galerie 4 : vaincre son embuscade",
+     "optional": false,
+     "role": "ambush",
+     "pair": ""
     }
    ]
   }
@@ -2418,7 +2634,7 @@
     "secret": false,
     "boss": false,
     "groups_required": 1,
-    "minutes": 14.3
+    "minutes": 15.1
    },
    {
     "id": 2,
@@ -2485,6 +2701,42 @@
     "index": 4,
     "zone": 1,
     "label": "Vaincre la troisième embuscade (toutes ses vagues)",
+    "optional": false,
+    "role": "ambush",
+    "pair": ""
+   },
+   {
+    "id": "coeur_galerie_1",
+    "index": 5,
+    "zone": 1,
+    "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+    "optional": false,
+    "role": "ambush",
+    "pair": ""
+   },
+   {
+    "id": "coeur_galerie_2",
+    "index": 6,
+    "zone": 1,
+    "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+    "optional": false,
+    "role": "ambush",
+    "pair": ""
+   },
+   {
+    "id": "coeur_galerie_3",
+    "index": 7,
+    "zone": 1,
+    "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+    "optional": false,
+    "role": "ambush",
+    "pair": ""
+   },
+   {
+    "id": "coeur_galerie_4",
+    "index": 8,
+    "zone": 1,
+    "label": "Nettoyer la galerie 4 : vaincre son embuscade",
     "optional": false,
     "role": "ambush",
     "pair": ""

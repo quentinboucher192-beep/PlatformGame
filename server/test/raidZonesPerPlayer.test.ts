@@ -71,14 +71,15 @@ const report = (p: TestPlayer, instance: string, body: Record<string, unknown>) 
 const seatsOf = (...zones: number[]) => [...zones, ...new Array(8 - zones.length).fill(0)];
 
 describe("2.78: the lair waits for every ambush of the zone before it", () => {
-    it("opens with all four ambushes of the Poignet-verrou, never with the guard alone (the server's rules, the game's)", () => {
+    it("opens with all five ambushes of the Poignet-verrou (titan 12: the Gaines too), never with the guard alone (the server's rules, the game's)", () => {
         const c = catalogById(BRANCH.id)!;
         const ids = c.objectives.filter((o) => o.zone === 7 && o.role === "ambush").map((o) => o.id);
-        expect(ids).toHaveLength(4);
+        expect(ids).toHaveLength(5);
         expect(ids).toContain("poignet_verrou");
-        expect(ambushesIn(c, 7, maskOf(ids.slice(0, 3)))).toEqual({ total: 4, left: 1 });
+        expect(ids).toContain("poignet_galerie_1");
+        expect(ambushesIn(c, 7, maskOf(ids.slice(0, 4)))).toEqual({ total: 5, left: 1 });
         expect(lockOpen("ambushes:7", maskOf(["poignet_verrou"]))).toBe(false);
-        expect(lockOpen("ambushes:7", maskOf(ids.slice(0, 3)))).toBe(false);
+        expect(lockOpen("ambushes:7", maskOf(ids.slice(0, 4)))).toBe(false);
         expect(lockOpen("ambushes:7", maskOf(ids))).toBe(true);
         expect(lockOpenIn(c, "ambushes:7", maskOf(ids))).toBe(true);
         // The lair is reachable only then (the generators open the Poignet-verrou).

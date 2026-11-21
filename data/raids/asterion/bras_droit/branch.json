@@ -104,7 +104,7 @@
    "secret": false,
    "boss": false,
    "groups_required": 1,
-   "minutes": 15.4
+   "minutes": 15.5
   },
   {
    "id": 8,
@@ -305,6 +305,15 @@
    "index": 13,
    "zone": 7,
    "label": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "poignet_galerie_1",
+   "index": 14,
+   "zone": 7,
+   "label": "Nettoyer les Gaines : vaincre leur embuscade",
    "optional": false,
    "role": "ambush",
    "pair": ""

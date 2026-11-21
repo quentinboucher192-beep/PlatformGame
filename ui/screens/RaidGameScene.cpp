@@ -58,7 +58,7 @@
 #include <map>
 #include <optional>
 #include <memory>
-#include <optional>
+#include <set>
 #include <thread>
 
 #include "engine/input/InputScript.h"
@@ -2486,8 +2486,14 @@ public:
         std::vector<raidhud::Mark> out;
         auto add = [&](Icon i, Vec2 at, Color tint = Color::white()) { out.push_back({i, at, tint}); };
         for (const raid::Passage& p : run_->rules().passages) add(run_->passageOpen(p) ? Icon::Exit : Icon::ExitLocked, p.rect.center());
+        // Titan 12: the doors of a shut ambush gate show a lock (« Verrouillé »), the others a door.
+        std::set<std::string> gated;
+        for (size_t k = 0; k < run_->rules().gates.size(); ++k)
+            if (run_->gate(k).left > 0)
+                for (const std::string& id : run_->rules().gates[k].doors) gated.insert(id);
         for (const auto& e : w.entities())
-            if (auto* d = dynamic_cast<const DoorEntity*>(e.get()); d && !d->isOpen() && !e->removed) add(Icon::Door, e->box.center());
+            if (auto* d = dynamic_cast<const DoorEntity*>(e.get()); d && !d->isOpen() && !e->removed)
+                add(gated.count(e->id()) ? Icon::ExitLocked : Icon::Door, e->box.center());
         for (const std::string& id : run_->rules().checkpoints)
             if (LevelEntity* e = w.entity(id)) {
                 auto* cp = dynamic_cast<CheckpointEntity*>(e);
@@ -2894,7 +2900,6 @@ public:
     /// 2.68 (phase 3): the zone's co-op plates over the world (gold until done) and the players each
     /// needs (metadata.raid.coop, the same plates as the objectives).
     void drawSwitches(GameWorld& w, const WorldView& view) {
-        (void)w;
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
         for (size_t k = 0; k < run_->rules().coops.size(); ++k) {
@@ -2904,10 +2909,24 @@ public:
             r.fillRect({sr.x, sr.bottom() - ph, sr.w, ph}, v.done ? Color{124, 240, 168, 160} : Color{255, 210, 122, 150});
             if (v.done || v.need <= 0) continue;
             // 2.81.2: an ambush before it still to beat: it says so (measured, kept on the screen) instead of its count.
-            const raidhud::Pill pl = raidhud::coopPill(ui, sr, v.on, v.need, v.ambush, ui.screenW());
+            const raidhud::Pill pl = raidhud::coopPill(ui, sr, v.on, v.need, v.ambushLeft, v.ambushTotal, ui.screenW());
             r.fillRoundedRect(pl.box, ui.s(10), Color{16, 22, 46, 220});
             fit(ui, pl.text, pl.box.center(), pl.font, pl.box.w - ui.s(10), v.ambush ? kViolet : v.on >= v.need ? kGreen : kGold, FontFace::Bold, Align::Center,
                 !v.ambush /* the count as it is; the sentence translated, as it was measured */);
+        }
+        // Titan 12: a shut ambush gate says, over each of its doors, how many ambushes before it are still to beat (red: locked).
+        for (size_t k = 0; k < run_->rules().gates.size(); ++k) {
+            const raid::Branch::AmbushCount c = run_->gate(k);
+            if (c.left <= 0) continue;
+            for (const std::string& id : run_->rules().gates[k].doors) {
+                const auto* d = dynamic_cast<const DoorEntity*>(w.entity(id));
+                if (!d || d->isOpen()) continue;
+                const Rect sr = view.toScreen(d->box);
+                if (sr.right() < 0.0f || sr.x > ui.screenW() || sr.bottom() < 0.0f || sr.y > ui.screenH()) continue;
+                const raidhud::Pill pl = raidhud::ambushPill(ui, sr, c.left, c.total, ui.screenW());
+                r.fillRoundedRect(pl.box, ui.s(10), Color{46, 14, 20, 225});
+                fit(ui, pl.text, pl.box.center(), pl.font, pl.box.w - ui.s(10), kDanger, FontFace::Bold, Align::Center, false);
+            }
         }
     }
 
@@ -3365,8 +3384,13 @@ public:
             const raid::RaidRun::CoopView v = run_->coop(k);
             const std::string& label = run_->rules().coops[k].label;
             if (v.done) lines.push_back({"OK", label, kGreen});
-            else if (v.ambush) lines.push_back({"!", label + " : " + raidhud::kAmbushFirst, kViolet});  // 2.81.2
+            else if (v.ambush) lines.push_back({"!", label + " — " + raid::Branch::ambushesLeftText({v.ambushLeft, v.ambushTotal}), kViolet});  // titan 12
             else lines.push_back({std::to_string(std::min(v.on, std::max(0, v.need))) + " / " + std::to_string(std::max(1, v.need)), label + " : joueurs ensemble sur la plaque", todo});
+        }
+        // Titan 12: the ambush gates still shut.
+        for (size_t k = 0; k < run_->rules().gates.size(); ++k) {
+            const raid::Branch::AmbushCount c = run_->gate(k);
+            if (c.left > 0) lines.push_back({"■", "Barrage — " + raid::Branch::ambushesLeftText(c), kDanger});
         }
         // The branch: what is left in its other zones (the zones to take back first).
         std::vector<raidhud::Line> branch, retake;
@@ -3437,7 +3461,7 @@ public:
             const raid::RaidRun::CoopView v = run_->coop(k);
             const std::string& label = run_->rules().coops[k].label;
             if (v.done) lines.push_back({"OK", label + " : en marche", kGreen});
-            else if (v.ambush) lines.push_back({"!", label + " : " + raidhud::kAmbushFirst, kViolet});  // 2.81.2
+            else if (v.ambush) lines.push_back({"!", label + " — " + raid::Branch::ambushesLeftText({v.ambushLeft, v.ambushTotal}), kViolet});  // titan 12
             else if (v.need > 0) lines.push_back({std::to_string(v.on) + " / " + std::to_string(v.need), label + " : joueurs ensemble sur la plaque", kGold});
         }
         // 2.68: what the other branches of the titan did here (a link on in this zone).

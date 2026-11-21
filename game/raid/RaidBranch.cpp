@@ -434,6 +434,19 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
             }
         z.coops.push_back(std::move(p));
     }
+    for (const auto& g : raid.value("gates", Json::array())) {  // titan 12: the ambush gates
+        AmbushGate a;
+        a.id = jstr(g, "id");
+        a.rect = rectOf(g.value("rect", Json()));
+        for (const auto& d : g.value("doors", Json::array()))
+            if (d.is_string()) a.doors.push_back(d.get<std::string>());
+        for (const auto& x : g.value("ambushes", Json::array()))
+            if (x.is_string()) {
+                a.ambushes.push_back(x.get<std::string>());
+                a.ambushIndex.push_back(b.objectiveIndex(a.ambushes.back()));
+            }
+        z.gates.push_back(std::move(a));
+    }
     for (const auto& c : raid.value("checkpoints", Json::array()))
         if (c.is_string()) z.checkpoints.push_back(c.get<std::string>());
     const Json sealed = raid.value("sealed", Json());
