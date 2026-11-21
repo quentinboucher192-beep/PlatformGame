@@ -153,6 +153,14 @@ public:
     /// New unlocks not shown yet (toasts, results screen), oldest first.
     std::vector<std::string> takeAnnouncements();
 
+    /// 2.84: the unlocks the player has not seen yet in SUCCÈS, oldest first (kept in the save as
+    /// « unseen »; a save without it, one of before 2.84, has seen all of its unlocks). The main menu
+    /// counts them, SUCCÈS lists them on entering and marks them seen when it is left.
+    const std::vector<std::string>& unseen() const { return unseen_; }
+    bool isUnseen(const std::string& id) const;
+    int unseenCount() const { return static_cast<int>(unseen_.size()); }
+    void markSeen(const std::string& id);
+
     /// Achievements the player follows (2.51, « Suivre »): at most kMaxTracked, in the order
     /// they were ticked; their progress is shown in the pause menu. One unlocked is no longer
     /// followed (evaluate() lets it go, and an unlocked one cannot be ticked).
@@ -172,6 +180,7 @@ private:
     std::map<std::string, std::string> unlocked_;  // id -> date
     std::vector<std::string> announce_;
     std::vector<std::string> tracked_;
+    std::vector<std::string> unseen_;  // 2.84: unlocked, not seen in SUCCÈS yet
     AchievementStats stats_;
 };
 

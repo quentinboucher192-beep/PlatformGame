@@ -55,6 +55,11 @@ struct Motion {
 class Anims {
 public:
     float step(const std::string& key, bool on, float dt, float speed = 10.0f);
+    /// The value now (0 when never stepped), without moving it.
+    float value(const std::string& key) const {
+        auto it = v_.find(key);
+        return it == v_.end() ? 0.0f : it->second;
+    }
 
 private:
     std::unordered_map<std::string, float> v_;
@@ -104,11 +109,14 @@ struct Plate {
 bool plateButton(UIContext& ui, Anims& anims, const std::string& id, const Rect& r, const Plate& p, float unit, float appear, float t,
                  float dt, const Motion& m);
 
+/// A small « NOUVEAU » pill centred on `c`, at most `maxW` wide (its word fitted); returns where it is.
+Rect newPill(UIContext& ui, Vec2 c, float maxW);
+
 struct Diamond {
     std::string icon;
     int badge = 0;
     bool danger = false;
-    std::string feature;  // « NOUVEAU »: a small gold mark on the diamond (newBadge without its pill)
+    std::string feature;  // « NOUVEAU »: its pill on the diamond's top tip (bottom tip with a count)
 };
 /// A diamond of half-diagonal `half` centred on `c`; returns true when activated. `isNew` (optional):
 /// whether its « NOUVEAU » is due.

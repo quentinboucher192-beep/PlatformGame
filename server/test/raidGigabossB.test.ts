@@ -21,16 +21,16 @@ const H1 = "0123456789abcdef";
 const TICK = 150000;
 
 const BOSSES = [
-    { part: "abdomen", boss: "Voidworm", objective: "abd_voidworm", before: ["abd_diaphragme", "abd_glande_nord", "abd_glande_sud", "abd_gosier", "abd_embuscade_1", "abd_embuscade_2", "abd_embuscade_3"], badge: "voidworm_badge" },
-    { part: "jambe_gauche", boss: "Graviton", objective: "jg_graviton", before: ["jg_hanche", "jg_generateur_ouest", "jg_generateur_est", "jg_cheville", "jg_embuscade_1", "jg_embuscade_2", "jg_embuscade_3"], badge: "graviton_badge" },
-    { part: "jambe_droite", boss: "Titanus", objective: "jd_titanus", before: ["jd_hanche", "jd_reacteur_ouest", "jd_reacteur_est", "jd_cheville", "jd_embuscade_1", "jd_embuscade_2", "jd_embuscade_3"], badge: "titanus_badge" },
-    { part: "crane", boss: "Skullmaw", objective: "crane_skullmaw", before: ["crane_machoire", "crane_oeil_gauche", "crane_oeil_droit", "crane_voute", "crane_embuscade_1", "crane_embuscade_2", "crane_embuscade_3"], badge: "skullmaw_badge" },
-    { part: "bras_gauche", boss: "Dreadfang", objective: "bg_dreadfang", before: ["bg_epaule", "bg_coeur_ouest", "bg_coeur_est", "bg_poignet", "bg_embuscade_1", "bg_embuscade_2", "bg_embuscade_3"], badge: "dreadfang_badge" },
+    { part: "abdomen", boss: "Voidworm", objective: "abd_voidworm", before: ["abd_diaphragme", "abd_glande_nord", "abd_glande_sud", "abd_gosier", "abd_embuscade_1", "abd_embuscade_2", "abd_embuscade_3", "abd_galerie_1", "abd_galerie_2", "abd_galerie_3", "abd_galerie_4"], badge: "voidworm_badge" },
+    { part: "jambe_gauche", boss: "Graviton", objective: "jg_graviton", before: ["jg_hanche", "jg_generateur_ouest", "jg_generateur_est", "jg_cheville", "jg_embuscade_1", "jg_embuscade_2", "jg_embuscade_3", "jg_galerie_1", "jg_galerie_2", "jg_galerie_3", "jg_galerie_4"], badge: "graviton_badge" },
+    { part: "jambe_droite", boss: "Titanus", objective: "jd_titanus", before: ["jd_hanche", "jd_reacteur_ouest", "jd_reacteur_est", "jd_cheville", "jd_embuscade_1", "jd_embuscade_2", "jd_embuscade_3", "jd_galerie_1", "jd_galerie_2", "jd_galerie_3", "jd_galerie_4"], badge: "titanus_badge" },
+    { part: "crane", boss: "Skullmaw", objective: "crane_skullmaw", before: ["crane_machoire", "crane_oeil_gauche", "crane_oeil_droit", "crane_voute", "crane_embuscade_1", "crane_embuscade_2", "crane_embuscade_3", "crane_galerie_1", "crane_galerie_2", "crane_galerie_3", "crane_galerie_4"], badge: "skullmaw_badge" },
+    { part: "bras_gauche", boss: "Dreadfang", objective: "bg_dreadfang", before: ["bg_epaule", "bg_coeur_ouest", "bg_coeur_est", "bg_poignet", "bg_embuscade_1", "bg_embuscade_2", "bg_embuscade_3", "bg_galerie_1", "bg_galerie_2", "bg_galerie_3", "bg_galerie_4"], badge: "dreadfang_badge" },
     {
         part: "torse",
         boss: "Heartbreaker",
         objective: "torse_heartbreaker",
-        before: ["torse_clavicule", "torse_plaque_nord", "torse_plaque_sud", "torse_plaque_est", "torse_plaque_ouest", "torse_cage", "torse_embuscade_1", "torse_embuscade_2", "torse_embuscade_3"],
+        before: ["torse_clavicule", "torse_plaque_nord", "torse_plaque_sud", "torse_plaque_est", "torse_plaque_ouest", "torse_cage", "torse_embuscade_1", "torse_embuscade_2", "torse_embuscade_3", "torse_galerie_1", "torse_galerie_2", "torse_galerie_3", "torse_galerie_4"],
         badge: "heartbreaker_badge",
     },
 ] as const;

@@ -137,6 +137,14 @@ public:
     /// Focuses a text field and starts editing it (e.g. the chat input after sending).
     void editText(const std::string& name);
     bool hasFocus() const { return focus_ != 0; }
+    /// Whether a widget of that name (full id path) is one of the keyboard / gamepad stops of the
+    /// frame drawn last (tests: a button that must be there).
+    bool navigable(const std::string& name) const {
+        const WidgetId w = id(name);
+        for (const auto& f : focusables_)
+            if (f.id == w) return true;
+        return false;
+    }
     bool editingText() const { return editing_ != 0; }
     bool mouseOver(const Rect& r) const;
     bool mouseClicked(const Rect& r) const;
@@ -177,6 +185,10 @@ public:
     /// Draws a « NOUVEAU » pill whose right edge is at `right`, centred on `y` (lists, rows).
     /// `small`: smaller (crowded places), its text never under 11.5 pixels.
     Rect drawNewPill(float right, float y, bool small = false);
+    /// 2.84: a small « NOUVEAU » pill centred on `c`, at most `maxW` wide (its word fitted to it).
+    Rect drawNewPillIn(Vec2 c, float maxW);
+    /// 2.84 (tests): the « NOUVEAU » pills drawn since the frame began.
+    int newPillsDrawn() const { return pillsDrawn_; }
     float newPillWidth(bool small = false);
     float newPillHeight(bool small = false) const;
     std::function<bool(const std::string&)> isNewFeature;
@@ -242,6 +254,7 @@ private:
     WidgetId followedFocus_ = 0;
     WidgetId lastFocus_ = 0;
     uint64_t frame_ = UINT64_MAX;
+    int pillsDrawn_ = 0;  // 2.84: « NOUVEAU » pills drawn this frame
     bool ended_ = false;
 };
 

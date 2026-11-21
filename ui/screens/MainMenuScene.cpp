@@ -192,7 +192,7 @@ public:
         };
         const int newsUnread = g_.news.unread(), onlineUnread = g_.online.loggedIn() ? g_.online.unreadNotifications() : 0;
         std::vector<Side> side{{"news", "Notifications", newsUnread + onlineUnread},
-                               {"achievements", "Succès", 0},
+                               {"achievements", "Succès", g_.achievements.unseenCount()},  // 2.84: unlocks not seen in SUCCÈS yet
                                {"collection", "Collection", 0},
                                {"stats", "Statistiques", 0},
                                {"settings", "Paramètres", 0}};

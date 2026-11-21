@@ -3,6 +3,25 @@
   "version": 1,
   "raid": "asterion",
   "comment": "The body of the titan Asterion (ui/widgets/AsterionFigure, game/online/AsterionBody.h): its branches in focus order, their gigaboss (a name, never translated) and what destroying them does to the titan (description). The ids are the layers of assets/ui/raids/asterion.json. The state of each part comes from the server (body of an event), intact without it.",
+  "catalog": {
+    "comment": "The raid as the game presents it (game/raid/RaidCatalog, 2.83: ADMINISTRATION › Raids reads only this): its title, name and subtitle, its pitch (the server's description of the raid), its icon and poster (crops of an existing image), its formats (the server's RAID_FORMATS: id and minutes), its difficulty range, the part that is its heart and the sheet it opens (makeRaidSheets). Its counts come from `parts` below: every part, the gigaboss (a part with a boss) and the heart.",
+    "order": 1,
+    "title": "Asterion, le Dévoreur de mondes",
+    "name": "Asterion",
+    "subtitle": "Le Dévoreur de mondes",
+    "description": "Un titan cosmique avale les planètes de la bordure. Les clans l'affronteront ensemble, branche par branche, sur son propre corps, jusqu'à son cœur.",
+    "icon": {"image": "ui/films/asterion_film.png", "crop": [118, 0, 80, 80]},
+    "poster": {"image": "ui/films/asterion_film.png", "crop": [85, 0, 150, 108]},
+    "formats": [
+      {"id": "court", "name": "Court", "minutes": [25, 30]},
+      {"id": "standard", "name": "Standard", "minutes": [45, 60]},
+      {"id": "legendaire", "name": "Légendaire", "minutes": [75, 90]}
+    ],
+    "default_format": "standard",
+    "difficulty": {"lowest": 1, "highest": 5, "default": 3},
+    "heart": {"part": "coeur", "label": "le Cœur"},
+    "sheet": "asterion"
+  },
   "parts": [
     {"id": "crane", "name": "CRÂNE", "boss": "Skullmaw", "description": "Détruire le crâne aveugle Asterion : ses attaques perdent en précision."},
     {"id": "bras_gauche", "name": "BRAS GAUCHE", "boss": "Dreadfang", "description": "Détruire le bras gauche lui arrache ses griffes : plus de balayages."},

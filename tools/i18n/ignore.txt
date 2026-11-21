@@ -348,3 +348,5 @@ cosmos
 givre
 rouage
 guide
+# 2.84 : clé JSON du catalogue des raids (game/raid/RaidCatalog.cpp), jamais affichée
+formats

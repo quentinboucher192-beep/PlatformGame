@@ -1,3 +1,8 @@
+// A parcel (« Colis de X »: the bigger box tied both ways) shows no count anywhere before it is opened; its opening
+// plays the same scene for its first item, then each next one rises from the open box after « Suivant » (Entrée /
+// A, a click), with its own « Équiper »; after the last, « Le colis est vide ». « Plus tard » mid-parcel: the rest
+// is already granted (the server opened it whole), the list shows it opened with everything it held.
+//
 // COSMIC ONLINE › CADEAUX (docs/COLLECTION.md « Cadeaux »): the gifts an administrator gave me. The list (to open,
 // opened, all), each gift with its wrap bobbing (or what it held once opened), « Cadeau de X », its date and
 // « Contenu : surprise »; the gift chosen in a large panel (the box among rays, who sent it, when, the message,
@@ -129,7 +134,7 @@ public:
         filter_ = gifts::unopenedCount(list) > 0 || list.empty() ? 0 : 2;
         if (sel_ != 0)
             for (const auto& x : list)
-                if (x.id == sel_) filter_ = x.opened ? 1 : 0;
+                if (x.key() == sel_) filter_ = x.opened ? 1 : 0;
         reload();
     }
     void onResume() override {
@@ -185,7 +190,7 @@ private:
 
     const gifts::Gift* selected() const {
         for (const auto& x : g_.online.myGifts())
-            if (x.id == sel_) return &x;
+            if (x.key() == sel_) return &x;
         return nullptr;
     }
 
@@ -217,7 +222,7 @@ private:
             sel_ = 0;
         }
         const auto shown = gifts::filtered(all, static_cast<gifts::Filter>(filter_));
-        if (!shown.empty() && std::none_of(shown.begin(), shown.end(), [&](const gifts::Gift* x) { return x->id == sel_; })) sel_ = shown.front()->id;
+        if (!shown.empty() && std::none_of(shown.begin(), shown.end(), [&](const gifts::Gift* x) { return x->key() == sel_; })) sel_ = shown.front()->key();
         if (shown.empty()) {
             const std::string empty = loading_          ? "Lecture des cadeaux…"
                                       : !error_.empty() ? error_
@@ -233,17 +238,17 @@ private:
         for (const gifts::Gift* x : shown) {
             const Rect row{H.rows.x, y, H.rows.w - ui.s(16), rowH};
             y += rowH + gap;
-            const std::string name = "g" + std::to_string(x->id);
+            const std::string name = "g" + std::to_string(x->key());
             bool hover = false;
             const bool hit = ui.hotspot(name, row, &hover);
             const bool focused = ui.focused(name);
-            if (focused && !ui.usingPointer()) sel_ = x->id;
+            if (focused && !ui.usingPointer()) sel_ = x->key();
             if (hit) {
-                if (x->id == sel_ && !x->opened) open(*x);
-                sel_ = x->id;
+                if (x->key() == sel_ && !x->opened) open(*x);
+                sel_ = x->key();
             }
             if (row.bottom() < H.rows.y || row.y > H.rows.bottom()) continue;
-            drawRow(*x, row, x->id == sel_, hover || focused);
+            drawRow(*x, row, x->key() == sel_, hover || focused);
         }
         ui.endScroll();
         ui.popId();
@@ -254,10 +259,17 @@ private:
         Renderer& r = ui.r();
         r.fillRoundedRect(row, ui.s(10), on ? Color{22, 41, 79, 255} : hot ? Color{20, 32, 64, 255} : Color{18, 26, 60, 255});
         r.drawRoundedRect(row, ui.s(10), on ? ui.theme().accent : Color{44, 58, 104, 255}, ui.s(on ? 2.0f : 1.0f));
+        // A parcel: « Colis de X », never how many it holds; once opened, its contents are in the detail.
         const std::string kind = x.reward ? gifts::kindName(x.reward->kind) : std::string();
-        const std::string title = x.opened && x.reward ? giftart::rewardName(g_, *x.reward) : "Cadeau de " + x.from;
         const std::string date = gifts::dateText(x.createdAt);
-        const std::string sub = x.opened ? kind + " · de " + x.from + (date.empty() ? "" : " · " + date) : "Contenu : surprise" + (date.empty() ? "" : " · " + date);
+        std::string title, sub;
+        if (x.parcel) {
+            title = "Colis de " + x.from;
+            sub = (x.opened ? std::string("Colis ouvert") : std::string("Contenu : surprise")) + (date.empty() ? "" : " · " + date);
+        } else {
+            title = x.opened && x.reward ? giftart::rewardName(g_, *x.reward) : "Cadeau de " + x.from;
+            sub = x.opened ? kind + " · de " + x.from + (date.empty() ? "" : " · " + date) : "Contenu : surprise" + (date.empty() ? "" : " · " + date);
+        }
         const giftsui::RowLayout R = giftsui::rowLayout(ui, row, title, sub, x.opened ? "Ouvert" : "À ouvrir", false);
         r.pushClip(R.icon);
         giftart::drawGiftIcon(g_, &online_, x, R.icon, ui.time());
@@ -280,7 +292,20 @@ private:
         giftsui::DetailTexts T;
         const bool canOpen = canReach();
         EquipState es = EquipState::Unknown;
-        if (x->opened && x->reward) {
+        const std::vector<gifts::Reward> held = x->parcel ? gifts::revealed(*x) : std::vector<gifts::Reward>{};
+        if (x->parcel) {
+            T.kind = "Colis · emballage " + gifts::wrapName(x->wrap);
+            if (x->opened) {
+                T.name = "Colis de " + x->from;
+                T.actions = {"Revoir l'ouverture"};
+                for (const auto& w : held)
+                    if (equipState(g_, w) == EquipState::NoSlot) T.note = "Retirez d'abord un badge du profil (Collection › Badges du profil).";
+            } else {
+                T.name = "Que contient-il ?";
+                T.actions = {"Ouvrir le colis"};
+                if (!canOpen) T.note = "Hors ligne : le colis vous attend, il s'ouvrira une fois connecté.";
+            }
+        } else if (x->opened && x->reward) {
             es = equipState(g_, *x->reward);
             T.kind = gifts::kindName(x->reward->kind);
             T.name = giftart::rewardName(g_, *x->reward);
@@ -298,29 +323,18 @@ private:
         const Color light = gifts::wrapLight(x->wrap);
         ui.label(D.kind.shown, D.kind.box.center(), D.kind.size, kMuted, Align::Center, FontFace::Bold, VAlign::Middle);
         // The art: the box among turning rays, or what it held.
-        r.pushClip(D.art);
         const float t = ui.time();
-        if (x->opened && x->reward) {
-            const float size = std::min(D.art.h * 0.8f, D.art.w * (x->reward->kind == "title" ? 0.34f : 0.6f));
-            r.drawGlow(D.art.center(), size * 0.7f, light.withAlphaF(0.25f));
-            giftart::drawReward(g_, &online_, *x->reward, D.art.center(), size, t, true);
+        if (x->parcel && x->opened) {
+            drawContents(held, D.art, light);  // what it held, each with its own « Équiper »
         } else {
-            const Vec2 c{D.art.center().x, D.art.y + D.art.h * 0.6f};
-            r.drawGlow(c, D.art.h * 0.55f, light.withAlphaF(0.4f));
-            for (int i = 0; i < 10; ++i) {
-                const float a = t * 0.2f + static_cast<float>(i) * kPi / 5.0f, L = D.art.h * 0.75f;
-                const Vec2 p1{c.x + std::cos(a - 0.11f) * L, c.y + std::sin(a - 0.11f) * L}, p2{c.x + std::cos(a + 0.11f) * L, c.y + std::sin(a + 0.11f) * L};
-                r.fillTriangle(c, p1, p2, light.withAlphaF(0.08f), BlendMode::Additive);
-            }
-            const float px = std::min(D.art.h / 58.0f, D.art.w / 52.0f);
-            giftart::BoxPose pose;
-            pose.rot = std::sin(t * 3.0f) * 0.035f;
-            giftart::drawBox(g_, x->wrap, {D.art.center().x, D.art.bottom() - D.art.h * 0.06f + std::sin(t * 2.0f) * ui.s(6)}, px, pose);
+            r.pushClip(D.art);
+            drawArt(*x, D.art, light, t);
+            r.popClip();
         }
-        r.popClip();
         {
             i18n::Verbatim v(false);
-            ui.label(D.name.shown, D.name.box.center(), D.name.size, x->opened ? light : ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+            ui.label(D.name.shown, D.name.box.center(), D.name.size, x->opened && !x->parcel ? light : ui.theme().text, Align::Center, FontFace::Bold,
+                     VAlign::Middle);
         }
         ui.label(D.from.shown, D.from.box.center(), D.from.size, kMuted, Align::Center, FontFace::Body, VAlign::Middle);
         r.fillRoundedRect(D.message, ui.s(8), Color{18, 26, 60, 255});
@@ -334,7 +348,9 @@ private:
         for (size_t i = 0; i < D.actions.size(); ++i) {
             UIContext::ButtonStyle st;
             st.fontSize = D.actionSize;
-            if (x->opened && x->reward) {
+            if (x->parcel && x->opened) {
+                if (ui.button("replay", D.actions[i], T.actions[i], st)) g_.app.pushScene(makeGiftOpening(g_, GiftOpening{*x, true, false}));
+            } else if (x->opened && x->reward) {
                 if (i == 0) {
                     st.primary = es == EquipState::Can;
                     st.selected = es == EquipState::Equipped;
@@ -350,6 +366,68 @@ private:
             }
         }
         ui.popId();
+    }
+
+    /// The big art of the detail: what an opened gift held, or the box (a gift's or a parcel's) among turning rays.
+    void drawArt(const gifts::Gift& x, const Rect& art, Color light, float t) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        if (x.opened && x.reward) {
+            const float size = std::min(art.h * 0.8f, art.w * (x.reward->kind == "title" ? 0.34f : 0.6f));
+            r.drawGlow(art.center(), size * 0.7f, light.withAlphaF(0.25f));
+            giftart::drawReward(g_, &online_, *x.reward, art.center(), size, t, true);
+        } else {
+            const Vec2 c{art.center().x, art.y + art.h * 0.6f};
+            r.drawGlow(c, art.h * 0.55f, light.withAlphaF(0.4f));
+            for (int i = 0; i < 10; ++i) {
+                const float a = t * 0.2f + static_cast<float>(i) * kPi / 5.0f, L = art.h * 0.75f;
+                const Vec2 p1{c.x + std::cos(a - 0.11f) * L, c.y + std::sin(a - 0.11f) * L}, p2{c.x + std::cos(a + 0.11f) * L, c.y + std::sin(a + 0.11f) * L};
+                r.fillTriangle(c, p1, p2, light.withAlphaF(0.08f), BlendMode::Additive);
+            }
+            const float px = std::min(art.h / 58.0f, art.w / 52.0f);
+            giftart::BoxPose pose;
+            pose.parcel = x.parcel;
+            pose.rot = std::sin(t * 3.0f) * 0.035f;
+            giftart::drawBox(g_, x.wrap, {art.center().x, art.bottom() - art.h * 0.06f + std::sin(t * 2.0f) * ui.s(6)}, px, pose);
+        }
+    }
+
+    /// An opened parcel's rewards, in the order they came out, each with its icon, its name, its kind and its own
+    /// « Équiper » (a scrolled list in the art's room).
+    void drawContents(const std::vector<gifts::Reward>& held, const Rect& area, Color light) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const float rowH = ui.s(giftsui::kContentRowH), gap = ui.s(giftsui::kContentRowGap);
+        ui.beginScroll("contents", area, static_cast<float>(held.size()) * (rowH + gap));
+        float y = area.y - ui.scrollOffset();
+        for (size_t i = 0; i < held.size(); ++i) {
+            const gifts::Reward& w = held[i];
+            const Rect row{area.x, y, area.w - ui.s(16), rowH};
+            y += rowH + gap;
+            const EquipState es = equipState(g_, w);
+            const std::string label = equipLabel(es, false);
+            const giftsui::ContentRowLayout C = giftsui::contentRowLayout(ui, row, giftart::rewardName(g_, w), gifts::kindName(w.kind), label);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = C.equipSize;
+            st.primary = es == EquipState::Can;
+            st.selected = es == EquipState::Equipped;
+            st.enabled = es == EquipState::Can;
+            const bool visible = !(row.bottom() < area.y || row.y > area.bottom());
+            if (visible) {
+                r.fillRoundedRect(row, ui.s(10), Color{18, 26, 60, 255});
+                r.drawRoundedRect(row, ui.s(10), Color{44, 58, 104, 255}, ui.s(1.0f));
+            }
+            if (ui.button("equip/" + std::to_string(i), C.equip, label, st)) equipReward(g_, w);
+            if (!visible) continue;
+            r.pushClip(C.icon);
+            r.drawGlow(C.icon.center(), C.icon.w * 0.5f, light.withAlphaF(0.25f));
+            giftart::drawReward(g_, &online_, w, C.icon.center(), C.icon.w * (w.kind == "title" ? 0.5f : 0.9f), ui.time(), false);
+            r.popClip();
+            ui.label(C.name.shown, {C.name.box.x, C.name.box.center().y}, C.name.size, light, Align::Left, FontFace::Bold, VAlign::Middle);
+            ui.label(C.kind.shown, {C.kind.box.x, C.kind.box.center().y}, C.kind.size, kMuted, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        ui.endScroll();
     }
 
     /// Cosmic Online can be asked now (offline, the gifts wait).
@@ -431,52 +509,87 @@ private:
         bool star;
     };
 
-    bool known() const { return o_.gift.opened && o_.gift.reward.has_value(); }
+    /// What it held is known (the server opened it, or a replay, or the administrator's preview).
+    bool known() const { return gifts::isRevealed(o_.gift); }
+    /// The box's mouth above its base, in the scene's pixels (6 per pixel of the sheet).
+    float mouth() const { return giftart::mouthHeight(o_.gift.parcel) * 6.0f; }
 
     void start() {
         t_ = 0.0f;
-        boomed_ = revealed_ = rumbled_ = equippedNow_ = false;
+        boomed_ = revealed_ = rumbled_ = equippedNow_ = rise_ = false;
         parts_.clear();
         error_.clear();
-        rng_.seed(static_cast<uint32_t>(o_.gift.id * 2654435761u + 17u));
+        u_ = gifts::Unwrapping{};
+        u_.items = gifts::revealed(o_.gift);
+        rng_.seed(static_cast<uint32_t>(o_.gift.key() * 2654435761u + 17u));
         if (o_.replay || o_.preview || known()) return;
-        // Opening is the server's: it grants what the gift holds, once; the game learns it here.
-        const int64_t id = o_.gift.id;
-        g_.online.send("POST", "/api/v1/gifts/" + std::to_string(id) + "/open", Json::object(), OnlineService::guard(life_, [this, id](const ApiResult& r) {
-                           if (id != o_.gift.id) return;
+        // Opening is the server's: it grants what the gift (or every reward of the parcel) holds, once; the game
+        // learns it here, a parcel's rewards in the order they come out.
+        const int64_t key = o_.gift.key();
+        const bool parcel = o_.gift.parcel;
+        g_.online.send("POST", gifts::openPath(o_.gift), Json::object(), OnlineService::guard(life_, [this, key, parcel](const ApiResult& r) {
+                           if (key != o_.gift.key()) return;
                            if (!r.ok) {
-                               error_ = r.message.empty() ? std::string("Le cadeau n'a pas pu être ouvert.") : r.message;
+                               error_ = !r.message.empty() ? r.message
+                                        : parcel        ? std::string("Le colis n'a pas pu être ouvert.")
+                                                        : std::string("Le cadeau n'a pas pu être ouvert.");
                                g_.uiSound("ui_error", 0.6f);
                                return;
                            }
                            auto opened = gifts::parseGift(jfield(r.data, "gift", Json()));
-                           if (!opened || !opened->opened || !opened->reward) {
+                           if (!opened || !opened->opened || opened->parcel != parcel || !gifts::isRevealed(*opened)) {
                                error_ = "Réponse inattendue de Cosmic Online.";
                                return;
                            }
                            o_.gift = *opened;
+                           u_.items = gifts::revealed(*opened);
                            g_.online.noteGiftOpened(*opened);
                            g_.online.refreshGifts();  // the list kept for offline follows
-                           if (opened->reward->kind == "badge") rememberRaidRewards(g_, jfield(r.data, "raid_rewards_claimed", Json()));
-                           else g_.challenges.refreshWon();  // the item among the rewards won (offline too)
+                           bool badge = false, item = false;
+                           for (const auto& w : u_.items) (w.kind == "badge" ? badge : item) = true;
+                           if (badge) rememberRaidRewards(g_, jfield(r.data, "raid_rewards_claimed", Json()));
+                           if (item) g_.challenges.refreshWon();  // the items among the rewards won (offline too)
                        }));
     }
 
-    void boom() {
-        boomed_ = true;
+    /// Shards and stars from the box (`n` at the best particle quality).
+    void burst(int n) {
         const Color light = gifts::wrapLight(o_.gift.wrap);
         const int q = g_.settings.graphics.particleQuality;
-        const int n = q <= 0 ? 40 : q == 1 ? 80 : 120;
+        n = q <= 0 ? n / 3 : q == 1 ? n * 2 / 3 : n;
         std::uniform_real_distribution<float> U(0.0f, 1.0f);
         for (int i = 0; i < n; ++i) {
             const float a = U(rng_) * 2.0f * kPi, v = 200.0f + U(rng_) * 700.0f;
             parts_.push_back({640.0f, 452.0f, std::cos(a) * v, std::sin(a) * v - 300.0f, 1.0f + U(rng_) * 1.3f, 0.0f, 3.0f + U(rng_) * 7.0f, U(rng_) * 6.0f,
                               U(rng_) < 0.35f ? Color::white() : light, U(rng_) < 0.5f});
         }
+    }
+
+    void boom() {
+        boomed_ = true;
+        burst(120);
+        std::uniform_real_distribution<float> U(0.0f, 1.0f);
         lidVx_ = (U(rng_) < 0.5f ? -1.0f : 1.0f) * (160.0f + U(rng_) * 120.0f);
         lidVr_ = (U(rng_) - 0.5f) * 7.0f;
         g_.uiSound("story_egg_crack", 0.8f);
         g_.uiSound("story_sing", 0.5f);
+    }
+
+    /// « Suivant » in a parcel: the next item rises from the same box (its lid already gone), or the box is empty.
+    void nextItem() {
+        if (!u_.advance()) return;
+        revealed_ = false;
+        equippedNow_ = false;
+        if (u_.empty) {
+            t_ = kReveal;
+            g_.uiSound("ui_confirm", 0.4f);
+            return;
+        }
+        rise_ = true;
+        t_ = kBoom;
+        parts_.erase(std::remove_if(parts_.begin(), parts_.end(), [](const Part& p) { return p.age > p.life; }), parts_.end());
+        burst(48);
+        g_.uiSound("story_sing", 0.45f);
     }
 
     // ---------------------------------------------------------------- drawing (the mockup's 1280 x 720 frame)
@@ -533,12 +646,15 @@ private:
         const Color light = gifts::wrapLight(o_.gift.wrap);
         const float S = 6.0f * k_;  // screen pixels per pixel of the wraps' sheet
         const Vec2 base = P(640.0f, 452.0f);
+        const bool parcel = o_.gift.parcel;
+        const float top = giftart::mouthHeight(parcel), half = parcel ? 20.0f : 16.0f;  // the box's top edge, half its width
         // The scene darkens, the wrap's light fills it.
         r.fillRect({0, 0, W, H}, Color{4, 6, 18, 255}.withAlphaF(std::min(0.88f, 0.35f + t * 0.5f)));
         r.drawGlow(P(640.0f, 330.0f), 700.0f * k_, light.withAlphaF(std::min(0.22f, t * 0.08f) + (t > kBoom ? 0.12f : 0.0f)));
         // Rays turning slowly, brighter once open.
         float rayA = t < kBoom ? std::max(0.0f, (t - 0.3f) / kBoom) * 0.18f : std::min(0.55f, 0.18f + (t - kBoom) * 1.2f);
         if (t > kBoom + 1.2f) rayA *= 0.75f + 0.25f * std::sin(t * 2.0f);
+        if (u_.empty) rayA *= 0.4f;
         rays(t < kBoom ? Vec2{base.x, base.y - 120.0f * k_} : P(640.0f, 330.0f), t, rayA, light);
         if (t < kBoom) {
             // Anticipation: harder and harder shaking, hops and squash, light leaking from the seam.
@@ -548,17 +664,18 @@ private:
             const float sq = 1.0f + wob * 0.03f * k * shake;
             ellipse({base.x, base.y + 6.0f * k_}, 120.0f * k_ * (1.0f - (-hop) / (120.0f * k_)), 16.0f * k_, Color{0, 0, 0, 115});
             giftart::BoxPose pose;
+            pose.parcel = parcel;
             pose.rot = rot;
             pose.sx = 1.0f / sq;
             pose.sy = sq;
             pose.lidDy = -std::max(0.0f, k - 0.6f) * 20.0f * std::abs(std::sin(t * 25.0f)) * shake / 6.0f;
             const Vec2 b{base.x, base.y + hop};
             giftart::drawBox(g_, o_.gift.wrap, b, S, pose);
-            const float sy = b.y - 22.0f * S, la = std::max(0.0f, k - 0.25f) / 0.75f;
+            const float sy = b.y - top * S, la = std::max(0.0f, k - 0.25f) / 0.75f;
             if (la > 0.0f) {
-                r.fillGradientV({b.x - 16.0f * S, sy - 40.0f * k_ * la, 32.0f * S, 40.0f * k_ * la + 4.0f * k_}, Color{255, 255, 255, 0},
+                r.fillGradientV({b.x - half * S, sy - 40.0f * k_ * la, 2.0f * half * S, 40.0f * k_ * la + 4.0f * k_}, Color{255, 255, 255, 0},
                                 light.withAlphaF(0.9f * la), BlendMode::Additive);
-                r.fillRect({b.x - 15.0f * S, sy - 1.0f * k_, 30.0f * S, 3.0f * k_}, Color::white().withAlphaF(la), BlendMode::Additive);
+                r.fillRect({b.x - (half - 1.0f) * S, sy - 1.0f * k_, 2.0f * (half - 1.0f) * S, 3.0f * k_}, Color::white().withAlphaF(la), BlendMode::Additive);
                 for (int i = 0; i < 5; ++i) {
                     const float bx = b.x + (i - 2) * 5.5f * S;
                     const float h = (60.0f + static_cast<float>((i * 17) % 40)) * la * (1.0f + 0.3f * std::sin(t * 9.0f + i)) * k_;
@@ -574,39 +691,43 @@ private:
             return;
         }
         const float u = t - kBoom;
-        // The open box, its inner glow; the lid flying off with gravity and spin.
+        // The open box, its inner glow; the lid flying off with gravity and spin (the first item of a parcel only:
+        // the next ones rise from the box already open).
         ellipse({base.x, base.y + 6.0f * k_}, 120.0f * k_, 16.0f * k_, Color{0, 0, 0, 115});
         giftart::BoxPose open;
         open.open = true;
+        open.parcel = parcel;
         giftart::drawBox(g_, o_.gift.wrap, base, S, open);
-        const Vec2 mouth{base.x, base.y - 22.0f * S};
-        r.drawGlow(mouth, 170.0f * k_, light.withAlphaF(0.45f));
-        r.drawGlow(mouth, 70.0f * k_, Color{255, 255, 255, 190});
-        if (u < 1.4f) {
+        const Vec2 mouthAt{base.x, base.y - top * S};
+        r.drawGlow(mouthAt, 170.0f * k_, light.withAlphaF(u_.empty ? 0.2f : 0.45f));
+        r.drawGlow(mouthAt, 70.0f * k_, Color{255, 255, 255, static_cast<uint8_t>(u_.empty ? 70 : 190)});
+        if (u < 1.4f && !rise_) {
             const float lx = lidVx_ * u, ly = -1150.0f * u + 900.0f * u * u;
-            giftart::drawLid(g_, o_.gift.wrap, base, S, {lx * k_, ly * k_}, lidVr_ * u, std::max(0.0f, 1.0f - u / 1.4f));
+            giftart::drawLid(g_, o_.gift.wrap, base, S, {lx * k_, ly * k_}, lidVr_ * u, std::max(0.0f, 1.0f - u / 1.4f), parcel);
         }
-        if (u < 0.9f) {  // the shockwave
+        if (u < 0.9f && !rise_) {  // the shockwave
             const float rx = (40.0f + u * 900.0f) * k_;
-            ellipseRing(mouth, rx, rx * 0.55f, (10.0f * (1.0f - u / 0.9f) + 1.0f) * k_, Color::white().withAlphaF(1.0f - u / 0.9f));
+            ellipseRing(mouthAt, rx, rx * 0.55f, (10.0f * (1.0f - u / 0.9f) + 1.0f) * k_, Color::white().withAlphaF(1.0f - u / 0.9f));
         }
-        // The item rises (ease-out-back) in a pulsing halo, ringed with twelve stars.
-        const float kk = std::min(1.0f, u / 0.95f);
-        const float e = 1.0f + 2.70158f * std::pow(kk - 1.0f, 3.0f) + 1.70158f * std::pow(kk - 1.0f, 2.0f);
-        const float iy = (452.0f - 22.0f * 6.0f) + (250.0f - (452.0f - 22.0f * 6.0f)) * e, sc = 0.3f + 0.7f * e;
-        const float pulse = 1.0f + 0.06f * std::sin(t * 3.2f);
-        const Vec2 ic = P(640.0f, iy);
-        r.drawGlow(ic, 190.0f * sc * pulse * k_, light.withAlphaF(0.55f));
-        r.drawGlow(ic, 80.0f * sc * pulse * k_, Color{255, 255, 255, 200});
-        r.drawRing(ic, 135.0f * sc * k_, std::max(1.0f, 2.0f * k_), light.withAlphaF(0.7f), BlendMode::Additive);
-        for (int i = 0; i < 12; ++i) {
-            const float a = t * 0.9f + i * kPi / 6.0f;
-            giftart::star(r, {ic.x + std::cos(a) * 135.0f * sc * k_, ic.y + std::sin(a) * 135.0f * sc * k_}, (i % 3 ? 3.0f : 6.0f) * sc * k_, t * 2.0f + i,
-                          Color::white(), BlendMode::Additive);
+        // The item rises (ease-out-back) in a pulsing halo, ringed with twelve stars (none once the parcel is empty).
+        if (const gifts::Reward* rw = u_.current()) {
+            const float kk = std::min(1.0f, u / 0.95f);
+            const float e = 1.0f + 2.70158f * std::pow(kk - 1.0f, 3.0f) + 1.70158f * std::pow(kk - 1.0f, 2.0f);
+            const float from = 452.0f - mouth();
+            const float iy = from + (250.0f - from) * e, sc = 0.3f + 0.7f * e;
+            const float pulse = 1.0f + 0.06f * std::sin(t * 3.2f);
+            const Vec2 ic = P(640.0f, iy);
+            r.drawGlow(ic, 190.0f * sc * pulse * k_, light.withAlphaF(0.55f));
+            r.drawGlow(ic, 80.0f * sc * pulse * k_, Color{255, 255, 255, 200});
+            r.drawRing(ic, 135.0f * sc * k_, std::max(1.0f, 2.0f * k_), light.withAlphaF(0.7f), BlendMode::Additive);
+            for (int i = 0; i < 12; ++i) {
+                const float a = t * 0.9f + i * kPi / 6.0f;
+                giftart::star(r, {ic.x + std::cos(a) * 135.0f * sc * k_, ic.y + std::sin(a) * 135.0f * sc * k_}, (i % 3 ? 3.0f : 6.0f) * sc * k_, t * 2.0f + i,
+                              Color::white(), BlendMode::Additive);
+            }
+            giftart::drawReward(g_, &online_, *rw, ic, (rw->kind == "title" ? 120.0f : 190.0f) * sc * k_, t, true);
         }
-        if (o_.gift.reward)
-            giftart::drawReward(g_, &online_, *o_.gift.reward, ic, (o_.gift.reward->kind == "title" ? 120.0f : 190.0f) * sc * k_, t, true);
-        if (u < 0.45f) r.fillRect({0, 0, W, H}, Color::white().withAlphaF((1.0f - u / 0.45f) * (0.5f + 0.4f * shake)));
+        if (u < 0.45f && !rise_ && !u_.empty) r.fillRect({0, 0, W, H}, Color::white().withAlphaF((1.0f - u / 0.45f) * (0.5f + 0.4f * shake)));
         for (const Part& p : parts_) {  // the shards
             if (p.age > p.life) continue;
             const Color c = p.c.withAlphaF(std::max(0.0f, 1.0f - p.age / p.life));
@@ -629,7 +750,9 @@ private:
             if (!boomed_) boom();
             t_ = kReveal;
         }
-        const std::string line = known() || t_ < kBoom - 0.1f ? "Clic / Entrée : passer l'animation" : "Ouverture du cadeau…";
+        const std::string line = known() || t_ < kBoom - 0.1f ? "Clic / Entrée : passer l'animation"
+                                 : o_.gift.parcel           ? "Ouverture du colis…"
+                                                            : "Ouverture du cadeau…";
         ui.label(line, {ui.screenW() - ui.s(36), ui.s(36)}, 18, kMuted, Align::Right, FontFace::Body, VAlign::Middle);
         if (ui.backPressed() && o_.preview) g_.app.popScene();
     }
@@ -648,26 +771,42 @@ private:
             g_.app.popScene();
     }
 
+    /// The texts under the item (or the empty parcel) and the buttons of this step.
+    giftsui::RevealTexts revealTexts(const gifts::Gift* next, int left, EquipState es) const {
+        const gifts::Gift& x = o_.gift;
+        giftsui::RevealTexts T;
+        const std::string d = gifts::dateText(x.createdAt);
+        T.message = x.message.empty() ? std::string() : "« " + x.message + " »";
+        if (const gifts::Reward* rw = u_.current()) {
+            T.kind = gifts::kindName(rw->kind) + (o_.preview ? " · aperçu" : "");
+            T.name = giftart::rewardName(g_, *rw);
+            T.from = o_.preview ? "De " + x.from + " · ce que verront les joueurs" : "De " + x.from + (d.empty() ? "" : " · " + d) + " · ajouté à votre collection";
+        } else {  // the parcel is empty
+            T.kind = "Colis · emballage " + gifts::wrapName(x.wrap) + (o_.preview ? " · aperçu" : "");
+            T.name = "Le colis est vide";
+            T.from = o_.preview ? "De " + x.from + " · ce que verront les joueurs" : "De " + x.from + (d.empty() ? "" : " · " + d) + " · tout est dans votre collection";
+        }
+        const std::string equip = equippedNow_ && es != EquipState::NoSlot ? std::string("Équipé") : equipLabel(es, true);
+        if (o_.preview) T.buttons = x.parcel && !u_.empty ? std::vector<std::string>{"Suivant", "Retour à l'envoi"} : std::vector<std::string>{"Retour à l'envoi"};
+        else if (x.parcel && !u_.empty) T.buttons = {equip, "Suivant", "Plus tard"};
+        else if (x.parcel) T.buttons = next ? std::vector<std::string>{"Cadeau suivant (" + std::to_string(std::max(1, left)) + ")", "Fermer"} : std::vector<std::string>{"Fermer"};
+        else {
+            T.buttons = {equip, next ? "Cadeau suivant (" + std::to_string(std::max(1, left)) + ")" : std::string("Voir mes cadeaux")};
+            if (next) T.buttons.push_back("Plus tard");
+        }
+        return T;
+    }
+
     void drawReveal() {
         UIContext& ui = g_.ui;
         const gifts::Gift& x = o_.gift;
-        const gifts::Reward& rw = *x.reward;
+        const gifts::Reward* rw = u_.current();
+        if (!rw && !(x.parcel && u_.empty)) return;
         const Color light = gifts::wrapLight(x.wrap);
-        const gifts::Gift* next = o_.preview ? nullptr : gifts::nextToOpen(g_.online.myGifts(), x.id);
+        const gifts::Gift* next = o_.preview ? nullptr : gifts::nextToOpen(g_.online.myGifts(), x.key());
         const int left = o_.preview ? 0 : gifts::unopenedCount(g_.online.myGifts()) - (x.opened ? 0 : 1);
-        const EquipState es = o_.preview ? EquipState::Unknown : equipState(g_, rw);
-        giftsui::RevealTexts T;
-        T.kind = gifts::kindName(rw.kind) + (o_.preview ? " · aperçu" : "");
-        T.name = giftart::rewardName(g_, rw);
-        const std::string d = gifts::dateText(x.createdAt);
-        T.from = o_.preview ? "De " + x.from + " · ce que verront les joueurs" : "De " + x.from + (d.empty() ? "" : " · " + d) + " · ajouté à votre collection";
-        T.message = x.message.empty() ? std::string() : "« " + x.message + " »";
-        if (o_.preview) T.buttons = {"Retour à l'envoi"};
-        else {
-            T.buttons = {equippedNow_ && es != EquipState::NoSlot ? std::string("Équipé") : equipLabel(es, true),
-                         next ? "Cadeau suivant (" + std::to_string(std::max(1, left)) + ")" : std::string("Voir mes cadeaux")};
-            if (next) T.buttons.push_back("Plus tard");
-        }
+        const EquipState es = o_.preview || !rw ? EquipState::Unknown : equipState(g_, *rw);
+        const giftsui::RevealTexts T = revealTexts(next, left, es);
         const giftsui::RevealLayout R = giftsui::revealLayout(ui, T);
         const float a = std::clamp((t_ - kReveal) / 0.5f, 0.0f, 1.0f), dy = (1.0f - a) * ui.s(16);
         // A dark veil behind the texts, so that they read over the light.
@@ -676,8 +815,8 @@ private:
         ui.label(R.kind.shown, {R.kind.box.center().x, R.kind.box.center().y + dy}, R.kind.size, light.withAlphaF(a), Align::Center, FontFace::Bold,
                  VAlign::Middle);
         ui.r().drawGlow({R.name.box.center().x, R.name.box.center().y + dy}, R.name.box.h * 1.6f, light.withAlphaF(0.18f * a));
-        ui.label(R.name.shown, {R.name.box.center().x, R.name.box.center().y + dy}, R.name.size, light.withAlphaF(a), Align::Center, FontFace::Bold,
-                 VAlign::Middle);
+        ui.label(R.name.shown, {R.name.box.center().x, R.name.box.center().y + dy}, R.name.size, (rw ? light : ui.theme().text).withAlphaF(a), Align::Center,
+                 FontFace::Bold, VAlign::Middle);
         ui.label(R.from.shown, {R.from.box.center().x, R.from.box.center().y + dy}, R.from.size, kMuted.withAlphaF(a), Align::Center, FontFace::Body,
                  VAlign::Middle);
         {
@@ -693,27 +832,51 @@ private:
         InputManager& in = g_.app.input();
         const bool padY = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), yEdge = padY && !padY_;
         padY_ = padY;
-        if (o_.preview) {
-            UIContext::ButtonStyle st;
-            st.primary = true;
-            st.fontSize = R.buttonSize;
-            if (ui.button("next", R.buttons[0], T.buttons[0], st) || ui.backPressed()) g_.app.popScene();
-            drawRevealHints(R, true, false);
+        UIContext::ButtonStyle primary;
+        primary.primary = true;
+        primary.fontSize = R.buttonSize;
+        UIContext::ButtonStyle plain;
+        plain.fontSize = R.buttonSize;
+        if (o_.preview) {  // the administrator's preview: « Suivant » through a parcel, « Retour à l'envoi »
+            if (x.parcel && !u_.empty) {
+                if (ui.button("next", R.buttons[0], T.buttons[0], primary)) {
+                    nextItem();
+                    return;
+                }
+                if (ui.button("back", R.buttons[1], T.buttons[1], plain) || ui.backPressed()) g_.app.popScene();
+                drawRevealHints(R, false, {{Action::MenuConfirm, "suivant"}, {Action::MenuBack, "retour"}});
+                return;
+            }
+            if (ui.button("next", R.buttons[0], T.buttons[0], primary) || ui.backPressed()) g_.app.popScene();
+            drawRevealHints(R, false, {{Action::MenuBack, "retour"}});
             return;
         }
-        UIContext::ButtonStyle eq;
-        eq.fontSize = R.buttonSize;
-        eq.enabled = es == EquipState::Can && !equippedNow_;
-        eq.selected = es == EquipState::Equipped || equippedNow_;
-        const bool equipAsked = ui.button("equip", R.buttons[0], T.buttons[0], eq) || ((in.shortcutPressed(SDLK_Y) || yEdge) && eq.enabled);
-        if (equipAsked && eq.enabled) {
-            equipReward(g_, rw);
-            equippedNow_ = true;
+        if (rw) {  // « Équiper » what is shown (Y): each item of a parcel has its own
+            UIContext::ButtonStyle eq;
+            eq.fontSize = R.buttonSize;
+            eq.enabled = es == EquipState::Can && !equippedNow_;
+            eq.selected = es == EquipState::Equipped || equippedNow_;
+            const bool equipAsked = ui.button("equip", R.buttons[0], T.buttons[0], eq) || ((in.shortcutPressed(SDLK_Y) || yEdge) && eq.enabled);
+            if (equipAsked && eq.enabled) {
+                equipReward(g_, *rw);
+                equippedNow_ = true;
+            }
         }
-        UIContext::ButtonStyle nx;
-        nx.primary = true;
-        nx.fontSize = R.buttonSize;
-        if (ui.button("next", R.buttons[1], T.buttons[1], nx)) {
+        if (x.parcel && rw) {  // the next item of the parcel, or « Plus tard » (the rest is already in the collection)
+            if (ui.button("next", R.buttons[1], T.buttons[1], primary)) {
+                nextItem();
+                return;
+            }
+            if (ui.button("later", R.buttons[2], T.buttons[2], plain) || ui.backPressed()) {
+                g_.app.popScene();
+                return;
+            }
+            drawRevealHints(R, true, {{Action::MenuConfirm, "suivant"}, {Action::MenuBack, "plus tard"}});
+            return;
+        }
+        // The gift's last step, or the empty parcel: the next gift waiting, or back to the list.
+        const size_t at = rw ? 1 : 0;
+        if (ui.button("next", R.buttons[at], T.buttons[at], primary)) {
             if (next) {
                 o_.gift = *next;
                 o_.replay = false;
@@ -723,27 +886,24 @@ private:
             g_.app.popScene();
             return;
         }
-        UIContext::ButtonStyle lt;
-        lt.fontSize = R.buttonSize;
-        if ((next && ui.button("later", R.buttons[2], T.buttons[2], lt)) || ui.backPressed()) {
-            g_.app.popScene();  // « Plus tard »: the others wait
+        if ((R.buttons.size() > at + 1 && ui.button(x.parcel ? "close" : "later", R.buttons[at + 1], T.buttons[at + 1], plain)) || ui.backPressed()) {
+            g_.app.popScene();  // « Plus tard » / « Fermer »: the others wait
             return;
         }
-        drawRevealHints(R, false, next != nullptr);
+        if (x.parcel && next) drawRevealHints(R, false, {{Action::MenuConfirm, "cadeau suivant"}, {Action::MenuBack, "fermer"}});
+        else if (x.parcel) drawRevealHints(R, false, {{Action::MenuBack, "fermer"}});
+        else drawRevealHints(R, true, {{Action::MenuConfirm, next ? "cadeau suivant" : "mes cadeaux"}, {Action::MenuBack, next ? "plus tard" : "fermer"}});
     }
 
-    void drawRevealHints(const giftsui::RevealLayout& R, bool preview, bool more) {
+    /// The keys of this step, centred on the bottom line (`equip`: « Y équiper » first).
+    void drawRevealHints(const giftsui::RevealLayout& R, bool equip, const std::vector<std::pair<Action, std::string>>& hints) {
         UIContext& ui = g_.ui;
         const float h = ui.s(30);
-        std::vector<std::pair<Action, std::string>> hints;
-        if (!preview) hints.push_back({Action::MenuConfirm, more ? "cadeau suivant" : "mes cadeaux"});
-        hints.push_back({Action::MenuBack, preview ? "retour" : more ? "plus tard" : "fermer"});
         float w = 0.0f;
         for (const auto& [a, text] : hints) w += Glyphs::measureAction(ui, a, h) + ui.s(8) + ui.text().measure(text, FontFace::Body, ui.s(16)).x + ui.s(26);
         float x = R.hint.center().x - w * 0.5f;
-        if (!preview) {  // « Y équiper »: the key and the pad's Y
-            const float yw = h + ui.s(4) + h + ui.s(8) +
-                             ui.text().measure("équiper", FontFace::Body, ui.s(16)).x + ui.s(26);
+        if (equip) {  // « Y équiper »: the key and the pad's Y
+            const float yw = h + ui.s(4) + h + ui.s(8) + ui.text().measure("équiper", FontFace::Body, ui.s(16)).x + ui.s(26);
             x -= yw * 0.5f;
             x += Glyphs::drawKeycap(ui, "Y", {x, R.hint.center().y}, h) + ui.s(4);
             Glyphs::drawPadButton(ui, PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), {x, R.hint.center().y}, h);
@@ -758,9 +918,11 @@ private:
     GiftOpening o_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::mt19937 rng_;
+    gifts::Unwrapping u_;  // what comes out of the box, one after another
     float t_ = 0.0f, k_ = 1.0f, o_x = 0.0f, o_y = 0.0f;
     float lidVx_ = 200.0f, lidVr_ = 2.0f;
     bool boomed_ = false, revealed_ = false, rumbled_ = false, equippedNow_ = false, padY_ = false;
+    bool rise_ = false;  // a parcel's next item: the box is already open, its lid gone
     std::vector<Part> parts_;
     std::string error_;
 };

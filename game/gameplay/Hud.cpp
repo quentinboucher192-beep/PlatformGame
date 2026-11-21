@@ -1144,6 +1144,7 @@ void Hud::drawPowerUse(UIContext& ui, const PowerDefinition& def, int slot, Vec2
 void Hud::drawMessages(UIContext& ui, GameWorld& w) {
     float hintY = ui.screenH() - ui.s(w.activeBoss() ? 210 : 150);
     for (const auto& m : w.messages()) {
+        if (!w.shownHere(m)) continue;  // 2.84: another player's (a power they picked up)
         float a = std::min({1.0f, m.age / 0.3f, (m.duration - m.age) / 0.5f});
         if (a <= 0.0f) continue;
         switch (m.style) {

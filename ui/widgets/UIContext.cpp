@@ -49,6 +49,7 @@ void UIContext::begin(Application& app, float dt) {
         r().popClip();
     }
     ended_ = false;
+    pillsDrawn_ = 0;
     dt_ = dt;
     time_ += dt;
     scale_ = std::max(0.5f, std::min(screenW() / 1920.0f, screenH() / 1080.0f));
@@ -89,7 +90,24 @@ float UIContext::newPillHeight(bool small) const {
     return small ? std::max(s(15), px + 3.0f) : std::max(s(18), px + 4.0f);
 }
 
+Rect UIContext::drawNewPillIn(Vec2 c, float maxW) {
+    const float h = newPillHeight(true);
+    const float w = std::min(newPillWidth(true), std::max(h, maxW));
+    if (w >= newPillWidth(true) - 0.5f) return drawNewPill(c.x + w * 0.5f, c.y, true);
+    ++pillsDrawn_;
+    const Rect pill{c.x - w * 0.5f, c.y - h * 0.5f, w, h};
+    const float pulse = 0.75f + 0.25f * std::sin(time_ * 4.0f);
+    r().drawGlow(pill.center(), pill.w * 0.6f, Color{255, 196, 70, static_cast<uint8_t>(90 * pulse)});
+    r().fillRoundedRect(pill, h * 0.5f, Color{255, 196, 70, 255});
+    r().drawRoundedRect(pill, h * 0.5f, Color{120, 60, 0, 200}, std::max(1.0f, s(1.0f)));
+    // Narrower than usual: the word fitted to it (no space in it, a smaller size stays readable).
+    const float f = fitFont("NOUVEAU", FontFace::Bold, newPillFont(true) / scale_, w - std::max(4.0f, h * 0.35f), 0.5f);
+    label("NOUVEAU", pill.center(), f, Color{40, 20, 0, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+    return pill;
+}
+
 Rect UIContext::drawNewPill(float right, float y, bool small) {
+    ++pillsDrawn_;
     const float px = newPillFont(small), h = newPillHeight(small), w = newPillWidth(small);
     Rect pill{right - w, y - h * 0.5f, w, h};
     float pulse = 0.75f + 0.25f * std::sin(time_ * 4.0f);
@@ -173,12 +191,19 @@ bool UIContext::interact(WidgetId wid, const Rect& rc, bool* hoveredOut) {
     }
     InputManager& in = app_->input();
     bool hovered = mouseOver(rc) && editing_ == 0;
-    if (hovered && pointerMode_ && in.mouseMovedThisFrame()) focus_ = wid;
+    // 2.84: a focus taken here (pointed at, clicked) is a focus seen this frame: the widget was registered just
+    // above, before it had the focus, and end() dropped a focus it had not seen (no widget had it any more once
+    // the mouse stopped: the Cosmic plates and diamonds, lit by the focus alone, went out ~0.1 s after a hover).
+    if (hovered && pointerMode_ && in.mouseMovedThisFrame()) {
+        focus_ = wid;
+        focusSeen_ = true;
+    }
     if (hoveredOut) *hoveredOut = hovered;
     bool clicked = false;
     if (hovered && in.mousePressed(SDL_BUTTON_LEFT)) {
         active_ = wid;
         focus_ = wid;
+        focusSeen_ = true;
     }
     if (active_ == wid && in.mouseReleased(SDL_BUTTON_LEFT) && hovered) clicked = true;
     if (focus_ == wid && confirm_) {

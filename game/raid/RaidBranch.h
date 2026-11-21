@@ -126,6 +126,18 @@ struct CoopPlate {
     std::vector<int> ambushIndex;
 };
 
+/// Titan 12 (docs/RAIDS.md « Aucune embuscade derrière soi »): an ambush gate (metadata.raid.gates): a wall across the
+/// zone up to the top of the level, a door on each floor (`doors`), that opens at the step every ambush of `ambushes`
+/// (all those of the zone laid before it; `ambushIndex` their bits in the branch's state) is beaten, here or by another
+/// group. Nobody opens it: no plate, no lever (tools/levelgen: check_gates).
+struct AmbushGate {
+    std::string id;
+    Rect rect;  // the wall (its pill, its lock on the maps)
+    std::vector<std::string> doors;
+    std::vector<std::string> ambushes;
+    std::vector<int> ambushIndex;
+};
+
 /// 2.68: the arena of a gigaboss (metadata.raid.arena, the same format for the seven branches):
 /// its rectangle (the camera's global view, game/raid/ArenaCamera), its floor, its door, where the
 /// group enters.
@@ -192,6 +204,7 @@ struct ZoneRules {
     Magma magma;
     std::string sealedDoor, sealedLabel;
     std::vector<CoopPlate> coops;             // 2.68
+    std::vector<AmbushGate> gates;            // titan 12
     std::vector<std::string> checkpoints;     // 2.68: the group starts again at the last one reached
     ArenaInfo arena;                          // 2.68: a gigaboss's arena (metadata.raid.arena)
     GigabossRules gigaboss;                   // 2.68 (phase 3): its gigaboss, when it is fought there

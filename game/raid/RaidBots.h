@@ -119,7 +119,7 @@ public:
         navi_.setSkill(static_cast<int>(s));
     }
     BotSkill skill() const { return skill_; }
-    /// 2.84: a seed for the measures over several starts (docs/RAIDS.md §35): each seat waits a few steps more or
+    /// 2.84: a seed for the measures over several starts (docs/RAIDS.md §36): each seat waits a few steps more or
     /// less at the start of its zone (as players never press their first key at the same instant) and its small
     /// hesitations change. 0 (the default): no wait, the starts of every version before it.
     void setSeed(uint32_t seed) { seed_ = seed; }

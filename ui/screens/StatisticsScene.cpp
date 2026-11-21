@@ -17,8 +17,10 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <functional>
 #include <future>
 #include <map>
+#include <set>
 
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
@@ -157,6 +159,42 @@ LevelInfo readLevelInfo(const ContentDatabase& content, const std::string& id) {
     return info;
 }
 
+}  // namespace
+
+std::vector<StatsLevelGroup> statisticsLevelGroups(const GameServices& g, const std::function<bool(const std::string&)>& hasData) {
+    // 2.84: from the content, never a list written here: a planet or a level added to the campaign is in.
+    std::vector<StatsLevelGroup> out;
+    std::set<std::string> seen;
+    for (const PlanetData* p : g.content.campaignPlanets()) {
+        StatsLevelGroup grp{p->id, p->name, {}};
+        for (const LevelEntry* l : g.content.levelsForPlanet(p->id))
+            if (seen.insert(l->id).second) grp.levels.push_back(l->id);
+        if (!grp.levels.empty()) out.push_back(std::move(grp));
+    }
+    // The other levels with statistics (a creation, an online level, a level no longer in the campaign).
+    StatsLevelGroup other{"", "Autres niveaux", {}};
+    for (const auto& [id, r] : g.playStats.data().runs)
+        if (!seen.count(id) && hasData(id) && seen.insert(id).second) other.levels.push_back(id);
+    for (const auto& [id, l] : g.playStats.data().levels)
+        if (!seen.count(id) && hasData(id) && seen.insert(id).second) other.levels.push_back(id);
+    if (!other.levels.empty()) out.push_back(std::move(other));
+    return out;
+}
+
+std::vector<std::string> statisticsBosses(const GameServices& g) {
+    // 2.84: the bosses fought first (the most recent first), then every other boss of the content (guardians,
+    // giga-bosses, the raids' gigaboss and their heart) and any boss of the older statistics.
+    std::vector<std::string> out = bossesByRecency(g.playStats.data());
+    std::set<std::string> seen(out.begin(), out.end());
+    for (const EnemyDefinition* d : g.content.enemies())
+        if (d->isBoss && !d->tutorial && seen.insert(d->id).second) out.push_back(d->id);
+    for (const auto& [id, rec] : g.bossStats.all())
+        if (seen.insert(id).second) out.push_back(id);
+    return out;
+}
+
+namespace {
+
 // ------------------------------------------------------------------ the scene
 
 class StatisticsScene : public Scene {
@@ -222,7 +260,7 @@ public:
         float y = view.y - ui.scrollOffset() + ui.s(12);  // room for the « NOUVEAU » pill of a first row
         const float startY = y;
         if (tab_ == kTabData) y = drawData(x, y, w);
-        else if (noData() && tab_ != kTabBoss) y = drawEmpty(x, y, w);
+        else if (noData() && tab_ != kTabBoss && tab_ != kTabLevels && tab_ != kTabHard) y = drawEmpty(x, y, w);  // 2.84: the levels are listed even before any run
         else if (tab_ == kTabOverview) y = drawOverview(x, y, w);
         else if (tab_ == kTabCombat) y = drawCombat(x, y, w);
         else if (tab_ == kTabBoss) y = drawBoss(x, y, w);
@@ -630,6 +668,7 @@ private:
         UIContext& ui = g_.ui;
         float y = y0;
         const std::vector<std::string> order = bossesByRecency(data());
+        const std::vector<std::string> every = statisticsBosses(g_);  // 2.84: every boss, from the content
         // The boss statistics of before (BossStatsScene): always reachable from here.
         {
             UIContext::ButtonStyle st;
@@ -646,8 +685,9 @@ private:
                       "Aucune tentative contre un boss n'est encore enregistrée. Chaque combat compte dès maintenant : la part des points de vie "
                       "retirée, la phase atteinte et l'attaque fatale. Les statistiques de boss d'avant (victoires, phases sans dégât) restent dans "
                       "les fiches des boss.");
-            return y - y0;
+            if (every.empty()) return y - y0;
         }
+        if (!order.empty()) {
         // Three bosses on the curve at a time, the most recent first.
         const int groups = (static_cast<int>(order.size()) + 2) / 3;
         group_ = std::clamp(group_, 0, groups - 1);
@@ -736,15 +776,16 @@ private:
             int rows = (static_cast<int>(order.size()) + per - 1) / per;
             y += (ch + gap) * static_cast<float>(rows) - gap + ui.s(14);
         }
-        // Defeats per phase, for the boss chosen.
+        }
+        // Defeats per phase, for the boss chosen (2.84: any boss of the game; one not fought yet says so).
         {
-            if (phaseBoss_.empty() || !data().bosses.count(phaseBoss_)) phaseBoss_ = order.front();
-            const BossHistory& b = data().bosses.at(phaseBoss_);
+            if (phaseBoss_.empty() || std::find(every.begin(), every.end(), phaseBoss_) == every.end())
+                phaseBoss_ = order.empty() ? every.front() : order.front();
             // The bosses to choose from (wrapping): their rows counted first, the card grows with them.
             int chipRows = 1;
             {
                 float cx = 0.0f, inner = w - ui.s(32);
-                for (const auto& id : order) {
+                for (const auto& id : every) {
                     float bw = std::min(inner, ui.text().measure(bossName(id), FontFace::Bold, ui.s(16)).x + ui.s(30));
                     if (cx > 0.0f && cx + bw > inner) {
                         cx = 0.0f;
@@ -759,19 +800,31 @@ private:
             UIContext::ButtonStyle st;
             st.small = true;
             st.fontSize = 16;
-            for (size_t i = 0; i < order.size(); ++i) {
-                std::string n = bossName(order[i]);
+            for (size_t i = 0; i < every.size(); ++i) {
+                std::string n = bossName(every[i]);
                 float bw = std::min(in.w, ui.text().measure(n, FontFace::Bold, ui.s(16)).x + ui.s(30));
                 if (cx > in.x && cx + bw > in.right()) {
                     cx = in.x;
                     cy += ui.s(40);
                 }
-                st.selected = order[i] == phaseBoss_;
-                if (cframe::button(ui, "pb" + std::to_string(i), {cx, cy, bw, ui.s(34)}, ui.elide(n, FontFace::Bold, 16, bw - ui.s(20)), st)) phaseBoss_ = order[i];
+                st.selected = every[i] == phaseBoss_;
+                if (cframe::button(ui, "pb" + std::to_string(i), {cx, cy, bw, ui.s(34)}, ui.elide(n, FontFace::Bold, 16, bw - ui.s(20)), st)) phaseBoss_ = every[i];
                 cx += bw + ui.s(8);
             }
             cy += ui.s(46);
             Rect plot{in.x, cy, in.w, in.bottom() - cy};
+            const auto fought = data().bosses.find(phaseBoss_);
+            if (fought == data().bosses.end()) {
+                ui.labelWrapped("Aucune tentative contre ce boss n'est encore enregistrée.", {plot.x, plot.y + ui.s(10)}, plot.w, fz(ui, 16), kText2);
+                y += ch + ui.s(14);
+                y += note(x, y, w,
+                          "Progression : à chaque tentative est enregistrée la part des points de vie totaux du boss (toutes phases) retirée au moment de la "
+                          "défaite ou de l'abandon ; la courbe montre le meilleur résultat obtenu jusque-là, une victoire vaut 100 %. Une tentative reprise "
+                          "après une mort retrouve le boss avec ses blessures. Les 200 dernières tentatives sont gardées par boss. Les victoires et phases "
+                          "sans dégât d'avant le suivi viennent des statistiques de boss existantes.");
+                return y - y0;
+            }
+            const BossHistory& b = fought->second;
             const EnemyDefinition* def = g_.content.enemy(phaseBoss_);
             std::vector<Bar> bars;
             std::vector<std::vector<std::string>> rows;
@@ -859,22 +912,17 @@ private:
     float drawLevels(float x, float y0, float w) {
         UIContext& ui = g_.ui;
         float y = y0;
-        std::vector<std::pair<int, std::string>> order;
-        for (const auto& [id, r] : data().runs)
-            if (r.attempts > 0 || !r.segments.empty()) order.push_back({r.lastDay, id});
-        std::stable_sort(order.begin(), order.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
-        if (order.empty()) {
+        auto lastDay = [this](const std::string& id) {
+            auto it = data().runs.find(id);
+            return it != data().runs.end() && (it->second.attempts > 0 || !it->second.segments.empty()) ? it->second.lastDay : -1;
+        };
+        y += chooseLevel(x, y, w, "runs", wantRuns_, lastDay);
+        if (lastDay(wantRuns_) < 0) {
             y += note(x, y, w,
-                      "Aucune partie d'un niveau classique n'est encore enregistrée. Jouez un niveau de la campagne (hors EXTRÊME) depuis son début : "
-                      "chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).");
+                      "Aucune partie de ce niveau n'est encore enregistrée. Jouez-le depuis son début (hors EXTRÊME) : chaque segment entre deux "
+                      "points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).");
             return y - y0;
         }
-        int idx = 0;
-        for (size_t i = 0; i < order.size(); ++i)
-            if (order[i].second == wantRuns_) idx = static_cast<int>(i);
-        levelPicker(x, y, w, "runs", order, idx);
-        wantRuns_ = order[static_cast<size_t>(idx)].second;
-        y += ui.s(40) + ui.s(14);
         const std::string& levelId = wantRuns_;
         const LevelRuns& r = data().runs.at(levelId);
         const LevelInfo* li = info(levelId);
@@ -1086,6 +1134,55 @@ private:
     }
 
     /// ‹ the level › — returns true when it changed. `idx` is its place in `order`.
+    /// 2.84: the planets of the campaign (and « Autres niveaux ») in a row of plates of equal widths, then the
+    /// levels of the one chosen (‹ ›): every level of the campaign, played or not. `want` keeps the level chosen
+    /// (empty: the last played, else the first); `lastDay`: the day of its last statistics, -1 without any.
+    /// Returns the height used.
+    float chooseLevel(float x, float y, float w, const std::string& id, std::string& want, const std::function<int(const std::string&)>& lastDay) {
+        UIContext& ui = g_.ui;
+        const auto groups = statisticsLevelGroups(g_, [&](const std::string& l) { return lastDay(l) >= 0; });
+        if (groups.empty()) return 0.0f;
+        int gi = -1, li = 0;
+        auto locate = [&] {
+            gi = -1;
+            for (size_t a = 0; a < groups.size(); ++a)
+                for (size_t b = 0; b < groups[a].levels.size(); ++b)
+                    if (groups[a].levels[b] == want) gi = static_cast<int>(a), li = static_cast<int>(b);
+        };
+        locate();
+        if (gi < 0) {  // the last level played, else the campaign's first
+            int best = -1;
+            want = groups.front().levels.front();
+            for (const auto& grp : groups)
+                for (const auto& l : grp.levels)
+                    if (lastDay(l) > best) best = lastDay(l), want = l;
+            locate();
+        }
+        const int n = static_cast<int>(groups.size());
+        const float gap = ui.s(8), bh = ui.s(40), bw = (w - gap * static_cast<float>(n - 1)) / static_cast<float>(n);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = 17;
+        for (int a = 0; a < n; ++a) {
+            const auto& grp = groups[static_cast<size_t>(a)];
+            st.selected = a == gi;
+            const Rect b{x + (bw + gap) * static_cast<float>(a), y, bw, bh};
+            if (cframe::button(ui, id + "planet" + std::to_string(a), b, ui.elide(grp.name, FontFace::Bold, ui.fitFont(grp.name, FontFace::Bold, 17, bw - ui.s(20), 0.6f), bw - ui.s(20)), st) &&
+                a != gi) {
+                gi = a;
+                li = 0;
+                int best = -1;  // its last level played, else its first
+                for (size_t b2 = 0; b2 < grp.levels.size(); ++b2)
+                    if (lastDay(grp.levels[b2]) > best) best = lastDay(grp.levels[b2]), li = static_cast<int>(b2);
+            }
+        }
+        std::vector<std::pair<int, std::string>> order;
+        for (const auto& l : groups[static_cast<size_t>(gi)].levels) order.push_back({lastDay(l), l});
+        levelPicker(x, y + bh + ui.s(10), w, id, order, li);
+        want = order[static_cast<size_t>(std::clamp(li, 0, static_cast<int>(order.size()) - 1))].second;
+        return bh + ui.s(10) + ui.s(40) + ui.s(14);
+    }
+
     bool levelPicker(float x, float y, float w, const std::string& id, const std::vector<std::pair<int, std::string>>& order, int& idx) {
         UIContext& ui = g_.ui;
         UIContext::ButtonStyle st;
@@ -1119,17 +1216,14 @@ private:
     float drawHard(float x, float y0, float w) {
         UIContext& ui = g_.ui;
         float y = y0;
-        std::vector<std::pair<int, std::string>> order;
-        for (const auto& [id, l] : data().levels)
-            if (l.any()) order.push_back({l.lastDay, id});
-        std::stable_sort(order.begin(), order.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
-        if (!order.empty()) {
-            int idx = 0;
-            for (size_t i = 0; i < order.size(); ++i)
-                if (order[i].second == wantSlices_) idx = static_cast<int>(i);
-            levelPicker(x, y, w, "slices", order, idx);
-            wantSlices_ = order[static_cast<size_t>(idx)].second;
-            y += ui.s(40) + ui.s(14);
+        auto lastDay = [this](const std::string& id) {
+            auto it = data().levels.find(id);
+            return it != data().levels.end() && it->second.any() ? it->second.lastDay : -1;
+        };
+        y += chooseLevel(x, y, w, "slices", wantSlices_, lastDay);
+        if (lastDay(wantSlices_) < 0)
+            y += note(x, y, w, "Aucun passage n'est encore enregistré dans ce niveau : jouez-le pour voir où vous tombez.");
+        if (lastDay(wantSlices_) >= 0) {
             const LevelSlices& l = data().levels.at(wantSlices_);
             const LevelInfo* li = info(wantSlices_);
             charts::Heat h;

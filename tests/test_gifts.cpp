@@ -1,6 +1,7 @@
 // Gifts (« Cadeaux », game/online/Gifts, ui/screens/GiftsScene, GiftsUi, AdminGifts, server/src/gifts.ts): the
-// client's model (the list as the server sends it, the content hidden until opened, the filters, the counts, the
-// gift « Cadeau suivant » opens), the wraps' sheet and its generator (tools/assetgen/environment/gift_wraps.py
+// client's model (the list as the server sends it, the content hidden until opened, a parcel's items one by one and no
+// count before it is opened, the filters, the counts, the gift « Cadeau suivant » opens), the wraps' and
+// parcels' sheets and their generator (tools/assetgen/environment/gift_wraps.py
 // --check, the same ids and lights as the game's table), what may be given in ADMINISTRATION › Cadeaux, and the
 // layouts measured at 1280 x 720 and 1920 x 1080, in French and in English: no text over another nor out of its
 // room (the list, a row, the detail, the opening's texts and buttons, the admin tab's columns).
@@ -98,6 +99,57 @@ TEST_CASE("gifts: the list as the server sends it, the content hidden until open
     CHECK(gifts::parseList(Json::object()).empty());
 }
 
+TEST_CASE("gifts: a parcel (« Colis »): one wrapped entry, no count before it is opened, then its items one by one") {
+    Json wrapped = giftJson(7, false, "rubis");
+    wrapped["parcel"] = true;
+    wrapped["reward"] = Json();
+    // Even if an answer carried contents for a wrapped parcel, the game keeps none (nothing to count).
+    wrapped["contents"] = Json::array({Json{{"kind", "suit"}, {"id", "suit_or"}}});
+    Json opened = giftJson(3, true, "azur");
+    opened["parcel"] = true;
+    opened["reward"] = Json();
+    opened["contents"] = Json::array({Json{{"kind", "suit"}, {"id", "suit_or"}, {"name", "Or stellaire"}}, Json{{"kind", "hat"}, {"id", "x"}},
+                                      Json{{"kind", "trail"}, {"id", "trail_comet"}, {"name", "Comète"}}, Json{{"kind", "badge"}, {"id", "communaute_coeur"}}});
+    // A gift with the same id as the opened parcel: they never mix (their keys differ).
+    const Json data = {{"gifts", Json::array({wrapped, opened, giftJson(3, false, "or")})}};
+    const auto list = gifts::parseList(data);
+    CHECK(list.size() == 3);
+    CHECK(list[0].parcel && !list[0].opened && list[0].contents.empty() && !list[0].reward);
+    CHECK(gifts::revealed(list[0]).empty());
+    CHECK(!gifts::isRevealed(list[0]));
+    CHECK(gifts::openPath(list[0]) == "/api/v1/gifts/parcels/7/open");
+    CHECK(gifts::openPath(list[2]) == "/api/v1/gifts/3/open");
+    CHECK(list[1].parcel && list[1].opened && list[1].contents.size() == 3);  // the unknown kind left out
+    CHECK(list[1].contents[1].id == "trail_comet" && list[1].contents[2].kind == "badge");
+    CHECK(gifts::isRevealed(list[1]));
+    CHECK(list[1].key() == -3 && list[2].key() == 3);
+    CHECK(gifts::unopenedCount(list) == 2);  // a parcel counts as one
+    CHECK(gifts::nextToOpen(list, list[0].key())->key() == 3);
+    CHECK(gifts::nextToOpen(list, 3)->key() == -7);
+    // Opening the parcel replaces it, never the gift with the same number.
+    std::vector<gifts::Gift> after = list;
+    gifts::Gift p7 = list[1];
+    p7.id = 7;
+    gifts::applyOpened(after, p7);
+    CHECK(after[0].opened && after[0].contents.size() == 3);
+    CHECK(!after[2].opened);
+    gifts::Gift g3 = *gifts::parseGift(giftJson(3, true));
+    gifts::applyOpened(after, g3);
+    CHECK(after[2].opened && after[1].parcel && after[1].contents.size() == 3);
+    // The items come out one by one: « Suivant » after each, then the empty box; never a count to show.
+    gifts::Unwrapping u;
+    u.items = gifts::revealed(list[1]);
+    CHECK(u.current() && u.current()->id == "suit_or");
+    CHECK(u.advance() && u.current()->id == "trail_comet");
+    CHECK(u.advance() && u.current()->id == "communaute_coeur");
+    CHECK(u.advance() && u.empty && u.current() == nullptr);
+    CHECK(!u.advance());
+    gifts::Unwrapping one;  // a parcel of one: the same steps
+    one.items = {list[1].contents[0]};
+    CHECK(one.current() && one.advance() && one.empty);
+    CHECK(gifts::Unwrapping{}.current() == nullptr);
+}
+
 TEST_CASE("gifts: the message as the server keeps it, the names of the kinds and wraps") {
     CHECK(gifts::textLength("Merci d'avoir été là") == 20);
     CHECK(gifts::cleanMessage("  a\tb​c  ") == "abc");
@@ -130,6 +182,16 @@ TEST_CASE("gifts: the wraps' sheet is the generator's, with the game's ids and l
         const Color c = gifts::wrapLight(gifts::wrapIds()[i]);
         CHECK(light.is_array() && light.size() == 3 && light[0].get<int>() == c.r && light[1].get<int>() == c.g && light[2].get<int>() == c.b);
     }
+    // The parcels: the same wraps, cells and lid offset, the body's top edge where the items rise from.
+    const auto parcels = FileUtil::loadJson(Paths::assetsDir() / "ui" / "gifts" / "parcels.json");
+    CHECK(parcels.has_value());
+    const Json pj = parcels.value_or(Json::object());
+    CHECK(jstr(pj, "texture") == gifts::kParcelsTexture);
+    CHECK(jget<int>(pj, "cell", 0) == gifts::kWrapCell && jget<int>(pj, "lid_dy", 0) == gifts::kLidDy);
+    CHECK(jget<int>(pj, "top", 0) == gifts::kParcelTop);
+    const Json& pw = jfield(pj, "wraps", Json::array());
+    CHECK(pw.is_array() && pw.size() == static_cast<size_t>(gifts::kWrapCount));
+    for (size_t i = 0; i < pw.size() && i < gifts::wrapIds().size(); ++i) CHECK(jstr(pw[i], "id") == gifts::wrapIds()[i]);
     if (std::system("python3 -c \"import PIL\" > " COSMIC_NULL_DEVICE " 2>&1") != 0) {
         std::printf("  (python3 + Pillow absents : vérification des emballages sautée)\n");
         return;
@@ -203,9 +265,12 @@ TEST_CASE("gifts: layouts measured, nothing overlaps (1280×720, 1920×1080, FR 
                 CHECK(Hd.rows.h > ui.s(giftsui::kRowH) * 3.0f);
                 // A row at its longest: the title, the line under it and the state never under one another.
                 const Rect row{Hd.rows.x, Hd.rows.y, Hd.rows.w - ui.s(16), ui.s(giftsui::kRowH)};
-                for (const bool opened : {false, true}) {
-                    const std::string title = opened ? "Couronne solaire d'Asterion le Dévoreur" : "Cadeau de " + longName;
-                    const std::string sub = opened ? "Effet de victoire · de " + longName + " · 20/11/2026" : "Contenu : surprise · 20/11/2026";
+                for (const int kind : {0, 1, 2, 3}) {  // a gift wrapped, opened; a parcel wrapped, opened
+                    const bool opened = kind % 2 == 1, parcel = kind >= 2;
+                    const std::string title = parcel ? "Colis de " + longName : opened ? "Couronne solaire d'Asterion le Dévoreur" : "Cadeau de " + longName;
+                    const std::string sub = parcel   ? (opened ? "Colis ouvert · 20/11/2026" : "Contenu : surprise · 20/11/2026")
+                                            : opened ? "Effet de victoire · de " + longName + " · 20/11/2026"
+                                                     : "Contenu : surprise · 20/11/2026";
                     const giftsui::RowLayout R = giftsui::rowLayout(ui, row, title, sub, opened ? "Ouvert" : "À ouvrir", false);
                     for (const Rect& r : {R.icon, R.status, R.title.box, R.sub.box}) CHECK(inside(row, r));
                     CHECK(apart(R.icon, R.title.box) && apart(R.title.box, R.status) && apart(R.sub.box, R.status) && apart(R.title.box, R.sub.box));
@@ -213,15 +278,20 @@ TEST_CASE("gifts: layouts measured, nothing overlaps (1280×720, 1920×1080, FR 
                     CHECK(fits(ui, R.sub, FontFace::Body, R.sub.box.w));
                     CHECK(fits(ui, R.statusText, FontFace::Bold, R.status.w - ui.s(10)));
                 }
-                // The detail: wrapped (one button) and opened (two), the longest message.
-                for (const bool opened : {false, true}) {
+                // The detail: wrapped (one button) and opened (two), the longest message; a parcel wrapped and opened.
+                for (const int kind : {0, 1, 2, 3}) {
+                    const bool opened = kind % 2 == 1, parcel = kind >= 2;
                     giftsui::DetailTexts T;
-                    T.kind = opened ? "Effet de victoire" : "Cadeau · emballage Améthyste";
-                    T.name = opened ? "Couronne solaire d'Asterion le Dévoreur" : "Que contient-il ?";
+                    T.kind = parcel ? "Colis · emballage Améthyste" : opened ? "Effet de victoire" : "Cadeau · emballage Améthyste";
+                    T.name = parcel ? (opened ? "Colis de " + longName : "Que contient-il ?") : opened ? "Couronne solaire d'Asterion le Dévoreur" : "Que contient-il ?";
                     T.from = "De " + longName + " · 20/11/2026";
                     T.message = "« " + longMessage + " »";
-                    T.actions = opened ? std::vector<std::string>{"Badges du profil complets", "Revoir l'ouverture"} : std::vector<std::string>{"Ouvrir le cadeau"};
-                    T.note = opened ? "Retirez d'abord un badge du profil (Collection › Badges du profil)." : "Hors ligne : le cadeau vous attend, il s'ouvrira une fois connecté.";
+                    T.actions = parcel   ? std::vector<std::string>{opened ? "Revoir l'ouverture" : "Ouvrir le colis"}
+                                : opened ? std::vector<std::string>{"Badges du profil complets", "Revoir l'ouverture"}
+                                         : std::vector<std::string>{"Ouvrir le cadeau"};
+                    T.note = opened   ? "Retirez d'abord un badge du profil (Collection › Badges du profil)."
+                             : parcel ? "Hors ligne : le colis vous attend, il s'ouvrira une fois connecté."
+                                      : "Hors ligne : le cadeau vous attend, il s'ouvrira une fois connecté.";
                     const giftsui::DetailLayout D = giftsui::detailLayout(ui, S.detail, T);
                     std::vector<Rect> blocks = {D.kind.box, D.art, D.name.box, D.from.box, D.message, D.note.box};
                     for (const Rect& r : D.actions) blocks.push_back(r);
@@ -242,16 +312,38 @@ TEST_CASE("gifts: layouts measured, nothing overlaps (1280×720, 1920×1080, FR 
                     for (size_t i = 0; i < D.actions.size(); ++i)
                         CHECK(ui.text().measure(T.actions[i], FontFace::Bold, ui.s(ui.fitFont(T.actions[i], FontFace::Bold, D.actionSize, D.actions[i].w - ui.s(20)))).x <=
                               D.actions[i].w - ui.s(20) + 0.5f);
+                    if (!(parcel && opened)) continue;
+                    // An opened parcel's contents in the art's room: at least two rows show, each row's icon, name,
+                    // kind and « Équiper » apart and inside it (the longest names and labels).
+                    CHECK(D.art.h >= 2.0f * ui.s(giftsui::kContentRowH) + ui.s(giftsui::kContentRowGap));
+                    const Rect crow{D.art.x, D.art.y, D.art.w - ui.s(16), ui.s(giftsui::kContentRowH)};
+                    for (const std::string& equip : {std::string("Badges du profil complets"), std::string("Équiper"), std::string("Équipé")}) {
+                        const giftsui::ContentRowLayout C =
+                            giftsui::contentRowLayout(ui, crow, "Couronne solaire d'Asterion le Dévoreur", "Effet de victoire", equip);
+                        for (const Rect& r : {C.icon, C.equip, C.name.box, C.kind.box}) CHECK(inside(crow, r));
+                        CHECK(apart(C.icon, C.name.box) && apart(C.name.box, C.equip) && apart(C.kind.box, C.equip) && apart(C.name.box, C.kind.box));
+                        CHECK(fits(ui, C.name, FontFace::Bold, C.name.box.w));
+                        CHECK(fits(ui, C.kind, FontFace::Body, C.kind.box.w));
+                        CHECK(ui.text().measure(equip, FontFace::Bold, ui.s(ui.fitFont(equip, FontFace::Bold, C.equipSize, C.equip.w - ui.s(20)))).x <=
+                              C.equip.w - ui.s(20) + 0.5f);
+                    }
                 }
-                // The opening's last texts and its three buttons, above the line of the keys.
-                for (const bool preview : {false, true}) {
+                // The opening's last texts and its buttons, above the line of the keys: a gift, the preview, a
+                // parcel's item (« Suivant »), its empty box, the preview of a parcel.
+                for (const int step : {0, 1, 2, 3, 4}) {
+                    const bool preview = step == 1 || step == 4, empty = step == 3;
                     giftsui::RevealTexts T;
-                    T.kind = preview ? "Effet de victoire · aperçu" : "Effet de victoire";
-                    T.name = "Couronne solaire d'Asterion le Dévoreur";
-                    T.from = preview ? "De " + longName + " · ce que verront les joueurs" : "De " + longName + " · 20/11/2026 · ajouté à votre collection";
+                    T.kind = empty ? "Colis · emballage Améthyste" : preview ? "Effet de victoire · aperçu" : "Effet de victoire";
+                    T.name = empty ? "Le colis est vide" : "Couronne solaire d'Asterion le Dévoreur";
+                    T.from = preview ? "De " + longName + " · ce que verront les joueurs"
+                             : empty ? "De " + longName + " · 20/11/2026 · tout est dans votre collection"
+                                     : "De " + longName + " · 20/11/2026 · ajouté à votre collection";
                     T.message = "« " + longMessage + " »";
-                    T.buttons = preview ? std::vector<std::string>{"Retour à l'envoi"}
-                                        : std::vector<std::string>{"Badges du profil complets", "Cadeau suivant (12)", "Plus tard"};
+                    T.buttons = step == 0   ? std::vector<std::string>{"Badges du profil complets", "Cadeau suivant (12)", "Plus tard"}
+                                : step == 1 ? std::vector<std::string>{"Retour à l'envoi"}
+                                : step == 2 ? std::vector<std::string>{"Badges du profil complets", "Suivant", "Plus tard"}
+                                : step == 3 ? std::vector<std::string>{"Cadeau suivant (12)", "Fermer"}
+                                            : std::vector<std::string>{"Suivant", "Retour à l'envoi"};
                     const giftsui::RevealLayout R = giftsui::revealLayout(ui, T);
                     std::vector<Rect> blocks = {R.kind.box, R.name.box, R.from.box, R.hint};
                     if (!R.messageLines.empty())

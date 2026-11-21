@@ -410,6 +410,12 @@
    ]
   },
   {
+   "fr": "1 colis de {0} cadeaux",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "1 défi {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -1398,7 +1404,6 @@
   {
    "fr": "Abdomen",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -2087,6 +2092,12 @@
   },
   {
    "fr": "Administration › Raids : « Tester Asterion » (administrateurs) lance seul et en local n'importe quelle zone d'une branche du raid, combat de Pyroclast compris, en mode « Invincible (admin) · non classé », avec un nombre de joueurs simulés (2 à 8) pour sa vie et une phase de départ. Un test ne compte jamais : aucun rapport, ni consensus, ni classement, ni récompense ; le serveur refuse tout rapport marqué comme test.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "ADMINISTRATION › Raids devient générique : tout vient du catalogue des raids — liste « Raid » avec icônes, affiche du raid (art, accroche, parties, formats, difficulté, « Fiche du raid › »), formats et difficulté du raid, onglet « Tester le raid », chaque événement avec l'icône et « Raid — Format ».",
    "where": [
     "data/news/changelog.json"
    ]
@@ -4109,11 +4120,11 @@
   {
    "fr": "Asterion",
    "where": [
+    "data/raids/asterion.json",
     "game/content/AssetCatalog.cpp",
     "game/online/Gifts.cpp",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -4719,7 +4730,7 @@
   {
    "fr": "Asterion, le Dévoreur de mondes",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -6092,6 +6103,12 @@
    ]
   },
   {
+   "fr": "Aucun passage n'est encore enregistré dans ce niveau : jouez-le pour voir où vous tombez.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun passage ne se détache encore (il en faut au moins 5 passages pour en juger).",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -6698,7 +6715,7 @@
    ]
   },
   {
-   "fr": "Aucune partie d'un niveau classique n'est encore enregistrée. Jouez un niveau de la campagne (hors EXTRÊME) depuis son début : chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).",
+   "fr": "Aucune partie de ce niveau n'est encore enregistrée. Jouez-le depuis son début (hors EXTRÊME) : chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -6822,6 +6839,12 @@
    "fr": "Aucune tentative classée sur un niveau EXTRÊME : chaque tentative compte, même sans arriver au bout.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune tentative contre ce boss n'est encore enregistrée.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -7138,6 +7161,12 @@
    "fr": "autres groupes ×{0} (accéléré)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autres niveaux",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -7869,6 +7898,19 @@
    "where": [
     "ui/screens/CreatureArt.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "barrage",
+   "where": [
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Barrage — {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -8670,6 +8712,7 @@
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/tutorial/Tutorial.cpp",
     "saves/HudLayout.cpp",
     "saves/RaidHudLayout.cpp",
@@ -9179,7 +9222,6 @@
   {
    "fr": "Bras droit",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -9206,7 +9248,6 @@
   {
    "fr": "Bras gauche",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -9826,6 +9867,12 @@
   },
   {
    "fr": "Cadeaux : un administrateur offre des récompenses du catalogue (combinaisons, traînées, cadres, titres, effets de victoire, badges de profil) à un ou plusieurs joueurs, dans l'un des onze emballages, avec un message ; COSMIC ONLINE › CADEAUX les garde (contenu surprise jusqu'à l'ouverture) et les ouvre dans une scène animée (la boîte tremble, le couvercle s'envole, l'objet monte dans son halo), puis « Équiper maintenant », « Cadeau suivant » ou « Plus tard » ; ADMINISTRATION › Cadeaux pour choisir, prévisualiser, envoyer et retirer, chaque envoi inscrit au Journal.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Cadeaux : un administrateur peut envoyer 1 colis de N cadeaux au lieu de N cadeaux séparés ; le joueur ne voit ni son contenu ni leur nombre, et les objets sortent un par un de la même boîte (Suivant, Équiper pour chacun, puis « Le colis est vide »).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -11728,6 +11775,12 @@
    "fr": "Ces champignons rebondissent... que cache la canopée ?",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Ces colis étaient déjà ouverts.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -14058,6 +14111,12 @@
    ]
   },
   {
+   "fr": "CLASSEMENTS › niveau EXTRÊME : chaque tentative de la course à la vérification a de nouveau son bouton ▶ pour voir son replay.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Classements, clans, raids et niveaux de la communauté.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -14441,6 +14500,54 @@
    "fr": "Col des blizzards",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Colis ({0}) · {1}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Colis de {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis introuvable (il a peut-être été retiré).",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
+   "fr": "Colis introuvable.",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
+   "fr": "Colis ouvert",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis ouvert · {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis · emballage {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis · emballage {0} · aperçu",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -17584,7 +17691,7 @@
   {
    "fr": "Court",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -17910,7 +18017,6 @@
   {
    "fr": "Crâne",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -19212,6 +19318,12 @@
    ]
   },
   {
+   "fr": "De {0} · tout est dans votre collection",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "De {0} · {1}",
    "where": [
     "ui/screens/GiftsScene.cpp"
@@ -19219,6 +19331,12 @@
   },
   {
    "fr": "De {0} · {1} · ajouté à votre collection",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "De {0} · {1} · tout est dans votre collection",
    "where": [
     "ui/screens/GiftsScene.cpp"
    ]
@@ -20189,6 +20307,7 @@
     "game/online/AsterionBody.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
+    "game/raid/RaidCatalog.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -20505,6 +20624,12 @@
    "fr": "Difficulté {0} / 5",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Difficulté {0} à {1}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -23716,7 +23841,8 @@
   {
    "fr": "Embuscades restantes : {0} sur {1}",
    "where": [
-    "game/raid/RaidBranch.cpp"
+    "game/raid/RaidBranch.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -24311,6 +24437,12 @@
    "fr": "En {0} ou moins, sans dégât",
    "where": [
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "En équipe et en raid, la tablette de pouvoir ramassée n'est annoncée (message, son, flash) qu'au joueur qui l'a prise.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -26604,6 +26736,7 @@
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/OnlineMigration.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
@@ -26797,6 +26930,12 @@
    "fr": "Fiche du clan indisponible.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche du raid ›",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -27238,6 +27377,12 @@
    "fr": "Films d'Asterion",
    "where": [
     "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Films et histoires : le pointeur de la souris est caché pendant la lecture, en mode Film ou non, et revient deux secondes quand la souris bouge.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -27869,11 +28014,11 @@
     "game/progression/NewBadges.cpp",
     "game/progression/NewsCenter.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidCatalog.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
     "saves/SaveFile.cpp",
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/ProjectsScene.cpp",
@@ -30138,6 +30283,12 @@
    ]
   },
   {
+   "fr": "GROUPE · L'embuscade est vaincue : le barrage s'ouvre",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · La gravité revient : attention à la chute !",
    "where": [
     "game/raid/GravitonRoutine.cpp"
@@ -31194,6 +31345,12 @@
    ]
   },
   {
+   "fr": "Hors ligne : le colis vous attend, il s'ouvrira une fois connecté.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Hors ligne : liste en cache",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -31465,6 +31622,7 @@
     "game/race/Race.cpp",
     "game/raid/Aftermath.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/online/RaidTestGuests.cpp",
@@ -32020,6 +32178,7 @@
    "fr": "image",
    "where": [
     "game/content/BossStories.cpp",
+    "game/raid/RaidCatalog.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/studio/Studio.cpp",
@@ -33484,7 +33643,6 @@
   {
    "fr": "Jambe droite",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -33505,7 +33663,6 @@
   {
    "fr": "Jambe gauche",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -34591,6 +34748,12 @@
    "fr": "L'effet de victoire se joue dès que Nova atteint la sortie, pendant la scène de fin du niveau (il commençait après elle et le passage aux résultats le cachait).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'embuscade est vaincue : le barrage s'ouvre",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -37328,6 +37491,18 @@
    ]
   },
   {
+   "fr": "Le colis est vide",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le colis n'a pas pu être ouvert.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Le combat de l'exemple s'est arrêté avant l'attaque.",
    "where": [
     "game/gameplay/BossAttackDemo.cpp"
@@ -37484,6 +37659,12 @@
    "fr": "Le Cœur",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "le Cœur",
+   "where": [
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -37919,6 +38100,7 @@
   {
    "fr": "Le Dévoreur de mondes",
    "where": [
+    "data/raids/asterion.json",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -40127,12 +40309,6 @@
    ]
   },
   {
-   "fr": "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : {0} groupes de {1} joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) ou regardez-le.",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
    "fr": "Les administrateurs du jeu ouvriront les inscriptions.",
    "where": [
     "game/online/Raids.cpp"
@@ -41093,6 +41269,12 @@
    ]
   },
   {
+   "fr": "Les pastilles NOUVEAU reviennent sur les icônes en losange (menu principal, carte des planètes).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les peuples partis vers les étoiles osèrent enfin revenir. Les enfants levèrent les yeux vers une lumière nouvelle.",
    "where": [
     "data/raids/asterion_apres.json"
@@ -41556,6 +41738,12 @@
    "fr": "Les zones du raid sont introuvables dans les données du jeu : réinstallez le jeu.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les {0} branches et toutes leurs zones (vestiaire compris), puis {1} avec tous les groupes : {2} groupes de {3} joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) ou regardez-le.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -42597,7 +42785,7 @@
   {
    "fr": "Légendaire",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -43804,12 +43992,6 @@
    ]
   },
   {
-   "fr": "Menu du raid · {0}",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Menu du raid, ouvert et fermé par le joueur : Tab au clavier, L3 à la manette (réglables dans Paramètres › Commandes), le bouton du HUD à la souris ou la pause ; Échap ou B le ferment aussi. Sections « Ce qu'il reste à faire », « Zones terminées » et leurs tableaux des contributions, « Journal » (toutes les notifications, à l'heure du raid), « Groupe » (en jeu, à terre, spectateur) et « Titan » (son gigaboss, les parties tombées, les liens des autres branches, ses événements, « Résultats du raid »), avec défilement au clavier, à la manette et à la souris.",
    "where": [
     "data/news/changelog.json"
@@ -44324,6 +44506,7 @@
    "fr": "minutes",
    "where": [
     "game/GameServices.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/RaidBranchScene.cpp"
@@ -45927,6 +46110,60 @@
    "fr": "Nettoyage",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 1 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 2 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 3 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer la galerie 4 : vaincre son embuscade",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Nettoyer les Gaines : vaincre leur embuscade",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -47593,6 +47830,12 @@
    "fr": "Nouveaux niveaux : sans alerte",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveaux succès depuis votre dernière visite : {0}",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -49434,6 +49677,12 @@
    ]
   },
   {
+   "fr": "Ouverture du colis…",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouverture du replay…",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -49525,6 +49774,12 @@
   },
   {
    "fr": "Ouvrir le cadeau",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir le colis",
    "where": [
     "ui/screens/GiftsScene.cpp"
    ]
@@ -50475,7 +50730,7 @@
    ]
   },
   {
-   "fr": "Parties du titan simulées comme tombées (leurs effets sur le Cœur) :",
+   "fr": "Parties du titan simulées comme tombées (leurs effets sur {0}) :",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -50521,6 +50776,7 @@
    "where": [
     "game/online/AsterionBody.cpp",
     "game/online/RaidRecap.cpp",
+    "game/raid/RaidCatalog.cpp",
     "game/raid/RaidTestRelay.cpp",
     "main.cpp",
     "ui/screens/AdminBackups.cpp"
@@ -57021,6 +57277,12 @@
    ]
   },
   {
+   "fr": "Raid : l'entrée « Menu du raid » quitte la pause (Tab ou L3 l'ouvrent toujours) ; la pause prend le nouveau style.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raid annulé",
    "where": [
     "game/online/Raids.cpp"
@@ -57176,6 +57438,12 @@
    ]
   },
   {
+   "fr": "RAID MONDIAL",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Raid requis",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -57307,6 +57575,12 @@
   },
   {
    "fr": "Raids : plus aucune carte ne s'ouvre d'elle-même pendant qu'on joue. Une zone terminée, le groupe éliminé, une zone reprise par un groupe de renfort ou à reprendre, un gigaboss vaincu, un lien du titan, la chute d'Asterion : une notification courte (3,5 s, avec un son) qui ne prend aucune touche ni le focus, l'une sous l'autre quand plusieurs arrivent ensemble (trois au plus, les suivantes attendent leur tour).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : plus aucune embuscade derrière soi. Les galeries des expéditions (les meutes sur trois étages avant chaque point de contrôle, et les Gaines du Poignet-verrou) sont de vraies embuscades, cochées sur la carte, et un barrage les suit : il ne s'ouvre que quand toutes les embuscades d'avant sont vaincues (« Embuscades restantes : 1 sur 2 » sur ses portes, cadenas sur la carte). Les portes des tours du Poignet-verrou ne se passent plus par-dessus et ne s'ouvrent plus à une chute (titan 12).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -65162,7 +65436,7 @@
    ]
   },
   {
-   "fr": "SIMULER UN RAID COMPLET (TESTER ASTERION)",
+   "fr": "SIMULER UN RAID COMPLET (TESTER LE RAID)",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -66449,7 +66723,7 @@
    "fr": "Standard",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "ui/screens/AdminRaids.cpp"
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -66711,6 +66985,12 @@
    ]
   },
   {
+   "fr": "Statistiques : tous les niveaux de la campagne, planète par planète (Aethra, Noyau stellaire, Les Confins compris), et tous les boss du jeu (gardiens, giga-boss, Gigaboss d'Asterion et son Cœur).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "STATISTIQUES DES BOSS",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -66929,6 +67209,12 @@
    ]
   },
   {
+   "fr": "SUCCÈS : en entrant, un bandeau « Nouveaux succès depuis votre dernière visite » les nomme (cliquez pour y aller, « Voir les nouveaux » les parcourt) ; chacun porte la pastille NOUVEAU et un halo doré ; le menu principal compte ceux à voir.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Succès de la Liche (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Linceul des catacombes (680 étoiles), la traînée Âmes errantes (690), l'effet de victoire Veillée des âmes (700), le cadre Ossuaire et le titre Gardien des noms.",
    "where": [
     "data/news/changelog.json"
@@ -67071,7 +67357,14 @@
   {
    "fr": "Suivant",
    "where": [
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "suivant",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -67601,6 +67894,12 @@
    "fr": "Survivant",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Survol à la souris : un bouton du nouveau style reste allumé (glissement, halo, reflet en boucle) tant que le pointeur reste dessus.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -69826,12 +70125,6 @@
    ]
   },
   {
-   "fr": "Tester Asterion",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
    "fr": "Tester Asterion (administration) : dans le test d'une zone comme dans « Simuler un raid complet », l'administrateur peut inviter de vrais joueurs, administrateurs ou non. « Inviter des joueurs connectés… » ouvre la liste des joueurs connectés, avec une recherche par nom ; chaque invité prend la place d'un joueur simulé de son groupe (jamais un de plus) et l'administrateur choisit son groupe dans le raid complet.",
    "where": [
     "data/news/changelog.json"
@@ -69862,12 +70155,6 @@
    ]
   },
   {
-   "fr": "TESTER ASTERION · ADMINISTRATEURS",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
    "fr": "Tester Asterion › « Simuler un raid complet » : le réglage devient « Joueurs par groupe (vous compris) ». Tous les groupes ont la même taille : le vôtre, c'est vous et N − 1 joueurs simulés, les autres en ont N. En rejoignant un autre groupe, vous y remplacez un joueur simulé. Le test d'une zone garde « Joueurs simulés (sans vous) ».",
    "where": [
     "data/news/changelog.json"
@@ -69883,6 +70170,18 @@
    "fr": "Tester ici",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Tester le raid",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "TESTER LE RAID · ADMINISTRATEURS",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -70562,7 +70861,6 @@
   {
    "fr": "Torse",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -72674,6 +72972,12 @@
    ]
   },
   {
+   "fr": "Un colis par joueur · emballage {0} · son contenu reste une surprise",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "Un colosse de basalte... Frappez-le après ses coups de marteau !",
    "where": [
     "data/levels/pyralis_01.json"
@@ -73412,6 +73716,7 @@
   {
    "fr": "Un titan cosmique avale les planètes de la bordure. Les clans l'affronteront ensemble, branche par branche, sur son propre corps, jusqu'à son cœur.",
    "where": [
+    "data/raids/asterion.json",
     "server/src/raids.ts"
    ]
   },
@@ -76204,7 +76509,7 @@
    ]
   },
   {
-   "fr": "Vide : le texte d'Asterion",
+   "fr": "Vide : le texte du raid",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -76852,6 +77157,12 @@
    "fr": "Voir les défis",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Voir les nouveaux",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -80393,6 +80704,12 @@
    ]
   },
   {
+   "fr": "{0} cadeaux séparés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} candidature · {1} invitation envoyée",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -80467,6 +80784,36 @@
    "fr": "{0} Cliquez pour réessayer.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis envoyé",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis envoyés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis retiré",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis retirés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -81117,7 +81464,14 @@
   {
    "fr": "{0} Gigaboss",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} Gigaboss + {1}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -82059,8 +82413,15 @@
    ]
   },
   {
+   "fr": "{0} partie",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} parties",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
   },

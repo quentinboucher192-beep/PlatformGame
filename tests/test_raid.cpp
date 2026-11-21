@@ -253,7 +253,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0x7d600474be5d6c56ULL;  // reference (titan 11: the Poignet-verrou's plates wait for its ambushes, walls over their doors): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0xba075d6aef357048ULL;  // reference (titan 12: the Gaines an ambush, a gate after each ambush, nothing over the towers' east doors): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -872,7 +872,8 @@ TEST_CASE("raid long route: a door of the group opens with enough players on its
     Services s;
     const uint32_t gens = 1u << branch().objectiveIndex("veine_generateur") | 1u << branch().objectiveIndex("avantbras_generateur");
     // 2.81.2 (titan 11): the plates also wait for the ambushes before them (beaten here: their objectives in the state).
-    const uint32_t amb = 1u << branch().objectiveIndex("poignet_embuscade_1") | 1u << branch().objectiveIndex("poignet_embuscade_2");
+    const uint32_t amb = 1u << branch().objectiveIndex("poignet_embuscade_1") | 1u << branch().objectiveIndex("poignet_embuscade_2") |
+                          1u << branch().objectiveIndex("poignet_galerie_1");  // titan 12: the Gaines too
     for (int players : {8, 1}) {
         raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
         CHECK(run.begin(gens | amb, 7));

@@ -8,8 +8,10 @@
 
 #include "engine/core/I18n.h"
 #include "engine/rendering/Renderer.h"
+#include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/raid/RaidBranch.h"
+#include "game/raid/RaidCatalog.h"
 #include "game/raid/RaidRun.h"
 #include "game/online/Clans.h"
 #include "game/online/Raids.h"
@@ -24,7 +26,6 @@ using namespace raidui;
 
 namespace {
 
-const char* const kFormats[] = {"court", "standard", "legendaire"};
 const int kLocks[] = {10, 15, 30, 45, 60};
 // 2.69: the late arrivals (minutes after the start a newcomer may still enter play; -1: until the end).
 const int kLate[] = {-1, 0, 15, 30, 60};
@@ -61,6 +62,181 @@ AdminRaids::AdminRaids(GameServices& g, std::function<void(const std::string&, b
 }
 
 AdminRaids::~AdminRaids() = default;
+
+std::vector<std::string> raidPosterChips(const raid::CatalogEntry& e) {
+    std::vector<std::string> out;
+    if (e.parts > 0) out.push_back(std::to_string(e.parts) + (e.parts > 1 ? " parties" : " partie"));
+    if (e.gigaboss > 0) {
+        if (!e.heartLabel.empty()) out.push_back(std::to_string(e.gigaboss) + " Gigaboss + " + e.heartLabel);
+        else out.push_back(std::to_string(e.gigaboss) + " Gigaboss");
+    }
+    std::string formats;
+    for (const raid::CatalogFormat& f : e.formats) formats += (formats.empty() ? "" : " · ") + f.name;
+    if (!formats.empty()) out.push_back(formats);
+    out.push_back("Difficulté " + std::to_string(e.difficultyMin) + " à " + std::to_string(e.difficultyMax));
+    return out;
+}
+
+RaidPosterLayout layoutRaidPoster(UIContext& ui, const Rect& r, const raid::CatalogEntry& e) {
+    RaidPosterLayout L;
+    const float pad = ui.s(12), gap = ui.s(14);
+    L.accent = {r.x, r.y, r.w, ui.s(4)};
+    const float top = r.y + ui.s(4) + pad, inner = std::max(0.0f, r.w - 2.0f * pad);
+    // The art keeps its crop's proportions; beside the texts, or above them when the card is narrow.
+    const Rect crop = e.poster.crop;
+    const float ratio = crop.w > 0.0f && crop.h > 0.0f ? crop.h / crop.w : 0.72f;
+    float tx = 0.0f, tw = 0.0f, ty = 0.0f;
+    if (inner >= ui.s(400)) {
+        const float artW = std::clamp(inner * 0.42f, ui.s(120), ui.s(300));
+        L.art = {r.x + pad, top, artW, artW * ratio};
+        tx = L.art.right() + gap;
+        tw = r.right() - pad - tx;
+        ty = top;
+    } else {
+        L.art = {r.x + pad, top, inner, std::min(inner * ratio, ui.s(200))};
+        tx = r.x + pad;
+        tw = inner;
+        ty = L.art.bottom() + ui.s(10);
+    }
+    // « RAID MONDIAL » on the art (the screen schedules world events), when it has room there.
+    {
+        const std::string t = "RAID MONDIAL";
+        const float w = textW(ui, t, 11, FontFace::Bold) + ui.s(14);
+        if (w <= L.art.w - ui.s(12)) L.tag = {{L.art.x + ui.s(6), L.art.y + ui.s(6), w, ui.s(20)}, t, 11, FontFace::Bold, false};
+    }
+    auto lines = [&](std::vector<RaidPosterText>& out, const std::string& t, float size, FontFace face, float lineH, int maxLines) {
+        for (const std::string& l : wrap(ui, t, face, size, tw, maxLines)) {
+            out.push_back({{tx, ty, tw, lineH}, l, size, face, true});
+            ty += lineH;
+        }
+    };
+    lines(L.name, e.name, 22, FontFace::Bold, ui.s(28), 2);
+    lines(L.subtitle, e.subtitle, 17, FontFace::Bold, ui.s(23), 2);
+    ty += ui.s(6);
+    lines(L.pitch, e.pitch, 13, FontFace::Body, ui.s(18), 5);
+    ty += ui.s(8);
+    // The chips, each measured to its text, wrapped in the column.
+    const float ch = ui.s(26), cg = ui.s(6), cpad = ui.s(8);
+    float cx = tx;
+    const std::vector<std::string> chipTexts = raidPosterChips(e);
+    for (const std::string& c : chipTexts) {
+        const float room = std::max(0.0f, tw - 2.0f * cpad);
+        const float f = ui.fitFont(c, FontFace::Bold, 12, room, 0.75f);
+        const std::string shown = ui.elide(c, FontFace::Bold, f, room);
+        const float w = std::min(textW(ui, shown, f, FontFace::Bold) + 2.0f * cpad, tw);
+        if (cx > tx && cx + w > tx + tw + 0.5f) {
+            cx = tx;
+            ty += ch + cg;
+        }
+        L.chipBoxes.push_back({cx, ty, w, ch});
+        L.chips.push_back({{cx + cpad, ty, w - 2.0f * cpad, ch}, shown, f, FontFace::Bold, false});
+        cx += w + cg;
+    }
+    if (!chipTexts.empty()) ty += ch;
+    // « Fiche du raid › »: the raid's sheet (CLANS › RAIDS › Fiches).
+    if (!e.sheet.empty()) {
+        ty += ui.s(10);
+        const std::string t = "Fiche du raid ›";
+        const float f = ui.fitFont(t, FontFace::Bold, 14, tw, 0.75f);
+        const std::string shown = ui.elide(t, FontFace::Bold, f, tw);
+        L.link = {{tx, ty, std::min(textW(ui, shown, f, FontFace::Bold), tw), ui.s(24)}, shown, f, FontFace::Bold, false};
+        ty += ui.s(24);
+    }
+    L.height = std::max(L.art.bottom(), ty) + pad - r.y;
+    L.card = {r.x, r.y, r.w, L.height};
+    return L;
+}
+
+const raid::CatalogEntry* AdminRaids::formRaid() const {
+    const auto& cat = raid::catalog();
+    if (cat.empty()) return nullptr;
+    return &cat[static_cast<size_t>(std::clamp(raidIdx_, 0, static_cast<int>(cat.size()) - 1))];
+}
+
+void AdminRaids::setRaid(int index) {
+    // Another raid: the same format when it has one of that id (else its default), the difficulty in its range.
+    const raid::CatalogEntry* before = formRaid();
+    const std::string format = before && formatIdx_ >= 0 && formatIdx_ < static_cast<int>(before->formats.size())
+                                   ? before->formats[static_cast<size_t>(formatIdx_)].id
+                                   : std::string();
+    const int difficulty = before ? before->difficultyMin + difficultyIdx_ : 0;
+    raidIdx_ = index;
+    const raid::CatalogEntry* e = formRaid();
+    if (!e) return;
+    const int fi = e->formatIndex(format);
+    formatIdx_ = fi >= 0 ? fi : e->defaultFormat;
+    difficultyIdx_ = std::clamp(difficulty, e->difficultyMin, e->difficultyMax) - e->difficultyMin;
+}
+
+bool AdminRaids::drawArt(const std::string& image, const Rect& crop, const Rect& dst) {
+    if (image.empty() || dst.w < 1.0f || dst.h < 1.0f) return false;
+    ResourceManager& res = g_.app.resources();
+    if (!res.exists(image)) return false;
+    TexturePtr tex = res.texture(image, true);
+    if (!tex || tex->width() <= 0 || tex->height() <= 0) return false;
+    const float tw = static_cast<float>(tex->width()), th = static_cast<float>(tex->height());
+    Rect src = crop.w > 0.0f && crop.h > 0.0f ? crop : Rect{0.0f, 0.0f, tw, th};
+    src.w = std::min(src.w, tw - std::min(src.x, tw));
+    src.h = std::min(src.h, th - std::min(src.y, th));
+    if (src.w <= 0.0f || src.h <= 0.0f) return false;
+    // Covering its frame: the crop's middle, at the frame's proportions.
+    const float want = dst.w / dst.h;
+    if (src.w / src.h > want) {
+        const float nw = src.h * want;
+        src.x += (src.w - nw) * 0.5f;
+        src.w = nw;
+    } else {
+        const float nh = src.w / want;
+        src.y += (src.h - nh) * 0.5f;
+        src.h = nh;
+    }
+    g_.ui.r().drawTexture(*tex, &src, dst, Color::white());
+    return true;
+}
+
+void AdminRaids::drawIcon(const raid::CatalogEntry* e, const Rect& dst) {
+    UIContext& ui = g_.ui;
+    if (dst.w < 2.0f || dst.h < 2.0f) return;
+    ui.r().fillRoundedRect(dst, ui.s(4), Color{10, 12, 30, 255});
+    if (e) drawArt(e->icon.image, e->icon.crop, {dst.x + ui.s(1.5f), dst.y + ui.s(1.5f), dst.w - ui.s(3), dst.h - ui.s(3)});
+    ui.r().drawRoundedRect(dst, ui.s(4), kSky, ui.s(1));
+}
+
+void AdminRaids::drawPoster(const RaidPosterLayout& L, const raid::CatalogEntry& e) {
+    UIContext& ui = g_.ui;
+    ui.r().fillRoundedRect(L.card, ui.s(10), Color{14, 18, 42, 250});
+    ui.r().drawRoundedRect(L.card, ui.s(10), kBorder, ui.s(1));
+    ui.r().fillRoundedRect(L.accent, ui.s(2), kOrange);
+    ui.r().fillRoundedRect(L.art, ui.s(6), Color{6, 8, 18, 255});
+    drawArt(e.poster.image, e.poster.crop, L.art);
+    ui.r().drawRoundedRect(L.art, ui.s(6), kBorder, ui.s(1));
+    auto draw = [&](const RaidPosterText& t, Color c, Align a = Align::Left) {
+        if (t.text.empty() || t.r.w <= 0.0f) return;
+        i18n::Verbatim v(t.verbatim);
+        ui.label(t.text, {a == Align::Center ? t.r.center().x : t.r.x, t.r.center().y}, t.size, c, a, t.face, VAlign::Middle);
+    };
+    if (L.tag.r.w > 0.0f) {
+        ui.r().fillRoundedRect(L.tag.r, ui.s(4), Color{58, 16, 26, 235});
+        ui.r().drawRoundedRect(L.tag.r, ui.s(4), kOrange, ui.s(1));
+        draw(L.tag, kPeach, Align::Center);
+    }
+    for (const RaidPosterText& t : L.name) draw(t, kText);
+    for (const RaidPosterText& t : L.subtitle) draw(t, kOrange);
+    for (const RaidPosterText& t : L.pitch) draw(t, kDim);
+    for (size_t i = 0; i < L.chips.size() && i < L.chipBoxes.size(); ++i) {
+        ui.r().fillRoundedRect(L.chipBoxes[i], ui.s(8), Color{30, 40, 84, 255});
+        ui.r().drawRoundedRect(L.chipBoxes[i], ui.s(8), kBorder, ui.s(1));
+        draw(L.chips[i], kText);
+    }
+    if (L.link.r.w > 0.0f) {
+        // A focus stop like a button (keyboard, gamepad, mouse): the raid's sheet over this screen.
+        bool hover = false;
+        if (ui.hotspot("sheet", L.link.r, &hover) && !e.sheet.empty()) g_.app.pushScene(makeRaidSheets(g_, e.sheet));
+        const bool lit = hover || ui.focused("sheet");
+        draw(L.link, lit ? kGold : kSky);
+        ui.r().fillRect({L.link.r.x, L.link.r.bottom() - ui.s(3), L.link.r.w, ui.s(lit ? 2.0f : 1.0f)}, lit ? kGold : kSky);
+    }
+}
 
 bool AdminRaids::modal() const { return confirm_ || guests_->isOpen(); }
 
@@ -115,9 +291,11 @@ void AdminRaids::loadDetail() {
 void AdminRaids::clearForm() {
     selected_.clear();
     detail_ = Json();
-    formatIdx_ = 1;
+    // 2.83: the raid stays the one chosen; its default format and difficulty (the raid catalogue).
+    const raid::CatalogEntry* e = formRaid();
+    formatIdx_ = e ? e->defaultFormat : 0;
+    difficultyIdx_ = e ? e->difficultyDefault - e->difficultyMin : 0;
     lockIdx_ = 2;
-    difficultyIdx_ = 2;
     open_ = true;
     capacity_ = 0.0f;
     clanCapacity_ = 50.0f;
@@ -134,11 +312,17 @@ void AdminRaids::select(const Json& j) {
     const raids::Event e = raids::parseEvent(j);
     if (!e.valid) return;
     selected_ = e.id;
-    formatIdx_ = e.format == "court" ? 0 : e.format == "legendaire" ? 2 : 1;
+    // 2.83: its raid in the catalogue (kept when the game does not know it), its format among the raid's.
+    const auto& cat = raid::catalog();
+    for (size_t i = 0; i < cat.size(); ++i)
+        if (cat[i].id == e.raid) raidIdx_ = static_cast<int>(i);
+    const raid::CatalogEntry* re = formRaid();
+    const int fi = re ? re->formatIndex(e.format) : -1;
+    formatIdx_ = fi >= 0 ? fi : re ? re->defaultFormat : 0;
     lockIdx_ = 2;
     for (int i = 0; i < 5; ++i)
         if (kLocks[i] == e.lockMinutes) lockIdx_ = i;
-    difficultyIdx_ = std::clamp(e.difficulty - 1, 0, 4);
+    difficultyIdx_ = re ? std::clamp(e.difficulty - re->difficultyMin, 0, re->difficultyMax - re->difficultyMin) : 0;
     open_ = e.registrationOpen;
     capacity_ = static_cast<float>(e.capacity);
     clanCapacity_ = static_cast<float>(e.clanCapacity);
@@ -159,13 +343,17 @@ void AdminRaids::select(const Json& j) {
 }
 
 Json AdminRaids::formJson(int64_t utc) const {
-    Json b = {{"format", kFormats[formatIdx_]},
-              {"lock_minutes", kLocks[lockIdx_]},
+    Json b = {{"lock_minutes", kLocks[lockIdx_]},
               {"registration_open", open_},
               {"capacity", static_cast<int>(std::lround(capacity_))},
               {"clan_capacity", static_cast<int>(std::lround(clanCapacity_))},
-              {"difficulty", difficultyIdx_ + 1},
               {"rewards_text", clans::cleanName(rewards_)}};
+    // 2.83: the raid, its format and difficulty as the raid catalogue has them.
+    if (const raid::CatalogEntry* e = formRaid()) {
+        b["raid"] = e->id;
+        if (formatIdx_ >= 0 && formatIdx_ < static_cast<int>(e->formats.size())) b["format"] = e->formats[static_cast<size_t>(formatIdx_)].id;
+        b["difficulty"] = e->difficultyMin + difficultyIdx_;
+    }
     b["late_minutes"] = kLate[lateIdx_] < 0 ? Json() : Json(kLate[lateIdx_]);  // 2.69: null: until the end
     if (utc > 0) b["starts_at"] = raids::isoUtc(utc);
     return b;
@@ -192,17 +380,23 @@ void AdminRaids::draw(const Rect& in) {
     const float formW = std::min(ui.s(600), in.w * 0.44f);
     drawForm({in.x, in.y, formW, in.h});
     Rect right{in.x + formW + ui.s(18), in.y, in.w - formW - ui.s(18), in.h};
-    // 2.69: three tabs in the right column: the events, the live panel, « Tester Asterion » (2.68).
+    // 2.69: three tabs in the right column: the events, the live panel, « Tester le raid » (2.68; 2.83: with the
+    // icon of the raid it tests, from the raid catalogue).
     std::vector<std::string> tabs = {"Événements", "En direct"};
-    const int testTab = g_.online.isAdmin() && !raid::Branch::all().empty() ? static_cast<int>(tabs.size()) : -1;
-    if (testTab >= 0) tabs.push_back("Tester Asterion");
+    const auto& cat = raid::catalog();
+    const int testTab = g_.online.isAdmin() && !raid::Branch::all().empty() && !cat.empty() ? static_cast<int>(tabs.size()) : -1;
+    if (testTab >= 0) tabs.push_back("Tester le raid");
     const int reviewsTab = static_cast<int>(tabs.size());  // 2.77.4: the players' reviews
     tabs.push_back("Avis");
     sideTab_ = std::clamp(sideTab_, 0, static_cast<int>(tabs.size()) - 1);
     std::vector<bool> on(tabs.size(), false);
     on[static_cast<size_t>(sideTab_)] = true;
     float bottom = right.y;
-    const int t = chips(ui, "side", right.x, right.y, right.right(), tabs, on, bottom);
+    testRaid_ = cat.empty() ? 0 : std::clamp(testRaid_, 0, static_cast<int>(cat.size()) - 1);
+    const raid::CatalogEntry* tested = cat.empty() ? nullptr : &cat[static_cast<size_t>(testRaid_)];
+    const int t = chips(ui, "side", right.x, right.y, right.right(), tabs, on, bottom, true, testTab, [&](const Rect& ir) { drawIcon(tested, ir); });
+    layout_.right = right;
+    layout_.sideTabsBottom = bottom;
     if (t >= 0) {
         sideTab_ = t;
         if (t == 1) liveAt_ = -1000.0f;  // read now
@@ -479,12 +673,17 @@ void AdminRaids::drawTest(const Rect& r) {
     // of its zones, then « Lancer le test »: solo, local, never reported.
     UIContext& ui = g_.ui;
     ui.pushId("test");
-    // 2.81.2: « Raid à tester », above the setup it drives: the raids that can be tested (Asterion alone for now:
-    // every branch of the catalog is one of its parts). Open, its list pushes the setup down.
-    static const std::vector<std::string> kRaids = {"Asterion"};
-    float top = section(ui, r, "TESTER ASTERION · ADMINISTRATEURS", kGold);
+    // 2.81.2: « Raid à tester », above the setup it drives: the raids that can be tested (2.83: the raids of the
+    // catalogue, each with its icon; every branch of the branch catalog is one of its parts). Open, its list pushes
+    // the setup down.
+    const auto& cat = raid::catalog();
+    std::vector<std::string> raidNames;
+    for (const raid::CatalogEntry& e : cat) raidNames.push_back(e.title);
+    float top = section(ui, r, "TESTER LE RAID · ADMINISTRATEURS", kGold);
     {
-        top = dropdown(ui, "raid", {r.x + ui.s(14), top, r.w - ui.s(28), ui.s(44)}, "Raid à tester", kRaids, testRaid_, testRaidOpen_) + ui.s(10);
+        top = dropdown(ui, "raid", {r.x + ui.s(14), top, r.w - ui.s(28), ui.s(44)}, "Raid à tester", raidNames, testRaid_, testRaidOpen_,
+                       [&](int i, const Rect& ir) { drawIcon(&cat[static_cast<size_t>(i)], ir); }) +
+              ui.s(10);
         if (testRaidOpen_) {
             ui.popId();
             return;  // the list open: its choice first (nothing under it to click by mistake)
@@ -543,19 +742,24 @@ void AdminRaids::drawTest(const Rect& r) {
     ui.readOnly = ro;
     y += rowH + gap;
     if (heart) {
-        // The parts of the titan simulated as fallen (their effects on the heart), and the relics.
-        static const char* kParts[] = {"Crâne", "Bras gauche", "Bras droit", "Torse", "Abdomen", "Jambe gauche", "Jambe droite"};
+        // The parts of the titan simulated as fallen (their effects on the heart), and the relics. 2.83: its parts with
+        // a gigaboss and its heart as the raid catalogue names them (bit p: the p-th of them).
+        const raid::CatalogEntry* tested = cat.empty() ? nullptr : &cat[static_cast<size_t>(std::clamp(testRaid_, 0, static_cast<int>(cat.size()) - 1))];
+        const std::vector<std::string> noParts;
+        const std::vector<std::string>& parts = tested ? tested->gigabossParts : noParts;
+        const int partCount = std::min(static_cast<int>(parts.size()), 31);
         const float th = ui.s(34), tgap = ui.s(6);
         const int perRow = 2;  // the label of a toggle needs its room beside the switch
         const float tw = (w - tgap * static_cast<float>(perRow - 1)) / static_cast<float>(perRow);
-        fit(ui, "Parties du titan simulées comme tombées (leurs effets sur le Cœur) :", {x, y + ui.s(10)}, 13, w, kDim);
+        const std::string heartName = tested ? tested->heartLabel : std::string();
+        fit(ui, "Parties du titan simulées comme tombées (leurs effets sur " + heartName + ") :", {x, y + ui.s(10)}, 13, w, kDim);
         y += ui.s(22);
-        for (int p = 0; p < 7; ++p) {
+        for (int p = 0; p < partCount; ++p) {
             bool on = (testParts_ >> p) & 1u;
             const float px = x + static_cast<float>(p % perRow) * (tw + tgap), py = y + static_cast<float>(p / perRow) * (th + tgap);
-            if (ui.toggle("part" + std::to_string(p), {px, py, tw, th}, kParts[p], on)) testParts_ = on ? (testParts_ | (1u << p)) : (testParts_ & ~(1u << p));
+            if (ui.toggle("part" + std::to_string(p), {px, py, tw, th}, parts[static_cast<size_t>(p)], on)) testParts_ = on ? (testParts_ | (1u << p)) : (testParts_ & ~(1u << p));
         }
-        y += static_cast<float>((7 + perRow - 1) / perRow) * (th + tgap) + gap - tgap;
+        y += static_cast<float>((partCount + perRow - 1) / perRow) * (th + tgap) + gap - tgap;
         static const std::vector<std::string> kRelics = {"0", "1", "2", "3", "4", "5", "6", "7"};
         ui.cycle("relics", {x, y, half, rowH}, "Reliques validées", testRelics_, kRelics);
         y += rowH + gap;
@@ -657,8 +861,11 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     }
     y += rowH + ui.s(10);
     // What it is, measured into what is left of the panel.
-    const std::string text = "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : " +
-                             std::to_string(simGroups_ + 1) + " groupes de " + std::to_string(perGroup) +
+    // 2.83: its branches counted, its heart named by the raid catalogue.
+    const auto& cat = raid::catalog();
+    const std::string heart = cat.empty() ? std::string() : cat[static_cast<size_t>(std::clamp(testRaid_, 0, static_cast<int>(cat.size()) - 1))].heartLabel;
+    const std::string text = "Les " + std::to_string(raid::Branch::all().size()) + " branches et toutes leurs zones (vestiaire compris), puis " + heart +
+                             " avec tous les groupes : " + std::to_string(simGroups_ + 1) + " groupes de " + std::to_string(perGroup) +
                              " joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme "
                              "dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) "
                              "ou regardez-le.";
@@ -687,26 +894,57 @@ void AdminRaids::drawForm(const Rect& r) {
     const float rowH = ui.s(56);
     const float buttonsH = ui.s(116), previewH = ui.s(104);
     const Rect fields{x, top, w + ui.s(10), r.bottom() - ui.s(14) - buttonsH - previewH - top};
-    const float contentH = 10 * rowH;
+    // 2.83: the raid (its list, each raid of the catalogue with its icon; open, it pushes the form down), its
+    // poster, then the form; its formats and difficulty range are the raid's.
+    const auto& cat = raid::catalog();
+    const raid::CatalogEntry* raidE = formRaid();
+    std::vector<std::string> raidNames;
+    for (const raid::CatalogEntry& e : cat) raidNames.push_back(e.title);
+    const float listH = raidOpen_ ? static_cast<float>(cat.size()) * (ui.s(4) + std::max(ui.s(36), ui.s(44) - ui.s(8))) : 0.0f;
+    const float posterH = raidE ? layoutRaidPoster(ui, {x, 0.0f, w, 0.0f}, *raidE).height + ui.s(12) : 0.0f;
+    const float contentH = 10 * rowH + listH + posterH;
     const bool locked = editing && (st == raids::State::Running || st == raids::State::Finished || st == raids::State::Cancelled);
     ui.beginScroll("fields", fields, contentH);
     float y = fields.y - ui.scrollOffset();
     auto label = [&](const std::string& t) { fit(ui, t, {x, y + rowH * 0.5f}, 15, labelW, kDim); };
     const bool ro = ui.readOnly;
     ui.readOnly = locked;
+    layout_.form = r;
+    layout_.fields = fields;
+    layout_.plates.clear();
+    layout_.plateLabels.clear();
+    layout_.plateFonts.clear();
+    layout_.poster = RaidPosterLayout{};
     label("Raid");
-    fit(ui, "Asterion, le Dévoreur de mondes", {fx, y + rowH * 0.5f}, 16, fw, kText, FontFace::Bold);
-    y += rowH;
-    label("Format");
     {
-        static const char* kNames[] = {"Court", "Standard", "Légendaire"};
-        const float bw = (fw - 2 * ui.s(8)) / 3.0f;
-        for (int i = 0; i < 3; ++i) {
+        layout_.raidBox = {fx, y + ui.s(6), fw, ui.s(44)};
+        int idx = raidIdx_;
+        const float under = dropdown(ui, "raid", layout_.raidBox, "", raidNames, idx, raidOpen_,
+                                     [&](int i, const Rect& ir) { drawIcon(&cat[static_cast<size_t>(i)], ir); });
+        if (idx != raidIdx_ && !locked) setRaid(idx);
+        y = std::max(y + rowH, under + ui.s(8));
+    }
+    if (raidE) {
+        layout_.poster = layoutRaidPoster(ui, {x, y, w, 0.0f}, *raidE);
+        drawPoster(layout_.poster, *raidE);
+        y += layout_.poster.height + ui.s(12);
+    }
+    label("Format");
+    if (raidE && !raidE->formats.empty()) {
+        // One plate per format of the raid, each label measured into its plate.
+        const size_t n = raidE->formats.size();
+        const float bw = (fw - static_cast<float>(n - 1) * ui.s(8)) / static_cast<float>(n);
+        for (size_t i = 0; i < n; ++i) {
+            const raid::CatalogFormat& f = raidE->formats[i];
             UIContext::ButtonStyle st2;
             st2.small = true;
-            st2.selected = formatIdx_ == i;
-            if (cframe::button(ui, std::string("format/") + kFormats[i], {fx + static_cast<float>(i) * (bw + ui.s(8)), y + ui.s(6), bw, ui.s(44)}, kNames[i], st2) && !locked)
-                formatIdx_ = i;
+            st2.selected = formatIdx_ == static_cast<int>(i);
+            st2.fontSize = ui.fitFont(f.name, FontFace::Bold, 17, bw - ui.s(20), 0.6f);
+            const Rect plate{fx + static_cast<float>(i) * (bw + ui.s(8)), y + ui.s(6), bw, ui.s(44)};
+            layout_.plates.push_back(plate);
+            layout_.plateLabels.push_back(f.name);
+            layout_.plateFonts.push_back(st2.fontSize);
+            if (cframe::button(ui, "format/" + f.id, plate, f.name, st2) && !locked) formatIdx_ = static_cast<int>(i);
         }
     }
     y += rowH;
@@ -730,8 +968,14 @@ void AdminRaids::drawForm(const Rect& r) {
     label("Joueurs par clan (1 à 50)");
     ui.numberField("clancap", {fx, y + ui.s(6), std::min(fw, ui.s(240)), ui.s(44)}, clanCapacity_, 1.0f, 1.0f, 50.0f, "%.0f");
     y += rowH;
-    ui.cycle("difficulty", {x, y + ui.s(4), w, ui.s(48)}, "Difficulté", difficultyIdx_, {"1 / 5", "2 / 5", "3 / 5", "4 / 5", "5 / 5"});
-    difficultyIdx_ = std::clamp(difficultyIdx_, 0, 4);
+    {
+        // 2.83: the raid's difficulty range (« 3 / 5 »).
+        const int dMin = raidE ? raidE->difficultyMin : 1, dMax = raidE ? raidE->difficultyMax : 1;
+        std::vector<std::string> levels;
+        for (int d = dMin; d <= dMax; ++d) levels.push_back(std::to_string(d) + " / " + std::to_string(dMax));
+        ui.cycle("difficulty", {x, y + ui.s(4), w, ui.s(48)}, "Difficulté", difficultyIdx_, levels);
+        difficultyIdx_ = std::clamp(difficultyIdx_, 0, dMax - dMin);
+    }
     y += rowH;
     // 2.69: the late arrivals: a newcomer may still enter play this long after the start.
     {
@@ -742,7 +986,7 @@ void AdminRaids::drawForm(const Rect& r) {
     }
     y += rowH;
     label("Récompenses (texte)");
-    ui.textField("rewards", {fx, y + ui.s(6), fw, ui.s(44)}, rewards_, "Vide : le texte d'Asterion", raids::kMaxRewardsText);
+    ui.textField("rewards", {fx, y + ui.s(6), fw, ui.s(44)}, rewards_, "Vide : le texte du raid", raids::kMaxRewardsText);
     ui.readOnly = ro;
     ui.endScroll();
 
@@ -799,7 +1043,7 @@ void AdminRaids::drawForm(const Rect& r) {
     if (cframe::button(ui, "new", {x, by1, half, ui.s(44)}, "Nouvel événement", plain)) clearForm();
     UIContext::ButtonStyle saveSt = plain;
     saveSt.primary = !editing;
-    saveSt.enabled = !busy_ && problem.empty() && !locked && (!editing || !changes.empty());
+    saveSt.enabled = !busy_ && raidE && problem.empty() && !locked && (!editing || !changes.empty());
     if (cframe::button(ui, "save", {x + half + ui.s(10), by1, half, ui.s(44)}, editing ? "Enregistrer les changements" : "Créer le brouillon", saveSt))
         save(editing ? changes : body);
     if (editing && !cur.published) {
@@ -874,8 +1118,13 @@ void AdminRaids::drawList(const Rect& r) {
         const std::string count = plural(e.clans, "clan", "clans") + " · " + plural(e.players, "joueur", "joueurs");
         const float cw = std::min(textW(ui, count, 13), (row.w - pw) * 0.35f);
         fit(ui, count, {row.right() - ui.s(22) - pw, row.center().y}, 13, cw, kDim, FontFace::Body, Align::Right);
-        fit(ui, whenShort(e.startsAt) + " · " + raids::formatLabel(e.format), {row.x + ui.s(12), row.center().y}, 15,
-            row.w - ui.s(46) - pw - cw, kText, FontFace::Bold);
+        // 2.83: its raid's icon, then « date · Raid — Format » (the raid catalogue's names; the server's otherwise).
+        const raid::CatalogEntry* re = raid::findRaid(e.raid);
+        const float is = rowH - ui.s(16);
+        drawIcon(re, {row.x + ui.s(10), row.center().y - is * 0.5f, is, is});
+        const float tx = row.x + ui.s(10) + is + ui.s(10);
+        const std::string what = (re ? re->name : e.name) + " — " + (re && re->formatIndex(e.format) >= 0 ? re->formatName(e.format) : raids::formatLabel(e.format));
+        fit(ui, whenShort(e.startsAt) + " · " + what, {tx, row.center().y}, 15, row.right() - ui.s(34) - pw - cw - tx, kText, FontFace::Bold);
     }
     ui.endScroll();
 }
@@ -1011,7 +1260,7 @@ void AdminRaids::drawModal() {
 namespace {
 
 /// 2.77, captures for the documentation (headless only, docs/BUILDING.md): the settings of « Simuler un
-/// raid complet » as ADMINISTRATION › Raids › Tester Asterion shows them (no account: nothing is launched).
+/// raid complet » as ADMINISTRATION › Raids › Tester le raid shows them (no account: nothing is launched).
 class RaidSimMenuScene : public Scene {
 public:
     explicit RaidSimMenuScene(GameServices& g)
@@ -1024,7 +1273,7 @@ public:
         bg_.render(g_, 0.6f);
         const float w = std::min(ui.s(760), ui.screenW() - ui.s(40)), h = std::min(ui.s(600), ui.screenH() - ui.s(40));
         const Rect r{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
-        const float top = section(ui, r, "SIMULER UN RAID COMPLET (TESTER ASTERION)", kGold);
+        const float top = section(ui, r, "SIMULER UN RAID COMPLET (TESTER LE RAID)", kGold);
         raids_.drawSim({r.x, top, r.w, r.bottom() - ui.s(12) - top}, true);
         const bool back = ui.backPressed();
         ui.end();

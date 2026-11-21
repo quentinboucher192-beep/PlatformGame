@@ -79,6 +79,10 @@ public:
         atlas_ = officialCreatureAtlas(g_.content);
         computeSuggestions();
         const auto& all = g_.achievementCatalog.achievements();
+        // 2.84: the unlocks new since the last visit (banner, pills, glows), oldest first.
+        for (const std::string& id : g_.achievements.unseen())
+            for (size_t i = 0; i < all.size(); ++i)
+                if (all[i].id == id) fresh_.push_back(static_cast<int>(i));
         // First focus: the first achievement still to get (or the first one).
         for (size_t i = 0; i < all.size(); ++i)
             if (!g_.achievements.unlocked(all[i].id) && g_.achievements.available(all[i])) {
@@ -118,7 +122,20 @@ public:
             g_.ui.setFocus("ach/l" + std::to_string(selected_));
             return;
         }
+        if (!fresh_.empty()) {  // 2.84: the first new one chosen, the web centred on it
+            freshAt_ = 0;
+            selected_ = fresh_.front();
+            centerOn_ = selected_;
+        }
         g_.ui.setFocus("ach/n" + std::to_string(selected_));
+    }
+
+    void onExit() override {
+        // 2.84: what was new was shown on this visit (the banner, the pills, the glows): seen once it is left.
+        if (g_.achievements.unseen().empty()) return;
+        const std::vector<std::string> ids = g_.achievements.unseen();
+        for (const std::string& id : ids) g_.achievements.markSeen(id);
+        g_.achievements.save();
     }
 
     void update(float dt) override {
@@ -161,11 +178,17 @@ public:
             if (ui.isNew("achievements.suggestions")) ui.drawNewPill(tabs.right() - ui.s(10), tabs.y, true);
         }
         drawSummary({m, ui.s(96), W - 2 * m, ui.s(50)});
+        float top = ui.s(166);
+        if (!fresh_.empty()) {  // 2.84: the unlocks new since the last visit, under the counters
+            const Rect banner = freshBanner();
+            drawFresh(banner);
+            top = banner.bottom() + ui.s(12);
+        }
         if (cat.achievements().empty()) {
             ui.label("Le catalogue des succès est introuvable (data/achievements).", {W * 0.5f, H * 0.5f}, 22, ui.theme().danger,
                      Align::Center, FontFace::Body, VAlign::Middle);
         } else {
-            float top = ui.s(166), bottom = H - ui.s(62);
+            const float bottom = H - ui.s(62);
             if (view_ == 0) {
                 float side = std::min(bottom - top, W * 0.56f);
                 Rect web{m, top, side, bottom - top};
@@ -204,6 +227,98 @@ private:
     Color colorOf(const std::string& category) const {
         const AchievementCategory* c = g_.achievementCatalog.category(category);
         return c ? c->color : g_.ui.theme().accent;
+    }
+
+public:
+    /// 2.84: the banner of the unlocks new since the last visit (under the counters, above the views).
+    Rect freshBanner() const {
+        const UIContext& ui = g_.ui;
+        const float m = ui.s(48);
+        return {m, ui.s(156), ui.screenW() - 2 * m, ui.s(84)};
+    }
+    struct FreshLayout {
+        Rect see;                 // « Voir les nouveaux »
+        Rect head;                // « Nouveaux succès depuis votre dernière visite : N » (fitted: `headFont`)
+        float headFont = 20.0f;
+        std::string headText;
+        std::vector<Rect> chips;  // the names shown, in order
+        std::vector<std::string> chipText;
+        float chipFont = 15.0f;
+        Rect more;                // « +K »: the ones beyond the room (empty: none)
+        std::string moreText;
+    };
+    /// Where each piece of the banner `r` goes: one after the other, each fitted or shortened.
+    FreshLayout layoutFresh(const Rect& r) const {
+        UIContext& ui = g_.ui;
+        const auto& all = g_.achievementCatalog.achievements();
+        FreshLayout L;
+        const float pad = ui.s(18);
+        const float vw = std::max(ui.s(150), ui.text().measure("Voir les nouveaux", FontFace::Bold, ui.s(20)).x + ui.s(48));
+        L.see = {r.right() - pad - vw, r.center().y - ui.s(22), vw, ui.s(44)};
+        const float x0 = r.x + pad, right = L.see.x - ui.s(20), room = right - x0;
+        const std::string head = "Nouveaux succès depuis votre dernière visite : " + std::to_string(fresh_.size());
+        L.headFont = ui.fitFont(head, FontFace::Bold, 20, room, 0.55f);
+        L.headText = ui.elide(head, FontFace::Bold, L.headFont, room);
+        const float hh = ui.text().measure(L.headText, FontFace::Bold, ui.s(L.headFont)).y;
+        L.head = {x0, r.y + ui.s(24) - hh * 0.5f, ui.text().measure(L.headText, FontFace::Bold, ui.s(L.headFont)).x, hh};
+        const float ch = ui.s(30), cy = r.bottom() - ui.s(10) - ch, gap = ui.s(8);
+        L.chipFont = fz(ui, 15);
+        const float cf = L.chipFont;
+        float x = x0;
+        for (size_t k = 0; k < fresh_.size(); ++k) {
+            const AchievementDef& a = all[static_cast<size_t>(fresh_[k])];
+            const size_t after = fresh_.size() - k - 1;  // room kept for « +K » of the ones after it
+            const float moreW = after > 0 ? ui.text().measure("+" + std::to_string(after), FontFace::Bold, ui.s(cf)).x + gap : 0.0f;
+            const float avail = right - x - moreW;
+            float cw = std::min(ui.s(280), ui.text().measure(a.name, FontFace::Bold, ui.s(cf)).x + ui.s(32));
+            if (cw > avail) {
+                if (avail < ui.s(90)) {  // no room for this one: counted with the rest
+                    L.moreText = "+" + std::to_string(fresh_.size() - k);
+                    const Vec2 ms = ui.text().measure(L.moreText, FontFace::Bold, ui.s(cf));
+                    L.more = {x, cy + (ch - ms.y) * 0.5f, ms.x, ms.y};
+                    break;
+                }
+                cw = avail;
+            }
+            L.chips.push_back({x, cy, cw, ch});
+            L.chipText.push_back(ui.elide(a.name, FontFace::Bold, cf, cw - ui.s(24)));
+            x += cw + gap;
+        }
+        return L;
+    }
+    /// The unlocks new since the last visit (catalogue indices), oldest first.
+    const std::vector<int>& fresh() const { return fresh_; }
+
+private:
+    /// 2.84: « Nouveaux succès depuis votre dernière visite : N », their names in a row (each one shows it; the
+    /// ones beyond the room counted in « +K ») and « Voir les nouveaux » (the next one, in turn).
+    void drawFresh(const Rect& r) {
+        UIContext& ui = g_.ui;
+        const Color gold{255, 205, 110, 255};
+        cframe::panel(ui, r, true, 12);
+        ui.r().drawRoundedRect(r, ui.s(12), gold.withAlphaF(0.5f + 0.25f * std::sin(t_ * 3.0f)), std::max(1.0f, ui.s(2.0f)));
+        const FreshLayout L = layoutFresh(r);
+        UIContext::ButtonStyle vs;
+        vs.primary = true;
+        vs.small = true;
+        if (cframe::button(ui, "fresh/see", L.see, "Voir les nouveaux", vs)) showFresh(static_cast<size_t>(freshAt_ + 1));
+        ui.label(L.headText, {L.head.x, L.head.center().y}, L.headFont, gold, Align::Left, FontFace::Bold, VAlign::Middle);
+        UIContext::ButtonStyle cs;
+        cs.small = true;
+        cs.fontSize = L.chipFont;
+        for (size_t k = 0; k < L.chips.size(); ++k)
+            if (cframe::button(ui, "fresh/c" + std::to_string(k), L.chips[k], L.chipText[k], cs)) showFresh(k);
+        if (!L.moreText.empty()) ui.label(L.moreText, {L.more.x, L.more.center().y}, L.chipFont, gold, Align::Left, FontFace::Bold, VAlign::Middle);
+    }
+
+    /// 2.84: the `k`-th new unlock chosen (in turn), its node (web) or its row (list) focused; called in « ach ».
+    void showFresh(size_t k) {
+        if (fresh_.empty()) return;
+        freshAt_ = static_cast<int>(k % fresh_.size());
+        selected_ = fresh_[static_cast<size_t>(freshAt_)];
+        if (view_ == 2) view_ = 0;
+        centerOn_ = selected_;
+        g_.ui.setFocus((view_ == 1 ? "l" : "n") + std::to_string(selected_));
     }
 
     void drawSummary(const Rect& r) {
@@ -505,6 +620,10 @@ private:
             }
             bool done = g_.achievements.unlocked(a.id);
             bool open = g_.achievements.available(a);
+            if (g_.achievements.isUnseen(a.id)) {  // 2.84: new since the last visit: a golden glow and the gold dot
+                fresh = true;
+                r.drawGlow(n.p, n.r * 3.6f, Color{255, 196, 70, static_cast<uint8_t>(120 + 60 * std::sin(t_ * 4.0f))}, BlendMode::Additive);
+            }
             if (done) {
                 r.drawGlow(n.p, n.r * 2.8f, col.withAlpha(90), BlendMode::Additive);
                 r.fillCircle(n.p, n.r, col);
@@ -539,7 +658,7 @@ private:
                  VAlign::Middle);
         // What the gold dot means, in a corner of the web (while something is new).
         std::vector<Rect> placed;
-        if (ui.isNew("menu.achievements")) {
+        if (ui.isNew("menu.achievements") || !fresh_.empty()) {
             const float ph = ui.newPillHeight(true), dotR = std::max(ui.s(4.5f), 3.5f);
             Rect legend{area.x + ui.s(6), area.bottom() - ui.s(6) - ph, dotR * 2.0f + ui.s(8) + ui.newPillWidth(true), ph};
             r.fillCircle({legend.x + dotR, legend.center().y}, dotR, Color{255, 196, 70, 255});
@@ -605,7 +724,7 @@ private:
                 if (!area.contains(n.p)) continue;
                 const float fs = std::max(13.0f, 11.5f / ui.s(1.0f));  // never below 11.5 px
                 Vec2 sz = ui.text().measure(all[i].name, FontFace::Body, ui.s(fs));
-                const bool fresh = ui.isNew("ach." + all[i].id);
+                const bool fresh = ui.isNew("ach." + all[i].id) || g_.achievements.isUnseen(all[i].id);
                 const float nameW = sz.x;
                 if (fresh) {
                     sz.x += ui.s(6) + ui.newPillWidth(true);
@@ -738,7 +857,7 @@ private:
         ui.separator({x, y}, w);
         y += ui.s(14);
         // The achievement.
-        const bool selNew = ui.isNew("ach." + a.id);
+        const bool selNew = ui.isNew("ach." + a.id) || g_.achievements.isUnseen(a.id);
         const float selPill = selNew ? ui.s(12) + ui.newPillWidth() : 0.0f;
         float nf = ui.fitFont(a.name, FontFace::Title, 30, w - selPill, 0.6f);
         Vec2 nsz = ui.label(a.name, {x, y}, nf, th.text, Align::Left, FontFace::Title);
@@ -817,7 +936,7 @@ private:
             if (done) ui.r().fillCircle(dot, ui.s(6), col);
             else ui.r().drawCircle(dot, ui.s(6), g_.achievements.available(all[i]) ? col : Color{120, 130, 160, 120}, ui.s(1.5f));
             float starsW = ui.s(14) * 1.15f * 4.0f + ui.s(14);
-            const bool fresh = ui.isNew("ach." + all[i].id);
+            const bool fresh = ui.isNew("ach." + all[i].id) || g_.achievements.isUnseen(all[i].id);
             const float pill = fresh ? ui.s(8) + ui.newPillWidth(true) : 0.0f;
             float nameRoom = row.w - ui.s(34) - starsW - ui.s(16) - pill;
             Vec2 nsz = ui.label(ui.elide(all[i].name, FontFace::Body, fz(ui, 16), nameRoom), {row.x + ui.s(30), row.center().y}, fz(ui, 16),
@@ -1081,10 +1200,16 @@ private:
                 if (ui.hotspot(id, row) && (!g_.app.input().mouseReleased(SDL_BUTTON_LEFT) || check.expanded(ui.s(6)).contains(g_.app.input().mousePos())))
                     toggleTrack(a);
                 // « NOUVEAU » (an achievement added by an update): seen on focus (pointed at) or a click.
-                const bool fresh = ui.newBadge(id, row, "ach." + a.id, false, true);
+                const bool unseen = g_.achievements.isUnseen(a.id);  // 2.84: new since the last visit
+                const bool fresh = ui.newBadge(id, row, "ach." + a.id, false, true) || unseen;
                 bool focus = ui.focused(id);
                 if (focus) selected_ = static_cast<int>(i);
                 if (row.bottom() < area.y || row.y > area.bottom()) continue;
+                if (unseen) {  // a golden glow inside the row
+                    const float pulse = 0.5f + 0.5f * std::sin(t_ * 4.0f);
+                    ui.r().fillRoundedRect(row, ui.s(6), Color{255, 196, 70, static_cast<uint8_t>(22 + 18 * pulse)});
+                    ui.r().drawRoundedRect(row, ui.s(6), Color{255, 196, 70, static_cast<uint8_t>(110 + 80 * pulse)}, std::max(1.0f, ui.s(1.5f)));
+                }
                 if (focus) ui.r().fillRoundedRect(row, ui.s(6), k.color.withAlpha(36));
                 bool done = g_.achievements.unlocked(a.id);
                 Vec2 dot{row.x + ui.s(14), row.center().y};
@@ -1132,6 +1257,8 @@ private:
     std::vector<Sector> sectors_;
     int selected_ = 0;
     int view_ = 0;
+    std::vector<int> fresh_;  // 2.84: the unlocks new since the last visit (catalogue indices), oldest first
+    int freshAt_ = -1;        // the one « Voir les nouveaux » showed last
     // Zoom and position of the web (display only).
     static constexpr float kMinZoom = 1.0f, kMaxZoom = 3.5f;
     float zoom_ = 1.0f;
@@ -1149,5 +1276,16 @@ private:
 
 std::unique_ptr<Scene> makeAchievements(GameServices& g) { return std::make_unique<AchievementsScene>(g); }
 std::unique_ptr<Scene> makeAchievementsFromPause(GameServices& g) { return std::make_unique<AchievementsScene>(g, true); }
+
+std::vector<Rect> achievementsFreshPieces(const Scene* s) {
+    const auto* a = dynamic_cast<const AchievementsScene*>(s);
+    if (!a || a->fresh().empty()) return {};
+    const Rect banner = a->freshBanner();
+    const auto L = a->layoutFresh(banner);
+    std::vector<Rect> out{banner, L.see, L.head};
+    out.insert(out.end(), L.chips.begin(), L.chips.end());
+    if (L.more.w > 0.0f) out.push_back(L.more);
+    return out;
+}
 
 }  // namespace cosmic

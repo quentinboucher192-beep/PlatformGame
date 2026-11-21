@@ -78,7 +78,11 @@ struct Pill {
     std::string text;
     float font = 13.0f;
 };
-Pill coopPill(UIContext& ui, const Rect& plate, int on, int need, bool ambush, float screenW);
+/// Titan 12: while `ambushLeft` of its `ambushTotal` ambushes are still to beat, « Embuscades restantes : 1 sur 2 ».
+Pill coopPill(UIContext& ui, const Rect& plate, int on, int need, int ambushLeft, int ambushTotal, float screenW);
+/// Titan 12: the pill over a shut ambush gate's door (`over`: its rectangle on the screen): « Embuscades restantes : 1 sur
+/// 2 », measured, above it, inside [0, screenW].
+Pill ambushPill(UIContext& ui, const Rect& over, int left, int total, float screenW);
 /// The objectives: each line wrapped (3 lines at most), what does not fit counted in a last line.
 void drawObjectives(UIContext& ui, const Rect& r, float k, const std::string& title, const std::vector<Line>& lines);
 /// The alerts from the top of `r` (2 lines each); the boxes drawn (for the arrows to keep clear).

@@ -93,6 +93,8 @@ OBJECTIVES = [
     ("poignet_embuscade_1", 7, "Vaincre la première embuscade (toutes ses vagues)", False, "ambush", ""),
     ("poignet_embuscade_2", 7, "Vaincre la deuxième embuscade (toutes ses vagues)", False, "ambush", ""),
     ("poignet_embuscade_3", 7, "Vaincre la troisième embuscade (toutes ses vagues)", False, "ambush", ""),
+    # Titan 12: the pack of the Gaines (the way in) is an ambush too, a gate after it.
+    ("poignet_galerie_1", 7, "Nettoyer les Gaines : vaincre leur embuscade", False, "ambush", ""),
 ]
 
 EDGES = [
@@ -459,8 +461,9 @@ def enemy_hp(kind):
 def tower(z, x0, x1, floors, waves, name):
     """A giant ambush on several storeys: `floors` the rows from the ground up (grates the whole
     width, a gap at alternate ends, a ladder in each), `waves` lists of (kind, storey, x) placed
-    on every storey; the doors at both ends close while it lasts. Returns (arena, the health of
-    each wave)."""
+    on every storey; the west door closes while it lasts. Titan 12: the east door is a gate's (the zone's gates, opened
+    by the ambushes before it: never by the arena, which opened it for a fall, and a wall over it up to the top of the
+    level). Returns (arena, the health of each wave, the east door)."""
     L = z.L
     ground = floors[0]
     z.rock(x0, ground, x1)
@@ -482,11 +485,22 @@ def tower(z, x0, x1, floors, waves, name):
             whp += enemy_hp(kind)
         ids.append(wid)
         hp.append(whp)
-    arena = L.combat(x0 + 1, floors[-1] - 6, x1 - 1, ground, doors=door_l + "," + door_r, waves=";".join(",".join(w) for w in ids), lock=False)
+    arena = L.combat(x0 + 1, floors[-1] - 6, x1 - 1, ground, doors=door_l, waves=";".join(",".join(w) for w in ids), lock=False)
     L.data["objects"][-1]["props"]["announce"] = True
     L.light((x0 + x1) // 2, floors[-1] - 2, FORGE_GLOW, 170, flicker=0.2)
     L.sign(x0 + 4, ground, name + " : une embuscade sur %d étages, toutes ses vagues avant d'avancer." % len(floors))
-    return arena, hp
+    L.solid(x1 - 1, 0, x1, ground - 6, "basalt")  # titan 12: nothing over the east door
+    return arena, hp, door_r
+
+
+def gate(z, door, x, ground, gid):
+    """Titan 12: a gate (metadata.raid.gates): `door` in a wall up to the top of the level at column `x`, opened at the step
+    every ambush of the zone laid before it is beaten (its objectives so far), never by a player."""
+    ambushes = [o["id"] for o in z.raid["objectives"] if o["id"] in AMBUSHES_7]
+    z.raid.setdefault("gates", []).append({"id": gid, "rect": [x * T, 0, T, ground * T], "doors": [door], "ambushes": ambushes})
+
+
+AMBUSHES_7 = {o[0] for o in OBJECTIVES if o[1] == 7 and o[4] == "ambush"}
 
 
 def wave_of(kinds, x0, x1, storeys, seed):
@@ -520,18 +534,23 @@ def zone_7():
         L.oneway(x0, x0 + 9, 31, "chain_grate")
     for x0 in range(48, 116, 22):
         L.oneway(x0, x0 + 6, 25, "basalt_ledge")
-    for k, x in enumerate((50, 70, 92, 110)):
-        L.enemy("lava_stalker" if k % 2 == 0 else "ember_mite", x, 38, 4, k % 2 == 1)
-    L.enemy("fire_wisp", 80, 24, 4)
-    L.enemy("forge_drone", 100, 22, 4, True)
+    # Titan 12: its pack is an ambush (over the whole way, from the top of the level), a gate after it.
+    pack = [L.enemy("lava_stalker" if k % 2 == 0 else "ember_mite", x, 38, 4, k % 2 == 1, dormant=True) for k, x in enumerate((50, 70, 92, 110))]
+    pack.append(L.enemy("fire_wisp", 80, 24, 4, dormant=True))
+    pack.append(L.enemy("forge_drone", 100, 22, 4, True, dormant=True))
+    gaines = L.combat(40, 0, 116, 38, waves=",".join(pack), lock=False)
+    z.objective("poignet_galerie_1", gaines, "cleared")
     z.rock(116, 36, 124)
+    L.solid(117, 0, 118, 30, "basalt")
+    gate(z, L.door(117, 30, 6), 117, 36, "barrage_gaines")
     z.checkpoint(120, 36, "Les Gaines")
     # 124-210 · Ambush 1, « La Tour des tendons » (4 storeys, 4 waves).
     floors1 = [36, 31, 26, 21]
     waves1 = [wave_of(["lava_stalker", "lava_stalker", "ember_mite", "ember_mite", "forge_bulwark", "magma_golem", "forge_drone", "fire_wisp",
                        "lava_stalker", "magma_gloop"], 124, 210, 4, s) for s in range(4)]
-    arena1, _ = tower(z, 124, 210, floors1, waves1, "La Tour des tendons")
+    arena1, _, east1 = tower(z, 124, 210, floors1, waves1, "La Tour des tendons")
     z.objective("poignet_embuscade_1", arena1, "cleared")
+    gate(z, east1, 209, 36, "barrage_tour_1")
     z.rock(210, 36, 230)
     z.checkpoint(214, 36, "Après la Tour des tendons")
     L.orb("health_orb", 218, 34)
@@ -539,7 +558,7 @@ def zone_7():
     z.rock(230, 36, 290)
     door1 = L.door(278, 30, 6)
     z.coop("vanne_double", 248, 260, 36, 4, [door1], "open", "La vanne double", "La vanne double cède : la porte s'ouvre",
-           ambushes=["poignet_embuscade_1"])
+           ambushes=["poignet_galerie_1", "poignet_embuscade_1"])
     L.sign(244, 36, "La vanne double : 4 joueurs ensemble sur la plaque ouvrent la porte.")
     L.enemy("forge_drone", 254, 28, 4)
     L.enemy("forge_drone", 266, 27, 4, True)
@@ -548,7 +567,7 @@ def zone_7():
     z.rock(290, 36, 330)
     lift = L.moving(300, 35, 8, 0, -20, speed=55, wait=1.6, active=False, oneway=False)
     z.coop("monte_charge", 300, 308, 35, 3, [lift], "activate", "Le monte-charge",
-           "Le monte-charge démarre : il fait ensuite la navette tout seul", ambushes=["poignet_embuscade_1"])
+           "Le monte-charge démarre : il fait ensuite la navette tout seul", ambushes=["poignet_galerie_1", "poignet_embuscade_1"])
     L.sign(296, 36, "Le monte-charge : il monte quand 3 joueurs sont dessus.")
     L.solid(312, 14, 330, 16, "basalt")
     z.checkpoint(320, 14, "La galerie haute")
@@ -565,8 +584,9 @@ def zone_7():
     floors2 = [36, 30, 24]
     waves2 = [wave_of(["forge_bulwark", "forge_bulwark", "lava_stalker", "lava_stalker", "lava_burrower", "magma_golem", "forge_bomber", "forge_drone",
                        "ember_mite", "ash_wing", "magma_gloop"], 392, 472, 3, s + 1) for s in range(4)]
-    arena2, _ = tower(z, 392, 472, floors2, waves2, "La Galerie des forges")
+    arena2, _, east2 = tower(z, 392, 472, floors2, waves2, "La Galerie des forges")
     z.objective("poignet_embuscade_2", arena2, "cleared")
+    gate(z, east2, 471, 36, "barrage_tour_2")
     z.rock(472, 36, 490)
     z.checkpoint(478, 36, "Après la Galerie des forges")
     L.orb("health_orb", 484, 34)
@@ -578,7 +598,7 @@ def zone_7():
     for cid, x0, x1, y, label in (("jumelle_basse", 492, 500, 36, "La plaque jumelle basse"),
                                   ("jumelle_haute", 506, 516, 28, "La plaque jumelle haute")):
         z.coop(cid, x0, x1, y, 2, [door2], "open", label, "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
-               group="jumelles", ambushes=["poignet_embuscade_1", "poignet_embuscade_2"])
+               group="jumelles", ambushes=["poignet_galerie_1", "poignet_embuscade_1", "poignet_embuscade_2"])
     L.sign(518, 36, "Les plaques jumelles : 2 joueurs sur chacune, en même temps.")
     L.enemy("lava_stalker", 522, 36, 4, True)
     L.enemy("forge_drone", 512, 22, 4)
@@ -586,8 +606,9 @@ def zone_7():
     floors4 = [36, 30, 24]
     waves4 = [wave_of(["lava_burrower", "lava_burrower", "magma_gloop", "magma_gloop", "forge_bulwark", "ash_wing", "ash_wing", "forge_drone",
                        "magma_golem", "ember_mite"], 540, 620, 3, s + 3) for s in range(4)]
-    arena4, _ = tower(z, 540, 620, floors4, waves4, "La Fosse des scories")
+    arena4, _, east4 = tower(z, 540, 620, floors4, waves4, "La Fosse des scories")
     z.objective("poignet_embuscade_3", arena4, "cleared")
+    gate(z, east4, 619, 36, "barrage_tour_3")
     z.rock(620, 36, 632)
     z.checkpoint(626, 36, "Avant la Garde du verrou")
     L.orb("health_orb", 629, 34)
@@ -595,8 +616,9 @@ def zone_7():
     floors3 = [36, 31, 26, 21]
     waves3 = [wave_of(["magma_golem", "magma_golem", "forge_bulwark", "forge_bulwark", "lava_stalker", "lava_stalker", "forge_drone", "fire_wisp",
                        "ember_mite", "ember_mite", "forge_bomber"], 632, 732, 4, s + 2) for s in range(5)]
-    arena3, _ = tower(z, 632, 732, floors3, waves3, "La Garde du verrou")
+    arena3, _, east3 = tower(z, 632, 732, floors3, waves3, "La Garde du verrou")
     z.objective("poignet_verrou", arena3, "cleared")
+    gate(z, east3, 731, 36, "barrage_tour_4")
     # The end: the door of the Main opens when every ambush of the zone is beaten (2.78: its lock, no event).
     z.rock(732, 36, 752)
     door = L.door(740, 30, 6)

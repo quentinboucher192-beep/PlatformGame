@@ -444,6 +444,23 @@ void RaidRun::syncDoors(ZoneWorld& z, bool initial) {
             alert("GROUPE · " + text, Alert::Kind::Group, z.zone);
         }
     }
+    // Titan 12: the ambush gates open with every ambush before them beaten (here or by another group), at the same step
+    // on every computer; nobody else opens them.
+    for (const AmbushGate& g : z.rules->gates) {
+        bool open = true;
+        for (int a : g.ambushIndex) open = open && (a < 0 || Branch::done(mask(), a));
+        if (!open) continue;
+        bool opened = false;
+        for (const std::string& id : g.doors)
+            if (auto* door = dynamic_cast<DoorEntity*>(z.world->entity(id)); door && !door->isOpen()) {
+                door->setOpen(*z.world, true, initial);
+                opened = true;
+            }
+        if (opened && !initial) {
+            z.world->hint("L'embuscade est vaincue : le barrage s'ouvre", 3.5f);
+            alert("GROUPE · L'embuscade est vaincue : le barrage s'ouvre", Alert::Kind::Group, z.zone);
+        }
+    }
 }
 
 void RaidRun::applyEffect(ZoneWorld& z, const EffectInfo& e) {
@@ -492,8 +509,25 @@ RaidRun::CoopView RaidRun::coopOf(const ZoneWorld& z, size_t index) const {
     v.done = index < z.coopDone.size() && z.coopDone[index] != 0;
     // 2.81.2: the ambushes before it, beaten (here or by another group: the branch's state); an unknown one never blocks.
     const uint32_t m = mask();
-    for (int a : c.ambushIndex) v.ambush = v.ambush || (a >= 0 && !Branch::done(m, a));
+    for (int a : c.ambushIndex) {
+        const bool left = a >= 0 && !Branch::done(m, a);
+        v.ambush = v.ambush || left;
+        v.ambushLeft += left ? 1 : 0;
+        ++v.ambushTotal;
+    }
     return v;
+}
+
+Branch::AmbushCount RaidRun::gate(size_t index) const {
+    Branch::AmbushCount c;
+    const ZoneWorld* z = focused();
+    if (!z || index >= z->rules->gates.size()) return c;
+    const uint32_t m = mask();
+    for (int a : z->rules->gates[index].ambushIndex) {
+        c.left += a >= 0 && !Branch::done(m, a) ? 1 : 0;
+        ++c.total;
+    }
+    return c;
 }
 
 void RaidRun::updateCoops(ZoneWorld& z, std::vector<std::pair<int, int>>& moves) {

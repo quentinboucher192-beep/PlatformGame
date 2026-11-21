@@ -85,23 +85,28 @@ def aorta(A, s):
     z.L.sign(3, LOW, tr("Les sept gigaboss sont tombés : l'aorte mène au Cœur d'Asterion. Restez répartis sur les trois étages.",
                         "The seven gigaboss fell: the aorta leads to Asterion's Heart. Stay spread over the three floors."))
     z.L.light(8, LOW - 4, "#ffd27a", 140, flicker=0.25)
-    amb = A.ambush_ids("coeur_aorte")
+    amb, gal = A.ambush_ids("coeur_aorte"), A.gallery_ids("coeur_aorte")
     e.route = [[6, LOW]]
     x = 24
     # 2.81.2: each mechanism after an ambush (it waits for every ambush before it), as in the lairs' expeditions.
-    x = e.hall(x)
+    # Titan 12: each gallery an ambush, a gate after it.
+    x = e.hall(x, objective=gal[0])
+    x = e.gate(x, 1)
     x = e.checkpoint(x, 1)
     x, _ = e.ambush(x, 4, objective=amb[0], text=("Première vague du cœur repoussée !", "First wave of the heart driven back!"))
     x = e.lock(x, 3, 1)
-    x = e.hall(x, hazard=True)
+    x = e.hall(x, hazard=True, objective=gal[1])
+    x = e.gate(x, 2)
     x = e.checkpoint(x, 2)
     x, _ = e.ambush(x, 4, objective=amb[1], text=("Deuxième vague repoussée : le cœur bat plus fort !", "Second wave driven back: the heart beats louder!"))
     x = e.lift(x, 4)
-    x = e.hall(x)
+    x = e.hall(x, objective=gal[2])
+    x = e.gate(x, 3)
     x = e.checkpoint(x, 3)
     x, _ = e.ambush(x, 4, objective=amb[2], text=("Troisième vague repoussée : la garde du cœur approche !", "Third wave driven back: the heart's guard draws near!"))
     x = e.lock(x, 3, 2)
-    x = e.hall(x)
+    x = e.hall(x, objective=gal[3])
+    x = e.gate(x, 4)
     x = e.checkpoint(x, 4)
     x, _ = e.ambush(x, 5, objective="coeur_aorte", w=110)
     z.rock(x, LOW, x + 4)
@@ -111,6 +116,7 @@ def aorta(A, s):
     e.finish(z, 2)
     A.via_lair_armory(z, 2)
     z.raid["coop"] = e.coops
+    z.raid["gates"] = e.gates
     z.raid["checkpoints"] = e.checkpoints
     return z.save()
 

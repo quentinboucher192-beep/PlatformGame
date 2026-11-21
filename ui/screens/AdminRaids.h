@@ -17,15 +17,21 @@
 // selected event (masked ones and reports included), each comment masked or restored (Journal). 2.80 (docs/RAIDS.md
 // « Tester avec des joueurs invités »): « Joueurs invités » in both tests (one zone, the whole raid): real players
 // connected now chosen before the launch (their group, « Invincible »), invited with it — the test then goes through
-// the server (ui/online/RaidTestGuests).
+// the server (ui/online/RaidTestGuests). 2.83 (maquette « Administration des raids », générique): everything
+// the screen says of a raid comes from the raid catalogue (game/raid/RaidCatalog, data/raids): the « Raid »
+// list (each raid with its icon), its poster under it (art, name, subtitle, pitch, its counts, formats and
+// difficulty, « Fiche du raid › »), its formats and difficulty range in the form, « Tester le raid » with its
+// icon, the raid and format of each event. No raid is named in this screen's code (tests/test_admin_raids.cpp).
 
 #include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "engine/core/Json.h"
 #include "engine/core/Math.h"
+#include "engine/rendering/Text.h"
 #include "game/online/OnlineTypes.h"
 #include "ui/online/RaidReviewsPanel.h"
 
@@ -33,6 +39,45 @@ namespace cosmic {
 
 class GameServices;
 class RaidTestGuests;
+class UIContext;
+namespace raid {
+struct CatalogEntry;
+}
+
+/// 2.83: one text of the raid's poster: its rect, its text as drawn (fitted, else shortened; `verbatim`: already
+/// translated, by wrap()) and its size (unscaled).
+struct RaidPosterText {
+    Rect r;
+    std::string text;
+    float size = 14.0f;
+    FontFace face = FontFace::Body;
+    bool verbatim = false;
+};
+
+/// 2.83: the raid's poster (« affiche ») placed in a card of width `r.w` from (r.x, r.y): its accent bar, its
+/// art and the tag on it, then its texts one under the other (name, subtitle, pitch, chips, « Fiche du raid › »),
+/// each measured into the room it has. `height`: the card's own (r.h is not read).
+struct RaidPosterLayout {
+    Rect card, accent, art;
+    RaidPosterText tag;  // on the art (r.w 0: no room for it)
+    std::vector<RaidPosterText> name, subtitle, pitch, chips;
+    RaidPosterText link;  // r.w 0: the raid has no sheet
+    std::vector<Rect> chipBoxes;
+    float height = 0.0f;
+};
+RaidPosterLayout layoutRaidPoster(UIContext& ui, const Rect& r, const raid::CatalogEntry& e);
+/// Its chips: « 8 parties », « 7 Gigaboss + le Cœur », its formats (« Court · Standard · Légendaire »), « Difficulté 1 à 5 ».
+std::vector<std::string> raidPosterChips(const raid::CatalogEntry& e);
+
+/// 2.83: where the form's top was drawn last (tests/test_admin_raids.cpp checks nothing overlaps).
+struct AdminRaidsLayout {
+    Rect form, fields, raidBox, right;
+    RaidPosterLayout poster;
+    std::vector<Rect> plates;  // the formats of the raid
+    std::vector<std::string> plateLabels;
+    std::vector<float> plateFonts;
+    float sideTabsBottom = 0.0f;
+};
 
 class AdminRaids {
 public:
@@ -47,6 +92,8 @@ public:
     void drawModal();
     /// 2.77: the settings of « Simuler un raid complet » in `r` (also the capture of the documentation).
     void drawSim(const Rect& r, bool capture = false);
+    /// 2.83: where the form's top was drawn last (the raid's list, its poster, its formats).
+    const AdminRaidsLayout& lastLayout() const { return layout_; }
 
 private:
     void load();
@@ -60,6 +107,12 @@ private:
     void drawList(const Rect& r);
     void drawDetail(const Rect& r);
     void drawTest(const Rect& r);  // 2.68
+    // 2.83: the raid of the catalogue chosen in the form (its formats, its difficulty range), its art drawn.
+    const raid::CatalogEntry* formRaid() const;
+    void setRaid(int index);
+    bool drawArt(const std::string& image, const Rect& crop, const Rect& dst);
+    void drawIcon(const raid::CatalogEntry* e, const Rect& dst);
+    void drawPoster(const RaidPosterLayout& L, const raid::CatalogEntry& e);
     // 2.69: the live panel of the selected event and the administrators' actions on it.
     void loadLive();
     void drawLive(const Rect& r);
@@ -94,19 +147,23 @@ private:
     // 2.69: the late arrivals (an index in the form's list), the right column's tab, the live panel.
     int lateIdx_ = 0;
     int sideTab_ = 0;
+    // 2.83: the raid of the form (an index in the catalogue) and whether its list is open; the layout drawn last.
+    int raidIdx_ = 0;
+    bool raidOpen_ = false;
+    AdminRaidsLayout layout_;
     Json live_;
     std::string liveFor_;
     int liveGen_ = 0;
     float liveAt_ = -1000.0f;
 
-    // 2.68: « Tester Asterion » (indices in the branch catalog, its zones, 2..8 players, phases).
+    // 2.68: « Tester le raid » (indices in the branch catalog, its zones, 2..8 players, phases).
     int testBranch_ = 0, testZone_ = -1, testPlayers_ = 1, testPhase_ = 0;  // 2.75: testPlayers_ = simulated players (0..7)
     uint32_t testParts_ = 0x7Fu;  // 2.74 (phase 6): the Cœur d'Asterion's test: the parts simulated as fallen
     int testRelics_ = 0;
     // 2.77: « Une zone » or « Simuler un raid complet » (docs/RAIDS.md §21); the level of the simulated
     // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
     int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
-    // 2.81.2: « Raid à tester » (its list: Asterion alone for now) and whether its list is open.
+    // 2.81.2: « Raid à tester » (2.83: an index in the raid catalogue) and whether its list is open.
     int testRaid_ = 0;
     bool testRaidOpen_ = false;
     bool simBotsInvincible_ = false;

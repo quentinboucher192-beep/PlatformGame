@@ -606,7 +606,7 @@ TEST_CASE("raid GOAT (2.79): « Simuler un raid complet » without any invincibi
 }
 
 TEST_CASE("raid GOAT (2.84): carapaces held together — Dreadfang, Voidworm and Heartbreaker from their phase 2, 8 simulated players (Expert, invincible)") {
-    // What the 2.84 changed in their mechanisms (docs/RAIDS.md §35), measured on one start each: a player stays on its
+    // What the 2.84 changed in their mechanisms (docs/RAIDS.md §36), measured on one start each: a player stays on its
     // chain or hook once closed, keeps the place it stands on, crosses the boss's body under its shield. Dreadfang falls;
     // Voidworm's carapace bursts again and again (before: never broken in 15 min, 66 % left).
     Svc s;
@@ -622,7 +622,7 @@ TEST_CASE("raid GOAT (2.84): carapaces held together — Dreadfang, Voidworm and
     CHECK(h.won);
 }
 
-TEST_CASE("raid GOAT bench (2.84): every Gigaboss and the Cœur over several starts (COSMIC_GOAT_BENCH, docs/RAIDS.md §35)") {
+TEST_CASE("raid GOAT bench (2.84): every Gigaboss and the Cœur over several starts (COSMIC_GOAT_BENCH, docs/RAIDS.md §36)") {
     // A measure, not a check (minutes of play): only with COSMIC_GOAT_BENCH set. COSMIC_GOAT_SEEDS starts (5), from
     // seed COSMIC_GOAT_SEED0 (1); COSMIC_GOAT_PARTS a list of parts (« bras_droit,crane »), else the seven and the Cœur.
     if (!std::getenv("COSMIC_GOAT_BENCH")) {

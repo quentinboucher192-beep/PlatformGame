@@ -976,16 +976,16 @@ void GameWorld::rumble(float low, float high, int ms) {
 void GameWorld::message(WorldMessage msg) {
     // Replace a message of the same style (keeps the screen readable).
     for (auto& m : messages_)
-        if (m.style == msg.style && msg.style != WorldMessage::Style::Hint) {
+        if (m.style == msg.style && m.player == msg.player && msg.style != WorldMessage::Style::Hint) {  // 2.84: not another player's
             m = msg;
             return;
         }
     messages_.push_back(std::move(msg));
 }
 
-void GameWorld::hint(const std::string& text, float duration) {
+void GameWorld::hint(const std::string& text, float duration, int player) {
     for (auto& m : messages_)
-        if (m.style == WorldMessage::Style::Hint && m.text == text) {
+        if (m.style == WorldMessage::Style::Hint && m.text == text && m.player == player) {
             m.age = std::min(m.age, 0.3f);
             return;
         }
@@ -993,6 +993,7 @@ void GameWorld::hint(const std::string& text, float duration) {
     m.style = WorldMessage::Style::Hint;
     m.text = text;
     m.duration = duration;
+    m.player = player;
     messages_.push_back(m);
 }
 
@@ -1063,7 +1064,7 @@ void GameWorld::offerPower(const std::string& tabletId, const std::string& power
         return;
     }
     player().vel = {0.0f, std::min(player().vel.y, 0.0f)};
-    playSound("sounds/power_unlock.wav", 0.6f, 0.8f);
+    if (viewing(team_.empty() ? -1 : curIndex_)) playSound("sounds/power_unlock.wav", 0.6f, 0.8f);  // 2.84: its player's sound
 }
 
 bool GameWorld::resolvePowerOffer(uint8_t choice) {
@@ -1079,7 +1080,7 @@ bool GameWorld::resolvePowerOffer(uint8_t choice) {
     bool leave = choice == 0 || choice == InputFrame::kChoiceLeave || !def || !tablet ||
                  slot < 0 || slot >= static_cast<int>(pl.powers().size());
     if (leave) {
-        hint("Pouvoir laissé ici : vous pourrez revenir le prendre.", 2.5f);
+        hint("Pouvoir laissé ici : vous pourrez revenir le prendre.", 2.5f, team_.empty() ? -1 : offer.player);  // 2.84: for that player
         return true;
     }
     std::string dropped = pl.replacePower(slot, *def);

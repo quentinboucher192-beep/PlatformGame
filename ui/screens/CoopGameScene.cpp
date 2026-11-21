@@ -244,6 +244,11 @@ public:
             if (workerDone_) finishCatchUp();
             return;
         }
+        // 2.84 (display only): the players of this computer — a power picked up by another is celebrated on theirs.
+        uint64_t here = 0;
+        for (int i = 0; i < world_->teamSize() && i < 64; ++i)
+            if (setup_.local(i)) here |= 1ull << i;
+        world_->viewers = here;
         const bool network = setup_.mode != CoopSetup::Mode::SamePc;
         if (paused_ && !network) return;  // one PC: the pause stops the team
         if (!network && unplug_.paused()) return;  // 2.65: a device missing, then 3-2-1: no step, the chrono waits
@@ -770,7 +775,7 @@ public:
     Rect drawDowned(int seat) {
         UIContext& ui = g_.ui;
         for (const WorldMessage& m : world_->messages())
-            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return {};  // it waits
+            if (m.style != WorldMessage::Style::Hint && m.age < m.duration && world_->shownHere(m)) return {};  // it waits
         const GameWorld& w = *world_;
         const GameWorld::TeamMember& m = w.member(seat);
         downed::DownInfo d;
@@ -806,7 +811,7 @@ public:
     /// Not over a big message of the level (it waits).
     Rect drawPassageWait(const Rect& banner) {
         for (const WorldMessage& m : world_->messages())
-            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return {};
+            if (m.style != WorldMessage::Style::Hint && m.age < m.duration && world_->shownHere(m)) return {};
         const std::vector<std::string> lines = passagewait::lines(*world_, [this](int i) {
             return i >= 0 && i < static_cast<int>(setup_.seats.size()) ? setup_.seats[static_cast<size_t>(i)].name : "Joueur " + std::to_string(i + 1);
         });

@@ -553,4 +553,42 @@ std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, c
     return s;
 }
 
+void watchRaceAttempt(GameServices& g, const Json& e, int size, std::weak_ptr<int> life, std::function<void(const std::string&)> status) {
+    const std::string runId = jstr(e, "run_id");
+    if (runId.empty()) return;
+    std::string who;
+    if (size > 1)
+        for (const auto& p : e.value("players", Json::array())) who += (who.empty() ? "" : " · ") + jstr(p, "username");
+    else
+        who = jstr(jfield(e, "player", Json::object()), "username");
+    const std::string title = "Course à la vérification – " + who + " – " + decimal(jget<double>(e, "score", 0.0)) + " %";
+    // Downloaded on this computer (2.45): it plays from its copy.
+    if (size <= 1)
+        if (auto rep = ReplayDownloadUi::localCopy(g, ReplayLibrary::makeId("race", runId))) {
+            g.app.pushScene(makeLocalReplayViewer(g, std::move(*rep), title));
+            return;
+        }
+    status("Téléchargement du replay…");
+    g.online.getBinary(
+        (size > 1 ? "/api/v1/coop/runs/" : "/api/v1/races/runs/") + runId + "/replay",
+        [&g, title, life, status](const HttpResponse& r) {
+            if (life.expired()) return;
+            if (r.status != 200 || r.body.empty()) {
+                status(r.status == 403 ? "Ce joueur a masqué son profil : replay indisponible."
+                       : r.networkFailure() ? "Connexion impossible : replay indisponible pour l'instant."
+                                            : "Replay indisponible (" + std::to_string(r.status) + ").");
+                return;
+            }
+            std::string err;
+            auto rep = ReplayData::decode(std::vector<uint8_t>(r.body.begin(), r.body.end()), &err);
+            if (!rep) {
+                status("Replay illisible : " + err);
+                return;
+            }
+            status("");
+            g.app.pushScene(makeLocalReplayViewer(g, std::move(*rep), title, adminview::replayNote(r.header("x-admin-view"), r.header("x-admin-replay-status"))));
+        },
+        16u << 20);
+}
+
 }  // namespace cosmic

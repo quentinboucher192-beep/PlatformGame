@@ -268,3 +268,37 @@ TEST_CASE("films: Mode Film — F turns it on and off in any film, the choice is
     r.g->settings.gameplay.filmMode = before;
     r.g->saveSettings();
 }
+
+TEST_CASE("films: the mouse pointer is hidden while a film plays, in Film mode or not, shown a moment when the mouse moves") {
+    FilmRig r;
+    CHECK(r.ok);
+    const bool before = r.g->settings.gameplay.filmMode;
+    for (bool mode : {false, true}) {
+        r.g->settings.gameplay.filmMode = mode;
+        auto s = asterionfilm::makeTeaser(*r.g, asterionfilm::Teaser::Tour, 20.0f);
+        CHECK(s != nullptr);
+        if (!s) break;
+        Scene* scene = s.get();
+        r.app.pushScene(std::move(s));
+        r.app.runFrames(4);
+        CHECK(r.app.topScene() == scene);
+        CHECK(scene->hidesCursor());  // from its start: where the pointer was is not a move
+        SDL_Event m{};
+        m.type = SDL_EVENT_MOUSE_MOTION;
+        m.motion.x = 300.0f + (mode ? 40.0f : 0.0f);
+        m.motion.y = 200.0f;
+        m.motion.xrel = 4.0f;
+        SDL_PushEvent(&m);
+        r.app.runFrames(1);
+        CHECK(!scene->hidesCursor());  // the mouse moved: the pointer (« Mode Film », a click)
+        r.app.runFrames(static_cast<int>(kFilmPointerShow * 0.5f / r.app.headlessDt));
+        CHECK(!scene->hidesCursor());  // still there a moment
+        r.app.runFrames(static_cast<int>(kFilmPointerShow / r.app.headlessDt));
+        CHECK(scene->hidesCursor());  // then hidden again, the film still playing
+        CHECK(r.app.topScene() == scene);
+        r.app.popScene();
+        r.app.runFrames(2);
+        CHECK(r.app.topScene() && !r.app.topScene()->hidesCursor());  // left: the menu's pointer is back
+    }
+    r.g->settings.gameplay.filmMode = before;
+}

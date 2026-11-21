@@ -599,12 +599,16 @@ TEST_CASE("raid mechanisms (2.81.2): the plate's pill, the tabs of one width, th
                 // The pill over a plate: its whole text (measured) inside the screen, even at its edges.
                 for (float px : {-40.0f, 10.0f, W * 0.5f, W - 30.0f}) {
                     const Rect plate{px, ui.s(300), ui.s(120), ui.s(40)};
-                    const raidhud::Pill a = raidhud::coopPill(ui, plate, 1, 3, true, W);
-                    CHECK(a.text == raidhud::kAmbushFirst);
+                    const raidhud::Pill a = raidhud::coopPill(ui, plate, 1, 3, 1, 2, W);
+                    CHECK(a.text == "Embuscades restantes : 1 sur 2");  // titan 12: how many, of its own
                     CHECK(a.box.x >= 0.0f && a.box.right() <= W + 0.5f);
                     CHECK(raidui::textW(ui, a.text, a.font, FontFace::Bold) <= a.box.w - ui.s(10) + 0.5f);
                     CHECK(a.box.bottom() <= plate.y);  // above the plate, never on it
-                    const raidhud::Pill n = raidhud::coopPill(ui, plate, 1, 3, false, W);
+                    const raidhud::Pill n = raidhud::coopPill(ui, plate, 1, 3, 0, 2, W);
+                    // Titan 12: the pill over a shut gate's door, measured the same way, inside the screen.
+                    const raidhud::Pill gp = raidhud::ambushPill(ui, plate, 3, 8, W);
+                    CHECK(gp.box.x >= 0.0f && gp.box.right() <= W + 0.5f);
+                    CHECK(raidui::textW(ui, gp.text, gp.font, FontFace::Bold) <= gp.box.w - ui.s(10) + 0.5f);
                     CHECK(n.text == "1 / 3");
                 }
                 // The sim panel's tabs: one width (the widest name in this language), the same whichever is chosen.

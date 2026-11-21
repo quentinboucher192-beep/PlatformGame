@@ -131,7 +131,7 @@
    "secret": false,
    "boss": false,
    "groups_required": 1,
-   "minutes": 13.6
+   "minutes": 14.4
   },
   {
    "id": 8,
@@ -324,6 +324,42 @@
    "index": 12,
    "zone": 7,
    "label": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "abd_galerie_1",
+   "index": 13,
+   "zone": 7,
+   "label": "Nettoyer la galerie 1 : vaincre son embuscade",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "abd_galerie_2",
+   "index": 14,
+   "zone": 7,
+   "label": "Nettoyer la galerie 2 : vaincre son embuscade",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "abd_galerie_3",
+   "index": 15,
+   "zone": 7,
+   "label": "Nettoyer la galerie 3 : vaincre son embuscade",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "abd_galerie_4",
+   "index": 16,
+   "zone": 7,
+   "label": "Nettoyer la galerie 4 : vaincre son embuscade",
    "optional": false,
    "role": "ambush",
    "pair": ""

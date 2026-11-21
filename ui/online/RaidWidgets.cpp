@@ -117,13 +117,15 @@ Color stateText(raids::State s) {
 }
 
 int chips(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, const std::vector<bool>& on,
-          float& bottom, bool enabled) {
+          float& bottom, bool enabled, int iconAt, const std::function<void(const Rect&)>& icon) {
     int clicked = -1;
-    const float h = ui.s(36), gap = ui.s(8);
+    const float h = ui.s(36), gap = ui.s(8), iconS = h - ui.s(14), iconGap = ui.s(8), pad = ui.s(13);
     float cx = x, cy = y;
     for (size_t i = 0; i < labels.size(); ++i) {
         const std::string& text = labels[i];
-        float w = std::min(textW(ui, text, 14, FontFace::Bold) + ui.s(26), right - x);
+        const bool withIcon = icon && static_cast<int>(i) == iconAt;
+        const float extra = withIcon ? iconS + iconGap : 0.0f;
+        float w = std::min(textW(ui, text, 14, FontFace::Bold) + ui.s(26) + extra, right - x);
         if (cx > x && cx + w > right) {
             cx = x;
             cy += h + gap;
@@ -133,7 +135,13 @@ int chips(UIContext& ui, const std::string& id, float x, float y, float right, c
         st.fontSize = 14;
         st.selected = i < on.size() && on[i];
         st.enabled = enabled;
-        if (ui.button(id + "/" + std::to_string(i), {cx, cy, w, h}, text, st)) clicked = static_cast<int>(i);
+        const Rect cr{cx, cy, w, h};
+        if (ui.button(id + "/" + std::to_string(i), cr, withIcon ? std::string() : text, st)) clicked = static_cast<int>(i);
+        if (withIcon) {
+            // 2.83: the icon, then the label measured into what is left (the button's own padding kept).
+            icon({cr.x + pad, cr.center().y - iconS * 0.5f, iconS, iconS});
+            fit(ui, text, {cr.x + pad + extra, cr.center().y}, 14, std::max(0.0f, cr.w - pad * 2.0f - extra), kText, FontFace::Bold);
+        }
         cx += w + gap;
     }
     bottom = cy + h;
@@ -160,17 +168,24 @@ std::vector<Rect> tabRects(UIContext& ui, float x, float y, float right, const s
 }
 
 float dropdown(UIContext& ui, const std::string& id, const Rect& r, const std::string& caption, const std::vector<std::string>& options, int& index,
-               bool& open) {
+               bool& open, const std::function<void(int, const Rect&)>& icon) {
     const int n = static_cast<int>(options.size());
     index = n > 0 ? std::clamp(index, 0, n - 1) : 0;
-    const std::string shown = i18n::keep(i18n::tr(caption) + (i18n::language() == Language::English ? ": " : " : ") +
-                                         (n > 0 ? i18n::tr(options[static_cast<size_t>(index)]) : std::string("—")));
+    const std::string choice = n > 0 ? i18n::tr(options[static_cast<size_t>(index)]) : std::string("—");
+    const std::string shown =
+        i18n::keep(caption.empty() ? choice : i18n::tr(caption) + (i18n::language() == Language::English ? ": " : " : ") + choice);
     UIContext::ButtonStyle st;
     st.small = true;
     if (ui.button(id + "/head", r, "", st) && n > 0) open = !open;
-    // The text at the left, measured into what the arrow leaves; the arrow drawn at the right.
+    // 2.83: the choice's icon; the text at the left, measured into what the arrow leaves; the arrow drawn at the right.
     const float arrowW = ui.s(14), pad = ui.s(14);
-    fit(ui, shown, {r.x + pad, r.center().y}, 15, std::max(0.0f, r.w - pad * 3.0f - arrowW), kText, FontFace::Bold, Align::Left);
+    float textX = r.x + pad;
+    if (icon && n > 0) {
+        const float is = std::max(0.0f, r.h - ui.s(14));
+        icon(index, {textX, r.center().y - is * 0.5f, is, is});
+        textX += is + ui.s(10);
+    }
+    fit(ui, shown, {textX, r.center().y}, 15, std::max(0.0f, r.right() - textX - pad * 2.0f - arrowW), kText, FontFace::Bold, Align::Left);
     const Vec2 c{r.right() - pad - arrowW * 0.5f, r.center().y};
     const float hw = arrowW * 0.5f, hh = ui.s(4);
     if (open) ui.r().fillTriangle({c.x - hw, c.y + hh}, {c.x + hw, c.y + hh}, {c.x, c.y - hh}, kGold);
@@ -183,10 +198,19 @@ float dropdown(UIContext& ui, const std::string& id, const Rect& r, const std::s
         UIContext::ButtonStyle os;
         os.small = true;
         os.selected = i == index;
-        os.fontSize = ui.fitFont(options[static_cast<size_t>(i)], FontFace::Bold, 15, std::max(ui.s(20), r.w - ui.s(40)));
-        if (ui.button(id + "/opt" + std::to_string(i), {r.x + ui.s(12), y, r.w - ui.s(12), rowH}, options[static_cast<size_t>(i)], os)) {
+        const Rect row{r.x + ui.s(12), y, r.w - ui.s(12), rowH};
+        const std::string& text = options[static_cast<size_t>(i)];
+        if (!icon) os.fontSize = ui.fitFont(text, FontFace::Bold, 15, std::max(ui.s(20), r.w - ui.s(40)));
+        if (ui.button(id + "/opt" + std::to_string(i), row, icon ? std::string() : text, os)) {
             index = i;
             open = false;
+        }
+        if (icon) {
+            // 2.83: its icon, then its text at the left (measured into what is left).
+            const float is = std::max(0.0f, rowH - ui.s(12));
+            icon(i, {row.x + pad, row.center().y - is * 0.5f, is, is});
+            const float tx = row.x + pad + is + ui.s(10);
+            fit(ui, text, {tx, row.center().y}, 15, std::max(0.0f, row.right() - pad - tx), kText, FontFace::Bold);
         }
         y += rowH;
     }

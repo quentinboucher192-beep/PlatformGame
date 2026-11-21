@@ -20,19 +20,24 @@ namespace cosmic::raidhud {
 
 using namespace raidui;
 
-Pill coopPill(UIContext& ui, const Rect& plate, int on, int need, bool ambush, float screenW) {
+Pill ambushPill(UIContext& ui, const Rect& over, int left, int total, float screenW) {
     Pill p;
     const float pad = ui.s(16), margin = ui.s(8);
-    if (ambush) {
-        // Its whole text (wider than the plate: it says why), smaller only when the screen is too narrow.
-        p.text = kAmbushFirst;
-        const float room = std::max(ui.s(40), screenW - margin * 2.0f);
-        p.font = ui.fitFont(p.text, FontFace::Bold, 13.0f, room - pad, 0.6f);
-        const float w = std::min(room, textW(ui, p.text, p.font, FontFace::Bold) + pad);
-        const float x = std::clamp(plate.center().x - w * 0.5f, margin, std::max(margin, screenW - margin - w));
-        p.box = {x, plate.y - ui.s(30), w, ui.s(24)};
-        return p;
-    }
+    // Its whole text (wider than what it is over: it says why), smaller only when the screen is too narrow.
+    p.text = "Embuscades restantes : " + std::to_string(left) + " sur " + std::to_string(total);
+    const float room = std::max(ui.s(40), screenW - margin * 2.0f);
+    p.font = ui.fitFont(p.text, FontFace::Bold, 13.0f, room - pad, 0.6f);
+    const float w = std::min(room, textW(ui, p.text, p.font, FontFace::Bold) + pad);
+    const float x = std::clamp(over.center().x - w * 0.5f, margin, std::max(margin, screenW - margin - w));
+    p.box = {x, over.y - ui.s(30), w, ui.s(24)};
+    return p;
+}
+
+Pill coopPill(UIContext& ui, const Rect& plate, int on, int need, int ambushLeft, int ambushTotal, float screenW) {
+    // 2.81.2: an ambush before it still to beat: titan 12, how many of its own (« Embuscades restantes : 1 sur 2 »).
+    if (ambushLeft > 0) return ambushPill(ui, plate, ambushLeft, std::max(ambushLeft, ambushTotal), screenW);
+    Pill p;
+    const float pad = ui.s(16);
     p.text = std::to_string(std::min(on, need)) + " / " + std::to_string(need);
     const float w = std::min(textW(ui, p.text, p.font, FontFace::Bold) + pad, std::max(ui.s(40), plate.w));
     p.box = {plate.center().x - w * 0.5f, plate.y - ui.s(30), w, ui.s(24)};
