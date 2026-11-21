@@ -3036,6 +3036,13 @@ par départ). Essayés et retirés : le pic du tentacule fouisseur de Voidworm l
 parasites avant sa tête (aucun effet), sa fenêtre de réanimation de 7 s (5 / 8, pas mieux), ses réanimateurs sans
 bouclier qui esquivent (5 / 8, 84 % au lieu de 90 %).
 
+2.85 : la **cuirasse** de Heartbreaker n'attend plus ses quatre plaques ensemble : chacune est brisée dès que possible
+(chacune lui ôte 5 % de vie). Tenues basses ensemble, elles repoussaient avant la dernière (« 4 → 3 → 4 plaques ») : sa
+phase 1 durait 340 s, le groupe usé avant sa cage thoracique (depuis sa phase 2, frais : 7 / 8). Maintenant **5 / 8**,
+89 % de sa vie ôtée, des combats de 255 à 335 s (avant : 3 / 8, 72 %, 362 à 568 s). Essayés et retirés : chercher
+l'ouverture de l'onde du cœur sans bouclier (sans effet : ils sont presque toujours en l'air), garder le bouclier pour
+ses Côtes-pièges et ses anneaux (`Plan::reserveShield` : 0 / 8).
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
