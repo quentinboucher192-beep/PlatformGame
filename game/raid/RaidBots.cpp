@@ -606,6 +606,11 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
     for (const bots::Target& t : view_.targets)
         if (b.syncGroup > 0 && t.sync == b.syncGroup && t.uid != b.target)
             if (const Enemy* e = enemyOf(w, t.uid)) siblings.push_back(e->box.expanded(4.0f));
+    // 2.87: another of its group between it and its target (Titanus's west restraint before its east one): its place may
+    // lie on the far side of the boss's body, which it crosses under its shield (drive).
+    bool farSide = false;
+    for (const Rect& r : siblings)
+        farSide = farSide || (r.center().x - me.center().x) * (tc.x - r.center().x) > 0.0f;
     for (int pass = 0; pass < 2; ++pass) {
         auto ok = [&](int i) {
             const NavGraph::Node& nd = nav->node(i);
@@ -649,7 +654,7 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
             if (body && (close ? touchesBody(bodyAt(nd.feet).expanded(clearance)) : bodyAt(nd.feet).intersects(bossBox.expanded(clearance)))) return false;
             // On its side of the boss's body (under its top): the way to the other side goes through it.
             // 2.84: a part of it between (at that height), not the box around them all.
-            if (body && nd.feet.y > bossBox.y && nd.feet.y - 22.0f < bossBox.bottom() &&
+            if (body && !farSide && nd.feet.y > bossBox.y && nd.feet.y - 22.0f < bossBox.bottom() &&
                 (close ? touchesBody(Rect{std::min(me.center().x, nd.feet.x), nd.feet.y - 22.0f, std::fabs(nd.feet.x - me.center().x), 20.0f})
                        : (me.center().x < bossBox.center().x ? nd.feet.x > bossBox.x : nd.feet.x < bossBox.right())))
                 return false;
@@ -1108,9 +1113,14 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             const Enemy* e = enemyOf(w, t->uid);
             if (!e) continue;
             for (int k = 0; k < t->want; ++k) {
-                int s = nearestFree(e->center(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Striker; });
+                // 2.87: never a weak point it found no place to fire at a moment ago (below).
+                const auto reaches = [&](int seat) {
+                    const Bot& o = bots_[static_cast<size_t>(seat)];
+                    return !t->weak || o.noSpotFor != t->uid || static_cast<int>(tick_) >= o.noSpotUntil;
+                };
+                int s = nearestFree(e->center(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Striker && reaches(seat); });
                 if (s < 0 && (t->priority >= 20 || allIn))
-                    s = nearestFree(e->center(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role != Role::Reviver || allIn; });
+                    s = nearestFree(e->center(), [&](int seat) { return (bots_[static_cast<size_t>(seat)].role != Role::Reviver || allIn) && reaches(seat); });
                 if (s < 0) break;
                 give(s, Task::Fight, e->box.bottomCenter(), Strike, t->uid);
                 Bot& b = bots_[static_cast<size_t>(s)];
@@ -1680,6 +1690,17 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             const bool hide = view_.plan.hideArmoured && bossFight && !view_.bodyTakesDamage && foe == boss;
             if (hide) b.spot = -1;
             else if (stale && static_cast<int>(tick_) - b.spotAt > 12) chooseSpot(w, seat, b, fb, boss);
+            // 2.87: a weak point bare no place lets it fire at for most of a second: another of its weak points for 4 s.
+            if (bossFight && view_.exposed && foe != boss && b.syncGroup == 0) {
+                const int now = static_cast<int>(tick_);
+                if (b.spot >= 0 || b.noSpotWatch != b.target) {
+                    b.noSpotWatch = b.target;
+                    b.noSpotSince = now;
+                } else if (now - b.noSpotSince > 90) {
+                    b.noSpotFor = b.target;
+                    b.noSpotUntil = now + 4 * kSimHz;
+                }
+            }
             if (b.spot < 0) {
                 // No place sees it: near it, out of its body, each one its own place (never all on one pixel).
                 const float side = fc.x < me.center().x ? 1.0f : -1.0f;
@@ -1785,7 +1806,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // Its way (a place to hold, a soul, a place to strike from) lies on the other side of the boss, whose body fills
     // the floor between (Pyroclast's arm over the arena): a player does not wait for it to leave — the shield up (it
     // takes the contact, 2,2 s), dashes through (invulnerable while it dashes), out the other side.
-    if (fight_ && bossUid_ && b.cross <= 0 && !fleeing && !holding && b.task == Task::Mechanism) {
+    if (fight_ && bossUid_ && b.cross <= 0 && !fleeing && !holding && (b.task == Task::Mechanism || (b.task == Task::Fight && b.syncGroup > 0 && b.spot >= 0))) {
         const Rect& bb = bossBody_;
         const bool across = (me.center().x < bb.x && b.goal.x > bb.right() + 8.0f) || (me.center().x > bb.right() && b.goal.x < bb.x - 8.0f);
         const float edge = me.center().x < bb.x ? bb.x - me.box.right() : me.box.x - bb.right();
@@ -2002,6 +2023,22 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         }
     }
     if (b.escapeSteps > 0) --b.escapeSteps;
+    // 2.87: a blade to take under the shield (Dreadfang's sweeps, 1 500 px/s) on a player in the air over its storey (its
+    // jump toward a place, a jump down): the shield too as it comes (only a player on its floor saw it; 18 of 97 sweeps
+    // that struck found the shield ready, none raised).
+    if (!fleeing && !me.grounded() && !me.shieldActive() && shieldReady && me.energy >= 20.0f)
+        for (const Danger& d : dangers_) {
+            if (d.kind != Danger::Kind::FloorWave || !d.shieldFirst || (d.seat >= 0 && d.seat != seat) || d.speed == 0.0f) continue;
+            if (me.box.bottom() < d.floorY - d.height - 24.0f || me.box.y > d.floorY + 4.0f) continue;  // over it, or under its storey
+            const float gap = d.speed > 0.0f ? me.box.x - d.area.right() : d.area.x - me.box.right();
+            if (gap < -(d.area.w + me.box.w)) continue;  // already past it
+            const float t = std::max(0.0f, gap) / std::fabs(d.speed) + static_cast<float>(d.in) / static_cast<float>(kSimHz);
+            if (t < 0.2f) {
+                raiseShield = true;
+                react = "bouclier contre la lame";
+                break;
+            }
+        }
     // ------------------------------------------------------------ a wave running along its floor: jump it at the right moment
     if (!fleeing && me.grounded() && b.waveJumpCool <= 0)
         for (const Danger& d : dangers_) {

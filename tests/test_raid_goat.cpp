@@ -10,6 +10,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <map>
 #include <memory>
 #include <string>
@@ -29,6 +30,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/gameplay/WorldListener.h"
+#include "game/powers/Power.h"
 #include "game/raid/AsterionHeartRoutine.h"
 #include "game/raid/RaidBranch.h"
 #include "game/raid/RaidNav.h"
@@ -87,7 +89,12 @@ struct HurtLog : WorldListener {
         if (session && !watch.empty() && src.attack.find(watch) != std::string::npos) {
             const int k = w.currentPlayer();
             const Player& p = w.playerAt(k);
-            std::printf("      %s → %d (%.0f, %.0f) sol %d vy %.0f · %s · %s\n", src.attack.c_str(), k + 1, p.feet().x, p.feet().y, p.grounded() ? 1 : 0, p.vel.y,
+            std::printf("      %s → %d (%.0f, %.0f) sol %d vy %.0f bouclier %d énergie %.0f · %s · %s\n", src.attack.c_str(), k + 1, p.feet().x, p.feet().y,
+                        p.grounded() ? 1 : 0, p.vel.y, p.shieldActive() ? 1 : [&] {
+                            for (const auto& pw : p.powers())
+                                if (pw->id() == "shield") return pw->ready(p) ? 2 : 0;
+                            return 9;
+                        }(), p.energy,
                         session->bots().thought(k).intent.c_str(), session->bots().thought(k).move.c_str());
             // 2.87 (tuning runs): a lasting effect: which one touches it (its kind, its area, its age).
             const BossHazards& hz = w.hazards();
@@ -229,12 +236,14 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 if (const Enemy* e = u ? w.findEnemy(u) : nullptr; e && e->alive())
                     std::printf(" [%u (%.0f, %.0f) %.0f/%.0f]", u, e->center().x, e->center().y, e->hp(), e->maxHp());
             const Enemy* bb = gb.boss(w);
-            std::printf(" · boss (%.0f, %.0f) %.1f %%\n", bb ? bb->center().x : 0.0f, bb ? bb->center().y : 0.0f, bb ? bb->hpRatio() * 100.0f : 0.0f);
+            std::printf(" · boss (%.0f, %.0f) %.1f %% · ondes %d\n", bb ? bb->center().x : 0.0f, bb ? bb->center().y : 0.0f, bb ? bb->hpRatio() * 100.0f : 0.0f,
+                        hurts.attacks.count("wave") ? hurts.attacks["wave"] : 0);
             for (int k = 0; k < w.teamSize(); ++k) {
                 if (w.member(k).presence != GameWorld::Presence::Playing) continue;
                 const auto& bt = session.bots().bots()[static_cast<size_t>(k)];
-                std::printf("        %d (%.0f, %.0f) %s énergie %.0f cible %u place %d · %s · %s\n", k + 1, w.playerAt(k).feet().x, w.playerAt(k).feet().y,
-                            w.playerAt(k).grounded() ? "sol" : "air", w.playerAt(k).energy, bt.target, bt.spot, session.bots().thought(k).intent.c_str(),
+                std::printf("        %d (%.0f, %.0f) %s énergie %.0f cible %u place %d but (%.0f, %.0f) chemin %zu à %zu · %s · %s\n", k + 1, w.playerAt(k).feet().x,
+                            w.playerAt(k).feet().y, w.playerAt(k).grounded() ? "sol" : "air", w.playerAt(k).energy, bt.target, bt.spot, bt.goal.x, bt.goal.y,
+                            bt.path.size(), bt.at, session.bots().thought(k).intent.c_str(),
                             session.bots().thought(k).move.c_str());
             }
         }
@@ -257,6 +266,19 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 }
                 wasCharging = sk->charging() && sk->chargeRatio() > 0.97f;
             }
+        if (const char* sw = std::getenv("COSMIC_GOAT_SEAT"); sw && steps % 12 == 0) {
+            // 2.87 (tuning runs): one seat every tenth of a second (« 3 » or « 3:150:160 », seconds) — where it is, how it moves.
+            int k = std::atoi(sw) - 1, a = 0, z = 1 << 30;
+            if (const char* c = std::strchr(sw, ':')) std::sscanf(c + 1, "%d:%d", &a, &z);
+            const GameWorld& w = session.run().world();
+            if (k >= 0 && k < w.teamSize() && steps >= a * kSimHz && steps <= z * kSimHz) {
+                const Player& p = w.playerAt(k);
+                const auto& bt = session.bots().bots()[static_cast<size_t>(k)];
+                std::printf("      %6.1f s siège %d (%.0f, %.0f) v (%.0f, %.0f) %s · nav %d · but (%.0f, %.0f) nœud %d chemin %zu à %zu · place %d · %s · %s\n", steps / 120.0, k + 1,
+                            p.feet().x, p.feet().y, p.vel.x, p.vel.y, p.grounded() ? "sol" : "air", static_cast<int>(session.bots().moveThought(k).intent), bt.goal.x,
+                            bt.goal.y, bt.goalNode, bt.path.size(), bt.at, bt.spot, session.bots().thought(k).intent.c_str(), session.bots().thought(k).move.c_str());
+            }
+        }
         if (std::getenv("COSMIC_GOAT_FOES") && steps % 120 == 0) {
             // 2.87 (tuning runs): every second, the enemies of the fight (its mechanism's, its creatures) and their health.
             const GameWorld& w = session.run().world();
@@ -299,7 +321,9 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 }
             }
         }
-        if (trace && steps % (20 * kSimHz) == 0) {
+        // 2.87: COSMIC_GOAT_EVERY sets its period in seconds (20 by default).
+        static const int every = std::getenv("COSMIC_GOAT_EVERY") ? std::max(1, std::atoi(std::getenv("COSMIC_GOAT_EVERY"))) : 20;
+        if (trace && steps % (every * kSimHz) == 0) {
             // The fight every 20 s (tuning runs): its stage, phase and health, the players in play, the group's plan.
             const GameWorld& w = session.run().world();
             const Enemy* boss = gb.boss(w);

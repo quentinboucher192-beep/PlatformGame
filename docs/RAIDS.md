@@ -3123,6 +3123,48 @@ La suite complète plantait parfois (une fois sur deux, au test « raid titan: a
 `walkTo` tuait les ennemis d'une embuscade en parcourant la liste des entités, qu'une mort peut allonger (son butin) — la
 liste est maintenant relevée d'abord, les ennemis tués ensuite.
 
+2.87, suite : **la lame de Dreadfang en l'air, les ventricules du Cœur, le bond de Titanus**. Les sondes :
+`COSMIC_GOAT_HIT` dit aussi si le bouclier était levé ou prêt et l'énergie ; `COSMIC_GOAT_EXPOSED` compte les ondes tirées
+et donne le but et le chemin de chacun ; `COSMIC_GOAT_SEAT=3:150:160` suit un joueur tous les dixièmes de seconde (où il
+est, comment il se déplace) ; `COSMIC_GOAT_EVERY` règle la période de `COSMIC_GOAT_TRACE` (20 s par défaut). Constats :
+sur 97 Balayages des griffes de Dreadfang qui touchaient, aucun bouclier n'était levé (18 fois il était prêt), et seule la
+lame sur son étage était lue, pieds au sol : un joueur en l'air (en route vers sa place, en sautant d'un étage) ne le
+levait jamais ; les ventricules du Cœur étaient donnés au plus proche, même sans aucune place d'où tirer (son ventricule du haut,
+depuis le sol, 1 000 px plus bas : jamais touché) ; le bond de Titanus écrase tout son corps élargi de 130 px de chaque
+côté, sur toute sa hauteur, et non un cercle de 130 px autour de son ombre. Maintenant :
+
+* une lame à prendre sous le bouclier (`Danger::shieldFirst`) lève le bouclier d'un joueur **en l'air** au-dessus de son
+  étage comme au sol, quand elle arrive ;
+* un point faible à nu d'où aucune place ne permet de tirer depuis presque une seconde passe à un autre joueur pendant
+  4 s (`Bot::noSpotFor`) : chacun va sur un ventricule qu'il peut atteindre ;
+* le bond (`AttackType::Skyfall`) est lu comme ce qu'il écrase (`Enemy::landSkyfall`) : son corps et son rayon de chaque
+  côté, sur toute sa hauteur (les plateformes au-dessus de son ombre aussi) ;
+* Titanus : une entrave amenée basse est tenue par un seul joueur, les autres passent sur celle qui reste haute ; la
+  recherche des places accepte l'autre côté du corps pour une cible derrière une autre de son groupe (l'entrave est vue de
+  l'ouest), et ses frappeurs traversent son corps sous le bouclier pour y aller.
+
+| Combat (départs 1 à 8 / 9 à 16) | avant | après |
+|---|---|---|
+| Dreadfang | 41 % / 42 % | **53 % / 57 %** (17 à 32 : 50 % / 55 %, avant 47 % / 42 %) |
+| Cœur d'Asterion | 52 % / 56 % | **58 % / 58 %** (17 à 32 : 63 % / 55 %, avant 52 % / 53 %) |
+| Pyroclast | 38 % / 44 % | 41 % / 46 % |
+| Voidworm | 5 / 8, 90 % · 1 / 8, 72 % | 4 / 8, 82 % · 3 / 8, 74 % (17 à 24 : 4 / 8, 75 %, avant 0 / 8, 62 %) |
+| Heartbreaker | 5 / 8, 89 % · 2 / 8, 81 % | 6 / 8, 89 % · 3 / 8, 80 % |
+| Skullmaw | 8 / 8 · 6 / 8 | 7 / 8 · 5 / 8 (sur 32 départs : 26 au lieu de 27, 97 % de sa vie ôtée dans les deux cas) |
+| Titanus | 35 % / 36 % | 36 % / 36 % |
+| Graviton | 39 % / 37 % | 38 % / 39 % |
+
+Ce qui bloque encore Titanus : son groupe s'use en phase 2 (ses ondes, sa charge, les fissures de son séisme sous les
+réanimateurs) ; de l'est, les seules places qui voient l'entrave est sont au sol au ras de son pied, rarement sûres. Et
+Graviton : ses cœurs à nu ne reçoivent qu'une trentaine d'ondes en 11 s (ses porteurs de générateurs sont loin, ses
+secteurs inversés en retiennent d'autres sous la voûte). Essayés et retirés : le bouclier en l'air contre toute onde au
+sol, pas seulement la lame de Dreadfang (Heartbreaker 4 / 8, 68 % au lieu de 6 / 8, 89 %) ; le bouclier de Dreadfang
+gardé pour sa lame dès 2,5 s après la précédente (50 % au lieu de 53 %) ; trois joueurs par ventricule au lieu de deux
+(54 % / 49 %) ; les ventricules visés de plus près (`clearance` 24 px : 49 %) ; le dash permis en route vers un ventricule
+(55 %) ; une place d'attente qui change de point faible quand elle n'en voit pas (56 %) ; l'attente d'une plateforme
+mobile comptée dans le coût de la navigation (le Cœur : 47 % / 54 %, des groupes balayés plus tôt) ; tirer en esquivant
+contre Graviton (`Plan::fireOnTheRun` : 38 %, pareil) ; les places près du pied de Titanus pour son entrave est (35 %).
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
