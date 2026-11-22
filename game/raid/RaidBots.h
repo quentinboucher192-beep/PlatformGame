@@ -118,6 +118,11 @@ public:
         int standOff = -1;
         int storeyNode = -1;  // 2.84: the place on another storey it goes to before a sweep    // 2.84: where it waits off the boss's body while no place lets it fire         // 2.84: steps left going on through what is coming under its shield      // 2.84: steps held back at the edge of what is coming          // 2.84: armoured, where its weak point will be once bare (its place is chosen for it)          // 2.84: a jump (1) or a double jump (2) to fire from its top
         uint32_t revivee = 0; // the seat it revives + 1 (0 none)
+        // 2.87: a weak point bare it found no place to fire at (the Cœur's top ventricle from the floor): given to another a while.
+        uint32_t noSpotFor = 0;
+        uint32_t noSpotWatch = 0;
+        int noSpotSince = 0;
+        int noSpotUntil = 0;
         bots::Thought thought;
         std::string intent;   // its task's intention (the plan's), shown unless it reacts to something
         std::string moveText; // how it moves now (the navigation's intention)

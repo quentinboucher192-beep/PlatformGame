@@ -156,9 +156,11 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
         case AttackType::Skyfall: {
             // 2.84: its titanic leap — it falls back where its shadow is (it follows its target while it crouches and
             // flies): out of the circle it lands on (its shockwaves are read as they run).
-            const float r = (a->radius > 0.0f ? a->radius : 130.0f) + 24.0f;
+            // 2.87: its landing crushes its whole body widened by its radius on each side (Enemy::landSkyfall), as high
+            // as its body (the platforms over its shadow too), not a circle of its radius alone.
+            const float r = (a->radius > 0.0f ? a->radius : 26.0f) + 24.0f;
             const Vec2 sh = b.shadow();
-            d.area = {sh.x - r, sh.y - 220.0f, r * 2.0f, 224.0f};
+            d.area = {sh.x - box.w * 0.5f - r, sh.y - box.h - 6.0f, box.w + r * 2.0f, box.h + 10.0f};
             d.in = kSimHz / 2;
             v.dangers.push_back(d);
             break;

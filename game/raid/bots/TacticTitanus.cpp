@@ -78,6 +78,12 @@ public:
                 t.priority = 25;
                 t.sync = 1;
                 t.holdAt = std::clamp(5.0f / std::max(1.0f, e->maxHp()), 0.12f, 0.5f);
+                // 2.87: one brought low is held by one player (its strikers waited there doing nothing): the others on the
+                // one still high.
+                if (e->hpRatio() <= t.holdAt + 0.001f) {
+                    t.want = 1;
+                    t.priority = 24;
+                }
                 t.melee = false;
                 t.label = e->center().x < b->center().x ? "Entrave ouest" : "Entrave est";
                 v.targets.push_back(t);
