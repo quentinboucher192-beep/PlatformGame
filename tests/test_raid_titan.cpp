@@ -90,9 +90,14 @@ bool walkTo(raid::RaidRun& run, std::vector<InputFrame>& frame, int to, uint32_t
         for (CombatZoneEntity* a : w->ambushes()) {
             if (!a->started()) a->handleAction(*w, "start", Json::object());
             for (int t = 0; t < 6000 && !a->cleared(); ++t) {
+                // 2.87: the enemies listed first, killed after — a kill may add entities (its drops), and the list being
+                // walked then moved under the loop (an intermittent crash of the whole suite).
+                std::vector<Enemy*> foes;
                 for (const auto& e : w->entities())
                     if (auto* es = dynamic_cast<EnemySpawnEntity*>(e.get()); es && a->lists(es->id()))
-                        if (Enemy* en = es->enemy(*w); en && en->alive() && !en->dormant()) en->kill(*w);
+                        if (Enemy* en = es->enemy(*w); en && en->alive() && !en->dormant()) foes.push_back(en);
+                for (Enemy* en : foes)
+                    if (en->alive()) en->kill(*w);
                 run.step(frame.data(), static_cast<int>(frame.size()), mask);
             }
         }

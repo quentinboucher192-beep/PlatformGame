@@ -24,6 +24,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/content/ContentDatabase.h"
+#include "game/enemies/BossHazards.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
@@ -88,6 +89,24 @@ struct HurtLog : WorldListener {
             const Player& p = w.playerAt(k);
             std::printf("      %s → %d (%.0f, %.0f) sol %d vy %.0f · %s · %s\n", src.attack.c_str(), k + 1, p.feet().x, p.feet().y, p.grounded() ? 1 : 0, p.vel.y,
                         session->bots().thought(k).intent.c_str(), session->bots().thought(k).move.c_str());
+            // 2.87 (tuning runs): a lasting effect: which one touches it (its kind, its area, its age).
+            const BossHazards& hz = w.hazards();
+            const Rect pb = p.box.expanded(4.0f);
+            for (const auto& c : hz.cracks())
+                if (Rect{c.at.x - c.half, c.at.y - std::max(c.height, 40.0f), c.half * 2.0f, std::max(c.height, 40.0f) + 4.0f}.intersects(pb))
+                    std::printf("        fissure (%.0f, %.0f) demi %.0f haut %.0f âge %.2f délai %.2f\n", c.at.x, c.at.y, c.half, c.height, c.age, c.delay);
+            for (const auto& wl : hz.walls())
+                if (wl.rect.intersects(pb)) std::printf("        mur (%.0f, %.0f, %.0f × %.0f)\n", wl.rect.x, wl.rect.y, wl.rect.w, wl.rect.h);
+            for (const auto& cl : hz.clouds())
+                if (cl.area.intersects(pb)) std::printf("        nuage (%.0f, %.0f, %.0f × %.0f)\n", cl.area.x, cl.area.y, cl.area.w, cl.area.h);
+            for (const auto& fl : hz.floods())
+                if (Rect{fl.left, fl.floorY - 300.0f, fl.right - fl.left, 310.0f}.intersects(pb)) std::printf("        flot %.0f..%.0f sol %.0f\n", fl.left, fl.right, fl.floorY);
+            for (const auto& pr : hz.presses())
+                if (pr.column().intersects(pb)) std::printf("        presse\n");
+            for (const auto& st : hz.steams())
+                if (st.area().intersects(pb)) std::printf("        vapeur\n");
+            if (hz.cracks().empty() && hz.walls().empty() && hz.clouds().empty() && hz.floods().empty())
+                std::printf("        (aucune fissure, mur, nuage ni flot)\n");
         }
         if (next) next->playerHurt(w, d, src);
     }
@@ -238,6 +257,15 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 }
                 wasCharging = sk->charging() && sk->chargeRatio() > 0.97f;
             }
+        if (std::getenv("COSMIC_GOAT_FOES") && steps % 120 == 0) {
+            // 2.87 (tuning runs): every second, the enemies of the fight (its mechanism's, its creatures) and their health.
+            const GameWorld& w = session.run().world();
+            std::printf("      %6.1f s étape %d ·", steps / 120.0, static_cast<int>(gb.stage()));
+            for (const auto& e : w.enemies())
+                if (e->alive() && !e->dormant() && !e->def().isBoss)
+                    std::printf(" [%s (%.0f, %.0f) %.0f/%.0f]", e->def().id.c_str(), e->center().x, e->center().y, e->hp(), e->maxHp());
+            std::printf("\n");
+        }
         if (std::getenv("COSMIC_GOAT_GAZE"))
             if (const auto* sk = dynamic_cast<const raid::SkullmawRoutine*>(gb.routine())) {
                 // 2.86 (tuning runs): each tracking gaze the step before it fires — the players in its line, what they do then.

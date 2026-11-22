@@ -89,6 +89,10 @@ public:
     /// The second, mirrored beam of a prism with two arms (2.33); empty otherwise.
     const std::vector<Vec2>& attackPath2() const { return path2_; }
     Vec2 attackMark() const { return markPos_; }
+    /// 2.87 (the simulated players of a raid test): where a beam starts (its sweep turns from there) and the time
+    /// left in its state (its wind-up, its strike).
+    float laserAngle() const { return laserAngle_; }
+    float stateTimer() const { return stateTimer_; }
     float ringRadius() const { return ringRadius_; }
     float ringGapAngle() const { return angle_; }
     /// The dragon (2.50): landed by its « Atterrissage » (it takes more damage), and the line
