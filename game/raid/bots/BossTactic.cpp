@@ -207,6 +207,19 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
                 l.gap = std::atan2(dir.y, dir.x);
                 l.gapHalf = std::fabs(a->sweepDegrees) * 0.5f * 0.0174533f + 0.21f;
                 l.reach = a->laserLength + 20.0f;
+                if (v.sweepRead) {
+                    // 2.87 (fight plan): the beam as it really turns (from where it started, toward its end): the part
+                    // still to sweep, how fast — the shield raised as it comes, not at its announce (it fell before its end).
+                    const float sweep = a->sweepDegrees * 0.0174533f * b.facing;
+                    const float prog = striking && a->active > 0.0f ? std::clamp(1.0f - std::max(0.0f, b.stateTimer()) / a->active, 0.0f, 1.0f) : 0.0f;
+                    const float now = b.laserAngle() + sweep * prog, end = b.laserAngle() + sweep;
+                    l.angle = now;
+                    l.turn = a->active > 0.0f ? sweep / a->active : 0.0f;
+                    l.gap = (now + end) * 0.5f;
+                    l.gapHalf = std::fabs(end - now) * 0.5f + 0.12f;
+                    l.in = striking ? 0 : static_cast<int>(std::max(0.0f, b.stateTimer()) * static_cast<float>(kSimHz));
+                    l.to = o + Vec2{std::cos(now), std::sin(now)} * a->laserLength;
+                }
             }
             l.area = {std::min(l.from.x, l.to.x) - l.width, std::min(l.from.y, l.to.y) - l.width, std::fabs(l.to.x - l.from.x) + l.width * 2.0f,
                       std::fabs(l.to.y - l.from.y) + l.width * 2.0f};
@@ -279,6 +292,23 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
         d.area = {c.at.x - c.half - 6.0f, c.at.y - h, c.half * 2.0f + 12.0f, h + 4.0f};
         d.in = std::max(0, static_cast<int>((c.delay - c.age) * static_cast<float>(kSimHz)));
         v.dangers.push_back(d);
+        // 2.87: a falling rock hurts all the way down from the roof (BossHazards::Crack::rockAt: it speeds up), not only where
+        // it lands — the ledges and platforms under it are struck as it passes: its path in bands, each one with the time
+        // the stone reaches it.
+        if (c.rock && !c.bursting() && c.delay > 0.0f && c.at.y - c.fromY > 80.0f) {
+            const float y0 = c.fromY + c.half, y1 = c.at.y - c.half, half = c.half * 0.8f + 8.0f;
+            for (float top = c.fromY; top < c.at.y - h; top += 64.0f) {
+                const float bottom = std::min(top + 64.0f, c.at.y - h);
+                const float kBottom = std::sqrt(std::clamp((bottom + c.half - y0) / std::max(1.0f, y1 - y0), 0.0f, 1.0f));
+                if (kBottom * c.delay < c.age) continue;  // already past it
+                const float kTop = std::sqrt(std::clamp((top - c.half - y0) / std::max(1.0f, y1 - y0), 0.0f, 1.0f));
+                Danger r;
+                r.kind = Danger::Kind::Area;
+                r.area = {c.at.x - half, top, half * 2.0f, bottom - top + 4.0f};
+                r.in = std::max(0, static_cast<int>((kTop * c.delay - c.age) * static_cast<float>(kSimHz)));
+                v.dangers.push_back(r);
+            }
+        }
     }
     for (const auto& wl : hz.walls()) v.dangers.push_back({Danger::Kind::Area, wl.rect.expanded(4.0f)});
     for (const auto& cl : hz.clouds()) v.dangers.push_back({Danger::Kind::Area, cl.current().expanded(4.0f)});

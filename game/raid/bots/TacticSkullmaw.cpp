@@ -28,6 +28,7 @@ class SkullmawTactic final : public BossTactic {
 public:
     const char* name() const override { return "Skullmaw"; }
     void read(const RaidRun& run, BossView& v) const override {
+        v.sweepRead = true;  // 2.87: its sweeping gaze read as it turns (the shield as it comes)
         readCommon(run, v, false);
         v.plan.fixedHolders = true;  // 2.84: each mirror its own player through its veil, revived first
         v.plan.jumpBeams = true;     // 2.86: its gazes from its eyes high over the arena lie low: jumped as they fire

@@ -57,6 +57,7 @@ struct Danger {
     bool shieldFirst = false;  // 2.84 (fight plan): a wave too fast to jump surely (Dreadfang's sweeps): the shield as it comes
     float radius = 0.0f, reach = 0.0f;  // Ring: its radius now, the farthest it goes
     float gap = 0.0f, gapHalf = 0.0f;   // Ring: the angle of its opening and its half-width (radians)
+    float angle = 0.0f, turn = 0.0f;    // 2.87: a sweeping beam: its angle now, how fast it turns (radians/s, signed; 0: unknown)
 };
 
 struct Station {

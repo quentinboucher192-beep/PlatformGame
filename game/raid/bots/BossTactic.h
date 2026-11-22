@@ -44,6 +44,8 @@ struct BossView {
     bool flash = false;
     Vec2 eye;
     int flashIn = 0;
+    /// 2.87 (fight plan): its sweeping beams read as they really turn (Danger::angle, turn).
+    bool sweepRead = false;
     /// Graviton: the x ranges sheltered under a slab when gravity turns over in a sector.
     std::vector<Rect> shelters;
     /// Players a routine holds (swallowed, nailed): no use striking near them, a rescue to make.

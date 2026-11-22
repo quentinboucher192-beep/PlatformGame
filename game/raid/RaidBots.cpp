@@ -196,6 +196,21 @@ Rect bodyAt(Vec2 feet) { return {feet.x - 5.0f, feet.y - 22.0f, 10.0f, 22.0f}; }
 /// 2.78: the « thing » of a player sent to hold the plate of a passage of the group (it may step onto it).
 const char* const kGroupPlate = "group_plate";
 
+/// 2.87: the steps before a sweeping beam read as it turns (Danger::turn) reaches `box` (its angle from where the beam
+/// is now, at its speed); a wall between its origin and `box` keeps it off (1 << 20). Any other danger: its `in`.
+int sweepIn(const GameWorld& w, const Danger& d, const Rect& box) {
+    if (d.kind != Danger::Kind::Line || d.gapHalf <= 0.0f || d.turn == 0.0f) return d.in;
+    if (w.physics().raycast(d.from, box.center()).has_value()) return 1 << 20;
+    const Vec2 c = box.center() - d.from;
+    float diff = std::atan2(c.y, c.x) - d.angle;
+    while (diff > 3.14159265f) diff -= 6.2831853f;
+    while (diff < -3.14159265f) diff += 6.2831853f;
+    diff *= d.turn > 0.0f ? 1.0f : -1.0f;  // ahead of the beam: positive
+    const float margin = std::atan2(std::max(box.w, box.h) * 0.5f + 12.0f, std::max(1.0f, c.length()));
+    if (diff < -margin) return 1 << 20;  // already swept
+    return d.in + static_cast<int>(std::max(0.0f, diff - margin) / std::fabs(d.turn) * static_cast<float>(kSimHz));
+}
+
 bool hitsLine(const Danger& d, const Rect& box) {
     if (d.gapHalf > 0.0f) {
         // A sweeping beam: the sector it turns through (as far as it reaches).
@@ -444,7 +459,10 @@ void TestBots::sense(RaidRun& run) {
         bossBody_ = bodyBox(*boss, w, &bodyParts_);
         // 2.84: bare (its few seconds to strike its weak points), part by part — the box around them all closes every
         // place near its weak points; otherwise that whole box (closer, the group took more blows: measured).
-        if (view_.exposed) {
+        // 2.87: its targets of a group finished together too (Titanus's restraints on its legs: the space between them).
+        bool parts = view_.exposed;
+        for (const bots::Target& t : view_.targets) parts = parts || t.sync > 0;
+        if (parts) {
             for (const Rect& r : bodyParts_) {
                 Danger body;
                 body.kind = Danger::Kind::Area;
@@ -582,6 +600,12 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
     // to the boss, the others a good way off), then any.
     int dir = -1;
     bool jump = false;
+    // 2.87: a target of a group finished together is fired at from where its wave crosses no other of its group (Titanus's
+    // two restraints side by side on its leg: from its west side, every wave at the east one hit the west one first).
+    std::vector<Rect> siblings;
+    for (const bots::Target& t : view_.targets)
+        if (b.syncGroup > 0 && t.sync == b.syncGroup && t.uid != b.target)
+            if (const Enemy* e = enemyOf(w, t.uid)) siblings.push_back(e->box.expanded(4.0f));
     for (int pass = 0; pass < 2; ++pass) {
         auto ok = [&](int i) {
             const NavGraph::Node& nd = nav->node(i);
@@ -618,7 +642,7 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
             }
             // 2.84: a weak point bare is struck from as close as its parts allow (the space under a skull, between two
             // legs); otherwise the box around them all is kept out of.
-            const bool close = view_.exposed && b.target != bossUid_;
+            const bool close = (view_.exposed || !siblings.empty()) && b.target != bossUid_;  // 2.87: a group finished together too
             // 2.84 (fight plan): bare, all in front of it (it turns toward the players: on both sides, its weak points
             // swap sides under their shots every second).
             if (close && view_.plan.frontOnly && body && (nd.feet.x - body->center().x) * body->facing < 0.0f) return false;
@@ -639,7 +663,9 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
                 for (int k : {0, 4, 1, 3, 2}) {
                     const Vec2 v = dirOf(k);
                     const Vec2 m = from + v * 10.0f + Vec2{0.0f, -2.0f};
-                    if (Collision::segmentIntersectsRect(m, m + v * kWaveRange, target.expanded(5.0f)) && shotReaches(w, from, k, target)) {
+                    bool crosses = false;
+                    for (const Rect& r : siblings) crosses = crosses || Collision::segmentIntersectsRect(m, m + v * kWaveRange, r);
+                    if (!crosses && Collision::segmentIntersectsRect(m, m + v * kWaveRange, target.expanded(5.0f)) && shotReaches(w, from, k, target)) {
                         d = k;
                         high = lift != 0;
                         break;
@@ -1748,7 +1774,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // A sweeping beam on it (announced or lit): no step gets out of it — the shield as soon as it is seen, whatever
     // else it dodges (its 2,2 s outlast the sweep).
     for (const Danger& d : dangers_)
-        if (d.kind == Danger::Kind::Line && d.gapHalf > 0.0f && d.in <= kSimHz / 2 && hitsLine(d, me.box)) {
+        if (d.kind == Danger::Kind::Line && d.gapHalf > 0.0f && sweepIn(w, d, me.box) <= (d.turn != 0.0f ? 24 : kSimHz / 2) && hitsLine(d, me.box)) {
             if (shieldReady || me.shieldActive()) {
                 raiseShield = raiseShield || shieldReady;
                 react = "bouclier contre le rayon";
@@ -2120,6 +2146,21 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     }
     // ------------------------------------------------------------ what it does once there
     bool fired = false;
+    // 2.87: a wave goes through what it meets: aimed at one target of a group finished together, it must not cross another
+    // of that group already brought low and waiting for the others (Titanus's two restraints, side by side on its leg: the
+    // one held low broke alone under the shots at the other, and grew back).
+    const auto spoils = [&](int aim) {
+        if (aim < 0) return false;
+        const Vec2 m = me.center() + dirOf(aim) * 10.0f + Vec2{0.0f, -2.0f};
+        const Vec2 end = m + dirOf(aim) * kWaveRange;
+        for (const bots::Target& t : view_.targets) {
+            if (t.sync <= 0 || t.sync >= 4 || t.uid == b.target || syncLow_[static_cast<size_t>(t.sync)]) continue;
+            const Enemy* e = enemyOf(w, t.uid);
+            if (!e || e->hp() > t.holdAt * e->maxHp() + 4.0f) continue;
+            if (Collision::segmentIntersectsRect(m, end, e->box.expanded(6.0f))) return true;
+        }
+        return false;
+    };
     if (!fleeing && foe && !dodging && !nailed) {
         const Vec2 d = fc - me.center();
         const bool melee = !ranged || !sh || me.energy < 10.0f;
@@ -2218,7 +2259,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             } else {
                 b.chargeHold = 0;
             }
-            if (!fired && b.chargeHold == 0 && aim >= 0 && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh))) &&
+            if (!fired && b.chargeHold == 0 && aim >= 0 && !spoils(aim) && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh))) &&
                 noise(seat + 8 * static_cast<int>(seed_), tick_ + 7) < lv.precision + 0.1f) {
                 // A Beginner's aim slips a notch now and then (its precision).
                 if (noise(seat + 8 * static_cast<int>(seed_), tick_ + 53) > lv.precision + 0.25f) aim = (aim + 1) % 8;
@@ -2235,7 +2276,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     if (fight_ && dodging && !fired && !fleeing && !nailed && foe && worthStriking && !holdFire && sh && keyBit(sh) >= 0 && view_.plan.fireOnTheRun) {
         const int aim = shotFrom(w, me.center(), fb, me.grounded());
         const float reserve = (shield ? 22.0f : 0.0f) + (view_.exposed ? 0.0f : 10.0f);
-        if (aim >= 0 && kDirX[aim] != 0 && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh)))) {
+        if (aim >= 0 && kDirX[aim] != 0 && !spoils(aim) && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh)))) {
             held |= 1u << keyBit(sh);
             f.moveX = static_cast<int8_t>(kDirX[aim] * 127);
             f.moveY = static_cast<int8_t>(kDirY[aim] * 127);
@@ -2322,7 +2363,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             bool hit = false;
             switch (d.kind) {
                 case Danger::Kind::Area: hit = d.area.intersects(near) && !d.unblockable; break;
-                case Danger::Kind::Line: hit = hitsLine(d, near); break;
+                case Danger::Kind::Line: hit = hitsLine(d, near) && (d.turn == 0.0f || sweepIn(w, d, near) <= 20); break;
                 case Danger::Kind::Pull: hit = d.area.intersects(near); break;  // 2.84: dragged to its core: its touch under the shield
                 case Danger::Kind::Flood: hit = d.area.intersects(me.box) && fleeing; break;  // 2.84: caught by the liquid on its way up
                 case Danger::Kind::FloorWave: {

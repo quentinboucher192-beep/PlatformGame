@@ -2816,7 +2816,7 @@ d'avant (mêmes empreintes). Rien d'autre : la simulation, les règles et les em
 Pour régler : `COSMIC_GOAT_HIST` (où va leur temps, leurs dégâts, leurs coups par pouvoir), `COSMIC_GOAT_DEATHS` (chaque
 mort : qui, quoi, où), `COSMIC_GOAT_EXPOSED` (chaque joueur pendant que le boss est à nu), `COSMIC_GOAT_MIRROR` (les
 miroirs de Skullmaw à chaque regard), `COSMIC_GOAT_GAZE` (2.86 : chaque regard traqueur le pas avant qu'il tire, les
-joueurs dans sa ligne).
+joueurs dans sa ligne), `COSMIC_GOAT_FOES` (2.87 : chaque seconde, les ennemis du combat et leur vie).
 
 ### Avant / après, sans invincibilité (5 départs, 15 min)
 
@@ -3073,6 +3073,55 @@ dessous (16 départs : 1 / 16, 78 % ; sans lui 3 / 16, 77 %). Essayé ailleurs e
 (`Plan::hideArmoured`) contre le Cœur (0 / 8, 44 % au lieu de 47 %), Pyroclast (0 / 8, 37 % au lieu de 39 %) et Graviton
 (0 / 8, 41 % au lieu de 39 % : aucun départ gagné de plus). Les autres combats ne changent
 pas (les sept autres, mêmes résultats départ par départ).
+
+2.87 : **le Cœur, ce qui tombe vraiment ; les rayons balayants lus comme ils tournent**. La sonde (`COSMIC_GOAT_HIT`) : la
+plupart des coups de ses Lances stellaires tombaient sur des joueurs qui ne réagissaient pas — une lance frappe une
+**colonne de 264 px** au-dessus de sa marque (`AsterionHeartRoutine::stepLances`), pas la marque seule : un joueur sur une
+corniche au-dessus de la marque d'un autre, ou en plein saut, était touché sans l'avoir vue. Maintenant :
+
+* chaque lance est lue comme sa colonne (sa pluie de magma aussi : 900 px au-dessus du sol ; elle ne tombe que Pyroclast
+  debout, donc jamais dans la mesure, où les sept parties sont tombées) ;
+* un **rayon balayant** (le Rayon du cœur, le Regard balayant de Skullmaw : `BossView::sweepRead`) est lu tel qu'il tourne
+  — l'angle où il est (`Enemy::laserAngle`, `stateTimer`, lus seulement), la part qui reste à balayer, sa vitesse : le
+  bouclier se lève quand le rayon arrive sur le joueur (`sweepIn`), plus à son annonce (le bouclier, 2,2 s, tombait avant
+  la fin du balayage, 2,4 s avec l'annonce) ; derrière un mur, il ne se lève pas (le rayon s'y arrête). Avant, le secteur
+  était centré sur le joueur le plus proche à chaque pas, même après que le rayon était parti vers un autre.
+
+Cœur d'Asterion : 0 / 8, **52 %** de sa vie ôtée (avant 47 %) ; départs 9 à 16 : 56 % (avant 40 %). Mesuré étape par étape :
+les colonnes des lances 54 % / 48 % (départs 1 à 8 / 9 à 16), plus les rayons balayants 52 % / 56 %. Skullmaw, avec ses
+rayons balayants lus de même : **8 / 8**, 100 % (départs 9 à 16 : 6 / 8, 96 %). Essayés et retirés contre le Cœur : ses
+frappeurs plus loin de son corps (`Plan::keepOff` 170 px : 40 % ; 230 px : 36 %), « changez d'étage » à l'annonce de sa
+Charge stellaire et de son Balayage des artères (53 % / 52 %), tous sur un ventricule à la fois (`Plan::focusWeak` :
+49 % / 53 %). Ce qui bloque : ses ventricules à nu flottent souvent hors de portée (le cœur flotte jusqu'à 700 px au-dessus du sol),
+moins de 16 points de vie sur 50 ôtés par exposition, et le groupe s'use en phase 2.
+
+2.87 : **Titanus, ses entraves et ses rochers**. La sonde (`COSMIC_GOAT_FOES` : chaque seconde, les ennemis du combat et leur
+vie ; `COSMIC_GOAT_HIT` dit maintenant quel effet persistant a touché) : tous les départs restent bloqués à 66 % (sa
+phase 2, blindé) — l'entrave ouest tombait seule sous les ondes tirées vers l'est (une onde traverse ce qu'elle rencontre)
+et repoussait, l'entrave est n'était jamais touchée (de l'ouest, toute onde vers elle passe d'abord par l'autre). Et ses
+rochers frappaient des joueurs qui ne réagissaient pas. Maintenant :
+
+* **un rocher qui tombe** est lu sur tout son chemin depuis le plafond (`BossHazards::Crack::rockAt`), par bandes de 64 px,
+  chacune avec le moment où la pierre y passe — les corniches sous lui, pas seulement le point d'impact (tous les boss) ;
+* une cible d'un groupe à finir ensemble se vise d'où l'onde ne traverse pas une autre cible du groupe, et on ne tire pas
+  à travers une cible déjà amenée basse qui attend les autres ; le corps du boss se lit partie par partie tant qu'il a de
+  telles cibles (l'espace entre ses jambes).
+
+Titanus : 0 / 8, 35 % de sa vie ôtée (avant 33 %) ; départs 9 à 16 : 36 % (avant 34 %) ; quelques départs passent enfin
+sous 66 %. Ce qui bloque encore : l'entrave est presque jamais touchée (aucune place à l'est de son corps n'est atteinte :
+la recherche des places refuse l'autre côté du corps), son bond et ses écrasements sur les réanimateurs. Essayés et
+retirés : ses frappeurs à 200 px de son corps (35 %, pas mieux), ses âmes approchées seulement bouclier prêt (33 %), les
+frappeurs de l'entrave est envoyés de l'autre côté de son corps, à travers lui sous le bouclier (34 %).
+
+Les rochers lus sur tout leur chemin changent aussi Pyroclast : 38 % (avant 39 %) sur les départs 1 à 8, 44 % (avant 37 %)
+sur les départs 9 à 16. Les autres combats ne changent pas (Voidworm, Heartbreaker, Dreadfang, Graviton : mêmes résultats
+départ par départ). Essayés et retirés en 2.87 : les porteurs des générateurs de Graviton qui quittent aussi un secteur
+qui s'inverse (37 % au lieu de 39 %), les réanimateurs du Cœur bouclier prêt (`Plan::reviveShielded` : 54 %, sans
+gain), chaque crochet de Voidworm à son joueur, relevé d'abord (`Plan::fixedHolders` : 5 / 8, 86 % au lieu de 90 %).
+
+La suite complète plantait parfois (une fois sur deux, au test « raid titan: a link from another branch… ») : son aide
+`walkTo` tuait les ennemis d'une embuscade en parcourant la liste des entités, qu'une mort peut allonger (son butin) — la
+liste est maintenant relevée d'abord, les ennemis tués ensuite.
 
 ### Versions
 

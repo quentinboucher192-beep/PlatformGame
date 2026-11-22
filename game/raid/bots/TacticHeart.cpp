@@ -29,6 +29,7 @@ class HeartTactic final : public BossTactic {
 public:
     const char* name() const override { return "Cœur d'Asterion"; }
     void read(const RaidRun& run, BossView& v) const override {
+        v.sweepRead = true;  // 2.87: its « Rayon du cœur » read as it turns (the shield as it comes)
         readCommon(run, v);
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
@@ -51,6 +52,14 @@ public:
                 d.area = m.area.expanded(well ? 20.0f : 8.0f);
                 d.area.h += 10.0f;
                 const float warn = well ? 1.2f : m.area.w > 60.0f ? rainWarn : lanceWarn;
+                // 2.87: a lance falls as a column (264 px over its mark, AsterionHeartRoutine::stepLances), not on its mark
+                // alone: whoever jumps over the mark or stands on a ledge above it is struck too.
+                if (!well && m.area.w <= 60.0f) {
+                    const float bottom = m.area.bottom();
+                    d.area = {m.area.x - 8.0f, bottom - 268.0f, m.area.w + 16.0f, 268.0f + 14.0f};
+                }
+                // Its magma rain the same: a column 900 px over the floor (stepRain), its ledges and platforms too.
+                if (!well && m.area.w > 60.0f) d.area = {m.area.x - 8.0f, m.area.bottom() - 908.0f, m.area.w + 16.0f, 908.0f + 14.0f};
                 d.in = m.strong ? 0 : static_cast<int>((1.0f - std::clamp(m.progress, 0.0f, 1.0f)) * warn * static_cast<float>(kSimHz));
                 v.dangers.push_back(d);
             } else if (m.kind == BossMark::Kind::Wave && (m.clip == "blade" || m.clip == "comet")) {
@@ -64,7 +73,7 @@ public:
                 d.area = {m.area.center().x - 20.0f, d.floorY - d.height, 40.0f, d.height};
                 v.dangers.push_back(d);
             } else if (m.kind == BossMark::Kind::Wave && m.clip == "rain") {
-                v.dangers.push_back({Danger::Kind::Area, Rect{m.area.center().x - 34.0f, m.area.bottom() - 70.0f, 68.0f, 74.0f}});
+                v.dangers.push_back({Danger::Kind::Area, Rect{m.area.center().x - 36.0f, m.area.bottom() - 908.0f, 72.0f, 912.0f}});
             } else if (m.kind == BossMark::Kind::Zone && m.label.rfind("Marée", 0) == 0) {
                 Danger d;
                 d.kind = Danger::Kind::Flood;
