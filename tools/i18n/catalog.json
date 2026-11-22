@@ -8398,13 +8398,6 @@
    ]
   },
   {
-   "fr": "blade",
-   "where": [
-    "game/raid/AsterionHeartRoutine.cpp",
-    "game/raid/DreadfangRoutine.cpp"
-   ]
-  },
-  {
    "fr": "Blanc",
    "where": [
     "saves/Settings.cpp"
@@ -31091,13 +31084,6 @@
    ]
   },
   {
-   "fr": "health",
-   "where": [
-    "game/online/Raids.cpp",
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
    "fr": "HEARTBREAKER",
    "where": [
     "data/raids/asterion_film.json"
@@ -49757,13 +49743,6 @@
    ]
   },
   {
-   "fr": "out",
-   "where": [
-    "game/content/BossStories.cpp",
-    "ui/screens/SocialScene.cpp"
-   ]
-  },
-  {
    "fr": "Outils admin",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -53596,28 +53575,6 @@
    "fr": "Platine du golem",
    "where": [
     "data/achievements/achievements.json"
-   ]
-  },
-  {
-   "fr": "players",
-   "where": [
-    "game/coop/LanHost.cpp",
-    "game/online/OnlineCoop.cpp",
-    "game/online/OnlineGlobe.cpp",
-    "game/online/RaidRecap.cpp",
-    "game/online/Raids.cpp",
-    "game/raid/RaidBranch.cpp",
-    "game/raid/RaidTestRelay.cpp",
-    "ui/screens/AdminGifts.cpp",
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanScene.cpp",
-    "ui/screens/OnlineRankingScene.cpp",
-    "ui/screens/OnlineThreadScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp",
-    "ui/screens/RaidBranchScene.cpp",
-    "ui/screens/RaidEventScene.cpp",
-    "ui/screens/RaidRosterScene.cpp",
-    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -58341,22 +58298,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "reach",
-   "where": [
-    "game/raid/DreadfangRoutine.cpp",
-    "game/raid/SkullmawRoutine.cpp",
-    "game/raid/bots/TacticDreadfang.cpp"
-   ]
-  },
-  {
-   "fr": "read",
-   "where": [
-    "game/progression/NewsCenter.cpp",
-    "ui/screens/ClanRaids.cpp",
-    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -65511,21 +65452,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "shield",
-   "where": [
-    "editors/enemy_editor/EnemyEditorScene.cpp",
-    "engine/input/InputTypes.cpp",
-    "game/levels/CampaignPipeline.cpp",
-    "game/levels/LevelAnalyzer.cpp",
-    "game/levels/ObjectTypes.cpp",
-    "game/online/Clans.cpp",
-    "game/online/Replay.cpp",
-    "game/powers/Power.cpp",
-    "game/powers/PowerDemos.cpp",
-    "game/raid/RaidBots.cpp"
    ]
   },
   {

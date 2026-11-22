@@ -352,3 +352,10 @@ guide
 formats
 # 2.85 : valeur « players » de POST /admin/gifts (ui/screens/AdminGifts.cpp), jamais affichée
 all
+blade
+health
+out
+players
+reach
+read
+shield
