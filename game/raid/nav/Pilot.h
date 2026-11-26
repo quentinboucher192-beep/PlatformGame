@@ -64,6 +64,13 @@ struct SeatPlan {
     bool hold = false;  // holds a mechanism or revives: it dodges only what would kill it
     bool mayLeave = false;  // its goal is a passage it takes (the group leaves the zone): else never in one
     bool spare = false;     // 2.84: its energy spared (a fight): a dash or an impulse for a move only where nothing else goes
+    // 2.90 (docs/RAIDS.md §36): the escape of a boss fight — the pilot alone gets it out of the blows announced (their time
+    // known: Terrain::Blow), looking far enough ahead to walk out, trying the ways out a player has (a few steps, a drop off
+    // its platform, a jump, a dash timed so that its invulnerability covers the blow) and keeping to the one it chose.
+    bool escape = false;
+    float escapeDash = 30.0f;  // what a dash weighs in that choice (px of the way out): its energy kept for the shield
+    float guardFor = 0.0f;     // seconds its shield (or the guard after a dash) still stops the blows, shots and beams
+    bool fleeBody = false;     // the boss's body on it (or coming): a way out of it asked for now
     std::vector<int>* path = nullptr;
     size_t* at = nullptr;
     int* planned = nullptr;
@@ -92,6 +99,15 @@ public:
     /// A move through the air under way: its direction must not be changed by anything else.
     bool committed() const { return active_ && airborne_; }
     bool active() const { return active_; }
+    /// 2.90: a dodge under way (the escape: nothing else changes its direction), and whether it was found clear of every blow.
+    bool dodging() const { return active_ && dodge_; }
+    bool safeDodge() const { return active_ && dodge_ && safe_; }
+    /// 2.90: steps before the move under way presses its dash on the ground (-1: none to come).
+    int dashIn() const {
+        if (!active_ || prog_.groundDash == 0) return -1;
+        const int at = static_cast<int>(prog_.wait) + static_cast<int>(prog_.groundDash) - 1 - t_;
+        return at >= 0 ? at : -1;
+    }
     /// The program under way (tests), and how many air jumps / dashes / impulses / wall jumps it played.
     const Program& program() const { return prog_; }
     /// The feet the simulation expects after each step of the move under way, the steps played of it,
@@ -101,6 +117,9 @@ public:
     uint32_t targetMover() const { return targetMover_; }
     struct Used {
         int jumps = 0, airJumps = 0, dashes = 0, impulses = 0, wallJumps = 0, recoveries = 0, dodges = 0, moverJumps = 0, searches = 0, failed = 0;
+        // 2.90: the escapes chosen (docs/RAIDS.md §36): standing still, a few steps, a jump or a drop, a dash; none clear of
+        // every blow (the least bad one, or nothing: its shield).
+        int escStays = 0, escWalks = 0, escJumps = 0, escDashes = 0, escFails = 0;
     };
     const Used& used() const { return used_; }
 
@@ -110,6 +129,7 @@ private:
     bool active_ = false;
     bool airborne_ = false;
     bool dodge_ = false;
+    bool safe_ = false;  // 2.90: the dodge under way was found clear of every blow
     Program prog_;
     Exec ex_;
     int t_ = 0;
@@ -163,8 +183,11 @@ public:
 private:
     bool search(const GameWorld& w, int seat, Pilot& p, const Body& body, const BodySim& sim, int src, int dst, uint32_t prevHeld, bool recover);
     bool dodge(const GameWorld& w, int seat, Pilot& p, const Body& body, const BodySim& sim, uint32_t prevHeld, Harm seen, float towardX);
+    /// 2.90: the escape of a boss fight (SeatPlan::escape): `harmAt` the step the blow lands where it is going.
+    bool escape(const Body& body, Pilot& p, const BodySim& sim, uint32_t prevHeld, Harm seen, float towardX, int harmAt, int harmEnd, float dashWeight);
     void start(Pilot& p, const Program& prog, const std::vector<Vec2>& track, Intent intent);
     int spend(int steps);  // counts simulated steps; the budget left this step
+    bool escapeMode_ = false;  // 2.90: the seat stepped now plays the escape (SeatPlan::escape)
     Skill skill_ = Skill::of(1);
     float dashCost_ = 9.0f;  // 2.84: a dash's weight in the choice of a move (SeatPlan::spare)
     int level_ = 1;

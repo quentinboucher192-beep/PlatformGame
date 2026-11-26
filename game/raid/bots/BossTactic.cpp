@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <optional>
 
 #include "game/enemies/BossHazards.h"
 #include "game/enemies/Enemy.h"
@@ -59,6 +60,7 @@ void BossTactic::readShots(const GameWorld& w, BossView& v) {
             d.kind = Danger::Kind::Area;
             d.area = {at.x - r, at.y - r, r * 2.0f, r * 2.0f};
             d.in = static_cast<int>(t * static_cast<float>(kSimHz));
+            d.last = 11;  // 2.90: until it is in the next box
             d.shot = true;
             d.to = pr.vel;  // a shot: its velocity (the way to leave its path: over it or aside)
             v.dangers.push_back(d);
@@ -67,7 +69,9 @@ void BossTactic::readShots(const GameWorld& w, BossView& v) {
 }
 
 void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v) {
-    if (b.skyborne()) {
+    // 2.90 (the escape): its leap read by its shadow and its time (AttackType::Skyfall below), not under where it rose.
+    const bool leapRead = v.plan.escape && b.currentAttack() && b.currentAttack()->type == AttackType::Skyfall;
+    if (b.skyborne() && !leapRead) {
         // Out of sight (its leap, its meteor fist): it comes down where its shadow is, under it — never there.
         Danger d;
         d.kind = Danger::Kind::Area;
@@ -81,6 +85,9 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
     Danger d;
     d.kind = Danger::Kind::Area;
     d.in = striking ? 0 : kSimHz / 4;
+    // 2.90: it hurts until its blow is over (what is left of its wind-up, then of its blow).
+    d.last = static_cast<int>(std::ceil((std::max(0.0f, b.stateTimer()) + (striking ? 0.0f : a->active)) * static_cast<float>(kSimHz))) + 6 - d.in;
+    d.last = std::max(d.last, kSimHz / 4);
     const Rect box = b.box;
     switch (a->type) {
         case AttackType::Orbit: {
@@ -133,6 +140,24 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
         case AttackType::Lunge: {
             // Straight ahead along its floor, as far as its run.
             const float run = std::clamp(a->range * (a->type == AttackType::Charge ? 2.5f : 1.0f), 120.0f, 1400.0f);
+            if (v.plan.escape && a->type == AttackType::Charge && a->lungeSpeed > 0.0f) {
+                // 2.90 (the escape): its body as it runs, where it will be each twentieth of a second (its speed, up to a fifth
+                // faster at its later phases) — not its whole run at once: who is far ahead has the time to get out of its way.
+                const float t0 = striking ? 0.0f : std::max(0.0f, b.stateTimer());
+                const float left = striking ? std::max(0.0f, b.stateTimer()) : a->active;
+                const float lo = a->lungeSpeed, hi = a->lungeSpeed * 1.2f;
+                for (float t = 0.0f; t <= left + 0.001f; t += 0.05f) {
+                    const float near = std::min(lo * t, run), far = std::min(hi * t, run);
+                    const float x0 = b.facing >= 0.0f ? box.x + near : box.x - far;
+                    const float x1 = b.facing >= 0.0f ? box.right() + far : box.right() - near;
+                    Danger m = d;
+                    m.area = {x0 - 4.0f, box.y, x1 - x0 + 8.0f, box.h + 8.0f};
+                    m.in = static_cast<int>((t0 + t) * static_cast<float>(kSimHz));
+                    m.last = 8;
+                    v.dangers.push_back(m);
+                }
+                break;
+            }
             const float x0 = b.facing >= 0.0f ? box.x : box.x - run;
             d.area = {x0, box.y, box.w + run, box.h + 8.0f};
             v.dangers.push_back(d);
@@ -162,7 +187,66 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
             const Vec2 sh = b.shadow();
             d.area = {sh.x - box.w * 0.5f - r, sh.y - box.h - 6.0f, box.w + r * 2.0f, box.h + 10.0f};
             d.in = kSimHz / 2;
-            if (v.skyfallRead) {
+            if (v.plan.escape && striking && !b.skyborne()) break;  // 2.90: landed (its shockwaves are read as they run)
+            if (v.plan.escape) {
+                // 2.90 (the escape): its leap in time, as a player watches it — crouched (its wind-up), it rises through the
+                // platforms over it (1 000 px/s) to over the vault, hangs there (its shadow follows its target, then locks
+                // 0,45 s before it falls), falls from there (500 px/s, + 2 800 px/s², at most 1 500 px/s) through every
+                // platform over its shadow, and crushes as it lands (one instant: a dash's guard covers it), its body widened.
+                const auto fall = [](float dist, float v0) {
+                    constexpr float kAcc = 2800.0f, kMax = 1500.0f;
+                    if (dist <= 0.0f) return 0.0f;
+                    const float tMax = std::max(0.0f, (kMax - v0) / kAcc), dMax = v0 * tMax + 0.5f * kAcc * tMax * tMax;
+                    if (dist <= dMax) return (-v0 + std::sqrt(v0 * v0 + 2.0f * kAcc * dist)) / kAcc;
+                    return tMax + (dist - dMax) / kMax;
+                };
+                const std::optional<Rect> ar = w.arenaOf(b);
+                const float climb = (ar ? ar->y : sh.y - 1000.0f) - 40.0f;  // the top of its rise (over the vault)
+                const float hangTotal = a->duration > 0.0f ? a->duration : 1.1f;
+                const float steps = static_cast<float>(kSimHz);
+                float wind = 0.0f, rise = 0.0f, hang = hangTotal, from = climb + 20.0f, v0 = 500.0f;
+                bool rising = false;
+                if (!b.skyborne()) {
+                    wind = striking ? 0.0f : std::max(0.0f, b.stateTimer());
+                    rise = std::min(1.2f, std::max(0.0f, box.bottom() - climb) / 1000.0f);
+                    rising = true;
+                } else if (b.outOfSight()) {
+                    hang = v.skyLocked >= 0   ? std::max(0.0f, 0.45f - static_cast<float>(v.skyLocked) / steps)
+                           : v.skyHang >= 0   ? std::max(0.45f, hangTotal - static_cast<float>(v.skyHang) / steps)
+                                              : hangTotal;
+                } else if (b.vel.y < 0.0f) {
+                    rise = std::min(1.2f, std::max(0.0f, box.bottom() - climb) / 1000.0f);
+                    rising = true;
+                } else {
+                    hang = 0.0f;
+                    from = box.bottom();
+                    v0 = b.vel.y;
+                }
+                const float start = wind + rise + hang;  // its fall begins
+                const auto bottomAt = [&](float y) { return start + fall(y - from, v0); };  // its feet at height y
+                const float land = bottomAt(sh.y);
+                d.in = std::max(0, static_cast<int>(land * steps) - 3);
+                d.last = 7;
+                // Its body falling at its shadow: a band of 64 px is struck from when its feet reach it until its head passes
+                // it (or for good, low enough: its body stands there then).
+                for (float y = std::max(from, climb); y < sh.y - 1.0f; y += 64.0f) {
+                    const float y1 = std::min(y + 64.0f, sh.y);
+                    Danger f = d;
+                    f.area = {sh.x - box.w * 0.5f - 4.0f, y, box.w + 8.0f, y1 - y};
+                    f.in = std::max(0, static_cast<int>(bottomAt(y) * steps) - 3);
+                    f.last = static_cast<int>((y1 + box.h >= sh.y ? land + 0.1f : bottomAt(y1 + box.h)) * steps) + 3 - f.in;
+                    v.dangers.push_back(f);
+                }
+                // Rising: through the platforms over it, from where it stands now.
+                if (rising)
+                    for (float y = box.y - 64.0f; y > climb - 64.0f; y -= 64.0f) {
+                        Danger u = d;
+                        u.area = {box.center().x - box.w * 0.5f - 4.0f, y, box.w + 8.0f, 64.0f};
+                        u.in = std::max(0, static_cast<int>((wind + (box.y - (y + 64.0f)) / 1000.0f) * steps) - 3);
+                        u.last = static_cast<int>((64.0f + box.h) / 1000.0f * steps) + 6;
+                        v.dangers.push_back(u);
+                    }
+            } else if (v.skyfallRead) {
                 // 2.89 (fight plan): when it lands, as a player sees it: its shadow following its target (a second at least), held
                 // still (half a second to a second: GolemAttacks' lock, then its fall), its fall (its speed, the floor under it).
                 if (b.outOfSight()) d.in = b.shadowLocked() ? kSimHz / 2 : kSimHz;
@@ -272,6 +356,7 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
         d.kind = Danger::Kind::Area;
         d.area = gb.fistColumn(f).expanded(4.0f);
         d.in = std::max(0, f.left);
+        d.last = f.left + kSimHz / 4 + 2 - d.in;  // 2.90: it strikes for a quarter of a second
         v.dangers.push_back(d);
     }
     // Its vents' jets (announced, then throwing).
@@ -283,6 +368,7 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
             d.kind = Danger::Kind::Area;
             d.area = {vr.x - 4.0f, vr.y - h, vr.w + 8.0f, h + vr.h};
             d.in = gb.jetting(k) ? 0 : kSimHz / 2;
+            d.last = kSimHz;
             v.dangers.push_back(d);
         }
     // The world's hazards (a boss's blows that last): a flood rising, cracks and rocks marked on the ground,
@@ -302,6 +388,8 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
         const float h = std::max(c.height, 40.0f);
         d.area = {c.at.x - c.half - 6.0f, c.at.y - h, c.half * 2.0f + 12.0f, h + 4.0f};
         d.in = std::max(0, static_cast<int>((c.delay - c.age) * static_cast<float>(kSimHz)));
+        // 2.90: it bursts for `burst` seconds (a rock: the same, where it lands).
+        d.last = std::max(0, static_cast<int>(std::ceil((c.delay + c.burst - c.age) * static_cast<float>(kSimHz)))) - d.in + 3;
         v.dangers.push_back(d);
         // 2.87: a falling rock hurts all the way down from the roof (BossHazards::Crack::rockAt: it speeds up), not only where
         // it lands — the ledges and platforms under it are struck as it passes: its path in bands, each one with the time
@@ -317,16 +405,23 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
                 r.kind = Danger::Kind::Area;
                 r.area = {c.at.x - half, top, half * 2.0f, bottom - top + 4.0f};
                 r.in = std::max(0, static_cast<int>((kTop * c.delay - c.age) * static_cast<float>(kSimHz)));
+                r.last = std::max(0, static_cast<int>(std::ceil((kBottom * c.delay - c.age) * static_cast<float>(kSimHz)))) - r.in + 4;
                 v.dangers.push_back(r);
             }
         }
     }
-    for (const auto& wl : hz.walls()) v.dangers.push_back({Danger::Kind::Area, wl.rect.expanded(4.0f)});
-    for (const auto& cl : hz.clouds()) v.dangers.push_back({Danger::Kind::Area, cl.current().expanded(4.0f)});
+    // 2.90: these last as long as they are there.
+    const auto lasting = [&](const Rect& r) {
+        Danger d{Danger::Kind::Area, r};
+        d.last = 1 << 20;
+        v.dangers.push_back(d);
+    };
+    for (const auto& wl : hz.walls()) lasting(wl.rect.expanded(4.0f));
+    for (const auto& cl : hz.clouds()) lasting(cl.current().expanded(4.0f));
     for (const auto& pr : hz.presses())
-        if (!pr.safe && !pr.done()) v.dangers.push_back({Danger::Kind::Area, pr.column().expanded(4.0f)});
+        if (!pr.safe && !pr.done()) lasting(pr.column().expanded(4.0f));
     for (const auto& r : hz.runes())
-        if (r.armed() || r.bursting()) v.dangers.push_back({Danger::Kind::Area, r.pillar().expanded(4.0f)});
+        if (r.armed() || r.bursting()) lasting(r.pillar().expanded(4.0f));
     // Its missiles (a reticle that follows a player, locks, then the missile lands): once locked, where it lands.
     for (const auto& m : hz.missiles()) {
         if (!m.locked() || m.done()) continue;
@@ -334,6 +429,7 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
         d.kind = Danger::Kind::Area;
         d.area = {m.at.x - m.radius - 10.0f, m.at.y - m.radius - 10.0f, m.radius * 2.0f + 20.0f, m.radius * 2.0f + 20.0f};
         d.in = std::max(0, static_cast<int>((m.track + m.flight - m.age) * static_cast<float>(kSimHz)));
+        d.last = kSimHz / 3;
         v.dangers.push_back(d);
     }
     // Its jets of steam low along the ground (they hiss, then blast).
@@ -343,6 +439,7 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
         d.kind = Danger::Kind::Area;
         d.area = st.area().expanded(6.0f);
         d.in = st.blasting() ? 0 : std::max(0, static_cast<int>((st.warn - st.age) * static_cast<float>(kSimHz)));
+        d.last = static_cast<int>(std::ceil((st.warn + st.time - st.age) * static_cast<float>(kSimHz))) - d.in + 2;
         v.dangers.push_back(d);
     }
     for (const auto& p : hz.pulls()) {

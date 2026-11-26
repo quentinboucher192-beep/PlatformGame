@@ -28,6 +28,8 @@ class DreadfangTactic final : public BossTactic {
 public:
     const char* name() const override { return "Dreadfang"; }
     void read(const RaidRun& run, BossView& v) const override {
+        v.plan.escape = true;     // 2.90: its blows left by the navigation alone, with their time (docs/RAIDS.md §36)
+        v.plan.bodyInNav = true;  // 2.90: its body among what the navigation keeps out of (measured with the escape)
         readCommon(run, v);
         // 2.84, its fight plan: the shield kept for its sweeps (a sweep every 7,5 to 11 s, the shield back in 5 s) and
         // its touch; another storey before each sweep (its Storey dangers below); nobody kept close to it; bare, all in

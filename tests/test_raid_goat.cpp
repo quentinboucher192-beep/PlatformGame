@@ -98,6 +98,21 @@ struct HurtLog : WorldListener {
                             return 9;
                         }(), p.energy,
                         session->bots().thought(k).intent.c_str(), session->bots().thought(k).move.c_str());
+            // 2.90: where the blow comes from (its source, its kind) and what the navigation was doing (a dodge, clear or not).
+            std::printf("        source (%.0f, %.0f) type %d · navigation %d esquive %d sûre %d\n", d.source.x, d.source.y, static_cast<int>(d.type),
+                        static_cast<int>(session->bots().moveThought(k).intent), session->bots().navigation().pilot(k).dodging() ? 1 : 0,
+                        session->bots().navigation().pilot(k).safeDodge() ? 1 : 0);
+            if (const Enemy* bb = session->run().gigaboss().boss(w)) {
+                float gap = 1e9f;
+                for (const auto& dd : session->bots().view().dangers)
+                    if (dd.body) {
+                        const float gx = std::max({0.0f, dd.area.x - p.box.right(), p.box.x - dd.area.right()});
+                        const float gy = std::max({0.0f, dd.area.y - p.box.bottom(), p.box.y - dd.area.bottom()});
+                        gap = std::min(gap, std::max(gx, gy));
+                    }
+                std::printf("        boss (%.0f..%.0f, %.0f..%.0f) v (%.0f, %.0f) état %d · joueur v (%.0f, %.0f) invuln %d · écart au corps lu %.0f\n", bb->box.x, bb->box.right(), bb->box.y,
+                            bb->box.bottom(), bb->vel.x, bb->vel.y, static_cast<int>(bb->state()), p.vel.x, p.vel.y, p.invulnerable() ? 1 : 0, gap);
+            }
             // 2.87 (tuning runs): a lasting effect: which one touches it (its kind, its area, its age).
             const BossHazards& hz = w.hazards();
             const Rect pb = p.box.expanded(4.0f);
@@ -157,6 +172,9 @@ struct Fight {
     std::vector<std::pair<int, std::string>> causes;  // what put the players down (the last blow · the role), most first
     float hp = 1.0f;  // the health it has left at the end (0 once fallen)
     double ms = 0.0;
+    // 2.90 (docs/RAIDS.md §36): the ways out of the blows the group used — the escapes of the navigation (standing still, a few
+    // steps, a jump or a drop, a dash; none clear) and the shields raised (the blows they stopped).
+    int escStays = 0, escWalks = 0, escJumps = 0, escDashes = 0, escFails = 0, shields = 0, blocked = 0, dashGuards = 0;
 };
 
 /// 8 simulated players (the administrator's seat played by the AI too), at the lair of `part`, without any
@@ -283,6 +301,18 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 std::printf("      %6.1f s siège %d (%.0f, %.0f) v (%.0f, %.0f) %s · nav %d · but (%.0f, %.0f) nœud %d chemin %zu à %zu · place %d · %s · %s\n", steps / 120.0, k + 1,
                             p.feet().x, p.feet().y, p.vel.x, p.vel.y, p.grounded() ? "sol" : "air", static_cast<int>(session.bots().moveThought(k).intent), bt.goal.x,
                             bt.goal.y, bt.goalNode, bt.path.size(), bt.at, bt.spot, session.bots().thought(k).intent.c_str(), session.bots().thought(k).move.c_str());
+                {
+                    float gap = 1e9f;
+                    for (const auto& dd : session.bots().view().dangers)
+                        if (dd.body) {
+                            const float gx = std::max({0.0f, dd.area.x - p.box.right(), p.box.x - dd.area.right()});
+                            const float gy = std::max({0.0f, dd.area.y - p.box.bottom(), p.box.y - dd.area.bottom()});
+                            gap = std::min(gap, std::max(gx, gy));
+                        }
+                    const Enemy* bb = gb.boss(w);
+                    std::printf("          écart au corps %.0f · boss état %d attaque %s\n", gap, bb ? static_cast<int>(bb->state()) : -1,
+                                bb && bb->currentAttack() ? bb->currentAttack()->id.c_str() : "-");
+                }
                 for (const auto& d : session.bots().view().dangers)
                     if (d.kind == raid::bots::Danger::Kind::FloorWave && std::fabs(d.floorY - p.feet().y) < 30.0f && std::fabs(d.area.center().x - p.center().x) < 400.0f)
                         std::printf("          onde %.0f..%.0f v %.0f dans %d haut %.0f\n", d.area.x, d.area.right(), d.speed, d.in, d.height);
@@ -425,6 +455,17 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     out.rescues = session.rescues();
     for (const auto& [k, n] : deaths) out.causes.push_back({n, k});
     std::sort(out.causes.rbegin(), out.causes.rend());
+    for (int k = 0; k < 8; ++k) {
+        const raid::nav::Pilot::Used& u = session.bots().navigation().pilot(k).used();
+        out.escStays += u.escStays;
+        out.escWalks += u.escWalks;
+        out.escJumps += u.escJumps;
+        out.escDashes += u.escDashes;
+        out.escFails += u.escFails;
+        if (k < static_cast<int>(session.bots().bots().size())) out.dashGuards += session.bots().bots()[static_cast<size_t>(k)].dashGuards;
+    }
+    out.shields = hurts.attacks.count("shield") ? hurts.attacks["shield"] : 0;
+    out.blocked = hurts.blocked;
     CHECK(session.run().takeReports().empty());
     return out;
 }
@@ -769,6 +810,8 @@ TEST_CASE("raid GOAT bench (2.84): every Gigaboss and the Cœur over several sta
             std::string c;
             for (size_t j = 0; j < f.causes.size() && j < 4; ++j) c += (j ? " ; " : "") + std::to_string(f.causes[j].first) + " × " + f.causes[j].second;
             std::printf("    %-12s seed %d :%s · %s\n", part.c_str(), seed0 + k, buf, c.c_str());
+            std::printf("      sorties : reste %d · pas %d · saut %d · ruée %d · aucune %d · boucliers %d (coups arrêtés %d) · ruées sous le coup %d\n", f.escStays,
+                        f.escWalks, f.escJumps, f.escDashes, f.escFails, f.shields, f.blocked, f.dashGuards);
             std::fflush(stdout);
         }
         std::printf("  BENCH %-14s %d/%d vaincus (moyenne %.0f s) :%s\n", part.c_str(), won, seeds, won ? wonSeconds / won : 0.0, line.c_str());

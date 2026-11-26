@@ -243,6 +243,8 @@ void TestBots::reset(int players) {
     order_ = {};
     tactic_.reset();
     tacticFor_ = "-";
+    skyLockedAt_ = -1;
+    skyHangAt_ = -1;
 }
 
 uint64_t TestBots::hash() const {
@@ -421,6 +423,38 @@ void TestBots::ensureNav(const RaidRun& run) {
         }
     }
     navi_.update(run, tick_, blows);
+    // 2.90 (docs/RAIDS.md §36, the escape: Plan::escape): the same blows with their time — where a player may be before
+    // one lands or once it is over —, and the boss's body for the choice of a dodge only (never where a dodge ends).
+    if (fight_ && view_.plan.escape) {
+        std::vector<nav::Blow> timed;
+        for (const bots::Danger& d : dangers_) {
+            if (d.shot) continue;
+            if (d.kind != bots::Danger::Kind::Area && d.kind != bots::Danger::Kind::Pull && d.kind != bots::Danger::Kind::Flood &&
+                d.kind != bots::Danger::Kind::Sector)
+                continue;
+            nav::Blow b{d.area};
+            if (d.body) {
+                // Its body: for the choice of a dodge only, or for every move when its plan keeps the navigation out of it.
+                b.body = true;
+                b.dodgeOnly = !view_.plan.bodyInNav;
+            } else if (d.kind == bots::Danger::Kind::Area && d.seat < 0) {
+                b.from = d.in;
+                b.to = d.last >= (1 << 20) ? (1 << 30) : d.in + (d.last >= 0 ? d.last : kSimHz / 2);
+            } else if (d.kind == bots::Danger::Kind::Sector) {
+                b.from = d.in;  // its gravity turns over then (and stays so): out of it before
+            }
+            timed.push_back(b);
+        }
+        // Never ending a dodge in the box around its whole body (10 px on): its pose changes, its parts move (the space between
+        // its legs, measured with the part's box only, is where its quake caught them).
+        if (bossUid_) {
+            nav::Blow whole{bossBody_.expanded(10.0f)};
+            whole.dodgeOnly = true;
+            whole.body = true;
+            timed.push_back(whole);
+        }
+        navi_.terrain().setBlows(timed);
+    }
     if (navi_.graphChanged() || navZone_ != run.zoneSerial()) {
         navZone_ = run.zoneSerial();
         for (Bot& b : bots_) {
@@ -452,6 +486,19 @@ void TestBots::sense(RaidRun& run) {
             tactic_ = bots::BossTactic::make(routine);
             tacticFor_ = routine;
         }
+        // 2.90 (the escape): the shadow of its leap locked (it falls now), watched as a player watches it.
+        if (boss->shadowLocked()) {
+            if (skyLockedAt_ < 0) skyLockedAt_ = static_cast<int64_t>(tick_);
+            view_.skyLocked = static_cast<int>(static_cast<int64_t>(tick_) - skyLockedAt_);
+        } else {
+            skyLockedAt_ = -1;
+        }
+        if (boss->outOfSight()) {
+            if (skyHangAt_ < 0) skyHangAt_ = static_cast<int64_t>(tick_);
+            view_.skyHang = static_cast<int>(static_cast<int64_t>(tick_) - skyHangAt_);
+        } else {
+            skyHangAt_ = -1;
+        }
         tactic_->read(run, view_);
         bossUid_ = boss->uid();
         // Its body hurts on contact (every part of it): a lasting area to keep out of.
@@ -476,18 +523,25 @@ void TestBots::sense(RaidRun& run) {
         // 2.87: its targets of a group finished together too (Titanus's restraints on its legs: the space between them).
         bool parts = view_.exposed;
         for (const bots::Target& t : view_.targets) parts = parts || t.sync > 0;
+        // 2.90 (the escape): where its body will be in a third of a second (it walks, it charges): the way it goes too.
+        const float lead = view_.plan.escape ? boss->vel.x * 0.3f : 0.0f;
+        const auto ahead = [&](Rect r) {
+            r.x += std::min(0.0f, lead);
+            r.w += std::fabs(lead);
+            return r;
+        };
         if (parts) {
             for (const Rect& r : bodyParts_) {
                 Danger body;
                 body.kind = Danger::Kind::Area;
-                body.area = r.expanded(6.0f);
+                body.area = ahead(r.expanded(6.0f));
                 body.body = true;
                 view_.dangers.push_back(body);
             }
         } else {
             Danger body;
             body.kind = Danger::Kind::Area;
-            body.area = bossBody_.expanded(6.0f);
+            body.area = ahead(bossBody_.expanded(6.0f));
             body.body = true;
             view_.dangers.push_back(body);
         }
@@ -1458,6 +1512,26 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     // 2.84: in a fight its energy is for its shots and its shield (a dash costs its own and stops its regeneration for
     // 0,7 s): moves without one when it can (more than a tenth of its energy went into dashes on the way).
     plan.spare = fight_ && w.playerAt(seat).energy < 120.0f && b.task == Task::Fight;  // a place to reach or a soul: every move
+    // 2.90 (docs/RAIDS.md §36, Plan::escape): its blows left by the navigation alone, with their time; a dash weighed as a way
+    // out (5 of energy), more when it would leave too little for the shield ready; under its shield (or the guard after a
+    // dash) a blow is nothing to leave.
+    if (fight_ && view_.plan.escape) {
+        const Player& me = w.playerAt(seat);
+        const Power* sp = powerOf(me, "shield");
+        plan.escape = true;
+        plan.escapeDash = 30.0f + (sp && sp->ready(me) && me.energy < 30.0f ? 80.0f : 0.0f);
+        // What is left of its shield (its cooldown runs from when it was raised) and of the guard after its dash.
+        if (sp && me.shieldActive())
+            plan.guardFor = std::max(0.0f, sp->def().duration - (sp->def().cooldown - sp->cooldownRemaining()) - 0.03f);
+        if (const Power* dp = powerOf(me, "dash"); dp && me.blowGuarded())
+            plan.guardFor = std::max(plan.guardFor, dp->def().param("duration", 0.16f) + kDashBlowGuardSeconds - (dp->def().cooldown - dp->cooldownRemaining()) - 0.02f);
+        // Only on its place or kneeling by its soul does it stay under what comes (its shield): on its way there, it gets out.
+        plan.hold = (b.task == Task::Mechanism && b.mechanism.w > 0.0f && b.mechanism.intersects(me.box) && !b.mechanismClosed) ||
+                    (b.task == Task::Revive && std::fabs(b.goal.x - me.feet().x) <= GameWorld::kReviveReachX - 6.0f &&
+                     std::fabs(b.goal.y - me.feet().y) <= GameWorld::kReviveReachY - 6.0f);
+    }
+    plan.fleeBody = b.fleeBody;
+    b.fleeBody = false;
     plan.path = &b.path;
     plan.at = &b.at;
     plan.planned = &b.planned;
@@ -1471,7 +1545,8 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     // 2.84: except its jump over a wave running at it (a move along the ground gives way to it).
     // 2.87: and once it is off the ground, held to its top (released by the navigation the step after, the jump was cut
     // short — a hop under the wave).
-    if (navi_.pilot(seat).committed() && b.waveJumpCool <= 0 && b.beamJump <= 0) b.jumpHold = 0;
+    // 2.90: nor during a dodge of the escape (its track was simulated without that jump), but for a wave on its floor.
+    if ((navi_.pilot(seat).committed() || (plan.escape && navi_.pilot(seat).dodging())) && b.waveJumpCool <= 0 && b.beamJump <= 0) b.jumpHold = 0;
 }
 
 InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
@@ -1506,6 +1581,11 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     const Power* shield = powerOf(me, "shield");
     const bool shieldReady = shield && keyBit(shield) >= 0 && shield->ready(me) && !(b.prevHeld & (1u << keyBit(shield))) && !me.shieldActive();
     bool raiseShield = false;
+    // 2.90 (docs/RAIDS.md §36, Plan::escape): the blows on an area are left by the navigation alone (nav::Pilot::escape: a place
+    // clear of them when they land, reached in time — a few steps, a drop, a jump, a dash whose guard covers the blow); the
+    // tactic keeps its shield for when no way out is clear, and never turns it the other way meanwhile.
+    const bool escapeMode = fight_ && view_.plan.escape;
+    const Danger* escHit = nullptr;  // the blow on it the navigation gets it out of (its shield if it cannot)
     // 2.84: a place closed for now (its vent shut) is kept, not held: its player dodges and jumps around it.
     const bool holding = b.task == Task::Mechanism && b.mechanism.w > 0.0f && b.mechanism.intersects(me.box) && !b.mechanismClosed;
     // 2.86: when to jump over a beam about to fire (steps before it fires; -1: no jump rises over it): high enough over the line
@@ -1932,7 +2012,13 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             // 2.86 (fight plan): a beam to jump (Skullmaw's gazes) on a player kneeling by a soul without its shield: over it, the
             // revival begun again after (it took the beam kneeling, one gaze after the other).
             const bool kneelBare = staysPut && view_.plan.jumpBeams && hit->kind == Danger::Kind::Line && !shieldReady && !me.shieldActive();
-            if ((holding || (staysPut && !kneelBare) || ((shot || hit->shieldFirst) && (shieldReady || me.shieldActive()))) && !hit->unblockable) {
+            const bool piloted = escapeMode && hit->kind == Danger::Kind::Area && !hit->body && !holding && !staysPut && !hit->shieldFirst && !hit->unblockable;
+            // 2.90 (the escape): against the boss's body, the navigation looks for its way out first (off its platform, a jump,
+            // a dash through); its own way along the floor (below) only when it finds none.
+            if (escapeMode && hit->body && !holding && !staysPut) b.fleeBody = true;
+            if (piloted) {
+                escHit = hit;  // the navigation gets it out (its way, its timing); its shield decided once it has chosen (below)
+            } else if ((holding || (staysPut && !kneelBare) || ((shot || hit->shieldFirst) && (shieldReady || me.shieldActive()))) && !hit->unblockable) {
                 if (hit->in <= 14) raiseShield = true;
                 // 2.84: a beam on a player holding its place (Skullmaw's gazes on the mirrors): a step aside on the plate itself,
                 // to its edge away from the beam — still on it, out of the line.
@@ -2076,7 +2162,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 raiseShield = true;
             }
             // About to land on it and not out yet: the shield (it takes everything for 2,2 s), whatever its way out.
-            if (hit->in <= 10 && !hit->body && hit->kind != Danger::Kind::Pull) raiseShield = true;
+            if (hit->in <= 10 && !hit->body && hit->kind != Danger::Kind::Pull && !escHit) raiseShield = true;
         } else {
             b.react = 0;
         }
@@ -2182,12 +2268,22 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     int dir = 0;
     steer(w, seat, b, f, held, dir, stop);
     const int pilotDir = dir;
-    if (crossing && !navi_.pilot(seat).committed() && forced == 0) {
+    // 2.90 (the escape): a dodge of the navigation under way — a shot only along its way (the stick's direction moves it that
+    // step), never as it dashes (the dash goes where the stick points), no jump of the tactic's.
+    const bool pilotDodging = escapeMode && navi_.pilot(seat).dodging();
+    const Power* dashPower = powerOf(me, "dash");
+    const bool dashNow = dashPower && keyBit(dashPower) >= 0 && (held & (1u << keyBit(dashPower)));
+    const auto alongDodge = [&](int aim) { return !pilotDodging || (!dashNow && kDirX[aim] == pilotDir); };
+    // 2.90 (the escape): its shield up first (one power a step: the dash pressed with it took its place, and it went through
+    // bare); not up within a tenth of a second, the crossing is given up short of the body.
+    const bool crossBare = escapeMode && crossing && !me.shieldActive();
+    if (crossBare && b.cross < static_cast<int>(5.0f * static_cast<float>(kSimHz)) - 12) b.cross = 0;
+    if (crossing && !navi_.pilot(seat).committed() && forced == 0 && (!escapeMode || b.cross > 0)) {
         // 2.84: straight through, dashing (invulnerable while it dashes) as soon as it can.
-        dir = b.crossDir;
+        dir = crossBare && me.box.expanded(24.0f).intersects(bossBody_) ? 0 : b.crossDir;
         b.moveText = "traverse en ruée";
         if (const Power* dp = powerOf(me, "dash"); dp && keyBit(dp) >= 0 && dp->ready(me) && me.energy >= 25.0f && !(b.prevHeld & (1u << keyBit(dp))) &&
-                                                   me.box.expanded(30.0f).intersects(bossBody_))
+                                                   me.box.expanded(30.0f).intersects(bossBody_) && !crossBare)
             held |= 1u << keyBit(dp);
     } else if (forced != 0 && (!navi_.pilot(seat).committed() || sectorRun > 0.0f)) {
         dir = forced;
@@ -2211,7 +2307,18 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         if (dir != 0 && b.brave <= 0 && me.grounded() && !holding && !crossing && !pushing && !fleeing &&
             !(station.w > 0.0f && me.box.expanded(48.0f).intersects(station))) {
             const Rect next = me.box.translated({static_cast<float>(dir) * 10.0f, 0.0f}).expanded(3.0f);
-            if (threatened(w, seat, next, 100) && !threatened(w, seat, me.box.expanded(3.0f), 100)) {
+            // 2.90 (the escape): the blows on an area are the navigation's (it reads their time: it passes before one lands);
+            // only the boss's body, its beams and its wells are waited for here.
+            const auto edge = [&](const Rect& box) {
+                if (!escapeMode) return threatened(w, seat, box, 100);
+                for (const Danger& d : dangers_) {
+                    if ((d.seat >= 0 && d.seat != seat) || d.in > 100 || (d.kind == Danger::Kind::Area && !d.body)) continue;
+                    if ((d.kind == Danger::Kind::Line && hitsLine(d, box)) || ((d.kind == Danger::Kind::Area || d.kind == Danger::Kind::Pull) && d.area.intersects(box)))
+                        return true;
+                }
+                return false;
+            };
+            if (edge(next) && !edge(me.box.expanded(3.0f))) {
                 dir = 0;
                 b.moveText = "attend que ça passe";
                 b.lost = 0;
@@ -2342,7 +2449,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             // through three targets) — the wave meanwhile waits.
             const Power* charge = powerOf(me, "charge_shot");
             const bool weakBare = view_.exposed && foe != boss;
-            if (charge && weakBare && atSpot && me.grounded() && aim >= 0 && me.energy - 20.0f >= reserve) {
+            if (charge && weakBare && atSpot && me.grounded() && aim >= 0 && me.energy - 20.0f >= reserve && !pilotDodging) {
                 dir = 0;
                 if (b.chargeHold < static_cast<int>(0.9f * static_cast<float>(kSimHz))) {
                     held |= 1u << kAttack;  // charging (Attack held)
@@ -2359,7 +2466,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             } else {
                 b.chargeHold = 0;
             }
-            if (!fired && b.chargeHold == 0 && aim >= 0 && !spoils(aim) && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh))) &&
+            if (!fired && b.chargeHold == 0 && aim >= 0 && !spoils(aim) && alongDodge(aim) && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh))) &&
                 noise(seat + 8 * static_cast<int>(seed_), tick_ + 7) < lv.precision + 0.1f) {
                 // A Beginner's aim slips a notch now and then (its precision).
                 if (noise(seat + 8 * static_cast<int>(seed_), tick_ + 53) > lv.precision + 0.25f) aim = (aim + 1) % 8;
@@ -2376,7 +2483,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     if (fight_ && dodging && !fired && !fleeing && !nailed && foe && worthStriking && !holdFire && sh && keyBit(sh) >= 0 && view_.plan.fireOnTheRun) {
         const int aim = shotFrom(w, me.center(), fb, me.grounded());
         const float reserve = (shield ? 22.0f : 0.0f) + (view_.exposed ? 0.0f : 10.0f);
-        if (aim >= 0 && kDirX[aim] != 0 && !spoils(aim) && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh)))) {
+        if (aim >= 0 && kDirX[aim] != 0 && !spoils(aim) && alongDodge(aim) && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh)))) {
             held |= 1u << keyBit(sh);
             f.moveX = static_cast<int8_t>(kDirX[aim] * 127);
             f.moveY = static_cast<int8_t>(kDirY[aim] * 127);
@@ -2450,7 +2557,16 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // What a good player does in a fight: whatever is about to touch it in the next sixth of a second (a mark, a shot, a
     // beam, the boss's body or its blow), the shield goes up — not only against a blow it cannot leave any more. Never
     // while its last hit still protects it (wasted), nor for what it does not stop (a well's pull, a sector, a flood).
-    if (fight_ && shieldReady && !raiseShield && !me.invulnerable() && lv.shieldSense >= 1.0f && !(b.task == Task::Mechanism && !holding && me.health > 3)) {
+    // 2.90 (the escape): never during the guard after a dash either (the blows miss it: wasted — the other Gigaboss keep their
+    // rule of before, unmeasured with it); a blow on an area it is getting out of in time (the navigation's dodge, clear of
+    // every blow) is no reason for its shield.
+    const bool safeDodge = escapeMode && navi_.pilot(seat).safeDodge();
+    if (escHit && escHit->in <= 10 && !safeDodge && !me.blowGuarded()) {
+        raiseShield = true;  // no way out clear of it: the shield as it lands
+        if (react.empty()) react = "lève son bouclier";
+    }
+    if (fight_ && shieldReady && !raiseShield && !me.invulnerable() && !(escapeMode && me.blowGuarded()) && lv.shieldSense >= 1.0f &&
+        !(b.task == Task::Mechanism && !holding && me.health > 3)) {
         const Rect near = me.box.expanded(8.0f);
         // 2.84 (fight plan): its shield kept for one blow — except against the boss's own body and blows (its touch).
         const bool reserve = view_.plan.reserveShield && me.health > 4;
@@ -2459,6 +2575,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         for (const Danger& d : dangers_) sweepDue = sweepDue || d.kind == Danger::Kind::Storey || (d.shieldFirst && d.in > 0);
         for (const Danger& d : dangers_) {
             if (reserve && (sweepDue || (!d.body && !d.attack))) continue;
+            if (safeDodge && d.kind == Danger::Kind::Area && !d.body) continue;  // 2.90: the dodge under way gets it out in time
             if ((d.seat >= 0 && d.seat != seat) || d.in > (d.attack ? kSimHz / 4 : 20)) continue;  // its own blows: from their wind-up
             bool hit = false;
             switch (d.kind) {
@@ -2482,14 +2599,72 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         }
     }
     // ------------------------------------------------------------ the shield (its level's choice), when a blow cannot be avoided
-    if (raiseShield && shieldReady && (b.shieldCool <= 0 || react == "bouclier contre la lame") && me.energy >= 20.0f &&
+    // 2.90 (the escape): a player uses one power a step (Player::handlePowers), none while it dashes: the shield is pressed alone
+    // (a shot pressed with it took its place, and the shield waited 30 steps more), never during a dash (its guard covers it).
+    const bool shieldAlone = escapeMode && (dashNow || me.dashing());
+    if (raiseShield && shieldReady && !shieldAlone && (b.shieldCool <= 0 || react == "bouclier contre la lame") && me.energy >= 20.0f &&
         noise(seat + 8 * static_cast<int>(seed_), tick_ / 12 + 77) < lv.shieldSense) {
+        if (escapeMode)
+            for (const auto& pw : me.powers())
+                if (const int k = keyBit(pw.get()); k >= 0 && pw.get() != shield) held &= ~(1u << k);
         held |= 1u << keyBit(shield);
         b.shieldCool = 30;
         if (react.empty() || react == "esquive") react = "lève son bouclier";
     }
+    // ------------------------------------------------------------ 2.90: the dash as the blow lands (its guard covers it)
+    // The escape: a blow about to land on it (in three steps or less) that it is still under, its shield not raised now — the
+    // dash, its guard (its duration + 0,15 s: 0,31 s) covering the blow (a fist strikes a quarter of a second, a crack bursts
+    // three tenths, a wave passes in a tenth), the way that does not end in another blow nor against the boss's body. The
+    // shield (5 s to come back) and the dash (0,45 s, 5 of energy) take turns: never both spent at once.
+    bool dashGuard = false;
+    if (escapeMode && dashPower && keyBit(dashPower) >= 0 && !(held & (1u << keyBit(shield ? shield : dashPower))) && !me.shieldActive() &&
+        !me.blowGuarded() && !me.invulnerable() && !me.dashing() && dashPower->ready(me) && !(b.prevHeld & (1u << keyBit(dashPower))) &&
+        me.energy >= 5.0f && navi_.pilot(seat).dashIn() < 0 && !nailed && !holding) {
+        const Rect mine = me.box.expanded(3.0f);
+        const Danger* soon = nullptr;
+        for (const Danger& d : dangers_) {
+            if ((d.seat >= 0 && d.seat != seat) || d.body || d.unblockable || d.in > 3) continue;
+            if (d.kind == Danger::Kind::Area && d.last >= 0 && d.last <= 40 && d.area.intersects(mine)) {
+                soon = &d;
+                break;
+            }
+            if (d.kind == Danger::Kind::FloorWave && me.grounded() && d.speed != 0.0f && feet.y <= d.floorY + 6.0f && feet.y >= d.floorY - 30.0f &&
+                b.jumpHold <= 0) {
+                const float gap = d.speed > 0.0f ? me.box.x - d.area.right() : d.area.x - me.box.right();
+                if (gap > -(d.area.w + me.box.w) && std::max(0.0f, gap) / std::fabs(d.speed) + static_cast<float>(d.in) / static_cast<float>(kSimHz) < 0.03f) {
+                    soon = &d;
+                    break;
+                }
+            }
+        }
+        if (soon) {
+            // Its way: where it lands 70 px on is clear of every blow due soon and of the boss's body (else the other way).
+            const auto clearAt = [&](float x) {
+                const Rect at = bodyAt({x, feet.y}).expanded(4.0f);
+                if (w.physics().raycast(me.center(), {x, me.center().y}).has_value()) return false;  // a wall
+                for (const Danger& d : dangers_) {
+                    if ((d.seat >= 0 && d.seat != seat) || d.in > 50) continue;
+                    if ((d.kind == Danger::Kind::Area || d.kind == Danger::Kind::Pull) && d.area.intersects(at) && (d.body || d.last < 0 || d.in + d.last > 30)) return false;
+                }
+                return true;
+            };
+            const float away = soon->kind == Danger::Kind::FloorWave ? -soon->speed : me.center().x - soon->area.center().x;
+            int side = away >= 0.0f ? 1 : -1;
+            if (!clearAt(feet.x + 70.0f * static_cast<float>(side)) && clearAt(feet.x - 70.0f * static_cast<float>(side))) side = -side;
+            for (const auto& pw : me.powers())
+                if (const int k = keyBit(pw.get()); k >= 0) held &= ~(1u << k);
+            held |= 1u << keyBit(dashPower);
+            dir = side;
+            fired = false;
+            f.moveY = 0;
+            dashGuard = true;
+            ++b.dashGuards;
+            react = "ruée sous le coup";
+        }
+    }
     // 2.79: a move through the air under way is played as it was simulated (nothing changes its direction).
-    if (navi_.pilot(seat).committed()) dir = pilotDir;
+    // 2.90: and a dodge of the escape (one authority: the navigation's way out, kept to its end).
+    if (!dashGuard && (navi_.pilot(seat).committed() || (escapeMode && navi_.pilot(seat).safeDodge() && !nailed))) dir = pilotDir;
     // 2.79: never into a passage (it takes the whole group away) unless it is leaving the zone: it stops in
     // time (braking against its run).
     if (!(b.task == Task::Exit && b.act == Enter)) {
@@ -2504,7 +2679,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // Lost on the way (no nearer to its goal): counted for the rescue of a test (TestSession).
     const float gd = (b.goal - feet).length();
     if (b.goalBest <= 0.0f && gd >= 24.0f) b.goalBest = gd;  // left its fight: measured again from here
-    if (gd < b.goalBest - 8.0f || gd < 24.0f || b.task == Task::Follow || b.task == Task::Wait || dodging) {
+    if (gd < b.goalBest - 8.0f || gd < 24.0f || b.task == Task::Follow || b.task == Task::Wait || dodging || pilotDodging) {
         b.goalBest = gd;
         b.lost = 0;
     } else {
@@ -2522,6 +2697,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     if (dir != 0 && std::fabs(me.box.x - b.lastX) < 0.25f) ++b.still;
     else b.still = 0;
     b.lastX = me.box.x;
+    if (pilotDodging && b.waveJumpCool <= 0 && b.beamJump <= 0) b.jumpHold = 0;  // 2.90: its track was simulated without it
     if (b.jumpHold > 0) {
         held |= 1u << kJump;
         --b.jumpHold;

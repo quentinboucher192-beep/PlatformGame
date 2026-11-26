@@ -61699,6 +61699,12 @@
    ]
   },
   {
+   "fr": "ruée sous le coup",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Ruée vers l'or",
    "where": [
     "data/achievements/achievements.json"

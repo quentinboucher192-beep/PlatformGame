@@ -44,6 +44,7 @@ struct Danger {
     Kind kind = Kind::Area;
     Rect area;
     int in = 0;          // steps before it strikes (0: striking now)
+    int last = -1;       // 2.90: steps it keeps hurting from then (-1: not known, half a second; 1 << 20: as long as it is there)
     Vec2 from, to;       // Line: its ends; Pull: its core
     float width = 0.0f;  // Line: its thickness
     float speed = 0.0f;  // FloorWave: px/s along x (signed)

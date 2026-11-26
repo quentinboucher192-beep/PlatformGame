@@ -3308,11 +3308,69 @@ au-dessus du sol pendant sa marée de plasma (`elevate` 60 : 72 %). Ce qui bloqu
 tient maintenant ses 15 min mais sa phase 3 traîne (ses artères du sol sous sa marée de plasma toutes les 24 s, les deux de
 l'est loin quand il dérive vers l'ouest) ; Pyroclast, les fissures de sa Secousse et ses réanimateurs près de son corps.
 
+2.90 : **la sortie d'un coup reprise — une seule autorité, chaque coup à son heure, la ruée sous le coup** (Titanus,
+Graviton, Dreadfang : `Plan::escape`). Le constat de la 2.89 : presque tous les coups qui touchaient étaient vus, c'est la
+sortie qui échouait (deux esquives qui se contredisaient, les coups lus comme s'ils tombaient tous à la fois, le bord de la
+zone pour seule sortie). Maintenant, contre ces trois-là :
+
+* **chaque coup avec son heure** : ce qu'il reste avant qu'il tombe et combien de temps il frappe (`Danger::last` : un poing
+  un quart de seconde, une fissure trois dixièmes, un rocher le temps de traverser sa bande, une attaque du boss jusqu'à la
+  fin de son coup), donnés ainsi à la navigation (`nav::Blow`, de `from` à `to`) : un joueur passe là où un coup tombera plus
+  tard et s'arrête là où un coup est déjà passé ;
+* **la navigation seule sort des coups** (`nav::Pilot::escape`) : elle regarde 1,25 s devant (le temps d'en sortir au pas),
+  essaie sur sa copie de la zone les sorties d'un joueur — rester, quelques pas plus ou moins loin de chaque côté (au bout
+  de sa plateforme : la chute simulée), à travers la plateforme (Bas + Saut), un saut, un double saut, une ruée tout de
+  suite, une ruée **au moment du coup** (sa garde de 0,31 s le couvre), quelques pas puis la ruée — et garde celle qui reste
+  hors du coup jusqu'à sa fin (un coup qui tombera plus tard là où elle mène ne fait que peser), la plus proche de là où il
+  allait, la ruée pesée (plus quand elle laisserait trop peu d'énergie au bouclier prêt), jamais finie contre un coup (12 px)
+  ni dans la boîte du corps du boss ; elle la joue jusqu'au bout sans que la tactique la contredise (ni pas de côté, ni
+  attente au bord, ni saut, ni tir à contre-sens ou pendant la ruée) et ne la refait que pour un coup arrivé depuis sur son
+  chemin (ou l'abandonne si plus rien n'est sûr) ; ce qu'elle a vu venir ne s'oublie plus quand un mouvement commence (en
+  sautillant de nœud en nœud, elle ne réagissait jamais) ; sous le bouclier ou la garde d'une ruée, seuls comptent les coups
+  qui tombent après ;
+* **le bouclier** quand aucune sortie n'est sûre, levé seul (un joueur n'utilise qu'un pouvoir par pas : un tir pressé avec
+  lui prenait sa place, et le bouclier attendait 30 pas de plus), jamais pendant une ruée ni sa garde ; **la ruée sous le
+  coup** sinon : encore sous un coup qui tombe dans trois pas ou moins, sans bouclier levé, une ruée vers le côté qui ne finit
+  ni dans un autre coup ni contre le corps du boss — le bouclier (5 s de recharge) et la ruée (0,45 s, 5 d'énergie) se
+  relaient ;
+* **le corps du boss** parmi ce que la navigation évite (`Plan::bodyInNav`, comme le Cœur, Pyroclast et Voidworm), lu là où il
+  sera dans un tiers de seconde ; touché, la navigation cherche d'abord sa sortie (hors de la plateforme, un saut, une ruée),
+  le pas de côté de la tactique seulement sans elle ; la traversée sous le bouclier (les entraves de Titanus) n'entre dans le
+  corps qu'une fois le bouclier levé ;
+* **le bond de Titanus** lu dans son temps (accroupi, il monte à 1 000 px/s à travers les plateformes au-dessus de lui, reste
+  au-dessus de la voûte, son ombre suit sa cible puis se fige 0,45 s, il retombe — son corps par bandes de 64 px — et écrase
+  en un instant) ; **sa charge** lue comme son corps qui court, par vingtièmes de seconde.
+
+Mesuré sur 32 départs (difficulté 3 / 5, sans invincibilité ; avant = le même code, `Plan::escape` et `bodyInNav` éteints) :
+
+| Combat | avant | après |
+|---|---|---|
+| Dreadfang | 2 / 32 V, 56 %, 2,74 morts/min, 510 s | **16 / 32 V, 85 %, 1,71 morts/min, 627 s** |
+| Titanus | 0 / 32, 35 %, 4,01 morts/min, 242 s | 0 / 32, **52 %**, 3,94 morts/min, **391 s** |
+| Graviton | 0 / 32, 37 %, 2,34 morts/min, 366 s | 0 / 32, **45 %**, 2,27 morts/min, 357 s |
+| Skullmaw, Heartbreaker, Voidworm, Pyroclast, Cœur | | mêmes résultats départ par départ (`Plan::escape` éteint, aucun chemin du code ne change : Voidworm 7 / 8 et Pyroclast 75 %, son départ 5 vaincu, sur les départs 1 à 8, comme mesuré plus haut) |
+
+(V : vaincus ; % : la vie ôtée en moyenne ; morts par minute de combat ; durée moyenne d'un départ.) Les coups reçus par
+minute : Dreadfang 13,6 → 9,4 (ses Griffes du sol 2,6 → 1,4, sous la glace 2,1 → 1,4) ; Titanus 19,6 → 17,2 (ses poings 3,7 → 2,1, ses fissures et rochers ≈ 4,0 → ≈ 1,9, sa charge 1,9 → 1,6, ses ondes de choc 4,3 → 4,5 ; le contact de son corps — séisme, bond, hors attaque — 4,1 → 6,3) ; Graviton 13,0 → 12,7 (sa Chute de débris 3,2 → 2,5 ; sa voûte 0,9 → 2,2). Les sorties choisies (8 joueurs, par minute de combat ;
+`raid GOAT bench` les affiche : « sorties : … ») : contre Dreadfang 168 fois quelques pas, 52 sauts ou chutes, 31 ruées, 22 fois rester, 73 fois aucune sortie sûre, 41 boucliers, 20 ruées sous le coup ; contre Titanus 131 · 58 · 46 · 18 · 77, 42 boucliers, 30 ruées sous le coup ; contre Graviton
+130 · 54 · 39 · 20 · 76, 44 boucliers, 18 ruées sous le coup.
+
+Contre Titanus, la sortie ôte ses poings, ses fissures et ses rochers, mais le contact de son corps augmente (pendant son
+séisme, des joueurs sur les plateformes qui traversent sa jambe) : ses morts par minute ne baissent pas, mais le groupe tient
+plus longtemps et avance dans sa phase 2 (avant, presque tous les départs restaient à ses entraves, 34 %). Essayés et
+retirés, contre Titanus (départs 1 à 16, sur des étapes intermédiaires) : son corps lu en entier plutôt que partie par partie
+(5,02 morts/min au lieu de 4,86) ; ses parties lues 20 px plus larges (4,53 au lieu de 3,79) ; 40 px plus larges pendant
+son séisme (3,92 au lieu de 3,87, le contact de son corps inchangé) ; sur la version finale, la sortie sans son corps dans
+la navigation (45 % au lieu de 52 %) ; contre Graviton, ses secteurs laissés au pas de côté de la tactique (39 % au lieu de
+44 %). Gardée pour les autres Gigaboss : la règle d'avant pour le bouclier pendant la garde d'une ruée (rien n'y est mesuré
+avec la nouvelle). Ce qui bloque encore : Titanus, le contact de son corps pendant son séisme et sa charge ; Graviton, sa
+Couronne de débris au contact et sa voûte ; ni l'un ni l'autre ne tombe.
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
 et les empreintes de référence ne changent pas ; rien côté serveur. Trois pensées nouvelles des joueurs simulés
-(« traverse sous son bouclier »…) ont leur anglais dans `data/i18n/en.json`.
+(« traverse sous son bouclier »…) ont leur anglais dans `data/i18n/en.json` ; en 2.90, « ruée sous le coup » aussi.
 
 ## 37. Titan 13 : des décomptes, plus de plateformes, des onglets qui ne défilent plus, des Gigaboss à leur mesure
 

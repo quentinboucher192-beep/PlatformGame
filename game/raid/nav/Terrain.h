@@ -40,6 +40,16 @@ namespace cosmic::raid::nav {
 /// What a body runs into at a step of a lookahead (the most serious last).
 enum class Harm : uint8_t { None = 0, Blow, Shot, Beam, Hazard, Liquid, Void };
 
+/// 2.90 (docs/RAIDS.md §36): a blow announced, with its time — the steps of the lookahead it hurts in (`from` to `to`, 0:
+/// now): where a body may be before it lands or once it is over. Without its time (a blow read as a box only), always.
+struct Blow {
+    Rect r;
+    int from = 0;
+    int to = 1 << 30;
+    bool dodgeOnly = false;  // seen only by a dodge's choice (the boss's body: a dodge never ends in it; the moves pass near it)
+    bool body = false;       // the boss's body (a dodge out of it has the time to get out: Terrain::dodgeView's grace)
+};
+
 class Terrain {
 public:
     /// Follows the world now (each step, cheap: the doors, the platforms; a full copy of its physics when
@@ -51,7 +61,23 @@ public:
     float killY() const { return killY_; }
     const Rect& bounds() const { return bounds_; }
     /// The blows announced this step (a gigaboss's fists, jets and marks, the bosses' hazards).
-    void setBlows(const std::vector<Rect>& blows) { blows_ = blows; }
+    void setBlows(const std::vector<Rect>& blows) {
+        blows_.clear();
+        for (const Rect& r : blows) blows_.push_back({r});
+    }
+    /// 2.90: the same with their time (Blow).
+    void setBlows(const std::vector<Blow>& blows) { blows_ = blows; }
+    /// 2.90: the blows only a dodge's choice sees (Blow::dodgeOnly) are seen from now on (until set off again).
+    void dodgeView(bool on, int grace = 0) {
+        dodgeView_ = on;
+        dodgeGrace_ = grace;
+    }
+    /// 2.90: the last step of the blows on `box` at step k (the one a dodge leaves: until when it must stay out of it), -1 none.
+    int blowEnd(const Rect& box, int k) const;
+    /// 2.90: whether `box` touches the boss's body (Blow::body), now.
+    bool inBody(const Rect& box) const;
+    /// 2.90: a blow that still hurts at step `k` or later and touches `box` (a place too close to one to end a dodge at).
+    bool blowNear(const Rect& box, int k) const;
     /// Places a body must not touch (the zone's passages: another zone) — as the void for the lookahead —,
     /// but the one allowed (1-based: where it goes, or where it stands; 0 none).
     void setKeepOut(const std::vector<Rect>& rects) { keepOut_ = rects; }
@@ -150,7 +176,9 @@ private:
     std::vector<Env> env_;
     std::vector<Rect> lasting_;   // deadly liquids, spikes, damage zones that are not the periodic one
     std::vector<uint8_t> deadly_;  // per lasting_: a deadly liquid
-    std::vector<Rect> blows_;
+    std::vector<Blow> blows_;
+    bool dodgeView_ = false;
+    int dodgeGrace_ = 0;  // 2.90: the boss's body seen only from this step of a dodge's lookahead (the time to get out of it)
     std::vector<Rect> keepOut_;
     int allowOut_ = 0;
     std::vector<Shot> shots_;

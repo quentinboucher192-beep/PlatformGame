@@ -223,7 +223,9 @@ void Navigator::start(Pilot& p, const Program& prog, const std::vector<Vec2>& tr
     p.active_ = true;
     p.airborne_ = false;
     p.moveIntent_ = intent;
-    p.threat_ = 0;
+    // 2.90 (the escape): a blow seen on its way is not forgotten because a move begins (hopping from node to node, it never
+    // reacted: each new move set it back to nothing).
+    if (!escapeMode_ || p.dodge_) p.threat_ = 0;
 }
 
 // ----------------------------------------------------------------------------- a move chosen ahead
@@ -451,6 +453,7 @@ bool Navigator::search(const GameWorld& w, int seat, Pilot& p, const Body& body,
     p.targetMover_ = bestT->mover;
     p.pathIndex_ = bestT->pathIndex;
     p.dodge_ = false;
+    p.safe_ = false;
     if (recover) ++p.used_.recoveries;
     if (best.jump > 0) ++p.used_.jumps;
     p.used_.airJumps += bestO.airJumps;
@@ -561,6 +564,187 @@ bool Navigator::dodge(const GameWorld& w, int seat, Pilot& p, const Body& body, 
     return true;
 }
 
+bool Navigator::escape(const Body& body, Pilot& p, const BodySim& sim, uint32_t prevHeld, Harm seen, float towardX, int harmAt, int harmEnd, float dashWeight) {
+    // 2.90 (docs/RAIDS.md §36): a blow will land where it stands (or where it is going) in `harmAt` steps. Each way out a
+    // player has is played on the copy of the zone against every blow with its time (where they are when they land, not
+    // their boxes all at once): standing still, a few steps more or less far on either side (off its platform too: the fall
+    // is simulated), a jump, a double jump, a dash at once or timed so that its invulnerability (its duration + 0,05 s)
+    // covers the blow, a few steps then a dash. The one clear of every blow for the whole horizon, nearest to where it
+    // was going, a dash weighed (its energy), never ending against a blow (12 px); it is then played to its end — the
+    // tactic does not change its direction meanwhile, the check of its track replans it only for a blow that came since.
+    ++cost_.searches;
+    constexpr int kHorizon = 150;
+    terrain_.plan(kHorizon + 2, body.grounded ? body.groundId : 0, body.feet());
+    {
+        int here = 0;
+        for (size_t k = 0; k < keepOut_.size(); ++k)
+            if (keepOut_[k].intersects(body.box)) here = static_cast<int>(k) + 1;
+        terrain_.allowOut(here);
+    }
+    // In the boss's body now (it walked into it, a knock): out of it within a third of a second, then never back.
+    terrain_.dodgeView(true, terrain_.inBody(body.box) ? kSimHz / 3 : 0);
+    TerrainArena arena(terrain_);
+    const Kit& kit = sim.kit();
+    const int8_t ahead = towardX > body.feet().x + 2.0f ? 1 : towardX < body.feet().x - 2.0f ? -1 : static_cast<int8_t>(body.facing >= 0.0f ? 1 : -1);
+    const int hit = std::clamp(harmAt, 1, kHorizon);
+    std::vector<Program> cands;
+    auto add = [&](Program q) {
+        if (prevHeld & kJumpBit)
+            if ((q.jump > 0 || q.drop) && q.wait == 0) q.wait = 1;
+        cands.push_back(q);
+    };
+    {
+        Program q;  // stays where it is (the blow lands on its way: it waits for it)
+        q.wait = kHorizon;
+        add(q);
+    }
+    for (int8_t d : {ahead, static_cast<int8_t>(-ahead)}) {
+        for (uint8_t stop : {8, 14, 22, 32, 44, 58, 76, 98, 126}) {
+            Program walk;  // a few steps aside (off its platform: the fall), then still
+            walk.dir = d;
+            walk.steer = false;
+            walk.stop = stop;
+            add(walk);
+        }
+        Program jump;
+        jump.dir = d;
+        jump.jump = 40;
+        jump.steer = false;
+        add(jump);
+        Program dbl = jump;
+        dbl.air1 = 30;
+        dbl.hold1 = 40;
+        add(dbl);
+        if (kit.hasDash()) {
+            Program dash;  // a dash at once (invulnerable while it dashes), then still
+            dash.dir = d;
+            dash.groundDash = 1;
+            dash.steer = false;
+            dash.stop = 21;
+            add(dash);
+            if (hit > 10) {
+                Program late = dash;  // standing until the blow, then the dash: its invulnerability covers the blow
+                late.wait = static_cast<uint8_t>(std::min(hit - 5, 200));
+                late.stop = static_cast<uint8_t>(std::min(late.wait + 21, 250));
+                add(late);
+                Program run = dash;  // running toward its way out, the dash as the blow lands
+                run.groundDash = static_cast<uint8_t>(std::min(hit - 4, 200));
+                run.stop = static_cast<uint8_t>(std::min(run.groundDash + 20, 250));
+                add(run);
+            }
+        }
+    }
+    {
+        Program up;  // straight up (a double jump: onto the platform over it, through its underside)
+        up.jump = 40;
+        up.steer = false;
+        add(up);
+        up.air1 = 30;
+        up.hold1 = 40;
+        add(up);
+    }
+    // Through the platform it stands on (down and jump), straight down or to either side.
+    if (const Collider* under = body.grounded ? terrain_.physics().get(body.groundId) : nullptr; under && under->kind == ColliderKind::OneWay)
+        for (int8_t d : {static_cast<int8_t>(0), ahead, static_cast<int8_t>(-ahead)}) {
+            Program drop;
+            drop.drop = true;
+            drop.dir = d;
+            drop.steer = false;
+            drop.release = 14;
+            add(drop);
+        }
+    Program best;
+    float bestScore = 1e30f;
+    bool found = false;
+    Program least;  // none clear of every blow: the one hurt the latest (what comes after may be seen in time)
+    int leastAt = hit + 15;
+    bool any = false;
+    const auto movedTill = [](const std::vector<Vec2>& tr) {
+        for (size_t i = 2; i < tr.size(); ++i)
+            if ((tr[i] - tr[i - 1]).lengthSq() < 0.0025f && (tr[i - 1] - tr[i - 2]).lengthSq() < 0.0025f) return static_cast<int>(i);
+        return static_cast<int>(tr.size());
+    };
+    // A move through the air ends as it lands (the simulation stops there): where it lands is then watched standing still
+    // to the horizon (the first step a blow is on it there, 1 << 20 none).
+    const auto standsClear = [&](const Outcome& o) {
+        if (!o.landed) return 1 << 20;
+        const Rect box = Rect::fromBottomCenter(o.feet, body.box.size());
+        for (int k = o.steps + 1; k <= kHorizon; ++k) {
+            const Harm h = terrain_.harm(box, k);
+            if (h == Harm::Blow || h == Harm::Shot || h == Harm::Beam || h == Harm::Liquid || h == Harm::Hazard) return k;
+        }
+        return 1 << 20;
+    };
+    // Clear of the blow it leaves (until it has landed and passed: a fist strikes a quarter of a second, a crack bursts three
+    // tenths) is what counts; a blow that lands later where it ends only weighs (it will be left in its turn, its time known).
+    const int clearTill = std::clamp(harmEnd >= hit ? harmEnd + 2 : hit + 8, hit + 4, kHorizon);
+    std::vector<Vec2> tr;
+    for (const Program& q : cands) {
+        const Outcome o = simulate(q, body, prevHeld, sim, arena, [&](int) { return towardX; }, [](const Body&, int) { return true; }, kHorizon, &tr,
+                                   static_cast<int>(Harm::Liquid));
+        ++cost_.simulations;
+        spend(o.steps);
+        int first = o.harm != Harm::None ? o.harmStep : 1 << 20;
+        first = std::min(first, standsClear(o));
+        if (o.harm >= Harm::Hazard) continue;  // spikes, a liquid, the void: never
+        if (first <= clearTill) {
+            if (first > leastAt) {
+                leastAt = first;
+                least = q;
+                any = true;
+            }
+            continue;
+        }
+        if (!o.landed && o.ground == 0) continue;  // still in the air at its end: not a place yet
+        float score = std::fabs(o.feet.x - towardX) + 0.5f * std::fabs(o.feet.y - body.feet().y) + 30.0f * static_cast<float>(o.airJumps) +
+                      dashWeight * static_cast<float>(o.dashes);
+        if (first < (1 << 20))
+            score += 80.0f * (1.0f - static_cast<float>(first - clearTill) / static_cast<float>(std::max(1, kHorizon - clearTill)));
+        // Never ending against a blow still to come (a step of a teammate, a knock, and it is in it).
+        const int rest = movedTill(tr);
+        if (terrain_.blowNear(Rect::fromBottomCenter(o.feet, body.box.size()).expanded(12.0f), rest)) score += 40.0f;
+        if (score < bestScore) {
+            bestScore = score;
+            best = q;
+            found = true;
+        }
+    }
+    bool safe = true;
+    if (!found) {
+        if (!any) {
+            terrain_.dodgeView(false);
+            ++p.used_.escFails;
+            return false;
+        }
+        best = least;
+        safe = false;
+    }
+    std::vector<Vec2> track;
+    const Outcome o = simulate(best, body, prevHeld, sim, arena, [&](int) { return towardX; }, [](const Body&, int) { return true; }, kHorizon, &track,
+                               static_cast<int>(Harm::Liquid));
+    spend(o.steps);
+    terrain_.dodgeView(false);
+    // Played until it is out of it and the blow has landed (then its way again, watched as before).
+    const int end = std::clamp(std::max(movedTill(track), hit + 12), 1, static_cast<int>(track.size()));
+    track.resize(static_cast<size_t>(end));
+    start(p, best, track, dodgeIntent(seen, terrain_.liquidIsMagma()));
+    p.dodge_ = true;
+    p.safe_ = safe;
+    p.target_ = -1;
+    p.targetSeg_ = -1;
+    p.targetMover_ = 0;
+    p.pathIndex_ = -1;
+    ++p.used_.dodges;
+    p.used_.dashes += o.dashes;
+    p.used_.airJumps += o.airJumps;
+    if (!safe) ++p.used_.escFails;
+    else if (o.dashes > 0) ++p.used_.escDashes;
+    else if (best.jump > 0 || std::fabs(o.feet.y - body.feet().y) > 8.0f) ++p.used_.escJumps;
+    else if (best.dir == 0) ++p.used_.escStays;
+    else ++p.used_.escWalks;
+    return true;
+}
+
 // ----------------------------------------------------------------------------- one seat's step
 
 Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prevHeld) {
@@ -582,7 +766,11 @@ Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prev
     if (p.cooldown_ > 0) --p.cooldown_;
     p.failed_.erase(std::remove_if(p.failed_.begin(), p.failed_.end(), [&](const Pilot::Failed& f) { return f.until <= tick_; }), p.failed_.end());
     const Player& me = w.playerAt(seat);
-    const Body body = Body::of(me);
+    Body body = Body::of(me);
+    // 2.90 (the escape): under its shield or the guard after a dash, as long as they last (the simulation lets the blows, shots
+    // and beams through an invulnerable body): a blow that lands after is still one to leave.
+    if (plan.escape) body.invuln = std::max(body.invuln, plan.guardFor);
+    escapeMode_ = plan.escape;
     const Kit kit = Kit::of(me);
     // 2.84: its energy spared (a fight: its shots and its shield), a dash or an impulse only where nothing else goes.
     dashCost_ = plan.spare ? 150.0f : 9.0f;
@@ -652,6 +840,17 @@ Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prev
         return n >= 0 && nav->segment(n) == p.targetSeg_;
     };
 
+    // 2.90 (the escape): the boss's body on it — its way out now (off its platform, a jump, a dash through it), unless a dodge
+    // under way already leaves it; none found: the tactic's step aside.
+    if (plan.escape && plan.fleeBody && footed && !(p.active_ && p.dodge_) && p.cooldown_ <= 0 && !plan.hold) {
+        const float toward = plan.goal.x;
+        if (escape(body, p, sim, prevHeld, Harm::Blow, toward, 1, kSimHz / 5, plan.escapeDash)) {
+            if (p.safe_) return finish(play());
+            p.active_ = false;  // nothing clear of it: the tactic's own way
+        } else {
+            p.cooldown_ = 6;
+        }
+    }
     // 1. A move under way: the game must follow the simulation, else it is planned again.
     if (p.active_) {
         const int c = p.t_;
@@ -671,8 +870,8 @@ Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prev
                 if (!found) path.clear();
                 if (plan.best) *plan.best = 1e30f;
                 if (plan.noProgress) *plan.noProgress = 0;
-            } else if (!p.dodge_) {
-                path.clear();  // elsewhere: a new path from here
+            } else if (!p.dodge_ || plan.escape) {
+                path.clear();  // elsewhere: a new path from here (2.90: after a jump or a drop of the escape too)
             }
         } else if (!left && c >= static_cast<int>(p.track_.size())) {
             p.active_ = false;
@@ -684,23 +883,44 @@ Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prev
             // A danger that came up on the way of the move (a shot fired since, a beam): seen for its reaction
             // time, the move is chosen again (a dodge on its feet; in the air, what lands safe). A move with a
             // dash goes through (invulnerable).
-            if (c % 3 == 0 && p.prog_.dash == 0 && p.prog_.groundDash == 0 && body.invuln <= 0.0f) {
+            if (c % 3 == 0 && p.prog_.dash == 0 && p.prog_.groundDash == 0 && (body.invuln <= 0.0f || plan.escape)) {
                 terrain_.plan(skill_.horizon, body.grounded ? body.groundId : 0, feet);
                 Harm seen = Harm::None;
-                const int end = std::min<int>(static_cast<int>(p.track_.size()), c + skill_.look);
+                int seenAt = 0, seenEnd = -1;
+                // 2.90 (the escape): a dodge's whole track (to its end), its blows with their time, the boss's body too; any other
+                // move to its end (a blow seen beyond it is left once it has landed: not forgotten meanwhile).
+                const bool whole = plan.escape && p.dodge_;
+                const int end = plan.escape ? static_cast<int>(p.track_.size()) : std::min<int>(static_cast<int>(p.track_.size()), c + skill_.look);
+                terrain_.dodgeView(whole);
                 for (int i = c; i < end && seen == Harm::None; ++i) {
-                    const Harm h = terrain_.harm(Rect::fromBottomCenter(p.track_[static_cast<size_t>(i)], body.box.size()), i - c + 1);
-                    if (h == Harm::Shot || h == Harm::Beam || h == Harm::Blow || h == Harm::Liquid || h == Harm::Hazard) seen = h;
+                    Harm h = terrain_.harm(Rect::fromBottomCenter(p.track_[static_cast<size_t>(i)], body.box.size()), i - c + 1);
+                    // 2.90: its guard (the shield, a dash's) lets the blows, shots and beams through as long as it lasts.
+                    if ((h == Harm::Shot || h == Harm::Beam || h == Harm::Blow) && static_cast<float>(i - c + 1) <= body.invuln * static_cast<float>(kSimHz)) h = Harm::None;
+                    if (h == Harm::Shot || h == Harm::Beam || h == Harm::Blow || h == Harm::Liquid || h == Harm::Hazard) {
+                        seen = h;
+                        seenAt = i - c + 1;
+                        seenEnd = terrain_.blowEnd(Rect::fromBottomCenter(p.track_[static_cast<size_t>(i)], body.box.size()), seenAt);
+                    }
                 }
+                terrain_.dodgeView(false);
                 if (seen != Harm::None && !(plan.hold && seen != Harm::Liquid)) {
                     p.threat_ += 3;
                     if (p.threat_ >= skill_.reaction) {
                         const int dst = path.size() >= 2 && at + 1 < path.size() ? path[at + 1] : -1;
                         const float toward = p.target_ >= 0 ? nav->node(p.target_).feet.x : plan.goal.x;
-                        if (footed ? dodge(w, seat, p, body, sim, prevHeld, seen, toward) : search(w, seat, p, body, sim, -1, dst, prevHeld, true))
-                            return finish(play());
+                        const bool again = !footed ? search(w, seat, p, body, sim, -1, dst, prevHeld, true)
+                                           : plan.escape ? escape(body, p, sim, prevHeld, seen, toward, seenAt, seenEnd, plan.escapeDash)
+                                                         : dodge(w, seat, p, body, sim, prevHeld, seen, toward);
+                        if (again) return finish(play());
+                        // 2.90 (the escape): a dodge whose way is struck now, and none other clear: given up (its shield, the
+                        // tactic's way), never played on into the blow.
+                        if (plan.escape && p.dodge_ && footed) {
+                            p.active_ = false;
+                            p.airborne_ = false;
+                            return finish({});
+                        }
                     }
-                } else {
+                } else if (!plan.escape) {
                     p.threat_ = 0;
                 }
             }
@@ -765,23 +985,31 @@ Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prev
     // A few steps ahead on its way (toward `wx`), what will hurt it: a shot, a beam, a blow announced, the
     // rising liquid, a danger of the terrain. Seen for its reaction time, it dodges (true: a dodge starts).
     auto watch = [&](float wx, float towardX) {
-        terrain_.plan(skill_.horizon, body.grounded ? body.groundId : 0, feet);
+        // 2.90 (the escape): far enough ahead to walk out of a blow before it lands (its time known), the walk stopped where
+        // it goes (it does not run on past it into what is beyond), the first blow met.
+        const int look = plan.escape ? 150 : skill_.look;
+        terrain_.plan(std::max(skill_.horizon, look), body.grounded ? body.groundId : 0, feet);
         TerrainArena arena(terrain_);
         Program walk;
         const float wdx = wx - feet.x;
         walk.dir = static_cast<int8_t>(std::fabs(wdx) > 2.0f ? (wdx > 0.0f ? 1 : -1) : 0);
         walk.steer = false;
-        const Outcome o = simulate(walk, body, prevHeld, sim, arena, [&](int) { return feet.x; }, [](const Body&, int) { return true; }, skill_.look, nullptr, 6);
+        if (plan.escape && walk.dir != 0) walk.stop = static_cast<uint8_t>(std::clamp(std::fabs(wdx) * 0.8f + 4.0f, 1.0f, 250.0f));
+        const Outcome o = simulate(walk, body, prevHeld, sim, arena, [&](int) { return feet.x; }, [](const Body&, int) { return true; }, look, nullptr,
+                                   plan.escape ? 0 : 6);
         spend(o.steps);
         bool danger = o.harm == Harm::Shot || o.harm == Harm::Beam || o.harm == Harm::Blow || o.harm == Harm::Liquid || o.harm == Harm::Hazard;
         if (plan.hold && o.harm != Harm::Liquid) danger = false;  // its post first (a plate, a revival)
         if (!danger) {
-            p.threat_ = 0;
+            // 2.90 (the escape): a step without it (its goal changed, a step aside) does not make it forget what it saw.
+            p.threat_ = plan.escape ? std::max(0, p.threat_ - 2) : 0;
             return false;
         }
         ++p.threat_;
         if (p.threat_ < skill_.reaction || p.cooldown_ > 0) return false;
-        if (dodge(w, seat, p, body, sim, prevHeld, o.harm, towardX)) return true;
+        const int end = plan.escape ? terrain_.blowEnd(Rect::fromBottomCenter(o.feet, body.box.size()), o.harmStep) : -1;
+        if (plan.escape ? escape(body, p, sim, prevHeld, o.harm, towardX, o.harmStep, end, plan.escapeDash) : dodge(w, seat, p, body, sim, prevHeld, o.harm, towardX))
+            return true;
         p.cooldown_ = 6;
         return false;
     };

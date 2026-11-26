@@ -55,6 +55,10 @@ struct BossView {
     /// 2.89: where no player can go (Voidworm's stomach, under the arena): a soul fallen there is nobody's task.
     std::vector<Rect> noRevive;
     std::string phase;  // what the group does now (« Voile psychique : 4 miroirs sur 4 »), for the thoughts
+    /// 2.90 (the escape, Plan::escape): steps since the shadow of its leap stopped following its target (the players watch it
+    /// lock: then it falls), -1 not locked. Given by the players' side (TestBots) before the tactic reads.
+    int skyLocked = -1;
+    int skyHang = -1;  // steps since it went out of sight over the vault (its hang), -1 not there
     /// 2.84: the fight plan of this boss at this step (game/raid/bots/FightPlan), what its tactic sets beyond what is
     /// coming: how the group stands and spends its shield.
     struct Plan {
@@ -74,6 +78,7 @@ struct BossView {
         bool reviveShielded = false; // a soul in its body approached only with the shield ready
         bool hideArmoured = false;   // its body closed to blows: the strikers wait far off it (not where its weak points will be)
         bool jumpBeams = false;      // 2.86: a beam lying lower than steep (Skullmaw's gazes) jumped over as it fires, not stepped out of
+        bool escape = false;         // 2.90: its blows left by the navigation alone, with their time (RaidBots::drive, nav::Pilot::escape)
         bool dashOut = false;        // 2.89: out of a blow too wide to walk out of in time, dashing (Pyroclast's meteor fist)
         float bodyBothSides = 0.0f;  // 2.89: > 0: its body read on both sides of its box (it turns), this much wider (Pyroclast)
         bool bodyInNav = false;      // 2.89: its body among what the navigation's moves keep out of (it floats over the ledges)

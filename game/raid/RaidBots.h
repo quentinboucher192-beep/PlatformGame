@@ -123,6 +123,8 @@ public:
         uint32_t noSpotWatch = 0;
         int noSpotSince = 0;
         int noSpotUntil = 0;
+        int dashGuards = 0;   // 2.90: dashes pressed as a blow lands (their guard covering it), for the measures
+        bool fleeBody = false;  // 2.90: the boss's body on it: the navigation's way out asked for
         bots::Thought thought;
         std::string intent;   // its task's intention (the plan's), shown unless it reacts to something
         std::string moveText; // how it moves now (the navigation's intention)
@@ -221,6 +223,8 @@ private:
     uint64_t exitWaitKey_ = 0;
     uint32_t exitWaitSince_ = 0;
     uint32_t lastFlood_ = 0;  // 2.84: the last step a liquid was coming or up (Plan::reviveWindow)
+    int64_t skyLockedAt_ = -1;  // 2.90: the step the shadow of the boss's leap locked (BossView::skyLocked), -1 none
+    int64_t skyHangAt_ = -1;    // 2.90: the step it went out of sight over the vault (BossView::skyHang), -1 none
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach
     std::string plan_;
     // 2.79

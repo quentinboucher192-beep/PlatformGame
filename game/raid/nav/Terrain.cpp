@@ -367,9 +367,32 @@ Harm Terrain::harm(const Rect& box, int k) const {
     if (k > 0)
         for (const Shot& s : shots_)
             if (k - 1 < static_cast<int>(s.at.size()) && Collision::circleIntersectsRect(s.at[static_cast<size_t>(k - 1)], s.radius, box)) return Harm::Shot;
-    for (const Rect& r : blows_)
-        if (r.intersects(box)) return Harm::Blow;
+    for (const Blow& b : blows_) {
+        if (b.dodgeOnly && !dodgeView_) continue;
+        if (b.body && dodgeView_ && k >= 0 && k < dodgeGrace_) continue;
+        if (k >= 0 && (k < b.from || k > b.to)) continue;  // 2.90: not yet, or over
+        if (b.r.intersects(box)) return Harm::Blow;
+    }
     return Harm::None;
+}
+
+int Terrain::blowEnd(const Rect& box, int k) const {
+    int end = -1;
+    for (const Blow& b : blows_)
+        if ((!b.dodgeOnly || dodgeView_) && k >= b.from && k <= b.to && b.r.intersects(box)) end = std::max(end, b.to);
+    return end;
+}
+
+bool Terrain::inBody(const Rect& box) const {
+    for (const Blow& b : blows_)
+        if (b.body && b.r.intersects(box)) return true;
+    return false;
+}
+
+bool Terrain::blowNear(const Rect& box, int k) const {
+    for (const Blow& b : blows_)
+        if ((!b.dodgeOnly || dodgeView_) && b.to >= k && b.r.intersects(box)) return true;
+    return false;
 }
 
 bool Terrain::moverBox(uint32_t id, int k, Rect& out) const {
