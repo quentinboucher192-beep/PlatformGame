@@ -120,8 +120,8 @@ Played play(const LevelData& level, const std::vector<InputFrame>& inputs, const
 
 TEST_CASE("startpos: placed through the inputs, the same marks and the same run in its replay") {
     const LevelData level = flatLevel();
-    // A StartPos placed after cp1 (step 420), the next one asked for, a measure point.
-    const auto inputs = runRight(720, {{420, InputFrame::PlaceStartPos}, {430, InputFrame::NextStartPos}, {500, InputFrame::PlaceMeasure}});
+    // A StartPos placed after cp1 (step 720, 6 s at 150 px/s), the next one asked for, a measure point.
+    const auto inputs = runRight(1000, {{720, InputFrame::PlaceStartPos}, {730, InputFrame::NextStartPos}, {800, InputFrame::PlaceMeasure}});
     const Played live = play(level, inputs);
     CHECK(live.marks.size() == 3);
     CHECK(live.marks[0].flag == InputFrame::PlaceStartPos && live.marks[0].valid);
@@ -134,7 +134,7 @@ TEST_CASE("startpos: placed through the inputs, the same marks and the same run 
     CHECK(sp.health >= 1);
     CHECK(live.marks[0].chrono > 0.0f);
     // The marks never change the simulation: the same run without them.
-    const Played plain = play(level, runRight(720));
+    const Played plain = play(level, runRight(1000));
     CHECK(plain.hash == live.hash);
     CHECK(plain.marks.empty());
     // Its replay (the flags kept as they are) gives back the same marks at the same steps.
@@ -157,7 +157,7 @@ TEST_CASE("startpos: placed through the inputs, the same marks and the same run 
 
 TEST_CASE("startpos: an attempt from it starts as it was taken and its replay plays back exactly") {
     const LevelData level = flatLevel();
-    const Played first = play(level, runRight(600, {{420, InputFrame::PlaceStartPos}}));
+    const Played first = play(level, runRight(900, {{720, InputFrame::PlaceStartPos}}));
     CHECK(first.marks.size() == 1 && first.marks[0].valid);
     StartPosState sp = first.marks[0].state;
     sp.health = 2;     // as if hurt before
@@ -192,7 +192,7 @@ TEST_CASE("startpos: an attempt from it starts as it was taken and its replay pl
     }
     // Two attempts from it with the same inputs: the same run; its replay, with the same start,
     // plays back exactly (every digest), and reaches cp2 with a split.
-    const auto inputs = runRight(480);
+    const auto inputs = runRight(600);
     const Played a = play(level, inputs, &*read);
     const Played b = play(level, inputs, &*read);
     CHECK(a.hash == b.hash);

@@ -152,9 +152,9 @@ std::optional<BestSource> bestSourceFromId(const std::string& id) {
     return std::nullopt;
 }
 
-Passage Passage::ofSplits(const std::vector<float>& splits, const std::vector<std::string>& ids, float exitTime, From from,
+BestPassage BestPassage::ofSplits(const std::vector<float>& splits, const std::vector<std::string>& ids, float exitTime, From from,
                           const std::string& startCheckpoint) {
-    Passage p;
+    BestPassage p;
     p.from = from;
     p.startCheckpoint = startCheckpoint;
     p.exitTime = exitTime > 0.0f ? exitTime : -1.0f;
@@ -245,7 +245,7 @@ std::string PersonalBests::keepReplay(const std::string& key, const std::vector<
 PersonalBests::Added PersonalBests::add(const std::string& levelKey, const BestAttempt& a) {
     Added out;
     if (levelKey.empty() || !validId(levelKey)) return out;
-    const Passage& p = a.passage;
+    const BestPassage& p = a.passage;
     // The boundaries crossed, in order (a damaged entry ends the list there).
     struct B {
         std::string id;
@@ -253,8 +253,8 @@ PersonalBests::Added PersonalBests::add(const std::string& levelKey, const BestA
         int kind = 1;  // 0 the start, 1 a checkpoint, 2 the exit
     };
     std::vector<B> bs;
-    if (p.from == Passage::From::LevelStart) bs.push_back({{}, 0.0f, 0});
-    else if (p.from == Passage::From::Checkpoint) {
+    if (p.from == BestPassage::From::LevelStart) bs.push_back({{}, 0.0f, 0});
+    else if (p.from == BestPassage::From::Checkpoint) {
         if (p.startCheckpoint.empty() || !validId(p.startCheckpoint)) return out;
         bs.push_back({p.startCheckpoint, 0.0f, 1});
     }
@@ -338,7 +338,7 @@ PersonalBests::Added PersonalBests::add(const std::string& levelKey, const BestA
                 rep.file = replayName;
                 rep.start = bs[i].t;
                 rep.end = bs[j].t;
-                rep.fromLevelStart = p.from == Passage::From::LevelStart;
+                rep.fromLevelStart = p.from == BestPassage::From::LevelStart;
                 if (!rep.fromLevelStart) rep.setup = a.setup;
             }
             if (offer(l, r, secs, a.source, a.date, rep, count) && better) out.newBests.push_back(r);
@@ -669,7 +669,7 @@ void PersonalBests::migrateSegments() {
             if (auto r = readRun(rj); r && runs.size() < kRunsKept) runs.push_back(std::move(*r));
         for (auto it = runs.rbegin(); it != runs.rend(); ++it) {
             BestAttempt a;
-            a.passage = Passage::ofSplits(it->splits, it->checkpoints, it->time);
+            a.passage = BestPassage::ofSplits(it->splits, it->checkpoints, it->time);
             a.source = BestSource::Run;
             a.date = it->date;
             add(key, a);

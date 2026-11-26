@@ -38,7 +38,7 @@ const std::vector<std::string> kRoute = {"a", "b", "c"};
 /// A full run through a, b, c: cumulative splits and final time.
 BestAttempt fullRun(std::vector<float> splits, float time, const std::string& date = "2026-11-20 10:00", BestSource src = BestSource::Run) {
     BestAttempt a;
-    a.passage = Passage::ofSplits(splits, kRoute, time);
+    a.passage = BestPassage::ofSplits(splits, kRoute, time);
     a.source = src;
     a.date = date;
     return a;
@@ -113,7 +113,7 @@ TEST_CASE("personal bests: trainings, enchaînements, StartPos and online runs j
     b.add(kKey, fullRun({10.0f, 18.0f, 25.0f}, 30.0f));
     // A section training of a → b (from its checkpoint, chronometer 0 there).
     BestAttempt t;
-    t.passage.from = Passage::From::Checkpoint;
+    t.passage.from = BestPassage::From::Checkpoint;
     t.passage.startCheckpoint = "a";
     t.passage.checkpoints = {{"a", 0.0f}, {"b", 7.5f}};  // the start checkpoint itself is ignored
     t.source = BestSource::Training;
@@ -126,7 +126,7 @@ TEST_CASE("personal bests: trainings, enchaînements, StartPos and online runs j
     CHECK(!added.newPb);
     // An enchaînement a → exit: each segment crossed is a segment time, each range a record.
     BestAttempt c;
-    c.passage.from = Passage::From::Checkpoint;
+    c.passage.from = BestPassage::From::Checkpoint;
     c.passage.startCheckpoint = "a";
     c.passage.checkpoints = {{"b", 7.8f}, {"c", 14.0f}};
     c.passage.exitTime = 18.5f;
@@ -142,7 +142,7 @@ TEST_CASE("personal bests: trainings, enchaînements, StartPos and online runs j
     CHECK_NEAR(b.pb(kKey)->time, 30.0f, 1e-4);
     // A StartPos between a and b: only what lies between two checkpoints crossed after it.
     BestAttempt s;
-    s.passage.from = Passage::From::Elsewhere;
+    s.passage.from = BestPassage::From::Elsewhere;
     s.passage.checkpoints = {{"b", 2.0f}, {"c", 7.9f}};
     s.passage.exitTime = 12.0f;
     s.source = BestSource::StartPos;
@@ -173,7 +173,7 @@ TEST_CASE("personal bests: only segments that follow each other on the route mak
     b.setRoute(kKey, kRoute);
     // A run that skipped b: start → a → c → exit.
     BestAttempt a;
-    a.passage = Passage::ofSplits({10.0f, 20.0f}, {"a", "c"}, 26.0f);
+    a.passage = BestPassage::ofSplits({10.0f, 20.0f}, {"a", "c"}, 26.0f);
     a.source = BestSource::Run;
     a.date = "2026-11-20 10:00";
     b.add(kKey, a);
@@ -184,14 +184,14 @@ TEST_CASE("personal bests: only segments that follow each other on the route mak
     CHECK(b.pb(kKey) != nullptr);  // still a full run
     // Checkpoints unknown (an old run): only the whole run.
     BestAttempt u;
-    u.passage = Passage::ofSplits({10.0f, 18.0f, 25.0f}, {}, 30.0f);
+    u.passage = BestPassage::ofSplits({10.0f, 18.0f, 25.0f}, {}, 30.0f);
     u.date = "2026-11-21 10:00";
     auto added = b.add(kKey, u);
     CHECK(added.newBests.size() == 1);
     CHECK_NEAR(b.record(kKey, "", "")->best, 30.0f, 1e-4);
     // A damaged attempt (time going back): only what comes before the damage.
     BestAttempt d;
-    d.passage = Passage::ofSplits({10.0f, 9.0f, 25.0f}, kRoute, 30.0f);
+    d.passage = BestPassage::ofSplits({10.0f, 9.0f, 25.0f}, kRoute, 30.0f);
     d.date = "2026-11-22 10:00";
     added = b.add(kKey, d);
     CHECK(added.newBests.empty());
@@ -199,7 +199,7 @@ TEST_CASE("personal bests: only segments that follow each other on the route mak
     // A route without checkpoints: the SOB is the whole run.
     PersonalBests one;
     BestAttempt w;
-    w.passage = Passage::ofSplits({}, {}, 12.0f);
+    w.passage = BestPassage::ofSplits({}, {}, 12.0f);
     w.date = "2026-11-20 10:00";
     one.add("x-1", w);
     CHECK(one.route("x-1") && one.route("x-1")->empty());
@@ -223,7 +223,7 @@ TEST_CASE("personal bests: the file, the replays of the bests and a damaged file
         CHECK(fs::exists(b.replayPath(kKey, r->replay.file)));
         // A training attempt that beats a → b: its own replay, with its start.
         BestAttempt tr;
-        tr.passage.from = Passage::From::Checkpoint;
+        tr.passage.from = BestPassage::From::Checkpoint;
         tr.passage.startCheckpoint = "a";
         tr.passage.checkpoints = {{"b", 7.0f}};
         tr.source = BestSource::Training;
