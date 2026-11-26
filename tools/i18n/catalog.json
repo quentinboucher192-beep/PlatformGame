@@ -32402,6 +32402,12 @@
    ]
   },
   {
+   "fr": "HUD du mode concentré",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "Huit par huit, tous les clans frappèrent le cœur d'Asterion, au même instant.",
    "where": [
     "data/raids/asterion_victoire.json"
@@ -33971,6 +33977,18 @@
    ]
   },
   {
+   "fr": "interrupteur|Activé",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "interrupteur|Désactivé",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "Intervalle (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -34101,7 +34119,7 @@
    ]
   },
   {
-   "fr": "Invincible (admin) : activé · non classé",
+   "fr": "Invincible (admin)",
    "where": [
     "ui/screens/PauseScene.cpp"
    ]
@@ -34110,12 +34128,6 @@
    "fr": "Invincible (admin) : aucun dégât, une chute ramène sur le sol ferme",
    "where": [
     "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Invincible (admin) : désactivé",
-   "where": [
-    "ui/screens/PauseScene.cpp"
    ]
   },
   {
@@ -48448,7 +48460,8 @@
    "fr": "non classé",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/PauseScene.cpp"
    ]
   },
   {
@@ -53533,6 +53546,12 @@
    "fr": "Personnaliser le HUD (place et taille de chaque élément)",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Personnaliser le HUD du mode concentré",
+   "where": [
+    "ui/screens/PauseScene.cpp"
    ]
   },
   {

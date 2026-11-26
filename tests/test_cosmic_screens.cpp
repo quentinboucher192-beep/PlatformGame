@@ -45,6 +45,20 @@ void key(SDL_Scancode sc, SDL_Keycode k) {
     SDL_PushEvent(&up);
 }
 
+void click(float x, float y) {
+    SDL_Event down{};
+    down.type = SDL_EVENT_MOUSE_BUTTON_DOWN;
+    down.button.button = SDL_BUTTON_LEFT;
+    down.button.down = true;
+    down.button.x = x;
+    down.button.y = y;
+    SDL_PushEvent(&down);
+    SDL_Event up = down;
+    up.type = SDL_EVENT_MOUSE_BUTTON_UP;
+    up.button.down = false;
+    SDL_PushEvent(&up);
+}
+
 bool inside(const Rect& r, float w, float h) { return r.x >= -0.5f && r.y >= -0.5f && r.right() <= w + 0.5f && r.bottom() <= h + 0.5f; }
 bool within(const Rect& r, const Rect& box) { return r.x >= box.x - 0.5f && r.y >= box.y - 0.5f && r.right() <= box.right() + 0.5f && r.bottom() <= box.bottom() + 0.5f; }
 bool overlap(const Rect& a, const Rect& b) { return a.x < b.right() - 0.5f && b.x < a.right() - 0.5f && a.y < b.bottom() - 0.5f && b.y < a.bottom() - 0.5f; }
@@ -196,12 +210,22 @@ TEST_CASE("cosmic screens: every label fits its place in French and in English")
             for (float screenH : {ui.screenH(), ui.screenH() * 2.0f}) {
                 const PauseLayout P = pauseLayout(9, 5, true, ui.scale(), screenH);
                 const float pu = ui.s(P.buttonH) / 64.0f, bw = ui.s(560 - 120);
-                for (const char* s : {"Reprendre", "Recommencer", "Paramètres", "Guide des pouvoirs", "Touches de ce niveau", "Invincible (admin) : activé · non classé",
-                                      "Invincible (admin) : désactivé", "Fantômes (masqués)", "Retour à l'éditeur", "Retour à l'entraînement",
-                                      "Retour à l'administration", "Confirmer : passer le didacticiel", "Passer le didacticiel",
-                                      "Confirmer : quitter le niveau", "Retour au menu"})
+                for (const char* s : {"Reprendre", "Recommencer", "Paramètres", "Guide des pouvoirs", "Touches de ce niveau", "Fantômes (masqués)",
+                                      "Retour à l'éditeur", "Retour à l'entraînement", "Retour à l'administration", "Confirmer : passer le didacticiel",
+                                      "Passer le didacticiel", "Confirmer : quitter le niveau", "Retour au menu"})
                     CHECK(plateFits(ui, s, bw, pu, true, true));
-                CHECK(plateFits(ui, "Mode concentré", bw, pu, true, true, ui.s(48)));
+                // The switch rows: the label, then the state (« NON CLASSÉ » with it when Invincible is shown), the
+                // switch and the « › » in the room kept at the right; the state's lines within the plate's height.
+                for (bool unranked : {false, true}) {
+                    const PauseSwitchRight sw = pauseSwitchRight(ui, pu, unranked);
+                    CHECK(plateFits(ui, "Mode concentré", bw, pu, false, true, sw.width));
+                    if (unranked) CHECK(plateFits(ui, "Invincible (admin)", bw, pu, false, true, sw.width));
+                    for (const std::string* t : {&sw.on, &sw.off, unranked ? &sw.onUnranked : &sw.on, unranked ? &sw.unranked : &sw.off})
+                        CHECK(ui.text().measure(*t, FontFace::Bold, ui.s(sw.font)).x <= sw.stateW + 0.5f);
+                    CHECK(sw.font * ui.scale() >= 11.5f - 0.01f);
+                    CHECK((sw.twoLines ? 2.0f : 1.0f) * sw.lineH <= 64.0f * pu - 4.0f * pu);
+                    CHECK(sw.arrowH <= 64.0f * pu - 8.0f * pu && sw.switchH < sw.arrowH);
+                }
             }
             // ONLINE's column.
             {
@@ -279,5 +303,67 @@ TEST_CASE("cosmic screens: the pause and the results, by the keyboard") {
         CHECK(ui.focused("results/next"));
         rig.press(SDL_SCANCODE_RIGHT, SDLK_RIGHT);
         CHECK(ui.focused("results/back"));
+    }
+}
+
+TEST_CASE("cosmic screens: the pause's « Mode concentré », its switch and its « › » to the HUD editor") {
+    for (Language lang : {Language::French, Language::English}) {
+        Rig rig(1280, 720, lang);
+        GameServices& g = *rig.g;
+        UIContext& ui = g.ui;
+        g.settings.gameplay.focusMode = false;
+        g.settings.gameplay.hud = HudLayout{};
+        std::unique_ptr<Scene> scene = makeGameScene(g, "sylvanox_01");
+        GameScene* game = static_cast<GameScene*>(scene.get());
+        rig.app.pushScene(std::move(scene));
+        rig.app.runFrames(20);
+        rig.app.pushScene(std::make_unique<PauseScene>(g, *game));
+        rig.app.runFrames(10);
+        // Entrée on the row: its switch. The UI frame begins in the run drawn under the pause (a covered scene):
+        // Entrée / A still reach the pause's plates.
+        ui.setFocus("pause/focus");
+        rig.app.runFrames(2);
+        rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN);
+        CHECK(g.settings.gameplay.focusMode);
+        rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN);
+        CHECK(!g.settings.gameplay.focusMode);
+        // → : the HUD editor, the switch unchanged.
+        rig.press(SDL_SCANCODE_RIGHT, SDLK_RIGHT, 10);
+        CHECK(rig.app.sceneCount() == 3);
+        CHECK(!g.settings.gameplay.focusMode);
+        CHECK(ui.focused("hud/el0"));
+        // On its « Mode concentré » tab: « Garder en mode concentré » changes what that mode keeps (the first
+        // element, kept by default), not what the full HUD shows; saved, back on the row of the pause.
+        const HudPlace before = g.settings.gameplay.hud[HudElement::Vitals];
+        CHECK(before.focus);
+        ui.setFocus("hud/visible");
+        rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN);
+        ui.setFocus("hud/save");
+        rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN, 5);
+        CHECK(rig.app.sceneCount() == 2);
+        CHECK(!g.settings.gameplay.hud[HudElement::Vitals].focus);
+        CHECK(g.settings.gameplay.hud[HudElement::Vitals].visible == before.visible);
+        CHECK(!g.settings.gameplay.focusMode);
+        CHECK(ui.focused("pause/focus"));
+        // The mouse: a click on the « › » opens the editor without touching the switch; elsewhere on the row, the
+        // switch. The « › » is at the plate's right whether the row slid with the focus or not (16 reference
+        // pixels of the plate): 18 + 40 at rest, 2 + 40 slid.
+        rig.app.runFrames(2);
+        Rect row;
+        CHECK(ui.navigableRect("pause/focus", row));
+        const float pu = row.h / 64.0f;
+        click(row.right() - 30.0f * pu, row.center().y);
+        rig.app.runFrames(3);
+        CHECK(rig.app.sceneCount() == 3);
+        CHECK(!g.settings.gameplay.focusMode);
+        rig.press(SDL_SCANCODE_ESCAPE, SDLK_ESCAPE, 5);  // « Annuler »: back to the pause
+        CHECK(rig.app.sceneCount() == 2);
+        click(row.x + row.w * 0.4f, row.center().y);
+        rig.app.runFrames(3);
+        CHECK(rig.app.sceneCount() == 2);
+        CHECK(g.settings.gameplay.focusMode);
+        g.settings.gameplay.focusMode = false;
+        g.settings.gameplay.hud = HudLayout{};
+        g.saveSettings();  // the next tests start from the usual settings
     }
 }

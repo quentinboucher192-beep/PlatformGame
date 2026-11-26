@@ -204,7 +204,9 @@ Les ennemis créés apparaissent immédiatement dans la bibliothèque de l'édit
 
 ## Éditeur du HUD
 
-*Paramètres › Jeu › « Personnaliser le HUD »* (ou `CosmicPlatformer --hud-editor`).
+*Paramètres › Jeu › « Personnaliser le HUD »* (ou `CosmicPlatformer --hud-editor`). Depuis le
+menu pause, la flèche « › » de la ligne « Mode concentré » (ou → sur cette ligne) l'ouvre
+directement sur l'onglet « Mode concentré » (`makeHudEditor(…, tab)`).
 
 L'écran montre, réduit, le vrai HUD du jeu dessiné sur un vrai niveau (quatre pouvoirs portés
 et un combat de boss en cours, pour que tout soit visible). À droite, la liste des éléments :

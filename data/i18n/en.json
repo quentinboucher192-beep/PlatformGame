@@ -15151,6 +15151,11 @@
     "à égalité avec la somme des meilleurs à l'arrivée": "level with the sum of best at the exit",
     "à égalité avec la somme des meilleurs à {0}": "level with the sum of best at {0}",
     "à égalité avec le record à cet instant": "level with the record at this moment",
-    "Mesures dans les replays désactivées : « Mesurer aussi dans les replays ».": "Measures in replays are turned off: \"Measure in replays too\"."
+    "Mesures dans les replays désactivées : « Mesurer aussi dans les replays ».": "Measures in replays are turned off: \"Measure in replays too\".",
+    "HUD du mode concentré": "Focus mode HUD",
+    "Invincible (admin)": "Invincible (admin)",
+    "Personnaliser le HUD du mode concentré": "Customize the focus mode HUD",
+    "interrupteur|Activé": "On",
+    "interrupteur|Désactivé": "Off"
   }
 }

@@ -13,8 +13,30 @@ namespace cosmic {
 
 class GameServices;
 class GameScene;
+class UIContext;
 struct PauseLayout;
 struct PauseSideTracked;
+
+/// The right of the two switch rows of the pause, « Invincible (admin) » and « Mode concentré »: the
+/// state word (ACTIVÉ / DÉSACTIVÉ; « NON CLASSÉ » with it for Invincible when on), the switch, then
+/// the slot of the « › » (Mode concentré: the button that opens the HUD editor on its tab;
+/// Invincible: the plate's « › » of the focus). The same on both rows, so that their switches line
+/// up. Measured in the language shown, for plates of unit `pu` (screen pixels per reference pixel:
+/// the plate's height / 64); sizes in screen pixels.
+struct PauseSwitchRight {
+    std::string on, off, unranked;  // the words drawn (capitals, already in the language shown)
+    std::string onUnranked;         // Invincible when on: « ACTIVÉ » over « NON CLASSÉ », or on one line
+    float font = 0.0f;              // their size, unscaled (UIContext::label)
+    float lineH = 0.0f;             // one line of them
+    bool twoLines = true;           // « NON CLASSÉ » under « ACTIVÉ » (the plate is high enough)
+    float stateW = 0.0f;            // the widest state of the rows shown
+    float switchW = 0.0f, switchH = 0.0f;
+    float arrowW = 0.0f, arrowH = 0.0f;  // the slot of the « › », the button in it
+    float gap = 0.0f;                    // between the state, the switch and the slot
+    float width = 0.0f;                  // all of it (cstyle::PlateEx::rightW)
+};
+/// `unranked`: the row « Invincible (admin) » is shown (its words count in the width).
+PauseSwitchRight pauseSwitchRight(UIContext& ui, float pu, bool unranked);
 
 /// Pause menu overlay: resume, restart, settings, back to menu / editor.
 class PauseScene : public Scene {
@@ -51,6 +73,7 @@ private:
     float mapPan_ = 0.0f;  // world units the map was scrolled by
     bool keysOpened_ = false;  // automated screenshots: « Touches de ce niveau » opened once
     std::string resumeFocus_;  // the focus to give back when a screen opened over it closes
+    bool hudKey_ = false;      // → on « Mode concentré » this frame: the HUD editor opens (the map does not pan)
     // The achievements' counters with this run's progress, and what their conditions read.
     AchievementStats liveStats_;
     AchievementInputs achInputs_;

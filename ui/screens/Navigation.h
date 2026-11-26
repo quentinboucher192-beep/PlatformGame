@@ -186,7 +186,9 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
 /// (GameServices::localTeam), whose controls the keyboard and gamepad tabs show first.
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay, int tab = -1, int player = 0);
 /// HUD editor: place and size every HUD element; "Enregistrer" writes the layout into `target`.
-std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
+/// `tab`: the tab opened first, 0 « HUD complet », 1 « Mode concentré » (the pause's « › » on that
+/// row), 2 « Raids ».
+std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target, int tab = 0);
 /// Notifications of the main menu (new content, records dropped, new installer); `tab` 1:
 /// the Cosmic Online notification centre.
 std::unique_ptr<Scene> makeNotifications(GameServices& g, int tab = 0);
