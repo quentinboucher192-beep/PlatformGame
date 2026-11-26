@@ -78,6 +78,33 @@ std::vector<std::string> wrapLines(UIContext& ui, const std::string& source, flo
 
 }  // namespace
 
+PauseSwitchRight pauseSwitchRight(UIContext& ui, float pu, bool unranked) {
+    PauseSwitchRight s;
+    // In capitals like the plates' labels: translated first, then drawn as they are.
+    auto word = [](const char* french) { return i18n::keep(cstyle::upper(i18n::tr(french))); };
+    s.on = word("\x1F" "interrupteur|Activé");
+    s.off = word("\x1F" "interrupteur|Désactivé");
+    s.unranked = word("non classé");
+    const float px = std::max(11.5f, 15.0f * pu);  // never under 11.5 pixels
+    s.font = px / ui.scale();
+    s.lineH = ui.text().measure("Ag", FontFace::Bold, px).y * 0.95f;
+    auto w = [&](const std::string& t) { return ui.text().measure(t, FontFace::Bold, px).x; };
+    s.stateW = std::max(w(s.on), w(s.off));
+    if (unranked) {
+        // Two lines while they fit the plate's height (64 reference pixels, a margin above and below).
+        s.twoLines = 2.0f * s.lineH <= 56.0f * pu;
+        s.onUnranked = s.twoLines ? s.on : i18n::keep(s.on + " · " + s.unranked);
+        s.stateW = std::max(s.stateW, w(s.twoLines ? s.unranked : s.onUnranked));
+    }
+    s.switchW = 48.0f * pu;
+    s.switchH = 22.0f * pu;
+    s.arrowW = 40.0f * pu;
+    s.arrowH = 44.0f * pu;
+    s.gap = 10.0f * pu;
+    s.width = s.stateW + s.gap + s.switchW + s.gap + s.arrowW;
+    return s;
+}
+
 void PauseScene::drawTrackedHeader(const Rect& r, float headH, float fs, int count) {
     // Title, the count, and « Modifier » (opens Succès over the run, to tick or untick).
     UIContext& ui = g_.ui;
@@ -328,7 +355,8 @@ void PauseScene::drawMapPanel(const Rect& panel, const std::vector<const Achieve
         const float dt = g_.app.frameTime() / 1000.0f;
         // Titan 13: a direction held since the pause opened (the player was moving) pans nothing until released.
         if (!keys_.waitingH() && (in.keyDown(SDL_SCANCODE_LEFT) || in.held(Action::MenuTabPrev))) mapPan_ -= step * 2.0f * dt;
-        if (!keys_.waitingH() && (in.keyDown(SDL_SCANCODE_RIGHT) || in.held(Action::MenuTabNext))) mapPan_ += step * 2.0f * dt;
+        // → on « Mode concentré » opens the HUD editor instead.
+        if (!keys_.waitingH() && !hudKey_ && (in.keyDown(SDL_SCANCODE_RIGHT) || in.held(Action::MenuTabNext))) mapPan_ += step * 2.0f * dt;
         mapPan_ = std::clamp(mapPan_, v.minPan, v.maxPan);
     }
     if (tracked) {
@@ -341,6 +369,10 @@ void PauseScene::render(float /*alpha*/) {
     UIContext& ui = g_.ui;
     ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
     ui.consumeNavigation(keys_.waitingH(), keys_.waitingV());  // titan 13: no focus moved by a direction held since it opened
+    // → (a fresh press) on « Mode concentré »: the HUD editor on its tab, read before the map pans and the
+    // focus moves that way (to the map's « Modifier »).
+    hudKey_ = ui.acceptsInput() && ui.focused("pause/focus") && keys_.fresh(g_.app.input(), Action::MenuRight);
+    if (hudKey_) ui.consumeNavigation(true, false);
     float k = std::min(1.0f, t_ / 0.25f);
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{4, 6, 14, 255}.withAlphaF(0.65f * k));
 
@@ -417,6 +449,7 @@ void PauseScene::render(float /*alpha*/) {
         p.wrap = true;
         p.rightW = rightW;
         p.drawRight = std::move(right);
+        p.chevron = rightW <= 0.0f;  // the switch rows draw their « › » in their own slot (pauseSwitchRight)
         const float appear = mo.reduced ? 1.0f : std::clamp((t_ - 0.03f * index++) / 0.22f, 0.0f, 1.0f);
         return cstyle::plateButtonEx(ui, anims_, id, {bx, y, bw, bh}, p, pu, appear, t_, dt, mo);
     };
@@ -439,24 +472,60 @@ void PauseScene::render(float /*alpha*/) {
             g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra(), game_.carriedPowers()));
         y += step;
     }
+    // The two switch rows (« Invincible (admin) », « Mode concentré »): the label, then in the room the plate
+    // keeps at its right (the label never reaches it) the state word against the switch, then the slot of the
+    // « › »; measured once for both, so that their switches line up.
+    const PauseSwitchRight sw = pauseSwitchRight(ui, pu, invincible);
+    const Color offInk{140, 152, 186, 255};
+    // Draws the state and the switch in `room`; returns the slot of the « › » (at its right).
+    auto switchRight = [&](const Rect& room, bool on, bool unranked, Color onColor) {
+        const Rect track{room.right() - sw.arrowW - sw.gap - sw.switchW, room.center().y - sw.switchH * 0.5f, sw.switchW, sw.switchH};
+        ui.r().fillRoundedRect(track, track.h * 0.5f, on ? onColor.withAlpha(210) : Color{40, 50, 70, 255});
+        ui.r().fillCircle({on ? track.right() - track.h * 0.5f : track.x + track.h * 0.5f, track.center().y}, track.h * 0.39f, Color::white());
+        const float tx = track.x - sw.gap, cy = room.center().y;
+        if (on && unranked && sw.twoLines) {
+            ui.label(sw.on, {tx, cy - sw.lineH * 0.5f}, sw.font, onColor, Align::Right, FontFace::Bold, VAlign::Middle);
+            ui.label(sw.unranked, {tx, cy + sw.lineH * 0.5f}, sw.font, ui.theme().warm, Align::Right, FontFace::Bold, VAlign::Middle);
+        } else {
+            ui.label(on ? (unranked ? sw.onUnranked : sw.on) : sw.off, {tx, cy}, sw.font, on ? onColor : offInk, Align::Right, FontFace::Bold,
+                     VAlign::Middle);
+        }
+        return Rect{room.right() - sw.arrowW, room.y, sw.arrowW, room.h};
+    };
     if (invincible) {
         // Administrators: no damage in this training run, a fall goes back to solid ground.
         // Never ranked: only in training runs, which record nothing (said on the plate).
         const bool on = game_.invincible();
-        const std::string label = std::string("Invincible (admin) : ") + (on ? "activé · non classé" : "désactivé");
-        if (plate("invincible", label, "admin", on ? Color{110, 225, 150, 255} : cyan, "pause.invincible")) game_.setInvincible(!on);
+        const Color green{110, 225, 150, 255}, accent = on ? green : cyan;
+        if (plate("invincible", "Invincible (admin)", "admin", accent, "pause.invincible", sw.width, [&](const Rect& room, float k) {
+                const Rect slot = switchRight(room, on, true, green);
+                // The plate's « › » of the focus, where the other plates have it.
+                ui.label("›", {slot.right() - (1.0f - k) * 8.0f * pu, slot.center().y}, 22.0f * pu / ui.scale(), accent.withAlphaF(k), Align::Right,
+                         FontFace::Bold, VAlign::Middle);
+            }))
+            game_.setInvincible(!on);
         y += step;
     }
     {
-        // « Mode concentré »: the reduced HUD (also T / Partage in game); its state on a small switch
-        // in the room the plate keeps at its right (the label never reaches it).
+        // « Mode concentré »: the reduced HUD (also T / Partage in game). Its « › » (→ when the row has the
+        // focus) opens the HUD editor on its « Mode concentré » tab, where the elements it keeps are chosen.
         bool focus = g_.settings.gameplay.focusMode;
-        const float tw = ui.s(48), th = ui.s(22);
-        if (plate("focus", "Mode concentré", "stats", cyan, {}, tw, [&](const Rect& room, float) {
-                const Rect track{room.right() - tw, room.center().y - th * 0.5f, tw, th};
-                ui.r().fillRoundedRect(track, th * 0.5f, focus ? ui.theme().accent.withAlpha(210) : Color{40, 50, 70, 255});
-                ui.r().fillCircle({focus ? track.right() - th * 0.5f : track.x + th * 0.5f, track.center().y}, th * 0.39f, Color::white());
-            })) {
+        bool openHud = hudKey_;
+        const bool toggled = plate("focus", "Mode concentré", "stats", cyan, {}, sw.width, [&](const Rect& room, float k) {
+            const Rect ab = Rect::fromCenter(switchRight(room, focus, false, ui.theme().accent).center(), {sw.arrowW, sw.arrowH});
+            // Called after the plate's own zone: a click on the « › » is its own, never the row's.
+            bool over = false;
+            if (ui.mouseClick("focus_hud", ab, &over)) openHud = true;
+            const float hot = std::max(over ? 1.0f : 0.0f, k);
+            const float rad = 6.0f * pu;
+            ui.r().fillRoundedRect(ab, rad, Color::lerp(Color{22, 36, 74, 235}, Color{30, 70, 104, 245}, hot));
+            ui.r().drawRoundedRect(ab, rad, Color::lerp(Color{44, 58, 104, 255}, cyan, hot), std::max(1.0f, 1.5f * pu));
+            ui.label("›", ab.center(), 26.0f * pu / ui.scale(), Color::lerp(offInk, Color::white(), hot), Align::Center, FontFace::Bold, VAlign::Middle);
+        });
+        if (openHud) {
+            resumeFocus_ = "pause/focus";  // back on this row afterwards, its switch as the editor left it
+            g_.app.pushScene(makeHudEditor(g_, g_.settings.gameplay, 1));
+        } else if (toggled) {
             g_.settings.gameplay.focusMode = focus = !focus;
             g_.saveSettings();
         }
@@ -484,9 +553,13 @@ void PauseScene::render(float /*alpha*/) {
             confirmQuit_ = true;
         }
     }
-    if (!side)
-        drawTracked({bx, panel.y + ui.s(L.sectionTop(buttons)), bw, ui.s(L.sectionHeight(static_cast<int>(tracked.size()), note))}, L, tracked,
-                    note);
+    // The bottom of the column: the last plate, or « Succès suivis » under it.
+    float columnBottom = y + bh;
+    if (!side) {
+        const Rect section{bx, panel.y + ui.s(L.sectionTop(buttons)), bw, ui.s(L.sectionHeight(static_cast<int>(tracked.size()), note))};
+        drawTracked(section, L, tracked, note);
+        columnBottom = section.bottom();
+    }
     ui.popId();
     if (resume || ui.backPressed() || (g_.app.input().menuPressed(Action::Pause) && t_ > 0.1f)) {
         g_.app.popScene();
@@ -498,6 +571,17 @@ void PauseScene::render(float /*alpha*/) {
         // « Reprendre » at the middle as before, or right after « Valider » when that one is wider.
         const float gap = std::max(ui.s(20), panel.center().x + ui.s(20) - hx - w1);
         cstyle::hintBar(ui, {{Action::MenuConfirm, "Valider", gap}, {Action::MenuBack, "Reprendre"}}, {hx, hy}, gh, gap, panel.w - ui.s(90));
+        // On « Mode concentré »: what → does, on a line of its own just above, when the column leaves it the
+        // room (under the last plate and its glow); the shorter text when the longer one is too wide.
+        if (ui.focused("pause/focus")) {
+            const float y2 = hy - gh - ui.s(8);
+            if (y2 - gh * 0.5f >= columnBottom + ui.s(10))
+                for (const char* t : {"Personnaliser le HUD du mode concentré", "HUD du mode concentré"})
+                    if (cstyle::hintWidth(ui, Action::MenuRight, t, gh) <= panel.w - ui.s(90)) {
+                        Glyphs::drawHint(ui, Action::MenuRight, t, {hx, y2}, gh);
+                        break;
+                    }
+        }
     }
     card_.end(ui, t_);
     ui.end();

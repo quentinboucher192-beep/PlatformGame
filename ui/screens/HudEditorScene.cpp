@@ -54,8 +54,10 @@ constexpr const char* kPreviewLevel = "sylvanox_01";
 
 class HudEditorScene : public Scene {
 public:
-    HudEditorScene(GameServices& g, GameplaySettings& target) : g_(g), target_(target), work_(target), savedFocus_(target.focusMode) {
-        work_.focusMode = false;
+    HudEditorScene(GameServices& g, GameplaySettings& target, int tab) : g_(g), target_(target), work_(target), savedFocus_(target.focusMode) {
+        // The tab opened first (the pause's « › » of « Mode concentré »: that one); the preview shows its HUD.
+        mode_ = std::clamp(tab, 0, 2);
+        work_.focusMode = mode_ == 1;
     }
 
     void onEnter() override {
@@ -970,8 +972,8 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target) {
-    return std::make_unique<HudEditorScene>(g, target);
+std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target, int tab) {
+    return std::make_unique<HudEditorScene>(g, target, tab);
 }
 
 }  // namespace cosmic

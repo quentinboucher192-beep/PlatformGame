@@ -63,7 +63,10 @@ void UIContext::begin(Application& app, float dt) {
     InputManager& in = app.input();
     if (in.mouseMovedThisFrame() || in.mousePressed(SDL_BUTTON_LEFT) || in.wheel() != 0.0f) pointerMode_ = true;
     if (in.anyMenuInput()) pointerMode_ = false;
-    confirm_ = acceptsInput() && editing_ == 0 && in.menuPressed(Action::MenuConfirm);
+    // Not tied to acceptsInput() here: the frame often begins in a covered scene (the run under the pause, its
+    // sceneInput false), which would take Entrée / A from the overlay above it. A covered scene never uses it:
+    // interact() refuses every input while !acceptsInput().
+    confirm_ = editing_ == 0 && in.menuPressed(Action::MenuConfirm);
     if (!in.mouseDown(SDL_BUTTON_LEFT) && !in.mouseReleased(SDL_BUTTON_LEFT)) active_ = 0;
     if (!in.mouseDown(SDL_BUTTON_LEFT)) scrollDrag_ = 0;
     if (focus_ != lastFocus_) {  // a new focus: its scroll region follows it once

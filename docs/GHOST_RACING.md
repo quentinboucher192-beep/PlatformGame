@@ -552,6 +552,12 @@ sont communes aux deux modes (deux éléments ne se chevauchent dans aucun des d
 **messages du niveau** (indications, titres de pouvoirs et de boss) s'affichent ou non dans
 chaque mode.
 
+Dans le **menu pause**, la ligne « Mode concentré » montre son état (ACTIVÉ / DÉSACTIVÉ) et
+son interrupteur, comme la ligne « Invincible (admin) » des administrateurs : un clic sur la
+ligne, Entrée ou A l'active ou le désactive. La flèche « › » au bout de la ligne (ou →, la
+croix directionnelle à droite, quand la ligne a le focus) ouvre l'éditeur du HUD directement
+sur son onglet « Mode concentré » ; au retour, la pause montre ce qui a été enregistré.
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)
