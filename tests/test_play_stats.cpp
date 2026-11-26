@@ -933,10 +933,10 @@ TEST_CASE("play stats: a boss fight followed, its digest unchanged; Invincible a
     CHECK(got == ref);
     rec->finish();
     // The golden digest of tests/test_determinism.cpp, with the recorder listening (2.76.2: Singularis by
-    // its parts, kSimulationVersion 17).
+    // its parts, kSimulationVersion 17; 2.90: the guard after a dash, 18).
     char hex[17];
     std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(got.empty() ? 0 : got.back()));
-    CHECK(std::string(hex) == "84a948a263c9f92f");
+    CHECK(std::string(hex) == "22930c2cd1ab204e");
     CHECK(store.data().bosses.count("singularis") == 1);
     const BossHistory& b = store.data().bosses.at("singularis");
     CHECK(b.attempts >= 1);
