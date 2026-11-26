@@ -446,7 +446,8 @@
    "ui/screens/ContentManagerScene.cpp": 1,
    "ui/screens/RaidGameScene.cpp": 1,
    "ui/screens/ResultsScene.cpp": 1,
-   "ui/screens/RewardsScene.cpp": 1
+   "ui/screens/RewardsScene.cpp": 1,
+   "ui/screens/TrainingSession.cpp": 2
   },
   "sounds/mirror_split.wav": {
    "game/enemies/GuardianAttacks.cpp": 1
@@ -910,6 +911,8 @@
    "ui/screens/LevelPowerKeysScene.cpp": 2,
    "ui/screens/PowerChoiceScene.cpp": 2,
    "ui/screens/PowerGuideScene.cpp": 2,
+   "ui/screens/TrainingMarksPanel.cpp": 1,
+   "ui/screens/TrainingSession.cpp": 1,
    "ui/widgets/PowerLabels.cpp": 1
   },
   "ui/menu_icons.png": {

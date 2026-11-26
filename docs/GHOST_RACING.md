@@ -72,7 +72,8 @@ annoncé (« Fantôme ignoré : … ») et la course continue sans lui.
 
 ### Mode entraînement
 
-Départ à un point de sauvegarde choisi, arrivée au suivant (ou à la sortie). Les pouvoirs des
+Départ à un point de sauvegarde choisi, arrivée au suivant (ou à la sortie ; 2.91 : ou plus loin,
+un enchaînement, et depuis une startpos : voir plus bas). Les pouvoirs des
 tablettes placées avant le départ sur la route sont donnés (les derniers si les
 emplacements manquent). Le fantôme part du moment où il est passé à ce point. Le segment
 recommence tout seul ; R (ou Vue à la manette) recommence à tout moment.
@@ -107,6 +108,179 @@ téléchargements se font avant le départ.
 * L'écart en direct est une estimation entre deux points de sauvegarde.
 * Les classements en ligne ne gardent un replay que pour les records vérifiés : un joueur
   sans record vérifié n'a pas de fantôme en ligne.
+
+## Une seule somme des meilleurs, enchaînements, startpos et mesures (2.91)
+
+### Une seule SOB par version du niveau
+
+Il n'existe plus qu'**une** somme des meilleurs segments (SOB) personnelle par version du
+niveau (`GhostStore::levelKey`), tenue par `PersonalBests` (`game/ghost/PersonalBests.h`,
+fichier `saves/bests.json`). Toutes les sources s'y rejoignent :
+
+| Source (étiquette) | Ce qui compte |
+|---|---|
+| **Partie** | chaque course depuis le départ du niveau, terminée ou non : tout ce qu'elle a traversé en entier |
+| **Entraînement** | l'entraînement d'un segment (« Répéter un segment ») |
+| **Enchaînement** | l'entraînement de plusieurs segments à la suite (ex. zone 1 → 2) |
+| **StartPos** | après une startpos, chaque segment parcouru **en entier** (de son point de départ à son point d'arrivée) |
+| **En ligne** | les courses du joueur vérifiées en ligne (jamais comptées deux fois) |
+
+Chaque essai donne au magasin les **bornes** qu'il a franchies (départ du niveau, points de
+passage, arrivée) avec son chronomètre à chacune. Pour **toute paire de bornes** qui se
+suivent sur la route du niveau (aucun point sauté, aucun autre ordre), le magasin compte un
+**passage** et garde le **meilleur temps** (à la milliseconde : une égalité garde l'ancien),
+sa source, sa date et le **replay exact** de l'essai qui l'a fait (copie dans
+`ghosts/bests/<version>/`, gardée tant qu'un meilleur temps la désigne ; 256 Mo au plus,
+les versions jouées il y a le plus longtemps perdent d'abord leurs replays) :
+
+* une paire de bornes voisines = **un segment** : son meilleur temps est sa part de la SOB
+  (la diagonale de la grille des enchaînements) ;
+* une paire plus éloignée = **un enchaînement** : son record (les cases au-dessus de la
+  diagonale). Chaque segment traversé pendant un enchaînement étant aussi un temps de
+  segment, un enchaînement ne peut jamais battre la somme de ses meilleurs, au mieux
+  l'égaler (case « OR ») ;
+* (départ, arrivée) = la course entière. Les courses complètes (Partie, En ligne) sont aussi
+  gardées à part (les 20 dernières, et la meilleure : le PB personnel avec ses temps de
+  passage).
+
+La **route** (l'ordre des points de passage) vient du niveau (`setRoute`, calculée par les
+écrans d'entraînement) ; tant qu'elle n'est pas donnée, elle est apprise de la première
+course complète. La SOB est la somme des meilleurs des segments de cette route ; elle est
+inconnue (−1) tant qu'un segment n'a jamais été traversé. Ses changements sont notés jour
+par jour (`sobHistory`, 60 points au plus, avec le PB du moment).
+
+**Tout reste personnel** : rien de ce magasin n'est envoyé ; les records en ligne et les
+records du monde ne comptent que les courses complètes vérifiées par le serveur, comme
+avant.
+
+#### Reprise des anciennes données
+
+Au premier lancement, `saves/segments.json` (segments d'or des courses complètes, 2.30 à
+2.90) et `saves/training.json` (meilleurs temps d'entraînement) sont **lus une fois** et
+fusionnés ; leurs replays (`ghosts/golds`, `ghosts/training`) sont copiés dans
+`ghosts/bests`, et les anciens dossiers supprimés seulement une fois le nouveau fichier écrit
+(les deux anciens fichiers restent tels quels sur le disque). Un segment d'or dont les
+points de passage n'étaient pas connus attend que la route du niveau le dise. Puis les
+meilleurs temps de segments des statistiques (`stats.json`, qui voyage avec la copie de la
+progression) sont fusionnés une fois, et à nouveau après chaque restauration d'une copie
+(« Migrer vers un nouveau compte ») : un temps meilleur devient le meilleur (sans replay),
+les passages ne diminuent jamais. Un fichier abîmé est mis de côté (`bests.json.corrupt`) ;
+un fichier écrit par un jeu plus récent est lu, jamais réécrit.
+
+### Startpos (principe de Geometry Dash)
+
+En entraînement, une **startpos** se pose n'importe où (`game/gameplay/StartPos.h`). Elle
+prend Nova telle qu'elle est : position, direction, pouvoirs (dans l'ordre des
+emplacements), cœurs (et cœurs bonus), énergie, et les points de passage déjà allumés. Un
+essai qui part d'elle remet le niveau comme au début (ennemis, mécanismes), place Nova ainsi
+(départ arrêté : recharges et élan remis à zéro ; c'est aussi son point de réapparition) et
+rallume en silence les points déjà allumés (sans temps de passage : revenir sur l'un d'eux
+ne fait pas partir un segment du mauvais côté).
+
+* **Poser, choisir passent par les entrées** : `InputFrame::PlaceStartPos`,
+  `PrevStartPos`, `NextStartPos` (et `PlaceMeasure` pour les points de mesure) sont des
+  drapeaux de l'entrée du pas. Après ce pas, le monde lit l'état de Nova
+  (`GameWorld::noteMarks`, `takeMarks`) : une lecture, jamais une partie de la simulation ni
+  de son empreinte. Une course joue donc exactement pareil avec ou sans eux (même empreinte
+  finale), et son replay, qui garde l'octet des drapeaux tel quel, rend les mêmes marques aux
+  mêmes pas (test `startpos: placed through the inputs…`).
+* **Un essai depuis une startpos** a pour départ `SectionTrainingStart::startPos` (le même
+  départ que l'entraînement d'un segment, appliqué avant le premier pas par la course et par
+  son replay) : son replay se rejoue à l'identique avec ce départ (test `startpos: an attempt
+  from it…`).
+* Aucune règle du déroulement d'une partie ne change (les courses existantes, leurs replays
+  et leurs empreintes restent identiques) : `kSimulationVersion`, `kRankingGeneration` et les
+  empreintes de référence ne bougent pas.
+* Jamais une partie complète, ni un record, ni envoyée en ligne.
+* **Rémanence** : les startpos restent d'une session à l'autre, par version du niveau
+  (`StartPosStore`, `saves/startpos.json`, 32 par version), rangées dans l'ordre de la route
+  (« SP 1 », « SP 2 »…, Précédente / Suivante en boucle). Une autre version du niveau a sa
+  propre liste.
+
+### Points de mesure
+
+Deux points de passage fictifs **A** puis **B** (`game/ghost/MeasurePoints.h`) : franchir A
+lance un chrono, franchir B l'arrête. Une porte est verticale (de 12 m au-dessus des pieds de
+Nova quand elle a été posée à 2 m en dessous ; **1 m = 1 tuile = 16 pixels**) et se franchit
+dans les deux sens ; le moment exact est interpolé entre deux positions (même temps à 120 Hz
+en jeu qu'à 30 Hz sur la trace d'un replay). Repasser A relance le chrono ; un saut de plus de
+20 m entre deux positions (réapparition, saut dans un replay) l'arrête.
+
+* `MeasureTimer` chronomètre un flux de positions (`feed(t, pieds)` rend le temps A → B
+  quand B est franchi), `measureTimes` toute une trace : en entraînement et dans **tous les
+  replays** (les vôtres et ceux en ligne).
+* `MeasureStore` (`saves/measures.json`, par version du niveau, 16 paires au plus) garde les
+  paires, leur nom, le meilleur temps de l'entraînement et les 20 derniers. Déplacer A ou B
+  oublie ses temps (ils ne se comparent plus).
+* Un temps A → B reste personnel : il ne touche ni la SOB ni aucun record.
+
+### ENTRAÎNEMENT › Segments et enchaînements
+
+Depuis l'écran d'avant la course (*Segments et enchaînements…*, à côté de « Répéter un
+segment »), `ui/screens/ChainTrainingScene.cpp` :
+
+* **La bande du niveau** : ses segments entre le départ, les points de passage et
+  l'arrivée (noms placés seulement s'ils tiennent entre leurs voisins), la plage choisie en
+  surbrillance.
+* **La grille de toutes les combinaisons** (segments qui se suivent) : lignes = où elle part,
+  colonnes = où elle finit. La diagonale = chaque segment seul (sa part de la SOB) ; au-dessus,
+  le record de chaque enchaînement, son écart à la somme des meilleurs de ses segments
+  (« OR » quand il l'égale) et le nombre de passages (« arrivées » pour la course entière,
+  marquée « PB » quand son meilleur est une partie ou une course en ligne). Chaque case est un
+  élément qui prend le focus : flèches, croix ou souris la choisissent ; Entrée / A la lance.
+* **L'enchaînement choisi** : départ et arrivée (choix en boucle), son meilleur (source et
+  date), la somme des meilleurs de ses segments, ce qu'il reste à gagner, chacun de ses
+  segments avec son meilleur et sa source, comment démarre un essai, puis
+  **Lancer l'enchaînement** (un entraînement de section de son premier point à son dernier :
+  apparition au point de départ, pouvoirs du départ et des tablettes d'avant, ou ceux choisis
+  pour ce passage), **Regarder** (les meilleurs de ses segments rejoués à la suite, chacun
+  depuis le replay exact qui le tient, `buildMontagePlan` sur la plage) et **Fantôme** (le
+  replay du record de la plage court avec l'essai).
+* L'onglet **Startpos et mesures** montre les mêmes listes que la pause (ci-dessous) ;
+  « Partir de SP n » y lance la plage choisie depuis cette startpos.
+* Quitter un essai lancé d'ici ramène à cet écran, sur la même plage.
+
+### En course
+
+* Chaque essai (course depuis le départ, entraînement, enchaînement, essai depuis une
+  startpos) note les points franchis sur le chronomètre (`ui/screens/TrainingSession.cpp`) ;
+  quand il se termine — arrivée, fin de l'entraînement, chute, Recommencer, retour au menu —
+  son passage rejoint la SOB unique, avec son replay exact (une seule fois).
+* **Segment d'or** (entraînement, enchaînement, startpos) : dès qu'un segment bat son
+  meilleur, un bandeau « SEGMENT D'OR · −0,055 s » le dit, avec la SOB recalculée
+  aussitôt.
+* **Enchaînement** : un panneau « TEMPS DE PASSAGE · ESSAI n » donne chaque segment franchi,
+  son temps et son écart au meilleur de ce segment (donc à la SOB unique), le segment en
+  cours, l'écart cumulé à la SOB du début de l'essai, le **meilleur possible à l'arrivée**
+  (temps au dernier point + meilleurs des segments restants) et le record de l'enchaînement.
+  Le fantôme « Meilleur enchaînement » (ou « Meilleur segment ») est le replay de ce record.
+* Les segments d'or d'une course complète (panneau des fantômes) se comparent eux aussi à la
+  SOB unique ; l'écran « Segments » de fin de course montre « Somme des meilleurs (SOB) »,
+  une seule ligne, et les dernières courses de cette SOB.
+* **Startpos** : drapeau « SP n » et silhouette translucide de Nova à chaque startpos (si
+  « Montrer les startpos » est coché) ; un panneau « STARTPOS k / n » (où elle est sur la
+  route, en %, ce qu'elle a pris à la pose) ; « Recommencer » repart de la startpos active.
+* **Points de mesure** : portes A et B en pointillés dorés ; un panneau « MESURE A → B »
+  (chrono en cours ou dernier temps, meilleur, dernier, nombre d'essais, les 8 derniers en
+  barres) ; chaque temps est gardé.
+* Pause › **Startpos et mesures** (`TrainingMarksPanel`) : la bande du niveau avec ses
+  repères, les startpos (où, quand posée, essais depuis, pouvoirs, cœurs) — *Partir de SP n*,
+  *Départ de l'entraînement*, *Supprimer*, *Tout effacer* (confirmé) — et les paires de
+  mesure (nom, meilleur, dernier, barres) — *Renommer*, *Déplacer A / B* (les deux prochaines
+  poses les replacent ; leurs anciens temps sont oubliés), *Supprimer* —, puis les options
+  « Montrer les startpos dans le niveau (rémanence) », « Montrer les portes de mesure »,
+  « Mesurer aussi dans les replays ».
+
+| Action (entraînement) | Clavier | Manette |
+|---|---|---|
+| Poser une startpos ici | F5 | Vue maintenue + bas |
+| Startpos précédente / suivante | F6 / F7 | Vue maintenue + gauche / droite |
+| Point de mesure (A puis B) | F8 | Vue maintenue + haut |
+| Recommencer (depuis la startpos active) | R | Vue seule (au relâchement) |
+
+F5 à F8 ne servent à aucune autre commande en jeu (F5 n'est utilisée que dans l'éditeur de
+niveaux, F3, F11 et F12 par le jeu) ; toutes se changent dans *Paramètres › Contrôles*
+(section « Entraînement »).
 
 ## Lecteur de replay avancé (2.19)
 

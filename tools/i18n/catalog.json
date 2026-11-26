@@ -162,21 +162,21 @@
    ]
   },
   {
-   "fr": "({0} essai)",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
-   "fr": "({0} essais)",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
    "fr": "({0} Mo)",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "({0} passage)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "({0} passages)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -316,6 +316,12 @@
    "fr": "+5 s",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "+x s : écart à cette somme",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -514,6 +520,12 @@
    ]
   },
   {
+   "fr": "16 paires au plus par version du niveau.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "19 POUVOIRS À DÉBLOQUER",
    "where": [
     "data/trailer/trailer.json"
@@ -646,6 +658,12 @@
    ]
   },
   {
+   "fr": "20 cœurs",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "20 utilisations",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -691,6 +709,12 @@
    "fr": "30 jours",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "32 au plus par version du niveau : effacez-en dans Pause › Startpos et mesures.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -841,6 +865,12 @@
    "fr": "= aussi régulier qu'il y a 30 jours",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "= somme des meilleurs",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -1762,9 +1792,11 @@
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/gameplay/entities/PlatformEntities.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/TrainingSession.cpp",
     "ui/screens/TutorialScenes.cpp",
     "ui/studio/Studio.cpp"
    ]
@@ -1779,6 +1811,18 @@
    "fr": "active {0}",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "active · posée le {0} · {1} essai depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "active · posée le {0} · {1} essais depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -3913,12 +3957,20 @@
   {
    "fr": "Arrivée",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SegmentsScene.cpp",
     "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TrainingSession.cpp",
     "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
+   "fr": "arrivée",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -3973,6 +4025,12 @@
    "fr": "ARRIVÉES",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "arrivées",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -6127,6 +6185,12 @@
    ]
   },
   {
+   "fr": "Aucun point de mesure. En entraînement, posez A puis B : franchir A lance un chrono, franchir B l'arrête.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aucun point de passage : une chute ramène au départ du niveau, cœurs pleins et pouvoirs du défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -6376,6 +6440,12 @@
    ]
   },
   {
+   "fr": "Aucun temps encore sur cette version du niveau : une course ou un entraînement donne vos meilleurs segments, et la somme des meilleurs (SoB) dès que chacun est connu.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun temps vérifié pour l'instant : soyez le premier !",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -6440,6 +6510,12 @@
    "fr": "Aucune : il n'enrage pas avec le temps ; seul le groupe change son rythme.",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "aucune active",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -6839,6 +6915,18 @@
    "fr": "Aucune sortie : le niveau ne peut pas être terminé",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune startpos",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune startpos pour cette version du niveau. En entraînement, posez-en une là où Nova se trouve ; les essais suivants partiront de là.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -7586,6 +7674,37 @@
    ]
   },
   {
+   "fr": "A{0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "A{0} déplacé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "A{0} posé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "A{0}…",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "A{0}→B{1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "B",
    "where": [
     "engine/input/InputTypes.cpp",
@@ -7605,6 +7724,12 @@
    "fr": "B n'est pas passé par {0} : recalage impossible",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B pas encore posé",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -9685,6 +9810,25 @@
    ]
   },
   {
+   "fr": "B{0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} déplacé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} posé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Bâti d'une presse hydraulique, sous la voûte. Dans l'arène du Titan Mécanique, sa tête s'abat sur la surface située dessous quand le Titan la déclenche (des bandes jaunes et noires l'annoncent).",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -10140,7 +10284,8 @@
   {
    "fr": "Calcul du parcours…",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -11578,6 +11723,12 @@
   },
   {
    "fr": "CE SEGMENT",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce segment n'a encore jamais été parcouru en entier : son premier essai fera sa référence.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
    ]
@@ -13587,6 +13738,12 @@
    ]
   },
   {
+   "fr": "Chrono à l'apparition ; chaque point traversé donne un temps de passage.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Chronomaître",
    "where": [
     "data/achievements/achievements.json",
@@ -15178,6 +15335,12 @@
    ]
   },
   {
+   "fr": "COMMENT DÉMARRE UN ENCHAÎNEMENT",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Comment l'éviter",
    "where": [
     "ui/widgets/BossSheetWidgets.cpp"
@@ -15761,6 +15924,12 @@
    "fr": "Confirmer : retirer ce niveau des NIVEAUX EN LIGNE",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Confirmer : tout effacer",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -17590,8 +17759,7 @@
    "fr": "course",
    "where": [
     "game/achievements/AchievementSuggestions.cpp",
-    "ui/screens/AdminCreations.cpp",
-    "ui/screens/SobMontageScene.cpp"
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -19656,6 +19824,12 @@
    ]
   },
   {
+   "fr": "DEPUIS LA STARTPOS  {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Depuis la sélection",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -19693,6 +19867,18 @@
    ]
   },
   {
+   "fr": "DEPUIS SP {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "DEPUIS UNE STARTPOS",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Depuis « Paramètres en ligne », vous pouvez à tout moment : modifier votre pseudonyme, votre avatar et votre pays ; masquer votre pays ou votre présence sur le globe ; masquer votre profil public ; refuser les demandes d'amis ; exporter vos données (fichier JSON) ; supprimer définitivement votre compte, vos records, vos replays et vos amis (confirmation par mot de passe). Vous pouvez aussi vous déconnecter de tous vos appareils.",
    "where": [
     "data/online/terms_fr.txt"
@@ -19714,6 +19900,12 @@
    "fr": "Depuis, le Phénix se consume chaque matin dans son nid. Il ne sait plus s'arrêter, de peur que la nuit gagne.",
    "where": [
     "data/stories/phenix.json"
+   ]
+  },
+  {
+   "fr": "Dernier",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -19822,6 +20014,12 @@
    "fr": "Dernier zénith",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Dernier {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -20573,6 +20771,12 @@
    "fr": "Devise : 80 caractères au plus.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Diagonale : meilleur segment (sa part de la SOB)",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -21515,8 +21719,7 @@
   {
    "fr": "du {0}",
    "where": [
-    "ui/screens/AdminScene.cpp",
-    "ui/screens/SobMontageScene.cpp"
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -23173,7 +23376,9 @@
   {
    "fr": "Départ",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TrainingSession.cpp",
     "ui/widgets/Charts.cpp"
    ]
   },
@@ -23220,6 +23425,13 @@
    ]
   },
   {
+   "fr": "Départ de l'entraînement",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Départ du joueur",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -23254,6 +23466,12 @@
    "fr": "départ éloigné du point de départ ({0})",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "départ ↓ · arrivée →",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -23318,6 +23536,12 @@
     "editors/level_editor/LevelEditorLive.cpp",
     "editors/level_editor/LevelEditorViewport.cpp",
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Déplacer A / B",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -24174,7 +24398,8 @@
    "fr": "en cours",
    "where": [
     "ui/screens/AdminBackups.cpp",
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -24329,6 +24554,7 @@
    "fr": "En ligne",
    "where": [
     "game/content/AssetCatalog.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/OnlineTypes.cpp",
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminGifts.cpp",
@@ -24584,6 +24810,30 @@
    "fr": "Enchaîne {0} attaques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Enchaînement",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
+   "fr": "ENCHAÎNEMENT  {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ENCHAÎNEMENT CHOISI",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "ENCHAÎNEMENT · {0} → {1}",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -25033,6 +25283,12 @@
    ]
   },
   {
+   "fr": "ennemis et mécanismes au départ",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Ennemis gelés",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -25309,20 +25565,18 @@
   {
    "fr": "ENTRAÎNEMENT",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
    "fr": "Entraînement",
    "where": [
+    "game/ghost/PersonalBests.cpp",
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
-   "fr": "entraînement",
-   "where": [
-    "ui/screens/SobMontageScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -25359,12 +25613,6 @@
    "fr": "Entraînement avec réapparitions — hors classements, aucun record · chutes : {0} · INVINCIBLE",
    "where": [
     "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "entraînement compris",
-   "where": [
-    "ui/screens/SegmentsScene.cpp"
    ]
   },
   {
@@ -25413,18 +25661,6 @@
    "fr": "ENTRAÎNEMENT TERMINÉ",
    "where": [
     "ui/screens/ChallengesScene.cpp"
-   ]
-  },
-  {
-   "fr": "ENTRAÎNEMENT · aucun record · {0} / Vue : recommencer",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "ENTRAÎNEMENT · INVINCIBLE · aucun record · {0} / Vue : recommencer",
-   "where": [
-    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -26103,6 +26339,12 @@
    ]
   },
   {
+   "fr": "et aussi",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Et Nova reprit la route des étoiles...",
    "where": [
     "data/levels/glacior_03.json"
@@ -26112,6 +26354,7 @@
    "fr": "et {0}",
    "where": [
     "game/raid/DreadfangRoutine.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -26673,6 +26916,18 @@
     "game/ghost/Ghost.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Fantôme : non",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fantôme : oui",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -27636,6 +27891,12 @@
    ]
   },
   {
+   "fr": "Fin à {0}, puis l'essai recommence seul (R ou Vue).",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "finalisation de l'archive impossible",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -28103,9 +28364,10 @@
     "game/enemies/HitParts.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/GhostStore.cpp",
+    "game/ghost/MeasurePoints.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/ReplayLibrary.cpp",
-    "game/ghost/SegmentHistory.cpp",
-    "game/ghost/TrainingSegments.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
     "game/online/AccountMigration.cpp",
@@ -28295,6 +28557,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Franchir A{0} lance le chrono, B{1} l'arrête.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -28984,6 +29252,12 @@
    "fr": "Gardés sur cet ordinateur : ils se regardent sans connexion et sans compte. On les télécharge depuis les classements en ligne, les défis et les courses à la vérification (« Télécharger » ou la flèche à côté de « Voir »).",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Gardés sur cet ordinateur, pour cette version du niveau. Si le niveau change, les anciens repères restent avec l'ancienne version et leurs temps ne sont plus comparés.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -31709,7 +31983,9 @@
     "game/coop/CoopLevels.cpp",
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
+    "game/ghost/MeasurePoints.cpp",
     "game/ghost/ReplayLibrary.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/LevelData.cpp",
     "game/online/AsterionBody.cpp",
     "game/online/CampaignRevisions.cpp",
@@ -32762,6 +33038,7 @@
   {
    "fr": "incomplète",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -37063,6 +37340,12 @@
    ]
   },
   {
+   "fr": "Lancer l'enchaînement",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Lancer l'entraînement",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -39102,6 +39385,12 @@
    ]
   },
   {
+   "fr": "Le niveau",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Le niveau a changé depuis ce défi : « S'entraîner » seulement, hors classement.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -39478,6 +39767,18 @@
    ]
   },
   {
+   "fr": "Le prochain essai part d'elle.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Le prochain essai part du départ de l'entraînement.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Le projet a changé entre-temps : vos modifications n'ont pas été envoyées (elles restent dans votre copie).",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -39769,6 +40070,12 @@
    "fr": "Le segment recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "le segment seul",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -43859,9 +44166,16 @@
    ]
   },
   {
+   "fr": "MEILLEUR",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -43874,6 +44188,24 @@
    "fr": "Meilleur combat",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur enchaînement",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur fait en",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur possible à l'arrivée",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -43890,7 +44222,7 @@
    ]
   },
   {
-   "fr": "Meilleur segment {0}",
+   "fr": "Meilleur segment {0} ({1})",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
@@ -43908,6 +44240,12 @@
    ]
   },
   {
+   "fr": "Meilleur {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur {0} · médiane {1} · perdu en moyenne {2} · {3} passage",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -43920,16 +44258,9 @@
    ]
   },
   {
-   "fr": "Meilleur à l'entraînement",
+   "fr": "meilleur − somme",
    "where": [
-    "ui/screens/GameScene.cpp",
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
-   "fr": "Meilleur à l'entraînement {0} ({1})",
-   "where": [
-    "ui/screens/GameScene.cpp"
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -44433,6 +44764,37 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1} · DERNIER ESSAI",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1} · EN COURS",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1} · PRÊTE",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Mesure {0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Mesurer aussi dans les replays (les vôtres et ceux en ligne)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -45243,6 +45605,12 @@
    ]
   },
   {
+   "fr": "Mon meilleur passage",
+   "where": [
+    "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
    "fr": "Mon meilleur temps",
    "where": [
     "game/ghost/Ghost.cpp",
@@ -45514,6 +45882,18 @@
    "fr": "Montez sur les racines hautes pendant l'annonce.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Montrer les portes de mesure",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Montrer les startpos dans le niveau (rémanence)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -47843,21 +48223,15 @@
    ]
   },
   {
+   "fr": "Nouveau meilleur segment !",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Nouveau meilleur temps",
    "where": [
     "ui/screens/ChallengesScene.cpp"
-   ]
-  },
-  {
-   "fr": "Nouveau meilleur à l'entraînement !",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Nouveau meilleur à l'entraînement ! ({0})",
-   "where": [
-    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -47941,6 +48315,12 @@
    "where": [
     "ui/screens/GhostRun.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau record de cet enchaînement !",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -48213,10 +48593,22 @@
    ]
   },
   {
+   "fr": "Nova apparaît au point {0}, comme l'entraînement par segment.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Nova de givre",
    "where": [
     "data/powers/frost_nova.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Nova doit être en jeu, visible et seule.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -49413,6 +49805,12 @@
    ]
   },
   {
+   "fr": "OR",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Or",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -49437,6 +49835,12 @@
     "game/progression/NewsCenter.cpp",
     "ui/screens/AdminGifts.h",
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "OR : enchaînement égal à la somme de ses meilleurs",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -50751,6 +51155,7 @@
   {
    "fr": "Partie",
    "where": [
+    "game/ghost/PersonalBests.cpp",
     "ui/screens/SettingsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -50943,6 +51348,18 @@
    ]
   },
   {
+   "fr": "Partir d'une startpos",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Partir de SP {0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "parts",
    "where": [
     "game/online/AsterionBody.cpp",
@@ -50975,12 +51392,6 @@
    "fr": "Pas d'avatar personnalisé.",
    "where": [
     "server/src/players.ts"
-   ]
-  },
-  {
-   "fr": "pas d'essai",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -51102,13 +51513,7 @@
    ]
   },
   {
-   "fr": "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le dans une course complète pour l'ajouter.",
-   "where": [
-    "ui/screens/SobMontageScene.cpp"
-   ]
-  },
-  {
-   "fr": "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le en entraînement par segment pour l'ajouter.",
+   "fr": "Pas de replay pour ce meilleur temps (d'avant la version 2.60.3, ou repris d'un autre ordinateur) : battez-le, en course ou à l'entraînement, pour l'ajouter.",
    "where": [
     "ui/screens/SobMontageScene.cpp"
    ]
@@ -51158,6 +51563,8 @@
   {
    "fr": "pas encore",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -51205,6 +51612,12 @@
    ]
   },
   {
+   "fr": "pas encore d'essai",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore d'essai sur ce défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -51214,18 +51627,6 @@
    "fr": "Pas encore de contenu : un éditeur doit envoyer le niveau.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Pas encore de course complète : aucun segment de référence",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Pas encore de course complète de cette version du niveau : terminez-la pour voir vos meilleurs segments, votre record et la somme des meilleurs (SoB).",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -51450,6 +51851,12 @@
    "fr": "Passage",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "passage",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -51960,6 +52367,18 @@
    ]
   },
   {
+   "fr": "passages",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Passages : parties, entraînements et en ligne",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Passages difficiles",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -52250,6 +52669,7 @@
   {
    "fr": "PB",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -54263,11 +54683,30 @@
    ]
   },
   {
+   "fr": "Point de mesure (A puis B)",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Point de mesure : posez A, puis B, là où ils doivent aller",
+   "where": [
+    "ui/screens/TrainingMarksScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point de mesure impossible ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Point de passage",
    "where": [
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PauseScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -54351,11 +54790,13 @@
   {
    "fr": "Point {0}",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/SegmentsScene.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -54417,6 +54858,18 @@
    "fr": "Points de contribution calculés par le serveur (objectifs, gigaboss, soutien, dégâts), pas seulement les dégâts.",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "POINTS DE MESURE ({0} PAIRE)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "POINTS DE MESURE ({0} PAIRES)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -54746,9 +55199,45 @@
    ]
   },
   {
+   "fr": "Poser A, puis B",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Poser ici",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Poser la balise",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Poser une startpos ici",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Posez B{0} plus loin (même touche).",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Posez maintenant B{0}.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Posez-en une d'abord.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -54801,6 +55290,12 @@
    ]
   },
   {
+   "fr": "position, direction de Nova",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Positions approximatives : centre du pays",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -54846,6 +55341,18 @@
    "fr": "Posé : dégâts reçus {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "posée le {0} · {1} essai depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "posée le {0} · {1} essais depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -55196,6 +55703,12 @@
    ]
   },
   {
+   "fr": "Pouvoirs : ceux du départ et des tablettes d'avant (ou ceux choisis pour ce passage).",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoirs : coûts d'énergie selon leur force (référence : le tir chargé à 20, une attaque moins forte coûte moins). Leurs caractéristiques (énergie, dégâts, rayon, portée, recharge…) sont affichées dans le guide, dans la fiche de chaque pouvoir et quand on les ramasse.",
    "where": [
     "data/news/changelog.json"
@@ -55259,6 +55772,12 @@
    "fr": "pouvoirs utilisés",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "pouvoirs, cœurs, énergie",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -55413,6 +55932,18 @@
    "fr": "Principale",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Pris à la pose",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Pris à la pose :",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -55987,6 +56518,12 @@
    "fr": "Précédent",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Précédente",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -58029,7 +58566,8 @@
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowerStats.cpp",
     "game/raid/AsterionHeartRoutine.cpp",
-    "game/raid/GravitonRoutine.cpp"
+    "game/raid/GravitonRoutine.cpp",
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -58402,6 +58940,12 @@
    ]
   },
   {
+   "fr": "recharges, élan (départ arrêté)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Recherche",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -58608,6 +59152,12 @@
    ]
   },
   {
+   "fr": "Recommencer repart d'ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Reconnexions",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -58659,6 +59209,18 @@
    "fr": "Record d'un ami",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Record de cet enchaînement",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Record de l'enchaînement {0} ({1})",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -58817,6 +59379,12 @@
    "fr": "records : {0} doit être un entier positif",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "RECORDS DE TOUTES LES COMBINAISONS (SEGMENTS QUI SE SUIVENT)",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -59290,6 +59858,7 @@
    "fr": "Regarder",
    "where": [
     "ui/screens/AdminScene.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/FilmCatalog.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -59656,6 +60225,12 @@
    ]
   },
   {
+   "fr": "Remis à zéro",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "remise en ligne d'une révision de « {0} »",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -59903,6 +60478,7 @@
     "ui/screens/AdminClans.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/SocialScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/studio/Studio.cpp"
    ]
   },
@@ -59965,8 +60541,7 @@
    "fr": "replay",
    "where": [
     "game/ghost/GhostStore.cpp",
-    "game/ghost/SegmentHistory.cpp",
-    "game/ghost/TrainingSegments.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CommunityPublishScene.cpp"
@@ -60330,7 +60905,8 @@
     "ui/screens/DeviceLostUi.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PauseScene.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/TrainingMarksScene.cpp"
    ]
   },
   {
@@ -60759,6 +61335,7 @@
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/GiftsScene.cpp",
@@ -61579,6 +62156,7 @@
     "game/enemies/Enemy.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/KeptReplays.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
     "game/player/PlayerActions.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -61629,7 +62207,7 @@
    "fr": "runs",
    "where": [
     "game/GameServices.cpp",
-    "game/ghost/SegmentHistory.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/Spectate.cpp",
     "game/records/PlayStats.cpp",
@@ -64531,9 +65109,21 @@
    ]
   },
   {
+   "fr": "SEGMENT D'OR · {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Segment précédent",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "segment seul",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -64545,6 +65135,7 @@
   {
    "fr": "Segment {0}",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SobMontageScene.cpp",
     "ui/screens/StatisticsScene.cpp"
@@ -64590,6 +65181,24 @@
    "fr": "segments d'or",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Segments et enchaînements",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Segments et enchaînements…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "segments {0}",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -64809,6 +65418,12 @@
    "fr": "Ses ailes déchirent l'aurore !",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Ses anciens temps ne se comparent plus : oubliés.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -65809,6 +66424,18 @@
    ]
   },
   {
+   "fr": "SOB : {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "SOB {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "SOCIAL",
    "where": [
     "ui/screens/OnlineNav.cpp"
@@ -65909,9 +66536,9 @@
    ]
   },
   {
-   "fr": "Somme de mes meilleurs segments",
+   "fr": "SOMME DES MEILL.",
    "where": [
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -65923,6 +66550,7 @@
   {
    "fr": "Somme des meilleurs",
    "where": [
+    "ui/screens/GameScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -65935,6 +66563,7 @@
   {
    "fr": "Somme des meilleurs (SOB)",
    "where": [
+    "ui/screens/SegmentsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -65954,6 +66583,12 @@
    "fr": "Somme des meilleurs : incomplète",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Somme des meilleurs : pas encore complète",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -66501,6 +67136,12 @@
    ]
   },
   {
+   "fr": "source|Partie",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
    "fr": "Souris : cliquez sur un lieu sûr",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -66510,6 +67151,12 @@
    "fr": "Souris : glissez un élément pour le déplacer, molette pour changer sa taille. Clavier et manette : choisissez un élément dans la liste, puis réglez sa taille et sa position avec les curseurs. Deux éléments ne peuvent jamais se chevaucher.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Souris : un clic sur une case choisit cette combinaison ; Entrée (A) la lance.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -66724,6 +67371,19 @@
    "fr": "Soyez le premier : terminez ce niveau connecté à Cosmic Online.",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "SP {0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "SP {0} active",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -66946,6 +67606,79 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "StartPos",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
+   "fr": "startpos",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS ({0})",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos et mesures",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS ET POINTS DE MESURE",
+   "where": [
+    "ui/screens/TrainingMarksScene.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos et points de mesure, pendant un entraînement de segment ou d'enchaînement. À la manette : Vue maintenue + la croix (bas : poser, gauche / droite : précédente / suivante, haut : point de mesure) ; Vue seule recommence l'essai.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos impossible ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos posée : SP {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos précédente",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos suivante",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS {0} / {1}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS — / {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -67596,6 +68329,12 @@
    ]
   },
   {
+   "fr": "Suivante",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Suivants",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -67790,6 +68529,7 @@
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/studio/StudioFrise.cpp"
    ]
   },
@@ -69129,6 +69869,12 @@
    "fr": "Temps de passage incohérents.",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "TEMPS DE PASSAGE · ESSAI {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -71527,7 +72273,8 @@
   {
    "fr": "Tout effacer",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -72444,9 +73191,21 @@
    ]
   },
   {
+   "fr": "Trop de points de mesure",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Trop de requêtes, réessayez plus tard.",
    "where": [
     "server/src/ratelimit.ts"
+   ]
+  },
+  {
+   "fr": "Trop de startpos",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -73873,6 +74632,12 @@
    "fr": "Un secteur va s'inverser : quittez-le ou visez un abri.",
    "where": [
     "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Un segment ({0})",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -76264,9 +77029,10 @@
     "game/coop/CoopRelay.cpp",
     "game/cosmetics/CreationLooks.cpp",
     "game/cosmetics/SuitRecolor.cpp",
+    "game/ghost/MeasurePoints.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/ReplayLibrary.cpp",
-    "game/ghost/SegmentHistory.cpp",
-    "game/ghost/TrainingSegments.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
@@ -77501,12 +78267,6 @@
    "fr": "Vos amis n'ont pas encore publié de niveau.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Vos courses complètes ne passent pas par ces deux points à la suite : ce segment n'a pas de référence.",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -78834,6 +79594,12 @@
    ]
   },
   {
+   "fr": "Vue + bas : poser une startpos · Vue + gauche / droite : choisir · Vue + haut : point de mesure",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Vue d'ensemble",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -79042,6 +79808,12 @@
    "fr": "x 00 · y 00",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "x {0} m",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -80378,6 +81150,12 @@
    ]
   },
   {
+   "fr": "{0} : poser une startpos · {1} / {2} : choisir · {3} : point de mesure (A puis B)",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "{0} : replay d'un autre niveau.",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -81149,7 +81927,14 @@
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœur · énergie {1} %",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -81160,7 +81945,14 @@
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœurs · énergie {1} %",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -81475,15 +82267,39 @@
    ]
   },
   {
+   "fr": "{0} essai",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "{0} essai cette séance",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
   {
+   "fr": "{0} essai · dernier {1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "{0} essais",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "{0} essais cette séance",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} essais · dernier {1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -83158,6 +83974,12 @@
    ]
   },
   {
+   "fr": "{0} segments à la suite ({1})",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} semaine",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -83685,6 +84507,12 @@
    ]
   },
   {
+   "fr": "{0} · Pause › Startpos et mesures",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · personnalisé",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -83706,6 +84534,12 @@
    "fr": "{0} · rang mondial n°{1}",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Recommencer repart d'ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -83826,6 +84660,12 @@
    "fr": "{0} · validation du serveur en attente",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · version actuelle",
+   "where": [
+    "ui/screens/TrainingMarksScene.cpp"
    ]
   },
   {
@@ -84216,6 +85056,7 @@
   {
    "fr": "{0},{1} s",
    "where": [
+    "game/ghost/GhostRace.cpp",
     "game/raid/GravitonRoutine.cpp",
     "game/raid/TitanusRoutine.cpp",
     "ui/screens/StatisticsScene.cpp"
@@ -84297,6 +85138,30 @@
    "fr": "{0}en ligne (Cosmic Online)",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "{0}hors classement · {1} / Vue : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}hors classement · {1} / Vue : recommencer depuis la startpos",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}INVINCIBLE · hors classement · {1} / Vue : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}INVINCIBLE · hors classement · {1} / Vue : recommencer depuis la startpos",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -84829,6 +85694,12 @@
    ]
   },
   {
+   "fr": "À GAGNER",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "À gagner jusqu'à la fin du défi.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -85185,6 +86056,18 @@
    "fr": "Écart A − B",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "écart au meilleur segment",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Écart cumulé à la SOB du début de l'essai",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -87312,6 +88195,12 @@
    "fr": "… ({0} joueurs)",
    "where": [
     "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "… et {0} de plus",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {

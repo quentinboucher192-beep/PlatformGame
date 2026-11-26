@@ -11,8 +11,8 @@
 
 namespace cosmic::keptreplays {
 
-// 2.60.3: the exact replays kept with the best segments (SegmentHistory: the full runs' gold
-// segments, « ghosts/golds »; TrainingRecords: the best section-training attempts,
+// 2.60.3: the exact replays kept with the best segments (2.91: PersonalBests, « ghosts/bests »;
+// before, the full runs' gold segments in « ghosts/golds » and the best section-training attempts in
 // « ghosts/training »). One folder per level version (GhostStore::levelKey), one file per run,
 // kept while a best segment refers to it. Local only, never sent.
 

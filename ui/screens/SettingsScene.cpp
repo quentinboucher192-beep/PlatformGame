@@ -358,6 +358,10 @@ private:
                 text("Raids", "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, "
                               "groupe, titan), pendant un raid : le groupe continue à jouer. Dans un test : la roue d'ordres aux joueurs simulés et "
                               "leurs pensées.");
+            if (a == Action::StartPosPlace)
+                text("Entraînement", "Startpos et points de mesure, pendant un entraînement de segment ou d'enchaînement. À la manette : "
+                                     "Vue maintenue + la croix (bas : poser, gauche / droite : précédente / suivante, haut : point de mesure) ; "
+                                     "Vue seule recommence l'essai.");
             ListItem it;
             it.action = a;
             it.h = ui.s(52);

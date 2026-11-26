@@ -76,6 +76,7 @@ std::string GhostMeta::sourceLabel() const {
     if (source == "pb") return "Mon meilleur temps";
     if (source == "prev") return "Mon record précédent";
     if (source == "last") return "Ma dernière course";
+    if (source == "range") return label.empty() ? "Mon meilleur passage" : label;  // 2.91: the best of a range trained
     if (source == "world") return "Record mondial";
     if (source == "friend") return "Record d'un ami";
     if (source == "record") return "Record du classement";

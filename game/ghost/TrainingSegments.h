@@ -1,29 +1,20 @@
 #pragma once
 
 #include <algorithm>
-#include <map>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "engine/core/Math.h"
-#include "engine/core/Paths.h"
-#include "game/gameplay/BossTraining.h"
 
 namespace cosmic {
 
 class GhostTrack;
 
-// Section training (« Répéter un segment », 2.30.2): which segment of a full run a training
-// segment is, the references shown for it (its best duration in full runs, its duration in
-// the personal best run, the best training time) and the Sum of Best of the level. Display
-// only: nothing here touches the simulation, the records, the medals, the achievements, nor
-// the gold segments of the full runs.
-//
-// 2.60.3: the Sum of Best is « tout confondu »: each segment's best among the full runs AND
-// the section trainings of the same level version. The best training times never change the
-// full runs' data (PB, splits, gold segments, consistency, regularity), only that sum.
+// Section training (« Répéter un segment », 2.30.2): which segment of a run a training segment
+// is, which checkpoints a run reached. 2.91: the bests themselves, every source together (the ONE
+// personal Sum of Best), are kept by PersonalBests (game/ghost/PersonalBests.h).
 
 /// The ends of a segment: checkpoint ids, "" = the level's start (`from`) or its exit (`to`).
 /// Index of the segment from `from` to `to` in a run that reached `checkpoints` in this order
@@ -48,115 +39,5 @@ std::vector<std::string> checkpointsOfTrack(const GhostTrack& track, const std::
 /// Sum of Best: the sum of the best duration of every segment of a route; -1 when one of
 /// them is unknown (< 0) or when there is none.
 float sumOfBest(const std::vector<float>& bestSegments);
-
-/// The best section-training time of segments (from, to) of a level version (seconds).
-using TrainingBests = std::map<std::pair<std::string, std::string>, float>;
-/// The best of each segment of a route (`segments`: full runs, -1 unknown; `ids`: the route's
-/// checkpoints, one per split) improved by the trainings' best times of the same segments:
-/// the Sum of Best « tout confondu ». `fromTraining` (optional): which ones came from them.
-std::vector<float> withTrainingBests(std::vector<float> segments, const std::vector<std::string>& ids, const TrainingBests& training,
-                                     std::vector<bool>* fromTraining = nullptr);
-
-/// The references of the segments of one level version, from full runs only.
-struct SegmentReferences {
-    /// One full run: cumulative splits, final time, checkpoints reached (ids, may be empty).
-    struct RunInput {
-        std::vector<float> splits;
-        float time = 0.0f;
-        std::vector<std::string> checkpoints;
-    };
-    std::map<std::pair<std::string, std::string>, float> best;  // (from, to) → best duration in full runs
-    std::map<std::pair<std::string, std::string>, float> pb;    // (from, to) → duration in the PB run
-    float pbTime = -1.0f;        // the personal best (-1: none)
-    float sob = -1.0f;           // Sum of Best, full runs and trainings together (-1: unknown)
-    int sobSegments = 0;         // segments of the route the Sum of Best goes through
-    bool pbOnSobRoute = false;   // the PB went through the same checkpoints (PB − SoB is a real gain)
-    bool anyRun = false;         // at least one full run of this version is known
-
-    /// Best duration of the segment in full runs, -1 unknown (no run went straight through it).
-    float bestOf(const std::string& from, const std::string& to) const;
-    /// Its duration in the PB run, -1 unknown.
-    float pbOf(const std::string& from, const std::string& to) const;
-    /// What the Sum of Best could still take off the PB (-1 when they do not compare).
-    float possibleGain() const { return pbOnSobRoute && sob > 0.0f && pbTime > 0.0f ? std::max(0.0f, pbTime - sob) : -1.0f; }
-};
-
-/// Built from the segment history: `gold` (the best segments of its route, SegmentHistory::
-/// bestSegments) with `goldCheckpoints` (ids of that route, may be empty); `runs` (the runs it
-/// kept); the PB run `pb` (time <= 0: none); and the route's checkpoints (ids, in order).
-/// `training` (2.60.3): the best section-training times of the same version, counted in the
-/// Sum of Best only (never in `best`, `pb` nor `pbTime`).
-SegmentReferences buildSegmentReferences(const std::vector<float>& gold, const std::vector<std::string>& goldCheckpoints,
-                                         const std::vector<SegmentReferences::RunInput>& runs, const SegmentReferences::RunInput& pb,
-                                         const std::vector<std::string>& route, const TrainingBests& training = {});
-
-/// Best training time of each segment, per level version (saves/training.json), and the
-/// powers last chosen for it: local only, never sent, never a record nor a gold segment. A damaged file is set aside
-/// (".corrupt") and the history starts again; a file written by a newer game is read but
-/// never overwritten.
-class TrainingRecords {
-public:
-    struct Entry {
-        float best = -1.0f;  // seconds (-1: no attempt finished yet)
-        int attempts = 0;    // finished attempts, every session
-        std::string date;    // of the best one
-        /// The powers last chosen for this segment (2.30.2); `customPowers` false: the
-        /// route's ones (the start powers and the tablets before the start).
-        bool customPowers = false;
-        std::vector<std::string> powers;
-        /// 2.60.3: the exact replay of the best attempt (its own copy, « ghosts/training/<level
-        /// version>/ »; empty: none, a best of before 2.60.3) and how that attempt started.
-        std::string replay;
-        SectionTrainingStart start;
-    };
-    static constexpr int kVersion = 1;
-    /// The best attempts' replays kept in all: beyond, the least recently trained levels' go.
-    static constexpr uint64_t kMaxReplayBytes = 128ull << 20;
-    static constexpr size_t kLevelsKept = 400;
-    static constexpr size_t kSegmentsPerLevel = 256;
-
-    /// `file` empty: saves/training.json of the user folder, the replays in « ghosts/training »
-    /// (set by load()). A `file` given without `replayDir`: no replay is kept.
-    explicit TrainingRecords(fs::path file = {}, fs::path replayDir = {});
-    void load();
-    /// Writes the file, then deletes the replays no best attempt refers to any more.
-    bool save();
-
-    /// A finished attempt of the segment from `from` to `to` ("" = start / exit) of
-    /// `levelKey` (GhostStore::levelKey). True when it is the best one so far; then `replay`
-    /// (its exact replay, encoded) and `start` (how it started) are kept with it — without
-    /// them, the new best has no replay.
-    bool add(const std::string& levelKey, const std::string& from, const std::string& to, float seconds, const std::string& date,
-             const std::vector<uint8_t>* replay = nullptr, const SectionTrainingStart* start = nullptr);
-    const Entry* get(const std::string& levelKey, const std::string& from, const std::string& to) const;
-    /// Every segment of `levelKey` with a best attempt: (from, to) → seconds.
-    TrainingBests bests(const std::string& levelKey) const;
-    /// The file of a best attempt's replay (empty when none is kept).
-    fs::path replayPath(const std::string& levelKey, const std::string& replay) const;
-    /// The powers chosen for the segment (nullptr: the route's ones, the default).
-    const std::vector<std::string>* powers(const std::string& levelKey, const std::string& from, const std::string& to) const;
-    /// Remembers the powers chosen for the segment; nullptr: back to the route's ones.
-    void setPowers(const std::string& levelKey, const std::string& from, const std::string& to, const std::vector<std::string>* powers,
-                   const std::string& date);
-    static constexpr size_t kMaxPowers = 8;
-    /// The file was unreadable when loaded (set aside, started again).
-    bool recovered() const { return recovered_; }
-    /// Written by a newer game: kept as it is (never overwritten).
-    bool readOnly() const { return readOnly_; }
-    const fs::path& file() const { return file_; }
-
-private:
-    Entry* entry(const std::string& levelKey, const std::string& from, const std::string& to, const std::string& date);
-    void collectReplays();
-    struct Level {
-        std::string touched;
-        std::map<std::pair<std::string, std::string>, Entry> segments;
-    };
-    fs::path file_;
-    fs::path replayDir_;
-    std::map<std::string, Level> levels_;
-    bool recovered_ = false;
-    bool readOnly_ = false;
-};
 
 }  // namespace cosmic
