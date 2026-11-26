@@ -3198,6 +3198,34 @@ cercle tourne, le bouclier quand il arrive (sans le disque à quitter : 32 % ; a
 traverse jamais un autre coup sur son chemin (Titanus : 35 %) ; la sortie d'un coup mesurée jusqu'au premier endroit
 sûr, pas jusqu'au bord de sa seule colonne (Pyroclast : 43 % au lieu de 47 %).
 
+2.89 : **Titanus, Graviton, Dreadfang — ce qui manque pour les vaincre** (mesures seulement, aucun changement gardé).
+Avec des joueurs simulés invincibles (`COSMIC_GOAT_INVINCIBLE`), les trois tombent à chaque départ : Titanus en 521 à
+873 s, Graviton en 500 à 697 s, Dreadfang en 414 à 654 s (départs 1 à 8) — leurs mécanismes sont bien joués ; c'est la
+survie qui manque, et pour Titanus il reste peu de marge sous les 15 min du banc. Rien ne rend de la vie au combat que les
+orbes (à usage unique) et les réanimations.
+
+* **Titanus** : sa phase 2 tue cinq fois plus que sa phase 1 (121 morts contre 22 sur 8 départs) ; 86 morts sur 143 à
+  moins de 250 px du centre de sa jambe ; 88 % des coups tombent pendant que le bouclier se recharge. Ses coups à lui (charge,
+  bond, séisme) suivent le joueur le plus proche, et l'appât n'est pas plus près que les frappeurs (médiane 336 px contre
+  335). Une onde ne traverse que deux ennemis, sa jambe compte : de l'ouest, seule l'entrave ouest est touchée. 4 mises à
+  genou en 16 départs ; une seule rapporte 13 %.
+* **Graviton** : sa phase 1 dure 170 à 220 s ; pendant ce temps ses frappeurs sont 28 % du temps en l'air sans ligne de
+  tir, 35 % sous la réserve d'énergie avec une ligne, 12 % en route, 8 % à attendre qu'un coup passe. L'énergie plafonne de
+  toute façon une onde toutes les 1,4 s (14 par seconde, arrêtée 0,7 s après chaque dépense).
+* **Dreadfang** : ses expositions rapportent 3 % au lieu de 12 % — ses jointures sont souvent masquées par des plateformes
+  friables devant elles, sa « Poigne du titan » (une aspiration, lue comme une boîte de 584 × 504 autour du bras) rend
+  toutes les places proches non sûres quand elle s'annonce, et ses jointures changent de côté quand il se retourne.
+
+Essayés et retirés (départs 1 à 16, et 1 à 48 pour Dreadfang) : la fin des entraves de Titanus attendue tant qu'une ligne de
+tir manque sur l'autre, et tous ses frappeurs revenus quand les deux sont basses (35 %, 3 mises à genou au lieu de 4) ; ses
+frappeurs au-dessus du sol (`Plan::elevate` 50 et 100 : 36 %) ; son bouclier gardé pour ses propres coups
+(`reserveShield` : 36 %) ; une âme à son pied réanimée seulement quand il s'en est éloigné (34 %) ; personne plus près de
+lui que l'appât (la survie gagne 17 %, les entraves n'avancent plus : 35 %), sauf les frappeurs des entraves (36 %) ; les
+places d'une volée de poings espacées d'une colonne (ses poings : 114 coups au lieu de 119, ceux de Pyroclast 121 au lieu de
+146) ; la descente d'un rebord comme sortie d'un coup (Titanus : plus d'ondes) ; un tir du sommet d'un saut simple
+(Dreadfang : 48 %, et pour ses seuls points faibles à nu : 53 %) ; Dreadfang tout entier devant lui à nu (`frontOnly` :
+57 %, 4 victoires sur 48 au lieu de 3), chaque chaîne à son joueur (`fixedHolders` : 57 %, 3), les deux (54 %, 2).
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
