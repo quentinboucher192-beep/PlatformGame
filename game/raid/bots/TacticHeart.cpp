@@ -102,6 +102,23 @@ public:
                 v.stations.push_back(s);
             }
             v.phase = "Supernova : " + std::to_string(need) + " ancres à tenir";
+            // 2.90 (fight plan): not contained, it burns everyone off its anchors (3 hearts; a quarter of the deaths of its
+            // last phase): each of them takes it under the shield as it bursts.
+            if (rt->anchorsHeld() < need && rt->novaLeft() * static_cast<float>(kSimHz) <= 30.0f)
+                for (int k = 0; k < w.teamSize(); ++k) {
+                    if (w.member(k).presence != GameWorld::Presence::Playing) continue;
+                    const Rect box = w.playerAt(k).box;
+                    bool on = false;
+                    for (int a = 0; a < need; ++a) on = on || anchors[static_cast<size_t>(a)].intersects(box);
+                    if (on) continue;
+                    Danger d;
+                    d.kind = Danger::Kind::Area;
+                    d.area = box.expanded(24.0f);
+                    d.seat = k;
+                    d.in = static_cast<int>(rt->novaLeft() * static_cast<float>(kSimHz));
+                    d.shieldFirst = true;
+                    v.dangers.push_back(d);
+                }
         } else if (gb.stage() == Gigaboss::Stage::Carapace) {
             v.phase = "Artères : tenir ses " + std::to_string(gb.vents().size()) + " plaques ensemble";
         } else if (v.exposed) {

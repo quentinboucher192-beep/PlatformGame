@@ -3251,7 +3251,7 @@ raccourcissent (Titanus 217 s au lieu de 258, Graviton 314 au lieu de 344). Ce q
 quatre — reprendre la sortie d'un coup elle-même (le chemin jusqu'à un endroit sûr à l'instant du coup, y compris
 quitter une plateforme, au lieu du bord de la zone), pas un réglage de plus.
 
-2.90 : **Pyroclast tombe, Voidworm 27 / 32, le Cœur à 73 % — ce qui touchait vraiment**. Les sondes (`COSMIC_GOAT_DEATHS`,
+2.90 : **Pyroclast et le Cœur tombent, Voidworm 27 / 32 — ce qui touchait vraiment**. Les sondes (`COSMIC_GOAT_DEATHS`,
 `COSMIC_GOAT_TRACE=1` pour les coups reçus, `COSMIC_GOAT_SEAT`, et des sondes jetées : chaque bouclier levé et ce qu'il
 visait, chaque avalé de Voidworm, chaque esquive d'un siège) : contre Pyroclast et le Cœur, **le contact de leur corps**
 était la première cause de coups (Pyroclast : 159 coups sur 4 départs, devant ses poings, 65) — le bras de Pyroclast passe
@@ -3271,7 +3271,8 @@ Gigaboss inchangés départ par départ) :
   ruée quand il est trop large pour la marche (`Plan::dashOut`, 440 px) ;
 * **le Cœur** : ses artères tenues de nouveau dès que ses ventricules se recouvrent — leurs joueurs les attendent au lieu de
   traverser l'arène jusqu'à ses ventricules et retour ; chaque artère à son joueur pour toute son armure (`fixedHolders`) ;
-  pas d'appât (sa couronne le traîne vers son joueur le plus proche) ;
+  pas d'appât (sa couronne le traîne vers son joueur le plus proche) ; sa supernova non contenue (3 cœurs à chacun hors
+  de ses ancres : un quart des morts de sa dernière phase) prise sous le bouclier quand elle éclate ;
 * **Voidworm** : sa gueule (ce qu'aucun bouclier n'arrête) quittée même en montant au-dessus de l'acide et en traversant
   sous le bouclier, jamais pour rentrer dans une autre ; sans sortie à temps sur une corniche, le joueur passe dessous (Bas +
   Saut) ; une âme dans sa poche n'est plus la tâche de personne (`BossView::noRevive`) ; pas d'appât (il ne bouge pas : son
@@ -3284,7 +3285,7 @@ Mesuré sur la règle de la 2.90 (simulation 18), difficulté 3 / 5, 32 départs
 |---|---|---|
 | Voidworm | 5/8 · 3/8 · 3/8 · 2/8 — 13 / 32 (79 %) | 7/8 · 7/8 · 7/8 · 6/8 — **27 / 32** (95 %) |
 | Pyroclast | 54 · 46 · 48 · 48 % — 0 / 32 | 75 · 80 · 72 · 80 % — **4 / 32** (départs 5, 16, 20, 32) |
-| Cœur d'Asterion | 53 · 52 · 59 · 55 % — 0 / 32 | **77 · 70 · 71 · 74 %** — 0 / 32 (sur la règle de la 2.89 : 5 / 32, en 759 à 799 s) |
+| Cœur d'Asterion | 53 · 52 · 59 · 55 % — 0 / 32 | 86 · 74 · 73 · 78 % — **5 / 32** (départs 3, 7, 8, 15, 30) |
 | Skullmaw, Dreadfang, Titanus, Graviton, Heartbreaker | | mêmes résultats départ par départ (mesuré sur la 2.89) |
 
 Mesuré étape par étape sur la règle de la 2.89 (départs 1 à 16) : Voidworm, la gueule quittée en fuyant et en
@@ -3301,7 +3302,9 @@ contre Pyroclast, un appât qui le garde à l'est de l'arène (47 %, sans gain) 
 (lue comme un liquide à fuir : 59 % au lieu de 61 %) ; son corps 40 px plus large (53 %) ; ses réanimateurs sans bouclier
 qui esquivent (52 %) ; une âme au bord d'une fosse réanimée depuis le sol voisin (53 %). Sur la règle de la 2.90 : Voidworm
 quitte en ruée 11 / 16 → 14 / 16 (gardé) ; Pyroclast sans appât 75 %, 1 / 32 (gardé avec : 77 %, 4 / 32 ; sur la 2.89 sans
-appât 76 % au lieu de 67 %) ; le Cœur qui quitte en ruée 73 % (pareil). Ce qui bloque encore : le Cœur
+appât 76 % au lieu de 67 %) ; le Cœur sans sa supernova sous le bouclier 73 %, 0 / 32 (avec : 78 %, 5 / 32 ; et en plus
+quitté en ruée : 77 %, 3 / 16), quitté en ruée seul 73 %, ses frappeurs qui tirent en esquivant (`fireOnTheRun` : 70 %),
+au-dessus du sol pendant sa marée de plasma (`elevate` 60 : 72 %). Ce qui bloque encore : le Cœur
 tient maintenant ses 15 min mais sa phase 3 traîne (ses artères du sol sous sa marée de plasma toutes les 24 s, les deux de
 l'est loin quand il dérive vers l'ouest) ; Pyroclast, les fissures de sa Secousse et ses réanimateurs près de son corps.
 
