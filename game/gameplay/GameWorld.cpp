@@ -27,7 +27,7 @@ void GameWorld::setKeysPerSlot(bool on) {
     keysPerSlot_ = on;
     player_.setKeysPerSlot(on);
     for (auto& x : extraPlayers_) x->setKeysPerSlot(on);  // 2.62: a team (set before load())
-    if (time_ > 0.0f || level_.startPowers.empty()) return;
+    if (shownTime_ > 0.0f || level_.startPowers.empty()) return;
     // Loaded but not started: the start powers as the new rule grants them (two powers on
     // the same old button are both kept with keys per slot). Untouched when it is the same.
     Player probe;
@@ -61,6 +61,8 @@ bool GameWorld::load(const LevelData& level) {
     bossZone_.reset();
     activeZone_ = nullptr;
     time_ = 0.0f;
+    shownTime_ = 0.0f;
+    startHeld_ = false;
     decoyTimer_ = 0.0f;
     decoysBroken_ = 0;
     frozenPlatforms_.clear();  // their colliders went with physics_.clear()
@@ -127,6 +129,7 @@ bool GameWorld::load(const LevelData& level) {
     }
     if (mode_ == WorldMode::Play && !level_.intro.empty()) {
         state_ = WorldState::Intro;
+        startHeld_ = true;  // 2.92: until the clock starts (startHeld; the rules of 19 and after)
         forEachTeammate([](Player& p) {
             p.setHidden(true);
             p.controlEnabled = false;
@@ -233,9 +236,30 @@ void GameWorld::beginPlay() {
     // gives any.
     if (mode_ == WorldMode::Play) {
         if (player_.state() == PlayerState::Respawn) timerPending_ = true;
-        else timer_.start();
+        else startClock();
     }
     emit("level", "levelStart");
+}
+
+void GameWorld::startClock() {
+    timer_.start();
+    startHeld_ = false;  // 2.92: the level starts with the clock (startHeld)
+}
+
+void GameWorld::heldStep(float dt) {
+    // 2.92 (simulation 19): only the players' appearance goes on (Player::heldStep: their
+    // materialisation, nothing else of theirs); the level waits as the load placed it. Its enemies
+    // join the world's list (shown during the intro, standing where they appear): none of them
+    // steps before the clock starts.
+    if (team_.empty()) {
+        player_.heldStep(dt);
+    } else {
+        for (TeamMember& m : team_)
+            if (m.presence == Presence::Playing) m.player->heldStep(dt);
+    }
+    for (auto& e : pendingEnemies_) enemies_.push_back(std::move(e));
+    pendingEnemies_.clear();
+    updateCamera(dt);
 }
 
 // ================================================================== update
@@ -245,7 +269,11 @@ Vec2 GameWorld::enemyAim() const { return decoyTimer_ > 0.0f ? decoyPos_ : playe
 void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     // Waiting for the player to choose which power to keep: nothing moves (see stepWorld).
     if (powerOffer_ && mode_ != WorldMode::Editor) return;
-    time_ += dt;
+    // 2.92 (simulation 19): a held start (startHeld) is not the simulation's time; the time shown goes
+    // on. The step where the clock starts counts (below, before anything of the level moves).
+    const bool held = startHeld();
+    if (!held) time_ += dt;
+    shownTime_ += dt;
     if (flashTimer_ > 0.0f) flashTimer_ = std::max(0.0f, flashTimer_ - dt);
     if (splitFlash_ > 0.0f) splitFlash_ -= dt;
     if (mode_ == WorldMode::Editor) return;
@@ -266,7 +294,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     if (state_ == WorldState::Playing) {
         if (timerPending_ && player_.state() != PlayerState::Respawn) {
             timerPending_ = false;
-            timer_.start();
+            startClock();
         }
         timer_.fixedUpdate(dt);
         if (timer_.expired() && !expiredHandled_) {
@@ -282,6 +310,13 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
                 case ExpireAction::Continue: hint("Temps limite dépassé", 3.0f); break;
             }
         }
+    }
+    if (held) {
+        if (startHeld()) {
+            heldStep(dt);
+            return;
+        }
+        time_ += dt;  // the clock started in this step: the level starts with it
     }
     events_.fixedUpdate(*this, dt, timer_.elapsed());
 

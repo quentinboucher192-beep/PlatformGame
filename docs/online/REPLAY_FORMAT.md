@@ -92,6 +92,16 @@ rejoue donc à l'identique ; depuis la 2.71, l'attaque garde la visée tenue au 
 direction, et le même rebond sur l'ennemi touché). Ni le format ni `input_flags` ne changent : le serveur et les jeux plus
 anciens lisent ces replays comme avant.
 
+**Intro regardée ou passée (2.92, simulation 19).** Les entrées commencent au chargement du niveau,
+intro comprise : passer l'intro est le drapeau `SkipCinematic` (bit 0 des drapeaux d'une entrée) au
+pas où le joueur l'a passée, une intro regardée n'en a aucun ; un replay rejoue donc la même intro de
+la même façon. Depuis la simulation 19, un niveau qui s'ouvre sur son intro attend son chronomètre
+(`GameWorld::startHeld`) : pendant l'intro, puis la matérialisation de Nova, rien du niveau ne bouge
+(événements, objets, ennemis, dangers, tirs, temps de la simulation) ; il démarre au pas où le
+chronomètre démarre, dans le même état pour tous, intro regardée ou passée. Un replay de la simulation
+18 ou avant se rejoue avec ses règles (le niveau continuait pendant l'intro) : mêmes sommes de
+contrôle, records et classements gardés (`kRankingGeneration` reste 8).
+
 Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au record.
 
 ## Section des entrées (versions 2 et 3)

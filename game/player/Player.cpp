@@ -193,9 +193,25 @@ void Player::endDash() {
 
 // ===================================================================== update
 
+void Player::heldStep(float dt) {
+    // 2.92 (simulation 19, GameWorld::startHeld): what Player::fixedUpdate does for her while she
+    // materialises, and nothing more once she has appeared (no gravity, no timer, no power).
+    prevBox = box;
+    heldStill_ = true;
+    if (forcedAnimTimer_ > 0) {  // display only (a cinematic's « playerAnim »)
+        forcedAnimTimer_ -= dt;
+        if (forcedAnimTimer_ <= 0) forcedAnim_.clear();
+    }
+    if (state_ == PlayerState::Respawn) {
+        respawnTimer_ -= dt;
+        if (respawnTimer_ <= 0.0f) state_ = PlayerState::Idle;
+    }
+}
+
 void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
     world_ = &w;
     prevBox = box;
+    heldStill_ = false;
     PlayerInput in = inRaw;
     if (!controlEnabled) {
         in = PlayerInput{};

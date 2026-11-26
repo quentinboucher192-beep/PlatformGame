@@ -41,6 +41,11 @@ struct EnemyDefinition;
 enum class WorldMode { Play, Editor, Arena };
 enum class WorldState { Intro, Playing, Outro, Completed, Failed };
 
+/// 2.92 (simulation 19): the first simulation where a level that opens on its intro waits for its
+/// clock (GameWorld::startHeld): the level starts at the same step for everybody, the intro watched
+/// or skipped. A replay recorded before plays with the rules of its time (GameWorld::simulationVersion).
+constexpr int kHeldStartSimulation = 19;
+
 /// Services the world uses (owned by the application / scene).
 struct WorldServices {
     ResourceManager& res;
@@ -101,6 +106,15 @@ public:
     /// digest by itself.
     void setSimulationVersion(int version) { simVersion_ = version; }
     int simulationVersion() const { return simVersion_; }
+    /// 2.92 (simulation 19, kHeldStartSimulation): a level that opens on its intro holds its start
+    /// until its clock starts (the step where Nova can move: the intro over, watched to the end or
+    /// skipped, and her materialisation done). Until then nothing of the run moves — events, the
+    /// scenery's objects, enemies, dangers, shots, the simulation's time() — and the players only
+    /// appear (Player::heldStep); the intro, the camera and what is only shown go on. Before, the
+    /// level went on during the intro and the materialisation after a skip: it was not in the same
+    /// state when Nova could move, whether the intro was watched or skipped. Never after the start
+    /// (a death's respawn is not held); a replay recorded before plays with the rules of its time.
+    bool startHeld() const { return startHeld_ && simVersion_ >= kHeldStartSimulation; }
 
     // ------------------------------------------------------------ access
     const LevelData& level() const { return level_; }
@@ -128,7 +142,13 @@ public:
     /// The definition an enemy has in this level (2.45): a campaign level bound to an enemy
     /// revision published online plays that revision, any other level the game's own.
     const EnemyDefinition* enemyDefinition(const std::string& id) const;
+    /// The simulation's time (read by the run: the bobbing of the pickups, hashed in the digests):
+    /// every step since the load but a held start (2.92, startHeld).
     float time() const { return time_; }
+    /// The time shown (display only: the scenery's animations, liquids, lights): every step since the
+    /// load, a held start included, so that the intro shows a living level. The same as time() but
+    /// during a held start (2.92) and in a world whose rules are older.
+    float shownTime() const { return shownTime_; }
     /// Gameplay randomness (attack choices, drops...). Only used from fixedUpdate: with the
     /// same seed and the same inputs, a run plays out identically (replays, speedruns).
     Random& rng() { return rng_; }
@@ -701,6 +721,12 @@ private:
     bool respawnFaceLeft_ = false;
     std::string checkpointId_;
     float time_ = 0.0f;
+    float shownTime_ = 0.0f;  // 2.92 (shownTime)
+    bool startHeld_ = false;  // 2.92: the level opened on its intro and its clock has not started yet (startHeld)
+    /// 2.92: a step of a held start: the players appear, the enemies placed at the load are shown
+    /// (none of them steps), the camera follows.
+    void heldStep(float dt);
+    void startClock();  // the clock of the run starts (and the level with it, 2.92)
     float hitStop_ = 0.0f;
     float timeSlow_ = 0.0f;
     float timeSlowFactor_ = 1.0f;

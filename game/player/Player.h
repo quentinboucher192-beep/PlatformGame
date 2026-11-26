@@ -64,6 +64,11 @@ public:
     void spawn(GameWorld& w, Vec2 feet, bool faceLeft, bool materialize);
 
     void fixedUpdate(GameWorld& w, const PlayerInput& in, float dt);
+    /// 2.92 (simulation 19): a step while the level's start is held (GameWorld::startHeld): she only
+    /// appears (her materialisation goes on, then she waits as she appeared, standing: her pose at
+    /// rest); nothing else of hers moves or counts down, so that she is the same when the clock
+    /// starts, whether she appeared during the intro or after it was skipped.
+    void heldStep(float dt);
     /// Display only (each image): the clip of its state, its frames advancing. Every player drawn needs
     /// it, a team's other players included (GameWorld::update).
     void update(GameWorld& w, float dt);
@@ -291,6 +296,7 @@ private:
     float forcedAnimTimer_ = 0.0f;
     std::string forcedAnim_;
     float cinematicWalk_ = 0.0f;
+    bool heldStill_ = false;  // 2.92, display only: held at the level's start (heldStep), shown standing
     float phasedTimer_ = 0.0f;
     float runDustTimer_ = 0.0f;
     bool footstepAlt_ = false;

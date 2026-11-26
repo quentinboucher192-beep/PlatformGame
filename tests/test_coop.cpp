@@ -46,7 +46,7 @@ struct Team {
     std::vector<InputFrame> prev;
 
     explicit Team(int n, const std::string& levelId = {}, int coopVersion = kCoopSimulationVersion,
-                  const std::function<void(LevelData&)>& shape = {}) {
+                  const std::function<void(LevelData&)>& shape = {}, int rules = kSimulationVersion) {
         content.reload();
         res.init(nullptr, &audio);
         LevelData l;
@@ -63,6 +63,7 @@ struct Team {
         w = std::make_unique<GameWorld>(s, WorldMode::Play);
         w->setTeamSize(n);
         w->setCoopVersion(coopVersion);  // 2.75: 1 = solid players (2.62 to 2.74), 2 = they pass through
+        w->setSimulationVersion(rules);  // 2.92: 18 = the level went on during the intro (the replays of before)
         w->setKeysPerSlot(true);
         w->load(l);
         w->seedGameplay(levelSeed(levelId.empty() ? "test_coop" : levelId));
@@ -452,33 +453,40 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
         int players;
         const char* digest;
         int version;
+        int rules = 18;  // the simulation's (kSimulationVersion)
     };
     // 2.75: version 1 (solid players: the replays of 2.62 to 2.74) keeps its digests exactly;
     // version 2 (they pass through each other) has its own.
     // 2.77: version 3 (a soul on the last safe place, a revival held) has its own; 1 and 2 keep theirs.
     // 2.80: version 4 (a passage that closes behind the team waits for every player): the same as 3 here (no
     // door closes in these 40 s of sylvanox_01); its own digests where a door waits: tests/test_coop_passages.cpp.
+    // 2.92 (simulation 19): the level waits for the clock at its start (the team's materialisation after the
+    // skipped intro, GameWorld::startHeld): the team of today has its own; with the rules of 18 (the replays of
+    // before) every version keeps its digests.
     const Golden golden[] = {{2, "bb2676ab728f2c52", 1}, {3, "2ac42252542c66bd", 1}, {2, "91d4357955571446", 2}, {3, "c965b1d603d7a5d0", 2},
-                             {2, "f7e9af3feb027a98", 3},  {3, "ccb9426b84949f0b", 3},  {2, "f7e9af3feb027a98", 4}, {3, "ccb9426b84949f0b", 4}};
+                             {2, "f7e9af3feb027a98", 3},  {3, "ccb9426b84949f0b", 3},  {2, "f7e9af3feb027a98", 4}, {3, "ccb9426b84949f0b", 4},
+                             {2, "0bd106b842078fce", 4, 19},  {3, "8712b2ce21f03f39", 4, 19}};
     int mismatches = 0;
     for (const auto& g : golden) {
         auto script = teamScript(g.players, 31, 120 * 40);
-        Team a(g.players, "sylvanox_01", g.version);
+        Team a(g.players, "sylvanox_01", g.version, {}, g.rules);
         auto ra = runScript(a, script);
-        Team b(g.players, "sylvanox_01", g.version);
+        Team b(g.players, "sylvanox_01", g.version, {}, g.rules);
         auto rb = runScript(b, script);
         CHECK(ra == rb);
         std::string got = ra.empty() ? "" : hex(ra.back());
         if (got != g.digest) {
-            std::printf("  équipe de %d, coop %d (sylvanox_01, 40 s) : %s (attendu %s)\n", g.players, g.version, got.c_str(), g.digest);
+            std::printf("  équipe de %d, coop %d, règles %d (sylvanox_01, 40 s) : %s (attendu %s)\n", g.players, g.version, g.rules,
+                        got.c_str(), g.digest);
             ++mismatches;
         }
         // Another input of player 2 changes the run.
         auto other = script;
         other[200][1].held ^= 1u << J;
-        Team c(g.players, "sylvanox_01", g.version);
+        Team c(g.players, "sylvanox_01", g.version, {}, g.rules);
         CHECK(runScript(c, other) != ra);
     }
+    CHECK(kSimulationVersion == 19);
     CHECK(mismatches == 0);
     CHECK(kCoopSimulationVersion == 4);
 }

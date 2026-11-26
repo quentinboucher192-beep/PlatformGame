@@ -41,7 +41,7 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     const LevelData& lvl = world.level();
     r.setView(view);
     lights_.clear();
-    RenderContext ctx{r, res, lights_, alpha, world.time(), opt.editor};
+    RenderContext ctx{r, res, lights_, alpha, world.shownTime(), opt.editor};  // 2.92: the time shown (a held start included)
 
     // Background colour + parallax
     Color bg = lvl.backgroundColor;
@@ -291,7 +291,7 @@ void GameRenderer::drawTeam(RenderContext& ctx, GameWorld& world) {
 }
 
 void GameRenderer::drawAshVeil(Renderer& r, GameWorld& world, const WorldView& view, float alpha) {
-    const float now = world.time();
+    const float now = world.shownTime();
     const float dt = ashClock_ < 0.0f ? 0.0f : std::clamp(now - ashClock_, 0.0f, 0.1f);
     ashClock_ = now;
     const Enemy* boss = world.activeBoss();

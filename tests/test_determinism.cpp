@@ -152,24 +152,32 @@ TEST_CASE("determinism: same seed and inputs, same run, at any frame rate") {
 // Digest after 60 s of scripted play on each planet's first level. Computed by the Linux
 // build; the Windows (MSVC) build of the CI must find exactly the same values. When a change
 // of the simulation is intended, bump kSimulationVersion and update these digests.
+// 2.92 (simulation 19): the intro is skipped at the first step, then the level waits for the clock
+// (the end of Nova's materialisation, GameWorld::startHeld): its own digests; with the rules of 18
+// (the replays of before) the run is the one of 2.91 to the bit.
 TEST_CASE("determinism: golden digests are identical on every platform") {
     struct Golden {
         const char* level;
-        const char* digest;
+        const char* digest18;  // the rules of 18 (2.91: the level went on during the materialisation)
+        const char* digest;    // 2.92: the held start
     };
     const Golden golden[] = {
-        {"sylvanox_01", "7cb6e985398f32d1"},
-        {"glacior_01", "bc2b0825ca390861"},
-        {"pyralis_01", "17ab99ef955f613a"},
+        {"sylvanox_01", "7cb6e985398f32d1", "4bac8c5d09c3a2c5"},
+        {"glacior_01", "bc2b0825ca390861", "36e553b535dcd1f0"},
+        {"pyralis_01", "17ab99ef955f613a", "0cc79ddea848c9da"},
     };
     int mismatches = 0;
     for (const auto& g : golden) {
-        Sim s(g.level);
-        auto checks = s.run(scriptedInputs(7, 120 * 60));
-        std::string got = checks.empty() ? "" : hex(checks.back());
-        if (got != g.digest) {
-            std::printf("  %s : %s (attendu %s)\n", g.level, got.c_str(), g.digest);
-            ++mismatches;
+        for (int rules : {18, kSimulationVersion}) {
+            Sim s(g.level);
+            s.w->setSimulationVersion(rules);
+            auto checks = s.run(scriptedInputs(7, 120 * 60));
+            std::string got = checks.empty() ? "" : hex(checks.back());
+            const char* want = rules == 18 ? g.digest18 : g.digest;
+            if (got != want) {
+                std::printf("  %s (règles %d) : %s (attendu %s)\n", g.level, rules, got.c_str(), want);
+                ++mismatches;
+            }
         }
     }
     CHECK(mismatches == 0);
