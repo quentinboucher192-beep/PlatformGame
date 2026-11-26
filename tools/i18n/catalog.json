@@ -34317,6 +34317,12 @@
    ]
   },
   {
+   "fr": "Joueurs simulés : Pyroclast (4 / 32) et le Cœur d'Asterion (5 / 32) tombent enfin sans invincibilité, Voidworm 27 / 32 — le corps du boss évité, sa gueule quittée, la supernova prise sous le bouclier.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Joueurs simulés : une branche entière jusqu'à l'antre sans aide, la relique d'abord (prise d'un saut), puis la zone des embuscades ; les créatures en l'air ou hors d'atteinte visées à l'onde ; un joueur bloqué ne retient plus le groupe.",
    "where": [
     "data/news/changelog.json"
@@ -34784,7 +34790,8 @@
   {
    "fr": "l'artère",
    "where": [
-    "game/raid/bots/BossTactic.cpp"
+    "game/raid/bots/BossTactic.cpp",
+    "game/raid/bots/TacticHeart.cpp"
    ]
   },
   {
