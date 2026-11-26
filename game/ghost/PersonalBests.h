@@ -61,7 +61,7 @@ struct BestReplay {
 
 /// What an attempt crossed: where it started, the checkpoints it reached (with its chronometer
 /// at each, in order) and the exit if it reached it.
-struct Passage {
+struct BestPassage {
     /// LevelStart: the level's start (chronometer 0). Checkpoint: `startCheckpoint` (chronometer 0
     /// there: a section training, an enchaînement). Elsewhere: a StartPos — only what lies between
     /// two boundaries crossed after it counts.
@@ -76,13 +76,13 @@ struct Passage {
 
     /// A run's cumulative splits with the ids of their checkpoints (as many; else none is
     /// matched) and its final time (<= 0: not finished), from `from`.
-    static Passage ofSplits(const std::vector<float>& splits, const std::vector<std::string>& ids, float exitTime,
+    static BestPassage ofSplits(const std::vector<float>& splits, const std::vector<std::string>& ids, float exitTime,
                             From from = From::LevelStart, const std::string& startCheckpoint = {});
 };
 
 /// One attempt given to the store.
 struct BestAttempt {
-    Passage passage;
+    BestPassage passage;
     BestSource source = BestSource::Run;
     std::string date;  // FileUtil::nowString()
     /// Its exact replay (encoded), kept as the source of the bests it sets; nullptr: none.
