@@ -1,4 +1,7 @@
 {
+  "2.90.0": [
+    "Le dash met à l'abri des coups des ennemis et des boss un peu plus longtemps : 0,31 s en tout au lieu de 0,21 s (le dash lui-même ne dure pas plus longtemps, les piques gardent 0,21 s). Les boss deviennent un peu moins durs ; aucun record n'est retiré et les anciens replays se rejouent avec leurs règles."
+  ],
   "2.89.0": [
     "Joueurs simulés : le saut par-dessus une onde tenu jusqu'en haut, la voûte de Graviton quittée à temps ; Heartbreaker tombe dans 18 départs sur 32 (avant 14), Dreadfang tombe pour la première fois (2 sur 32) et perd 57 % de sa vie (avant 53 %)."
   ],

@@ -46,6 +46,14 @@ enum class SlashDirection : uint8_t { Forward, Up, Down };
 /// bounce of a strike downwards in the air: GameWorld::simulationVersion; a replay recorded
 /// before plays with the rules of its time: the aim read at the moment of the hit).
 constexpr int kAimedSlashSimulation = 15;
+/// 2.90 (simulation 18): after a dash the player stays out of reach of the enemies' blows (their
+/// strikes, shots, beams and contact) a little longer: its duration + kDashBlowGuardSeconds (0.31 s
+/// for the dash of 0.16 s, 0.21 s before; the dash itself is not longer). The hazards of a level
+/// (spikes) keep the guard of before (+0.05 s), so no route through a level changes. A replay
+/// recorded before plays with the rules of its time.
+constexpr int kLongDashGuardSimulation = 18;
+constexpr float kDashGuardSeconds = 0.05f;
+constexpr float kDashBlowGuardSeconds = 0.15f;
 
 /// The player character: state machine, precise platforming physics, melee combat,
 /// powers, health / energy and animation selection.
@@ -163,6 +171,9 @@ public:
     void setCastPose(float seconds) { castTimer_ = seconds; }
     void teleportTo(Vec2 feet);
     void setInvulnerable(float seconds) { invulnTimer_ = std::max(invulnTimer_, seconds); }
+    /// 2.90: out of reach of the enemies' blows only (not of the level's hazards) for `seconds`.
+    void setBlowGuard(float seconds) { blowGuardTimer_ = std::max(blowGuardTimer_, seconds); }
+    bool blowGuarded() const { return blowGuardTimer_ > 0.0f; }
     void setPhased(float seconds) { phasedTimer_ = seconds; }
     void launch(Vec2 velocity, bool resetJumps);
     MoveOptions moveOptions() const;
@@ -258,6 +269,7 @@ private:
     float slideTimer_ = 0.0f;
     float dropThroughTimer_ = 0.0f;
     float invulnTimer_ = 0.0f;
+    float blowGuardTimer_ = 0.0f;  // 2.90: setBlowGuard
     float hurtTimer_ = 0.0f;
     float hurtFlash_ = 0.0f;
     float deathTimer_ = 0.0f;

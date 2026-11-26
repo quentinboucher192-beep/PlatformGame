@@ -38128,6 +38128,12 @@
    ]
   },
   {
+   "fr": "Le dash met à l'abri des coups des ennemis et des boss un peu plus longtemps : 0,31 s en tout au lieu de 0,21 s (le dash lui-même ne dure pas plus longtemps, les piques gardent 0,21 s). Les boss deviennent un peu moins durs ; aucun record n'est retiré et les anciens replays se rejouent avec leurs règles.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Le dernier gardien des Anciens n'a jamais quitté son trône de glace.",
    "where": [
     "data/levels/glacior_03.json"

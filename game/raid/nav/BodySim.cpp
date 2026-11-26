@@ -5,6 +5,7 @@
 
 #include "engine/physics/PhysicsWorld.h"
 #include "game/gameplay/InputFrame.h"
+#include "game/player/Player.h"
 #include "game/powers/Powers.h"
 
 namespace cosmic::raid::nav {
@@ -177,7 +178,7 @@ void BodySim::handlePowers(Body& b, const Pad& in) const {
         b.dashTimer = kit_.dashDuration;
         b.vel = b.dashDir * kit_.dashSpeed;
         if (dir.x != 0.0f) b.facing = signf(dir.x);
-        b.invuln = std::max(b.invuln, kit_.dashDuration + 0.05f);
+        b.invuln = std::max(b.invuln, kit_.dashDuration + kDashBlowGuardSeconds);  // the blows (2.90)
         b.dashActive = true;
         ++b.dashes;
         return true;

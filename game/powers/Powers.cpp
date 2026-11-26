@@ -24,7 +24,8 @@ void DashPower::onActivate(Player& p, GameWorld& w) {
     float duration = def_.param("duration", 0.16f);
     p.beginDash(dir, speed, duration);
     if (dir.x != 0.0f) p.facing = signf(dir.x);
-    p.setInvulnerable(duration + 0.05f);
+    p.setInvulnerable(duration + kDashGuardSeconds);
+    if (w.simulationVersion() >= kLongDashGuardSimulation) p.setBlowGuard(duration + kDashBlowGuardSeconds);  // 2.90
     dashing_ = true;
     hitTimer_ = 0.0f;
     w.particles().emit("dash_burst", p.center(), 1.0f, -dir);

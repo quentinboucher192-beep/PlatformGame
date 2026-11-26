@@ -46,7 +46,7 @@ void Player::spawn(GameWorld& w, Vec2 feet, bool faceLeft, bool materialize) {
     energy = cfg_.maxEnergy;
     airJumpsLeft_ = airJumpCount();
     grounded_ = wasGrounded_ = false;
-    invulnTimer_ = hurtTimer_ = attackTimer_ = castTimer_ = 0.0f;
+    invulnTimer_ = blowGuardTimer_ = hurtTimer_ = attackTimer_ = castTimer_ = 0.0f;
     curseTimer_ = 0.0f;  // 2.57: a curse never outlives a death
     afterimages_.clear();
     shield_ = false;
@@ -205,6 +205,7 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
     // Timers
     auto tick = [dt](float& t) { t = std::max(0.0f, t - dt); };
     tick(invulnTimer_);
+    tick(blowGuardTimer_);
     tick(coyoteTimer_);
     tick(jumpBufferTimer_);
     tick(wallJumpLockTimer_);
