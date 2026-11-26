@@ -15,8 +15,10 @@
 #include "game/content/BossStories.h"
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
+#include "game/ghost/MeasurePoints.h"
+#include "game/ghost/PersonalBests.h"
 #include "game/ghost/ReplayLibrary.h"
-#include "game/ghost/SegmentHistory.h"
+#include "game/ghost/StartPosStore.h"
 #include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
 #include "game/online/AccountMigration.h"
@@ -73,13 +75,16 @@ public:
     BossStories stories;
     /// 2.63: the game's trailer (data/trailer/trailer.json), played by the main menu's attract mode.
     std::optional<BossStory> trailer;
-    /// Ghost Racing: the replays kept on this computer (my runs, downloads, chosen files)
-    /// and the history of my segments.
+    /// Ghost Racing: the replays kept on this computer (my runs, downloads, chosen files).
     GhostStore ghosts;
-    SegmentHistory segments;
-    /// Section training (2.30.2): the best training time of each segment and the powers last
-    /// chosen for it (saves/training.json). Never a record nor a gold segment.
-    TrainingRecords training;
+    /// 2.91: ONE personal Sum of Best per level version, every source merged (full runs, section
+    /// trainings, enchaînements, StartPos, the player's verified online runs), with the records
+    /// of every range of segments (saves/bests.json, game/ghost/PersonalBests.h).
+    PersonalBests bests;
+    /// 2.91: the StartPos and the measure points placed in training, per level version
+    /// (saves/startpos.json, saves/measures.json).
+    StartPosStore startPositions;
+    MeasureStore measures;
     /// The keys the player chose for the powers of a level (2.31, saves/power_keys.json).
     PowerKeyOverrides powerKeyOverrides;
     /// 2.65: the power keys of players 2 and 3 on one computer (saves/power_keys_j2.json, _j3.json).

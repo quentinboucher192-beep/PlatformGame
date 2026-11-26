@@ -3,9 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <optional>
-
-#include "game/ghost/GhostRace.h"
-#include "game/ghost/TrainingSegments.h"
+#include <system_error>
 
 namespace cosmic {
 
@@ -16,127 +14,83 @@ constexpr float kSameTime = 0.0005f;
 
 bool validSeconds(float s) { return std::isfinite(s) && s > 0.0f && s <= 7200.0f; }
 
-/// Segment `i` of a run on its chronometer.
-std::pair<float, float> bounds(const MontageRun& r, size_t i) {
-    float a = i == 0 ? 0.0f : r.splits[i - 1];
-    float b = i < r.splits.size() ? r.splits[i] : r.time;
-    return {a, b};
+/// Where the segment (from, to) lies on a kept run's chronometer, nullopt when it did not go
+/// straight from one to the other.
+std::optional<std::pair<float, float>> boundsIn(const MontageRun& r, const std::vector<std::string>& route, const std::string& from,
+                                                const std::string& to) {
+    if (r.file.empty() || !validSeconds(r.time)) return std::nullopt;
+    const std::vector<std::string>& ids = r.checkpoints.size() == r.splits.size() ? r.checkpoints : route;
+    if (ids.size() != r.splits.size()) return std::nullopt;
+    // Boundary k of the run: 0 its start, 1..n its checkpoints, n + 1 its exit.
+    const int n = static_cast<int>(ids.size());
+    int a = -1;
+    if (from.empty()) a = 0;
+    else
+        for (int k = 0; k < n; ++k)
+            if (ids[static_cast<size_t>(k)] == from) a = k + 1;
+    if (a < 0) return std::nullopt;
+    const int b = a + 1;
+    if (to.empty() ? b != n + 1 : (b > n || ids[static_cast<size_t>(b - 1)] != to)) return std::nullopt;
+    const float ta = a == 0 ? 0.0f : r.splits[static_cast<size_t>(a - 1)];
+    const float tb = b == n + 1 ? r.time : r.splits[static_cast<size_t>(b - 1)];
+    return std::make_pair(ta, tb);
 }
 
 }  // namespace
 
 float MontagePlan::possibleGain() const { return pbOnRoute && total > 0.0f && pbTime > 0.0f ? std::max(0.0f, pbTime - total) : -1.0f; }
 
-MontagePlan buildMontagePlan(const std::vector<float>& gold, const std::vector<std::string>& goldCheckpoints,
-                             const std::vector<SegmentHistory::GoldSource>& sources, const MontageRun& pb, const std::vector<MontageRun>& others,
-                             const std::vector<std::string>& route, const MontageTrainings& trainings) {
+MontagePlan buildMontagePlan(const PersonalBests& bests, const std::string& levelKey, const std::vector<MontageRun>& kept, int from, int to) {
     MontagePlan p;
-    const bool hasPb = validSeconds(pb.time);
-    std::vector<float> pbSegs;
-    std::optional<std::vector<std::string>> pbIds;
-    if (hasPb) {
-        p.pbTime = pb.time;
-        pbSegs = segmentDurations(pb.splits, pb.time);
-        pbIds = resolveRunCheckpoints(pb.checkpoints, pb.splits.size(), route);
-    }
-    // The Sum of Best exactly as the training's references count it (buildSegmentReferences):
-    // the gold segments, completed with the record's when it went through the same checkpoints,
-    // then the trainings' best times.
-    std::vector<float> sob;
-    std::vector<bool> fromPb;
-    std::optional<std::vector<std::string>> ids;
-    if (!gold.empty()) {
-        const size_t splits = gold.size() - 1;
-        ids = resolveRunCheckpoints(goldCheckpoints, splits, route);
-        sob = gold;
-        fromPb.assign(sob.size(), false);
-        if (hasPb && pb.splits.size() == splits && (!ids || !pbIds || *ids == *pbIds)) {
-            p.pbOnRoute = true;
-            if (!ids) ids = pbIds;
-            for (size_t i = 0; i < sob.size() && i < pbSegs.size(); ++i)
-                if (sob[i] < 0.0f || pbSegs[i] < sob[i]) {
-                    sob[i] = pbSegs[i];
-                    fromPb[i] = true;
-                }
+    const auto route = bests.route(levelKey);
+    if (!route) return p;
+    const int n = static_cast<int>(route->size());
+    if (to < 0 || to > n + 1) to = n + 1;
+    from = std::clamp(from, 0, n);
+    if (to <= from) return p;
+    auto boundary = [&](int k) { return k <= 0 || k > n ? std::string{} : (*route)[static_cast<size_t>(k - 1)]; };
+    p.total = bests.sumOfBests(levelKey, from, to);
+    // The record of the range: the PB for the whole route, else that enchaînement's.
+    if (from == 0 && to == n + 1) {
+        if (const PersonalBests::Run* pb = bests.pb(levelKey)) {
+            p.pbTime = pb->time;
+            p.pbOnRoute = pb->checkpoints.empty() ? pb->splits.size() == route->size() : pb->checkpoints == *route;
         }
-    } else if (hasPb) {
-        sob = pbSegs;  // one run known: its segments are the best ones
-        fromPb.assign(sob.size(), true);
-        ids = pbIds;
-        p.pbOnRoute = true;
-    } else if (!trainings.empty()) {
-        sob.assign(route.size() + 1, -1.0f);  // no full run yet: the route, from the trainings only
-        fromPb.assign(sob.size(), false);
-        ids = route;
+    } else if (const PersonalBests::Record* r = bests.record(levelKey, boundary(from), boundary(to)); r && r->best > 0.0f) {
+        p.pbTime = r->best;
+        p.pbOnRoute = true;  // a record of that range always went through its checkpoints
     }
-    std::vector<bool> fromTraining(sob.size(), false);
-    if (ids) {
-        TrainingBests bests;
-        for (const auto& [ends, t] : trainings) bests[ends] = t.best;
-        sob = withTrainingBests(std::move(sob), *ids, bests, &fromTraining);
-    }
-    p.total = sumOfBest(sob);
-    const size_t splitCount = sob.empty() ? 0 : sob.size() - 1;
-    // A kept run that went the same way (same checkpoints, when both are known).
-    auto sameRoute = [&](const MontageRun& r) {
-        if (r.file.empty() || !validSeconds(r.time) || r.splits.size() != splitCount) return false;
-        auto rIds = resolveRunCheckpoints(r.checkpoints, r.splits.size(), route);
-        return !ids || !rIds || *ids == *rIds;
-    };
-    std::vector<const MontageRun*> kept;
-    if (hasPb) kept.push_back(&pb);
-    for (const MontageRun& r : others) kept.push_back(&r);
-    for (size_t i = 0; i < sob.size(); ++i) {
+    for (int k = from; k < to; ++k) {
         MontageSegment s;
-        s.index = static_cast<int>(i);
-        if (ids && ids->size() == splitCount) {
-            s.from = i == 0 ? std::string{} : (*ids)[i - 1];
-            s.to = i == splitCount ? std::string{} : (*ids)[i];
-        }
-        s.duration = sob[i] >= 0.0f && std::isfinite(sob[i]) ? sob[i] : -1.0f;
-        auto use = [&](const MontageRun& r, bool adopt) {
-            auto [a, b] = bounds(r, i);
-            s.file = r.file;
-            s.date = r.date;
-            s.start = a;
-            s.end = b;
-            s.adopt = adopt;
-        };
-        if (s.duration < 0.0f) {
-            // Unknown: nothing to show (the total is unknown too).
-        } else if (fromTraining[i]) {
-            // A section training did better: its best attempt (from its start to its end).
-            s.training = true;
-            auto it = trainings.find({s.from, s.to});
-            if (it != trainings.end()) {
-                s.date = it->second.date;
-                if (!it->second.file.empty()) {
-                    s.file = it->second.file;
-                    s.start = 0.0f;
-                    s.end = it->second.best;
-                    s.trainingStart = it->second.start;
+        s.index = k;
+        s.from = boundary(k);
+        s.to = boundary(k + 1);
+        if (const PersonalBests::Record* r = bests.record(levelKey, s.from, s.to); r && validSeconds(r->best)) {
+            s.duration = r->best;
+            s.source = r->source;
+            s.date = r->date;
+            if (r->replay.has()) {
+                const fs::path file = bests.replayPath(levelKey, r->replay.file);
+                std::error_code ec;
+                if (!file.empty() && fs::is_regular_file(file, ec)) {
+                    s.file = Paths::toUtf8(file);
+                    s.start = r->replay.start;
+                    s.end = r->replay.end;
+                    s.training = !r->replay.fromLevelStart;
+                    s.trainingStart = r->replay.setup;
                 }
             }
-        } else if (fromPb[i]) {
-            // The record did better than the golds kept: its own replay.
-            s.date = pb.date;
-            if (!pb.file.empty()) use(pb, false);
-        } else {
-            if (i < sources.size()) s.date = sources[i].date;
-            if (i < sources.size() && sources[i].has() && std::abs((sources[i].end - sources[i].start) - s.duration) <= kSameTime) {
-                s.file = sources[i].replay;
-                s.start = sources[i].start;
-                s.end = sources[i].end;
-            } else {
-                // A gold of before 2.60.3: one of my kept runs may have done exactly that time.
-                for (const MontageRun* r : kept) {
-                    if (!sameRoute(*r)) continue;
-                    auto [a, b] = bounds(*r, i);
-                    if (std::abs((b - a) - s.duration) > kSameTime) continue;
-                    use(*r, true);
+            if (!s.hasReplay())
+                // A best of before 2.60.3: one of my kept runs may have done exactly that time.
+                for (const MontageRun& run : kept) {
+                    auto b = boundsIn(run, *route, s.from, s.to);
+                    if (!b || std::abs((b->second - b->first) - s.duration) > kSameTime) continue;
+                    s.file = run.file;
+                    s.start = b->first;
+                    s.end = b->second;
+                    s.adopt = true;
                     break;
                 }
-            }
         }
         if (s.hasReplay()) ++p.withReplay;
         p.segments.push_back(std::move(s));

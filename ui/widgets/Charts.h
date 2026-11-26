@@ -50,6 +50,10 @@ struct Series {
     Kind kind = Kind::Line;
     bool area = false;
     std::vector<Vec2> pts;  // data space, x increasing
+    /// 2.91: the text written at its end (LineSpec::endLabels) instead of its name (its last value…).
+    std::string endLabel;
+    /// 2.91: drawn dashed, thinner (a reference: the record).
+    bool dashed = false;
 };
 
 struct LineSpec {
@@ -61,6 +65,19 @@ struct LineSpec {
     bool endLabels = false;  // the name of each curve at its end (no overlap)
     /// The tooltip at x (the cursor's): its title and rows.
     std::function<void(float x, Tip&)> tip;
+    /// 2.91: the area between two step curves (indices in `series`), filled (the time to gain
+    /// between the record and the Sum of Best).
+    struct Band {
+        size_t upper = 0, lower = 1;
+        Color fill;
+    };
+    std::vector<Band> bands;
+    /// 2.91: a mark over a point (a star: the first victory), drawn by `draw` centred above it.
+    struct Mark {
+        Vec2 at;  // data space
+        std::function<void(const Rect&)> draw;
+    };
+    std::vector<Mark> marks;
 };
 /// A curve chart in `r`. `cursor`: the point the keyboard cursor is on (index in the x values
 /// of every series), kept by the caller.
@@ -76,6 +93,8 @@ struct Bar {
     Color color;
     std::string tipTitle;
     std::vector<Tip::Row> tipRows;
+    /// 2.91 (vBars): written above the bar (its value in words), and a second line under its label.
+    std::string topText, subLabel;
 };
 /// Height of `n` rows of horizontal bars.
 float hBarsHeight(const UIContext& ui, size_t n);
@@ -99,6 +118,49 @@ struct Heat {
 /// The level's relief with its checkpoints, the band of the 40 slices under it, « Départ » and
 /// « Arrivée » under the band.
 void heatBand(UIContext& ui, const std::string& id, const Rect& r, const Heat& h, int& cursor, Tip& tip);
+
+// ------------------------------------------------------------------ 2.91
+
+/// A small curve without axes (a tile's days): a thin line, its last point marked with a halo.
+void sparkline(UIContext& ui, const Rect& r, const std::vector<float>& values, Color color);
+
+/// The sequential ramp of the heat map over a level: from transparent dark to a hot red, opaque
+/// enough to read over the level's art (`t` 0..1).
+Color heatOver(float t);
+/// The same, opaque (the bars under the strip, the legend's swatches).
+Color heatSolid(float t);
+
+/// Rows of horizontal bars with a picture: the picture in its box, the name over a thin bar,
+/// the value (text colour) and a count (dim) at the right; the row under the cursor or the
+/// mouse lit, its tooltip.
+struct IconBar {
+    std::string label;
+    float value = 0.0f;
+    std::string valueText, countText;
+    Color color;
+    std::function<void(const Rect&)> icon;  // draws the picture in its box (nullptr: none)
+    std::string tipTitle;
+    std::vector<Tip::Row> tipRows;
+};
+struct IconBarsStyle {
+    float rowH = 48.0f;               // UI pixels (scaled)
+    float iconW = 44.0f, iconH = 40.0f;
+    bool iconFrame = true;            // a dark box around the picture
+};
+float iconBarsHeight(const UIContext& ui, size_t n, const IconBarsStyle& st = {});
+void iconBars(UIContext& ui, const std::string& id, const Rect& r, const std::vector<IconBar>& bars, float maxValue, int& cursor, Tip& tip,
+              const IconBarsStyle& st = {});
+
+/// One bar cut in parts (a whole and its pieces): each part its colour, its text inside when it
+/// fits (measured), its tooltip under the cursor or the mouse.
+struct Part {
+    float value = 0.0f;
+    Color color;
+    std::string text;  // written inside when it fits
+    std::string tipTitle;
+    std::vector<Tip::Row> tipRows;
+};
+void stackedBar(UIContext& ui, const std::string& id, const Rect& r, const std::vector<Part>& parts, int& cursor, Tip& tip);
 
 /// The « Tableau » view of a chart: its rows a page at a time (‹ › buttons, focusable).
 void table(UIContext& ui, const std::string& id, const Rect& r, const std::vector<std::string>& head,

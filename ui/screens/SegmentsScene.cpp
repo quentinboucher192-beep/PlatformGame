@@ -226,21 +226,15 @@ private:
                 cell(3 + static_cast<int>(gi), gseg >= 0.0f ? formatGhostTime(gseg) : "—", th.text, bottom, bc);
             }
         }
-        // The sum of my best segments (the time a perfect run would make). 2.60.3: the section
-        // trainings' best times count too (the Sum of Best of the training screen).
-        float sobShown = sumOk && sumBest > 0.0f ? sumBest : -1.0f;
-        bool withTraining = false;
-        if (s.sob > 0.0f && (sobShown <= 0.0f || s.sob < sobShown - 0.0005f)) {
-            sobShown = s.sob;
-            withTraining = true;
-        }
-        ui.label(ui.elide("Somme de mes meilleurs segments", FontFace::Body, fs, nameW + cw - ui.s(16)), {area.x + ui.s(8), ry + rh * 0.5f}, fs, th.textDim,
+        // 2.91: the ONE personal Sum of Best of this version when the run started (every source:
+        // runs, trainings, enchaînements, StartPos, verified online runs); the sum of the column
+        // when the run's checkpoints are not the route's.
+        const float sobShown = s.sob > 0.0f ? s.sob : sumOk && sumBest > 0.0f ? sumBest : -1.0f;
+        ui.label(ui.elide("Somme des meilleurs (SOB)", FontFace::Body, fs, nameW + cw - ui.s(16)), {area.x + ui.s(8), ry + rh * 0.5f}, fs, th.textDim,
                  Align::Left, FontFace::Body, VAlign::Middle);
         const float sx = area.x + nameW + cw * 2.0f - ui.s(10);
-        ui.label(sobShown > 0.0f ? formatGhostTime(sobShown) : "—", {sx, withTraining ? ry + ui.s(6) : ry + rh * 0.5f}, fs, Color{255, 214, 90, 255},
-                 Align::Right, FontFace::Bold, withTraining ? VAlign::Top : VAlign::Middle);
-        if (withTraining)
-            ui.label(ui.elide("entraînement compris", FontFace::Body, fz(ui, 13), cw - ui.s(16)), {sx, ry + ui.s(28)}, fz(ui, 13), th.textDim, Align::Right);
+        ui.label(sobShown > 0.0f ? formatGhostTime(sobShown) : "—", {sx, ry + rh * 0.5f}, fs, Color{255, 214, 90, 255}, Align::Right, FontFace::Bold,
+                 VAlign::Middle);
         ui.endScroll();
     }
 
@@ -249,7 +243,7 @@ private:
         const UITheme& th = ui.theme();
         ui.separator({area.x, area.y - ui.s(10)}, area.w);
         ui.label("Mes dernières courses sur cette version du niveau", {area.x, area.y}, fz(ui, 18), th.text, Align::Left, FontFace::Bold);
-        const auto* runs = g_.segments.runs(s_->levelKey);
+        const auto* runs = g_.bests.runs(s_->levelKey);  // 2.91: the runs of the ONE personal Sum of Best
         float y = area.y + ui.s(34);
         if (!runs || runs->empty()) {
             ui.label("Aucune course enregistrée.", {area.x, y}, fz(ui, 15), th.textDim);

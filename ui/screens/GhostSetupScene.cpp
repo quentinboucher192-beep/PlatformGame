@@ -34,6 +34,8 @@
 #include "game/ghost/GhostRace.h"
 #include "game/ghost/SobMontage.h"
 #include "game/ghost/TrainingSegments.h"
+#include "game/ghost/WorldRecordSplits.h"
+#include "engine/core/I18n.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/player/Player.h"
 #include "ui/screens/LevelPowerKeysScene.h"
@@ -136,8 +138,18 @@ public:
                     if (checkpoints_[i].id == req_.trainingCheckpoint) startIdx_ = static_cast<int>(i) + 1;
                 req_.training = false;
             }
+            if (req_.chains) {
+                // 2.91: back from an attempt launched by « Segments et enchaînements »: that screen again.
+                req_.chains = false;
+                ChainTrainingRequest r = chainRequest();
+                r.from = req_.chainFrom;
+                r.to = req_.chainTo;
+                r.pickFirst = false;
+                g_.app.pushScene(makeChainTraining(g_, std::move(r)));
+            }
         }
         if (routeReady_) updateTraining();
+        if (routeReady_ && !myOnline_.empty()) importMyOnlineRuns();
         if (importDialog_ >= 0)
             if (auto res = FileDialogs::result(importDialog_)) {
                 importDialog_ = -1;
@@ -316,6 +328,9 @@ private:
                               --onlineBusy_;
                               if (!r.ok) return note(r.message);
                               for (const Json& e : r.data.value("entries", Json::array())) {
+                                  // 2.91: my own verified run joins my Sum of Best (« En ligne »).
+                                  if (jget<bool>(e, "has_replay", false) && jget<bool>(e, "is_me", false))
+                                      myOnline_.push_back({e, "/api/v1/records/" + jstr(e, "record_id") + "/replay"});
                                   if (!jget<bool>(e, "has_replay", false) || jget<bool>(e, "is_me", false)) continue;
                                   addRemote(e, jget<int>(e, "rank", 0) == 1 ? "world" : "record", true);
                               }
@@ -340,7 +355,11 @@ private:
                               if (!r.ok) return note(r.message);
                               const std::set<std::string>& friends = g_.online.friendIds();
                               for (const Json& e : r.data.value("entries", Json::array())) {
-                                  if (jget<bool>(e, "me", false)) continue;
+                                  if (jget<bool>(e, "me", false)) {
+                                      if (jget<bool>(e, "has_replay", false))  // 2.91: my verified run (« En ligne »)
+                                          myOnline_.push_back({e, "/api/v1/community/records/" + jstr(e, "record_id") + "/replay"});
+                                      continue;
+                                  }
                                   std::string pid = jstr(e.value("player", Json::object()), "id");
                                   if (jget<int>(e, "rank", 0) == 1) addRemote(e, "world", false);
                                   else if (friends.count(pid)) addRemote(e, "friend", false);
@@ -493,8 +512,19 @@ private:
         ui.label("Entraînement", {area.x, y}, 20, th.text, Align::Left, FontFace::Bold);
         y += ui.s(32);
         bool training = training_;
-        const Rect toggleRect{area.x, y, area.w, ui.s(50)};
+        // 2.91: the training screen (segments, enchaînements, startpos and measure points) beside it.
+        const float chainsW = std::min(ui.s(330), area.w * 0.46f);
+        const Rect toggleRect{area.x, y, area.w - chainsW - ui.s(12), ui.s(50)};
         if (ui.toggle("training", toggleRect, "Répéter un segment", training)) training_ = training;
+        {
+            UIContext::ButtonStyle cs;
+            cs.small = true;
+            cs.enabled = routeReady_ && error_.empty();
+            const std::string label = "Segments et enchaînements…";
+            cs.fontSize = ui.fitFont(label, FontFace::Bold, 16, chainsW - ui.s(20), 0.6f);
+            const Rect cr{area.right() - chainsW, y + ui.s(2), chainsW, ui.s(46)};
+            if (ui.button("chains", cr, label, cs) && cs.enabled) g_.app.pushScene(makeChainTraining(g_, chainRequest()));
+        }
         // « NOUVEAU » (2.30.2): the preview, the references and the powers are under it.
         ui.newBadge("training", toggleRect, "ghosts.training");
         y += ui.s(60);
@@ -568,7 +598,63 @@ private:
         if (noteH > 0.0f) ui.labelWrapped(note, {area.x, yy}, area.w, nf, th.textDim);
     }
 
+    // -------------------------------------------------------------- my verified runs (2.91)
+
+    /// My own runs verified online (their replays as the server keeps them, this version only):
+    /// each joins my ONE Sum of Best as « En ligne », once per record (never their passages twice).
+    void importMyOnlineRuns() {
+        std::vector<std::pair<Json, std::string>> list = std::move(myOnline_);
+        myOnline_.clear();
+        std::vector<std::pair<std::string, Vec2>> cps;
+        for (const Checkpoint& c : checkpoints_) cps.push_back({c.id, c.feet});
+        for (auto& [entry, path] : list) {
+            const std::string rid = jstr(entry, "record_id");
+            const int64_t timeMs = jget<int64_t>(entry, "time_ms", 0);
+            if (rid.empty() || timeMs <= 0 || g_.bests.knowsOnline(levelKey_, rid)) continue;
+            std::string date = jstr(entry, "achieved_at");
+            if (date.size() >= 16) date = date.substr(0, 10) + " " + date.substr(11, 5);
+            auto alive = std::weak_ptr<int>(life_);
+            g_.online.getBinary(path, [this, alive, rid, timeMs, date, cps](const HttpResponse& resp) {
+                if (!alive.lock() || resp.networkFailure() || resp.status != 200) return;
+                std::vector<uint8_t> bytes(resp.body.begin(), resp.body.end());
+                auto rep = ReplayData::decode(bytes);
+                if (!rep) return;
+                auto splits = worldRecordSplits(*rep, hash_);  // this exact version only
+                if (!splits) return;
+                GhostTrack track;
+                track.load(*rep);
+                std::vector<std::string> ids = checkpointsOfTrack(track, cps);
+                BestAttempt a;
+                a.passage = BestPassage::ofSplits(*splits, ids, static_cast<float>(timeMs) / 1000.0f);
+                a.source = BestSource::Online;
+                a.date = date;
+                a.onlineId = rid;
+                if (rep->exact()) a.replay = &bytes;
+                g_.bests.add(levelKey_, a);
+                g_.bests.save();
+                refsDirty_ = true;
+            }, GhostStore::kMaxReplayBytes);
+        }
+    }
+
     // -------------------------------------------------------------- section training
+
+    /// 2.91: what « Segments et enchaînements » needs of the level (its route known).
+    ChainTrainingRequest chainRequest() const {
+        ChainTrainingRequest r;
+        r.levelId = levelId_;
+        r.levelName = level_.name.empty() ? levelId_ : level_.name;
+        r.levelHash = hash_;
+        r.levelBounds = level_.bounds;
+        for (const Checkpoint& c : checkpoints_) r.checkpoints.push_back({c.id, c.label, c.feet, c.at});
+        r.tablets = tablets_;
+        r.startPowers = level_.startPowers;
+        r.powerSlots = level_.powerSlots();
+        for (size_t i : order_)
+            if (i < rows_.size() && rows_[i].selected && rows_[i].state == Row::State::Ready) r.ghosts.push_back(rows_[i].entry);
+        r.fromOnline = req_.fromOnline;
+        return r;
+    }
 
     int segmentCount() const { return static_cast<int>(checkpoints_.size()) + 1; }
     /// The ends of segment `k` (checkpoint ids; "" = the start of the level, its exit).
@@ -642,7 +728,7 @@ private:
         std::vector<std::string> def = defaultPowers(startIdx_);
         chosenPowers_ = def;
         powersCustom_ = false;
-        if (const std::vector<std::string>* saved = g_.training.powers(levelKey_, segFrom(startIdx_), segTo(startIdx_))) {
+        if (const std::vector<std::string>* saved = g_.bests.powers(levelKey_, {segFrom(startIdx_), segTo(startIdx_)})) {
             std::vector<std::string> keep;
             for (const std::string& id : *saved)
                 if (std::find(levelPowers_.begin(), levelPowers_.end(), id) != levelPowers_.end()) keep.push_back(id);
@@ -654,8 +740,8 @@ private:
         }
     }
     void rememberPowers() {
-        g_.training.setPowers(levelKey_, segFrom(startIdx_), segTo(startIdx_), powersCustom_ ? &chosenPowers_ : nullptr, FileUtil::nowString());
-        g_.training.save();
+        g_.bests.setPowers(levelKey_, {segFrom(startIdx_), segTo(startIdx_)}, powersCustom_ ? &chosenPowers_ : nullptr, FileUtil::nowString());
+        g_.bests.save();
     }
     void openPowers() {
         PowerPick p;
@@ -724,63 +810,59 @@ private:
         refsDirty_ = false;
         std::vector<std::string> route;
         for (const Checkpoint& c : checkpoints_) route.push_back(c.id);
-        std::vector<SegmentReferences::RunInput> runs;
-        if (const auto* rs = g_.segments.runs(levelKey_))
-            for (const auto& r : *rs) runs.push_back({r.splits, r.time, r.checkpoints});
-        SegmentReferences::RunInput pb;
-        if (pbEntry_ && pbEntry_->meta.timeMs > 0) {
-            pb.time = static_cast<float>(pbEntry_->meta.timeMs) / 1000.0f;
-            pb.splits = pbEntry_->meta.splits;
-            auto it = tracks_.find(Paths::toUtf8(pbEntry_->file));
-            if (pb.splits.empty() && it != tracks_.end() && it->second.track) pb.splits = it->second.track->splits();
-            if (pbCheckpoints_.size() == pb.splits.size()) pb.checkpoints = pbCheckpoints_;
+        // 2.91: the level's own route is the route of its ONE personal Sum of Best (every source:
+        // runs, trainings, enchaînements, StartPos, verified online runs).
+        if (auto known = g_.bests.route(levelKey_); !known || *known != route) {
+            g_.bests.setRoute(levelKey_, route);
+            g_.bests.save();
         }
-        // 2.60.3: the Sum of Best « tout confondu »: the section trainings' best times too.
-        const TrainingBests training = g_.training.bests(levelKey_);
-        refs_ = buildSegmentReferences(g_.segments.goldSegments(levelKey_), g_.segments.goldCheckpoints(levelKey_), runs, pb, route, training);
-        buildPlan(route, pb, training);
+        refs_ = Refs{};
+        refs_.sob = g_.bests.sob(levelKey_);
+        for (const PersonalBests::Segment& sg : g_.bests.segments(levelKey_))
+            if (sg.best() > 0.0f) {
+                refs_.best[{sg.from, sg.to}] = sg.best();
+                refs_.anyRun = true;
+            }
+        // My record: the store's PB (its checkpoints), else my best ghost's (its replay's checkpoints).
+        std::vector<float> splits;
+        std::vector<std::string> ids;
+        if (const PersonalBests::Run* pb = g_.bests.pb(levelKey_)) {
+            refs_.pbTime = pb->time;
+            splits = pb->splits;
+            ids = pb->checkpoints;
+        } else if (pbEntry_ && pbEntry_->meta.timeMs > 0) {
+            refs_.pbTime = static_cast<float>(pbEntry_->meta.timeMs) / 1000.0f;
+            splits = pbEntry_->meta.splits;
+            auto it = tracks_.find(Paths::toUtf8(pbEntry_->file));
+            if (splits.empty() && it != tracks_.end() && it->second.track) splits = it->second.track->splits();
+            if (pbCheckpoints_.size() == splits.size()) ids = pbCheckpoints_;
+        }
+        if (refs_.pbTime > 0.0f) {
+            refs_.anyRun = true;
+            if (ids.size() != splits.size() && splits.size() == route.size()) ids = route;
+            refs_.pbOnRoute = ids == route;
+            if (ids.size() == splits.size())
+                for (size_t i = 0; i <= splits.size(); ++i) {
+                    const float a0 = i == 0 ? 0.0f : splits[i - 1], b0 = i < splits.size() ? splits[i] : refs_.pbTime;
+                    refs_.pb[{i == 0 ? std::string{} : ids[i - 1], i < ids.size() ? ids[i] : std::string{}}] = b0 - a0;
+                }
+        }
+        buildPlan();
     }
 
     // -------------------------------------------------------------- « Regarder » (2.60.3)
 
-    /// The replay file `p` when it is still on this computer (UTF-8), else empty.
-    static std::string present(const fs::path& p) {
-        std::error_code ec;
-        return !p.empty() && fs::is_regular_file(p, ec) ? Paths::toUtf8(p) : std::string{};
-    }
-
     /// The montage of the Sum of Best: which replay shows each segment (the same sum as refs_).
-    void buildPlan(const std::vector<std::string>& route, const SegmentReferences::RunInput& pbRun, const TrainingBests& training) {
-        MontageRun pb;
-        if (pbEntry_ && pbRun.time > 0.0f) {
-            pb.file = Paths::toUtf8(pbEntry_->file);
-            pb.date = pbEntry_->meta.date;
-            pb.splits = pbRun.splits;
-            pb.time = pbRun.time;
-            pb.checkpoints = pbRun.checkpoints;
-        }
-        // My other runs of this version kept here (previous record, last run): an old gold may be one of theirs.
-        std::vector<MontageRun> others;
+    void buildPlan() {
+        // My runs of this version kept here (record, previous record, last run): an old best may be one of theirs.
+        std::vector<MontageRun> kept;
         for (const Row& r : rows_) {
             const GhostMeta& m = r.entry.meta;
-            if (!r.sameVersion || r.state != Row::State::Ready || (m.source != "prev" && m.source != "last") || m.timeMs <= 0) continue;
-            others.push_back({Paths::toUtf8(r.entry.file), m.date, m.splits, static_cast<float>(m.timeMs) / 1000.0f, {}});
+            if (!r.sameVersion || r.state != Row::State::Ready || (m.source != "pb" && m.source != "prev" && m.source != "last") || m.timeMs <= 0) continue;
+            std::vector<std::string> ids = m.source == "pb" && pbCheckpoints_.size() == m.splits.size() ? pbCheckpoints_ : std::vector<std::string>{};
+            kept.push_back({Paths::toUtf8(r.entry.file), m.date, m.splits, static_cast<float>(m.timeMs) / 1000.0f, ids});
         }
-        std::vector<SegmentHistory::GoldSource> sources = g_.segments.goldSources(levelKey_);
-        for (SegmentHistory::GoldSource& s : sources)
-            if (s.has()) s.replay = present(g_.segments.replayPath(levelKey_, s.replay));
-        MontageTrainings trainings;
-        for (const auto& [ends, best] : training) {
-            const TrainingRecords::Entry* e = g_.training.get(levelKey_, ends.first, ends.second);
-            if (!e) continue;
-            MontageTraining t;
-            t.best = e->best;
-            t.date = e->date;
-            if (!e->replay.empty()) t.file = present(g_.training.replayPath(levelKey_, e->replay));
-            if (!t.file.empty()) t.start = e->start;
-            trainings[ends] = std::move(t);
-        }
-        plan_ = buildMontagePlan(g_.segments.goldSegments(levelKey_), g_.segments.goldCheckpoints(levelKey_), sources, pb, others, route, trainings);
+        plan_ = buildMontagePlan(g_.bests, levelKey_, kept);
     }
 
     /// A checkpoint's name by its id ("" = the level's start, or its exit).
@@ -825,17 +907,17 @@ private:
     void openMontage() {
         // Golds of before 2.60.3 found in my kept runs (exactly their time): a copy of that run's
         // replay is kept with them from now on (the record or the last run may change later).
-        std::map<std::string, std::vector<SegmentHistory::Adoption>> byFile;
+        std::map<std::string, std::vector<PersonalBests::Adoption>> byFile;
         std::map<std::string, std::string> dateOf;
         for (const MontageSegment& s : plan_.segments)
             if (s.adopt && s.hasReplay()) {
-                byFile[s.file].push_back({static_cast<size_t>(s.index), s.start, s.end});
+                byFile[s.file].push_back({{s.from, s.to}, s.start, s.end});
                 dateOf[s.file] = s.date;
             }
         bool adopted = false;
-        for (const auto& [file, list] : byFile) adopted = g_.segments.adoptReplay(levelKey_, Paths::fromUtf8(file), dateOf[file], list) || adopted;
+        for (const auto& [file, list] : byFile) adopted = g_.bests.adoptReplay(levelKey_, Paths::fromUtf8(file), dateOf[file], list) || adopted;
         if (adopted) {
-            g_.segments.save();
+            g_.bests.save();
             computeRefs();
         }
         SobMontageRequest req;
@@ -1175,9 +1257,15 @@ private:
         const float f = fz(ui, 16), hf = fz(ui, 14);
         const float lineH = ui.s(f + 10.0f);
         const std::string from = segFrom(startIdx_), to = segTo(startIdx_);
-        const TrainingRecords::Entry* tr = g_.training.get(levelKey_, from, to);
-        std::string trainValue = tr && tr->best > 0.0f ? formatGhostTime(tr->best) : "pas d'essai";
-        if (tr && tr->best > 0.0f) trainValue += "  (" + std::to_string(tr->attempts) + (tr->attempts > 1 ? " essais)" : " essai)");
+        // 2.91: where the segment's best was done (Partie, Entraînement, Enchaînement, StartPos, En
+        // ligne) and how often it was crossed, every source together.
+        const PersonalBests::Record* tr = g_.bests.record(levelKey_, from, to);
+        std::string trainValue = "pas encore";
+        if (tr && tr->best > 0.0f) {
+            trainValue = i18n::tr(bestSourceLabel(tr->source));
+            if (tr->date.size() >= 10) trainValue += " · " + tr->date.substr(8, 2) + "/" + tr->date.substr(5, 2);
+            trainValue += "  (" + std::to_string(tr->passages) + (tr->passages > 1 ? " passages)" : " passage)");
+        }
         auto cell = [&](float x, float y, float w, const std::string& label, const std::string& value, bool known) {
             float vw = ui.text().measure(value, FontFace::Bold, ui.s(f)).x;
             float room = w - vw - ui.s(12);
@@ -1187,12 +1275,12 @@ private:
         };
         if (!refs_.anyRun) {
             // Nothing to compare with yet: said plainly, and the training time anyway.
-            std::string none = "Pas encore de course complète de cette version du niveau : terminez-la pour voir vos meilleurs segments, "
-                               "votre record et la somme des meilleurs (SoB).";
+            std::string none = "Aucun temps encore sur cette version du niveau : une course ou un entraînement donne vos meilleurs segments, "
+                               "et la somme des meilleurs (SoB) dès que chacun est connu.";
             float h = ui.text().measureWrapped(none, FontFace::Body, ui.s(hf), area.w).y;
             if (draw) {
                 ui.labelWrapped(none, {area.x, area.y}, area.w, hf, th.textDim);
-                cell(area.x, area.y + h + ui.s(8) + lineH * 0.5f, area.w, "Meilleur à l'entraînement", trainValue, tr != nullptr);
+                cell(area.x, area.y + h + ui.s(8) + lineH * 0.5f, area.w, "Meilleur fait en", trainValue, tr != nullptr);
             }
             return h + ui.s(8) + lineH;
         }
@@ -1212,7 +1300,7 @@ private:
         cell(x0, y, colW, "Dans mon record", pbValue, pb >= 0.0f);
         cell(x1, y, colW, "Mon record", refs_.pbTime > 0.0f ? formatGhostTime(refs_.pbTime) : "aucun", refs_.pbTime > 0.0f);
         y += lineH;
-        cell(x0, y, colW, "Meilleur à l'entraînement", trainValue, tr != nullptr);
+        cell(x0, y, colW, "Meilleur fait en", trainValue, tr != nullptr);
         float gain = refs_.possibleGain();
         std::string gainValue = gain >= 0.0f ? formatGhostDelta(gain).substr(formatGhostDelta(gain)[0] == '+' ? 1 : 0) : refs_.pbTime > 0.0f && refs_.sob > 0.0f ? "autre parcours" : "—";
         cell(x1, y, colW, "Gain possible", gainValue, gain >= 0.0f);
@@ -1224,7 +1312,7 @@ private:
         if (n <= 1) return "Ce niveau n'a pas de point de sauvegarde : le segment va du départ à l'arrivée.";
         const std::string from = segFrom(startIdx_), to = segTo(startIdx_);
         if (refs_.anyRun && refs_.bestOf(from, to) < 0.0f)
-            return "Vos courses complètes ne passent pas par ces deux points à la suite : ce segment n'a pas de référence.";
+            return "Ce segment n'a encore jamais été parcouru en entier : son premier essai fera sa référence.";
         return "Le segment recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.";
     }
 
@@ -1310,7 +1398,23 @@ private:
     std::map<std::string, TrackSlot> tracks_;
     std::vector<std::string> pbCheckpoints_;  // the checkpoints of my record's splits (its replay)
     bool pbCheckpointsRead_ = false;
-    SegmentReferences refs_;
+    /// The references of the segments, from the ONE personal Sum of Best (2.91).
+    struct Refs {
+        std::map<std::pair<std::string, std::string>, float> best, pb;  // (from, to) → seconds
+        float sob = -1.0f, pbTime = -1.0f;
+        bool anyRun = false, pbOnRoute = false;
+        float bestOf(const std::string& f, const std::string& t) const {
+            auto it = best.find({f, t});
+            return it == best.end() ? -1.0f : it->second;
+        }
+        float pbOf(const std::string& f, const std::string& t) const {
+            auto it = pb.find({f, t});
+            return it == pb.end() ? -1.0f : it->second;
+        }
+        float possibleGain() const { return pbOnRoute && sob > 0.0f && pbTime > 0.0f ? std::max(0.0f, pbTime - sob) : -1.0f; }
+    };
+    Refs refs_;
+    std::vector<std::pair<Json, std::string>> myOnline_;  // 2.91: my verified runs to read (entry, replay path)
     MontagePlan plan_;  // 2.60.3: « Regarder »
     bool refsDirty_ = true;
     /// The level drawn small: loaded on the main thread (textures) once the training is shown,

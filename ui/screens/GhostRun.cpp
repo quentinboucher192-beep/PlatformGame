@@ -13,7 +13,7 @@ namespace cosmic {
 
 namespace {
 
-bool isMine(const GhostMeta& m) { return m.source == "pb" || m.source == "prev" || m.source == "last"; }
+bool isMine(const GhostMeta& m) { return m.mine(); }
 
 /// Mine are named by what they are (best time, last run...), the others by their player.
 std::string displayName(const GhostMeta& m) { return m.label.empty() || isMine(m) ? m.sourceLabel() : m.label; }
@@ -242,7 +242,7 @@ void GhostRun::drawBox(UIContext& ui, const Rect& area, float k, bool boxShown) 
     float pad = S(10);
     float inner = width - 2 * pad;
     std::string refName = ref.meta.sourceLabel();
-    if (!ref.meta.label.empty() && ref.meta.label != "Moi") refName += " · " + ref.meta.label;
+    if (!ref.meta.label.empty() && ref.meta.label != "Moi" && ref.meta.source != "range") refName += " · " + ref.meta.label;
     std::string who = race_.size() > 1 ? std::to_string(race_.size()) + " FANTÔMES · RÉF. " + refName : "FANTÔME · " + refName;
     if (!ref.sameVersion) who += " (autre version)";
     // Rows of the panel (passed checkpoints, then the ghost's next ones, then the exit).

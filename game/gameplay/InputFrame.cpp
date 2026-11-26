@@ -17,9 +17,11 @@ void stepWorld(GameWorld& world, const InputFrame& frame, float dt) {
     if (frame.flags & InputFrame::SkipCinematic) {
         if (world.cinematic().active() && world.cinematic().skippable()) world.cinematic().skip(world);
         world.fixedUpdate(PlayerInput{}, dt);
-        return;
+    } else {
+        world.fixedUpdate(frame.toPlayerInput(), dt);
     }
-    world.fixedUpdate(frame.toPlayerInput(), dt);
+    // 2.91: the marks of a training run, read after the step (never part of the simulation).
+    if (frame.flags & InputFrame::kMarkFlags) world.noteMarks(frame.flags);
 }
 
 void stepTeam(GameWorld& world, const InputFrame* frames, int count, float dt) {

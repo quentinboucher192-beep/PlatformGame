@@ -162,21 +162,21 @@
    ]
   },
   {
-   "fr": "({0} essai)",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
-   "fr": "({0} essais)",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
    "fr": "({0} Mo)",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "({0} passage)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "({0} passages)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -189,6 +189,36 @@
    "fr": "* compté après la partie, pas pendant",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "**Jamais** : aucune donnée personnelle, aucune position.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "**Par boss** : chaque tentative (part des points de vie retirés, phase atteinte, attaque fatale), les 200 dernières.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "**Par jour** : temps joué, morts, menaces et esquives, attaques lancées et réussies (par attaque), origine des coups reçus, étoiles des succès.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "**Par niveau classique** : les temps de chaque segment (les 50 derniers), vos arrivées, votre record. La somme des meilleurs, une seule par version du niveau et toutes sources confondues, est gardée avec vos meilleurs segments (bests.json).",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "**Par niveau** : passages et morts dans chacune des 40 tranches.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -319,9 +349,16 @@
    ]
   },
   {
+   "fr": "+x s : écart à cette somme",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "+{0} s",
    "where": [
-    "game/levels/EventSystem.cpp"
+    "game/levels/EventSystem.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -397,6 +434,12 @@
    ]
   },
   {
+   "fr": "0,0 m : côte à côte",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
    "fr": "0,000 s",
    "where": [
     "game/ghost/GhostRace.cpp",
@@ -438,6 +481,12 @@
    "where": [
     "game/raid/RaidSheets.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "1 m = 1 tuile (16 px)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -492,7 +541,7 @@
   {
    "fr": "100 % (vaincu)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -511,6 +560,12 @@
    "fr": "16 images au plus : seules les 16 premières seront prises.",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "16 paires au plus par version du niveau.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -646,6 +701,12 @@
    ]
   },
   {
+   "fr": "20 cœurs",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "20 utilisations",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -691,6 +752,12 @@
    "fr": "30 jours",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "32 au plus par version du niveau : effacez-en dans Pause › Startpos et mesures.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -838,9 +905,15 @@
    ]
   },
   {
-   "fr": "= aussi régulier qu'il y a 30 jours",
+   "fr": "= aussi régulier qu'il y a 30 j",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "= somme des meilleurs",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -934,6 +1007,18 @@
     "engine/input/InputTypes.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A (rejoué, exact)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A (trajectoire, à 0,03 s près)",
+   "where": [
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -1040,7 +1125,19 @@
    ]
   },
   {
+   "fr": "A en avance sur B à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "A en retard",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A en retard sur B à cet instant",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -1085,6 +1182,12 @@
    "fr": "a envoyé {0} cadeaux ({1}) à {2} · {3} ignorés",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "A et B à égalité à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -1335,6 +1438,36 @@
   },
   {
    "fr": "A − B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A − B EN DIRECT · DÉCALAGE {0} COMPRIS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A − B EN DIRECT · SANS DÉCALAGE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A − B en temps",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "A − B en temps (exact)",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "A − B sur A{0} → B{1}",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -1762,9 +1895,12 @@
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/gameplay/entities/PlatformEntities.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TrainingSession.cpp",
     "ui/screens/TutorialScenes.cpp",
     "ui/studio/Studio.cpp"
    ]
@@ -1779,6 +1915,18 @@
    "fr": "active {0}",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "active · posée le {0} · {1} essai depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "active · posée le {0} · {1} essais depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -2538,9 +2686,9 @@
    ]
   },
   {
-   "fr": "Algorithme : pour chaque tranche, difficulté = (morts + 1) ÷ (passages + 2), un lissage qui évite qu'une seule mort rende une tranche « impossible ». Les parties récentes pèsent plus (demi-vie de 14 jours) pour suivre vos progrès. Les tranches voisines au-dessus de 2 × la médiane du niveau sont fusionnées en un passage, retenu seulement avec au moins 5 passages ; sa difficulté = 1 − le produit des (1 − difficulté de chaque tranche). Phase de boss : défaites dans la phase ÷ tentatives arrivées à la phase (au moins 5). Le classement mélange tous les niveaux et les phases de boss. « S'entraîner sur ce segment » ouvre l'entraînement par segment depuis le point de passage précédent ; « S'entraîner sur cette phase », l'entraînement contre le boss sur cette phase.",
+   "fr": "Algorithme : pour chaque tranche, difficulté = (morts + 1) ÷ (passages + 2), un lissage qui évite qu'une seule mort rende une tranche « impossible ». Les parties récentes pèsent plus (demi-vie de 14 jours) pour suivre vos progrès. Les tranches voisines au-dessus de 2 × la médiane du niveau sont fusionnées en un passage, retenu seulement avec au moins 5 passages ; sa difficulté = 1 − le produit des (1 − difficulté de chaque tranche). Phase de boss : défaites dans la phase ÷ tentatives arrivées à la phase (au moins 5). Le classement mélange tous les niveaux et les phases de boss. « S'entraîner sur ce segment » ouvre l'entraînement par segment depuis le point de passage précédent ; « S'entraîner sur cette phase », l'entraînement contre le boss sur cette phase. La carte est le vrai rendu du niveau, tranche par tranche le long de son parcours.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -3913,12 +4061,21 @@
   {
    "fr": "Arrivée",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SegmentsScene.cpp",
-    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/StatisticsArt.cpp",
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TrainingSession.cpp",
     "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
+   "fr": "arrivée",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -3972,7 +4129,19 @@
   {
    "fr": "ARRIVÉES",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "arrivées",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "ARRIVÉES AU BOUT",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -4845,19 +5014,13 @@
   {
    "fr": "Attaque fatale",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
-   "fr": "Attaque fatale la plus fréquente : {0} · {1} défaite sur {2} tentatives arrivées là · difficulté {3}",
+   "fr": "Attaque fatale : {0}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Attaque fatale la plus fréquente : {0} · {1} défaites sur {2} tentatives arrivées là · difficulté {3}",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -5263,6 +5426,12 @@
    ]
   },
   {
+   "fr": "au départ : pas encore d'écart",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Au fond de l'étoile, un cœur mort s'est éveillé : Singularis et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/noyau_03.json"
@@ -5311,9 +5480,9 @@
    ]
   },
   {
-   "fr": "au moins 3 parties complètes nécessaires",
+   "fr": "au moins 3 parties complètes",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -5578,6 +5747,12 @@
    "fr": "Aucun boss dans cette zone : part des dégâts infligés à tous ses ennemis ({0} PV).",
    "where": [
     "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun boss dans le contenu du jeu.",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -6117,13 +6292,19 @@
   {
    "fr": "Aucun passage n'est encore enregistré dans ce niveau : jouez-le pour voir où vous tombez.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Aucun passage ne se détache encore (il en faut au moins 5 passages pour en juger).",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun point de mesure. En entraînement, posez A puis B : franchir A lance un chrono, franchir B l'arrête.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -6225,6 +6406,12 @@
    ]
   },
   {
+   "fr": "Aucun record (PB) de cette version du niveau sur cet ordinateur.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
+   ]
+  },
+  {
    "fr": "Aucun record envoyé.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -6295,6 +6482,12 @@
    "fr": "Aucun replay à montrer.",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun replay.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -6376,6 +6569,12 @@
    ]
   },
   {
+   "fr": "Aucun temps encore sur cette version du niveau : une course ou un entraînement donne vos meilleurs segments, et la somme des meilleurs (SoB) dès que chacun est connu.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun temps vérifié pour l'instant : soyez le premier !",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -6440,6 +6639,12 @@
    "fr": "Aucune : il n'enrage pas avec le temps ; seul le groupe change son rythme.",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "aucune active",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -6723,13 +6928,13 @@
   {
    "fr": "Aucune partie complète pour l'instant.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Aucune partie de ce niveau n'est encore enregistrée. Jouez-le depuis son début (hors EXTRÊME) : chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -6842,6 +7047,18 @@
    ]
   },
   {
+   "fr": "Aucune startpos",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune startpos pour cette version du niveau. En entraînement, posez-en une là où Nova se trouve ; les essais suivants partiront de là.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aucune suggestion : tous les succès accessibles sont obtenus.",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -6856,13 +7073,19 @@
   {
    "fr": "Aucune tentative contre ce boss n'est encore enregistrée.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
    "fr": "Aucune tentative contre un boss n'est encore enregistrée. Chaque combat compte dès maintenant : la part des points de vie retirée, la phase atteinte et l'attaque fatale. Les statistiques de boss d'avant (victoires, phases sans dégât) restent dans les fiches des boss.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune tentative enregistrée contre les boss de cette page.",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -6927,6 +7150,12 @@
    "fr": "Augmente la vie maximale pour le reste du niveau et soigne entièrement.",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "AUJOURD'HUI",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -7114,9 +7343,21 @@
    ]
   },
   {
+   "fr": "Autre niveau",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "autre parcours",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autre replay…",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -7225,6 +7466,12 @@
    ]
   },
   {
+   "fr": "Aux points de passage seulement : pas de distance entre eux",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Avalé",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -7309,9 +7556,15 @@
    ]
   },
   {
+   "fr": "avant le premier point de passage",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "avant le suivi",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -7404,6 +7657,12 @@
    "fr": "avatars",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avec confirmation ; records et succès ne changent pas.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -7586,6 +7845,44 @@
    ]
   },
   {
+   "fr": "A{0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "A{0} déplacé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "A{0} posé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "A{0} posé : posez B plus loin (F8)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A{0}…",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "A{0}→B{1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "B",
    "where": [
     "engine/input/InputTypes.cpp",
@@ -7593,6 +7890,12 @@
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "B (trajectoire, à 0,03 s près)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -7605,6 +7908,12 @@
    "fr": "B n'est pas passé par {0} : recalage impossible",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B pas encore posé",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -7962,6 +8271,12 @@
    ]
   },
   {
+   "fr": "Barres",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
    "fr": "Barres de défilement à la souris, partout : on attrape la barre et on la fait glisser en gardant le bouton enfoncé (le contenu suit le pointeur), ou on clique dans son couloir pour y sauter ; elle s'élargit au survol.",
    "where": [
     "data/news/changelog.json"
@@ -8238,6 +8553,12 @@
    "where": [
     "server/src/raidMap.ts",
     "server/src/raidWipe.ts"
+   ]
+  },
+  {
+   "fr": "beaucoup de morts",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -8694,7 +9015,8 @@
   {
    "fr": "BOSS",
    "where": [
-    "ui/screens/PlanetMapScene.cpp"
+    "ui/screens/PlanetMapScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -8881,7 +9203,13 @@
   {
    "fr": "Boss {0} à {1} sur {2}, du plus récent au plus ancien",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
+   "fr": "Boss {0} à {1} sur {2}, les boss combattus d'abord",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -8894,6 +9222,12 @@
    "fr": "boss {0}/{1}",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "BOSS · {0}",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -9685,6 +10019,38 @@
    ]
   },
   {
+   "fr": "B{0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} déplacé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} pas encore posé : F8 (ou Vue + ↑) plus loin",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} posé",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} posé : mesure A{1} → B{2} prête",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Bâti d'une presse hydraulique, sous la voûte. Dans l'arène du Titan Mécanique, sa tête s'abat sur la surface située dessous quand le Titan la déclenche (des bandes jaunes et noires l'annoncent).",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -10138,15 +10504,28 @@
    ]
   },
   {
+   "fr": "Calcul de l'écart…",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Calcul du parcours…",
    "where": [
-    "ui/screens/GhostSetupScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
    "fr": "calculée d'après ses PV, ses phases et ses attaques",
    "where": [
     "ui/widgets/BossSheetWidgets.h"
+   ]
+  },
+  {
+   "fr": "Calculée en lisant stats.json : la taille de chaque partie, rien de plus n'est enregistré.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -10507,6 +10886,12 @@
    "fr": "CARTE",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Carte",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -11493,6 +11878,24 @@
    ]
   },
   {
+   "fr": "Ce replay",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay (rejoué, exact)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay (trajectoire, à 0,03 s près)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce replay a été enregistré sur une autre version du niveau ou du jeu.",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -11514,6 +11917,12 @@
    "fr": "Ce replay est celui d'un autre niveau ({0}).",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "ce replay est votre record : écart nul",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -11578,6 +11987,12 @@
   },
   {
    "fr": "CE SEGMENT",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce segment n'a encore jamais été parcouru en entier : son premier essai fera sa référence.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
    ]
@@ -12598,6 +13013,12 @@
    ]
   },
   {
+   "fr": "chaque meilleur segment lu sur son replay",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Chaque membre travaille sur sa copie dans l'éditeur habituel ; chaque envoi crée une révision, et une copie faite d'après une ancienne révision n'écrase jamais la plus récente.",
    "where": [
     "data/news/changelog.json"
@@ -12612,19 +13033,13 @@
   {
    "fr": "Chaque partie",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Chaque partie détruite retire au titan ce que sa ligne décrit : plus elles sont nombreuses à tomber, plus le dernier combat est à votre portée.",
    "where": [
     "data/raids/asterion_sheets.json"
-   ]
-  },
-  {
-   "fr": "Chaque partie, et la médiane des 5 dernières",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -12673,6 +13088,12 @@
    "fr": "Chaque relique des branches validée lui retire {0} % de sa vie (au moins {1} % gardés).",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque segment compte son meilleur temps, où qu'il ait été fait : il en manque encore un pour la somme.",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -13353,6 +13774,12 @@
    ]
   },
   {
+   "fr": "Choisissez l'autre replay : « Autre replay… »",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez la couleur à remplacer.",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -13440,6 +13867,12 @@
    "fr": "Choisissez un pseudonyme d'au moins 3 caractères.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un replay.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -13584,6 +14017,12 @@
    "fr": "Chrono {0} ({1})  état {2}",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chrono à l'apparition ; chaque point traversé donne un temps de passage.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -15172,9 +15611,15 @@
    ]
   },
   {
-   "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
+   "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) : une seule par version du niveau, le meilleur temps de chaque segment où qu'il ait été fait (partie, entraînement par segment, enchaînement, segment entier après une startpos, vos courses vérifiées en ligne), additionnés ; elle reste personnelle : les records en ligne officiels ne comptent jamais rien de personnel. « Regarder » rejoue le replay exact qui tient ce meilleur temps. Temps perdu possible = record − SOB ; temps perdu d'un segment = son temps dans le record − son meilleur. Zones à travailler : médiane des 50 derniers temps du segment − son meilleur temps en partie. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro. Les aperçus sont le vrai rendu du niveau entre deux points de passage.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "COMMENT DÉMARRE UN ENCHAÎNEMENT",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -15764,6 +16209,12 @@
    ]
   },
   {
+   "fr": "Confirmer : tout effacer",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Confirmer la publication",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -16045,7 +16496,7 @@
    ]
   },
   {
-   "fr": "Connecté à Cosmic Online, le jeu envoie vos statistiques dans la copie privée de votre progression, avec vos records et vos succès (aucun autre joueur ne la voit). Sans compte ni Internet, rien ne part et tout fonctionne ; pour les garder vous-même, copiez stats.json. Si le fichier est abîmé, l'onglet repart de zéro et l'ancien fichier est gardé en stats.json.bak.",
+   "fr": "Connecté à Cosmic Online, le jeu envoie vos statistiques dans la copie privée de votre progression, avec vos records et vos succès (aucun autre joueur ne la voit). Sans compte ni Internet, rien ne part et tout fonctionne ; pour les garder vous-même, copiez stats.json.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -16283,9 +16734,15 @@
    ]
   },
   {
+   "fr": "CONSTANCE",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "CONSTANCE PAR SEGMENT",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -16326,6 +16783,12 @@
    "fr": "Contact avec un ennemi",
    "where": [
     "game/records/PlayStatsRecorder.cpp",
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Contenu",
+   "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -17434,6 +17897,12 @@
    ]
   },
   {
+   "fr": "Courbe",
+   "where": [
+    "ui/screens/StatisticsScene.h"
+   ]
+  },
+  {
    "fr": "Courbe (inOutCubic, linear, outBack…)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -17590,8 +18059,7 @@
    "fr": "course",
    "where": [
     "game/achievements/AchievementSuggestions.cpp",
-    "ui/screens/AdminCreations.cpp",
-    "ui/screens/SobMontageScene.cpp"
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -17658,6 +18126,12 @@
    "fr": "Course non terminée.",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "course vérifiée",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -18516,6 +18990,12 @@
    ]
   },
   {
+   "fr": "Curseur dans la courbe",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Cyan",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -18860,6 +19340,12 @@
    ]
   },
   {
+   "fr": "d'après le dernier jour de chaque niveau et l'ordre des combats de boss, déjà enregistrés",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "d'après sa définition, pour un joueur : il grandit avec le groupe",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -19101,12 +19587,6 @@
    ]
   },
   {
-   "fr": "Dans le fichier stats.json, à côté de vos autres sauvegardes, avec un numéro de format pour les futures mises à jour. Il est écrit à la fin de chaque tentative (une chute, la fin ou l'abandon d'une partie) et quand le jeu se ferme, sur un fil secondaire (jamais pendant que vous jouez), par écriture atomique : fichier temporaire puis remplacement, comme les records.",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
    "fr": "dans le jeu",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -19116,6 +19596,18 @@
    "fr": "Dans le noir, les poissons perdus suivaient sa lueur jusqu'aux sources chaudes. On l'appelait « la Lanterne ».",
    "where": [
     "data/stories/kraken.json"
+   ]
+  },
+  {
+   "fr": "DANS LE PB",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "dans le PB − meilleur",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -19154,6 +19646,12 @@
    "fr": "dans son antre",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dans stats.json, à côté de vos autres sauvegardes. Écrit à la fin de chaque tentative (une chute, la fin ou l'abandon d'une partie) et à la fermeture du jeu, sur un fil secondaire (jamais pendant que vous jouez), par écriture atomique (fichier temporaire puis remplacement), comme les records.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -19333,6 +19831,18 @@
    "where": [
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "de jeu sur {0} jour",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "de jeu sur {0} jours",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -19656,6 +20166,12 @@
    ]
   },
   {
+   "fr": "DEPUIS LA STARTPOS  {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Depuis la sélection",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -19693,6 +20209,18 @@
    ]
   },
   {
+   "fr": "DEPUIS SP {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "DEPUIS UNE STARTPOS",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Depuis « Paramètres en ligne », vous pouvez à tout moment : modifier votre pseudonyme, votre avatar et votre pays ; masquer votre pays ou votre présence sur le globe ; masquer votre profil public ; refuser les demandes d'amis ; exporter vos données (fichier JSON) ; supprimer définitivement votre compte, vos records, vos replays et vos amis (confirmation par mot de passe). Vous pouvez aussi vous déconnecter de tous vos appareils.",
    "where": [
     "data/online/terms_fr.txt"
@@ -19714,6 +20242,12 @@
    "fr": "Depuis, le Phénix se consume chaque matin dans son nid. Il ne sait plus s'arrêter, de peur que la nuit gagne.",
    "where": [
     "data/stories/phenix.json"
+   ]
+  },
+  {
+   "fr": "Dernier",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -19825,6 +20359,12 @@
    ]
   },
   {
+   "fr": "Dernier {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Dernier éventail",
    "where": [
     "data/enemies/dreadfang.json"
@@ -19852,6 +20392,12 @@
    "fr": "Derniers rochers",
    "where": [
     "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "derniers temps",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -20035,6 +20581,12 @@
    ]
   },
   {
+   "fr": "dernières tentatives",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Derrière le verre, un vieil homme contemplait les éclats immobiles.",
    "where": [
     "data/raids/asterion_balancier.json"
@@ -20093,12 +20645,6 @@
    "fr": "Des colonnes de lumière tombent de la voûte sur des marques, l'une après l'autre.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
-   ]
-  },
-  {
-   "fr": "Des compteurs par jour : temps joué, morts, menaces et esquives, attaques lancées et réussies (par attaque), origine des coups reçus, étoiles des succès. Par niveau : passages et morts dans chacune des 40 tranches. Par boss : chaque tentative (part des points de vie retirés, phase atteinte, attaque fatale). Par niveau classique : les temps de chaque segment, vos arrivées, votre record et votre somme des meilleurs. Aucune donnée personnelle, aucune position.",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -20576,6 +21122,12 @@
    ]
   },
   {
+   "fr": "Diagonale : meilleur segment (sa part de la SOB)",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Dialogue",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -20640,7 +21192,7 @@
    "fr": "Difficulté",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/StatisticsLevels.cpp",
     "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
@@ -20648,6 +21200,12 @@
    "fr": "difficulté",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Difficulté (lissée)",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -20739,7 +21297,8 @@
    "fr": "Dimanche",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -20831,7 +21390,7 @@
   {
    "fr": "Dispersion",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -20841,9 +21400,21 @@
    ]
   },
   {
-   "fr": "Dispersion des temps (écart interquartile ÷ médiane)",
+   "fr": "DISPERSION (ÉCART INTERQUARTILE ÷ MÉDIANE)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "dispersion · {0} passage",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "dispersion · {0} passages",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -21515,8 +22086,13 @@
   {
    "fr": "du {0}",
    "where": [
-    "ui/screens/AdminScene.cpp",
-    "ui/screens/SobMontageScene.cpp"
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "du {0} au {1}, comparée aux {2} jours d'avant · ▲ ▼ avec l'écart, jamais la couleur seule",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -21966,6 +22542,12 @@
   },
   {
    "fr": "Décalage de B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "décalage de B : {0}, compris dans la courbe",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -22421,13 +23003,13 @@
    "fr": "Défaites",
    "where": [
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
-   "fr": "Défaites par phase — choisissez un boss",
+   "fr": "Défaites par phase, sur les tentatives arrivées jusque-là",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -23173,7 +23755,10 @@
   {
    "fr": "Départ",
    "where": [
-    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/StatisticsArt.cpp",
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TrainingSession.cpp",
     "ui/widgets/Charts.cpp"
    ]
   },
@@ -23220,6 +23805,13 @@
    ]
   },
   {
+   "fr": "Départ de l'entraînement",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Départ du joueur",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -23254,6 +23846,12 @@
    "fr": "départ éloigné du point de départ ({0})",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "départ ↓ · arrivée →",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -23318,6 +23916,12 @@
     "editors/level_editor/LevelEditorLive.cpp",
     "editors/level_editor/LevelEditorViewport.cpp",
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Déplacer A / B",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -24104,6 +24708,42 @@
    ]
   },
   {
+   "fr": "en avance",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur l'autre replay à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur la somme des meilleurs à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur la somme des meilleurs à l'arrivée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur la somme des meilleurs à {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "En bas de l'écran",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -24174,7 +24814,8 @@
    "fr": "en cours",
    "where": [
     "ui/screens/AdminBackups.cpp",
-    "ui/screens/AdminCalendar.cpp"
+    "ui/screens/AdminCalendar.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -24199,6 +24840,12 @@
    "fr": "en cours · verrouillé",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "en cours · {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -24260,6 +24907,13 @@
    "fr": "EN DIRECT · {0}",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "En distance",
+   "where": [
+    "ui/screens/ReplayGapView.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -24329,13 +24983,15 @@
    "fr": "En ligne",
    "where": [
     "game/content/AssetCatalog.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/OnlineTypes.cpp",
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -24370,7 +25026,8 @@
    "fr": "En ligne : {0}",
    "where": [
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/ReplayCompareSetupScene.cpp"
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -24483,6 +25140,42 @@
    ]
   },
   {
+   "fr": "en retard",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur l'autre replay à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur la somme des meilleurs à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur la somme des meilleurs à l'arrivée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur la somme des meilleurs à {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "en route",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -24498,6 +25191,19 @@
    "fr": "En service ({0})",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "En temps",
+   "where": [
+    "ui/screens/ReplayGapView.cpp",
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "En temps (exact)",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
    ]
   },
   {
@@ -24584,6 +25290,36 @@
    "fr": "Enchaîne {0} attaques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Enchaînement",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
+   "fr": "enchaînement",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "ENCHAÎNEMENT  {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ENCHAÎNEMENT CHOISI",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "ENCHAÎNEMENT · {0} → {1}",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -25033,6 +25769,12 @@
    ]
   },
   {
+   "fr": "ennemis et mécanismes au départ",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Ennemis gelés",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -25085,6 +25827,18 @@
    "fr": "Enrage après {0} s dans cette phase",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrement activé.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrement désactivé : rien de nouveau n'est compté.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -25164,7 +25918,8 @@
   {
    "fr": "Enregistrer mes statistiques",
    "where": [
-    "ui/screens/SettingsScene.cpp"
+    "ui/screens/SettingsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -25309,26 +26064,19 @@
   {
    "fr": "ENTRAÎNEMENT",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
    "fr": "Entraînement",
    "where": [
+    "game/ghost/PersonalBests.cpp",
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
-   "fr": "entraînement",
-   "where": [
-    "ui/screens/SobMontageScene.cpp"
-   ]
-  },
-  {
-   "fr": "Entraînement (boss, segments, essais) : {0} sur la période, compté à part : il n'entre dans aucune courbe.",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/SettingsScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -25341,6 +26089,12 @@
    "fr": "Entraînement : réapparition sur place (hors classements)",
    "where": [
     "game/gameplay/GameWorld.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement : {0}",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -25359,12 +26113,6 @@
    "fr": "Entraînement avec réapparitions — hors classements, aucun record · chutes : {0} · INVINCIBLE",
    "where": [
     "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "entraînement compris",
-   "where": [
-    "ui/screens/SegmentsScene.cpp"
    ]
   },
   {
@@ -25416,18 +26164,6 @@
    ]
   },
   {
-   "fr": "ENTRAÎNEMENT · aucun record · {0} / Vue : recommencer",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "ENTRAÎNEMENT · INVINCIBLE · aucun record · {0} / Vue : recommencer",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
    "fr": "ENTRAÎNEMENT — HORS CLASSEMENT",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -25447,9 +26183,21 @@
    ]
   },
   {
+   "fr": "entraînement, compté à part : {0}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "entre 0,5 et 5",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "entre A{0} et B{1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -25517,6 +26265,12 @@
    "fr": "Entrée / A ou clic sur un joueur : ses zones",
    "where": [
     "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Entrée : voir",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -26103,6 +26857,12 @@
    ]
   },
   {
+   "fr": "et aussi",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Et Nova reprit la route des étoiles...",
    "where": [
     "data/levels/glacior_03.json"
@@ -26112,6 +26872,7 @@
    "fr": "et {0}",
    "where": [
     "game/raid/DreadfangRoutine.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -26452,6 +27213,12 @@
    ]
   },
   {
+   "fr": "F8",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Facile",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -26673,6 +27440,18 @@
     "game/ghost/Ghost.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Fantôme : non",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fantôme : oui",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -27012,6 +27791,18 @@
    ]
   },
   {
+   "fr": "fiche",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche complète",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
    "fr": "Fiche d'Asterion",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -27094,7 +27885,7 @@
   {
    "fr": "Fiches des boss : lieux, animations, entraînement",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -27134,7 +27925,7 @@
    ]
   },
   {
-   "fr": "Fichier : {0}",
+   "fr": "Fichier abîmé : l'onglet repart de zéro, l'ancien est gardé en stats.json.bak.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -27636,6 +28427,12 @@
    ]
   },
   {
+   "fr": "Fin à {0}, puis l'essai recommence seul (R ou Vue).",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "finalisation de l'archive impossible",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -27719,7 +28516,7 @@
   {
    "fr": "Finissez le niveau depuis son début pour voir votre record et votre somme des meilleurs.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -28103,9 +28900,10 @@
     "game/enemies/HitParts.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/GhostStore.cpp",
+    "game/ghost/MeasurePoints.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/ReplayLibrary.cpp",
-    "game/ghost/SegmentHistory.cpp",
-    "game/ghost/TrainingSegments.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
     "game/online/AccountMigration.cpp",
@@ -28295,6 +29093,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Franchir A{0} lance le chrono, B{1} l'arrête.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -28984,6 +29788,12 @@
    "fr": "Gardés sur cet ordinateur : ils se regardent sans connexion et sans compte. On les télécharge depuis les classements en ligne, les défis et les courses à la vérification (« Télécharger » ou la flèche à côté de « Voir »).",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Gardés sur cet ordinateur, pour cette version du niveau. Si le niveau change, les anciens repères restent avec l'ancienne version et leurs temps ne sont plus comparés.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -29968,12 +30778,6 @@
    "fr": "Granit intact",
    "where": [
     "data/achievements/achievements.json"
-   ]
-  },
-  {
-   "fr": "Graphique",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -31164,6 +31968,12 @@
    ]
   },
   {
+   "fr": "HIER",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Histoire",
    "where": [
     "game/content/AssetCatalog.cpp"
@@ -31709,7 +32519,9 @@
     "game/coop/CoopLevels.cpp",
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
+    "game/ghost/MeasurePoints.cpp",
     "game/ghost/ReplayLibrary.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/LevelData.cpp",
     "game/online/AsterionBody.cpp",
     "game/online/CampaignRevisions.cpp",
@@ -32762,6 +33574,7 @@
   {
    "fr": "incomplète",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -33907,7 +34720,8 @@
    "fr": "Jeudi",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -34374,6 +35188,7 @@
    "fr": "Jour",
    "where": [
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsLevels.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -34424,6 +35239,18 @@
    "fr": "JOURNAL · {0} notifications",
    "where": [
     "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Jours et mois",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "JOURS GARDÉS",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -34925,18 +35752,6 @@
    "fr": "L'embuscade reprend",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
-   ]
-  },
-  {
-   "fr": "L'enregistrement est activé (Paramètres › Jeu › « Enregistrer mes statistiques »).",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "L'enregistrement est désactivé (Paramètres › Jeu › « Enregistrer mes statistiques ») : rien de nouveau n'est compté.",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -36540,6 +37355,12 @@
    ]
   },
   {
+   "fr": "la plus dure",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
    "fr": "La poche gonflée où Voidworm digère un allié avalé : la crever le libère (un sauvetage pour qui la brise).",
    "where": [
     "data/enemies/voidworm_poche.json"
@@ -37063,6 +37884,12 @@
    ]
   },
   {
+   "fr": "Lancer l'enchaînement",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Lancer l'entraînement",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -37272,6 +38099,12 @@
    "fr": "LB",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Le",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -38902,6 +39735,12 @@
    ]
   },
   {
+   "fr": "Le meilleur temps de chaque segment, où qu'il ait été fait : en partie, à l'entraînement (segment, enchaînement, segment entier après une startpos), en ligne.",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Le message auquel vous répondez n'existe plus.",
    "where": [
     "server/src/projects.ts"
@@ -39102,6 +39941,12 @@
    ]
   },
   {
+   "fr": "Le niveau",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Le niveau a changé depuis ce défi : « S'entraîner » seulement, hors classement.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -39150,9 +39995,9 @@
    ]
   },
   {
-   "fr": "Le niveau découpé en 40 tranches : plus c'est clair, plus on y meurt souvent",
+   "fr": "Le niveau découpé en 40 tranches, sur son vrai décor : plus c'est chaud, plus on y meurt souvent",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -39231,6 +40076,12 @@
    "fr": "Le passage vers le relais est ouvert.",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Le PB sur A → B (trajectoire)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -39475,6 +40326,18 @@
    "fr": "Le premier suit le joueur (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Le prochain essai part d'elle.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Le prochain essai part du départ de l'entraînement.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -39769,6 +40632,12 @@
    "fr": "Le segment recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "le segment seul",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -40255,8 +41124,7 @@
    "fr": "le {0}",
    "where": [
     "ui/screens/ClanScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -41772,7 +42640,7 @@
    ]
   },
   {
-   "fr": "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays relus et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est compté à part.",
+   "fr": "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays relus (mesures A → B comprises) et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est compté à part.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -42919,7 +43787,8 @@
    "fr": "Lundi",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -43444,7 +44313,8 @@
    "fr": "Mardi",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -43859,9 +44729,23 @@
    ]
   },
   {
+   "fr": "MEILLEUR",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp",
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "MEILLEUR (DANS LA SOB)",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -43871,9 +44755,33 @@
    ]
   },
   {
+   "fr": "Meilleur : {0} retirés",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur combat",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur enchaînement",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur fait en",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur possible à l'arrivée",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -43890,7 +44798,7 @@
    ]
   },
   {
-   "fr": "Meilleur segment {0}",
+   "fr": "Meilleur segment {0} ({1})",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
@@ -43908,28 +44816,15 @@
    ]
   },
   {
-   "fr": "Meilleur {0} · médiane {1} · perdu en moyenne {2} · {3} passage",
+   "fr": "Meilleur {0}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
-   "fr": "Meilleur {0} · médiane {1} · perdu en moyenne {2} · {3} passages",
+   "fr": "meilleur − somme",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Meilleur à l'entraînement",
-   "where": [
-    "ui/screens/GameScene.cpp",
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
-   "fr": "Meilleur à l'entraînement {0} ({1})",
-   "where": [
-    "ui/screens/GameScene.cpp"
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -43941,13 +44836,13 @@
   {
    "fr": "Meilleure part des points de vie retirés, tentative après tentative",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
    "fr": "meilleure partie complète",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -44026,12 +44921,6 @@
    "fr": "Meilleurs segments {0}",
    "where": [
     "ui/screens/GhostRun.cpp"
-   ]
-  },
-  {
-   "fr": "meilleurs segments, entraînement compris",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -44263,7 +45152,8 @@
    "fr": "Mercredi",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -44433,6 +45323,55 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1} · DERNIER ESSAI",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1} · EN COURS",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1} · PRÊTE",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → …",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mesure {0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Mesurer aussi dans les replays (les vôtres et ceux en ligne)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Mesures dans les replays désactivées : « Mesurer aussi dans les replays ».",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -45112,6 +46051,12 @@
    ]
   },
   {
+   "fr": "moins de 300 Ko même après des années",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Moins de morts",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -45240,6 +46185,12 @@
    "fr": "Mon meilleur essai : {0}",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mon meilleur passage",
+   "where": [
+    "game/ghost/Ghost.cpp"
    ]
   },
   {
@@ -45517,6 +46468,18 @@
    ]
   },
   {
+   "fr": "Montrer les portes de mesure",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Montrer les startpos dans le niveau (rémanence)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Montrer ma présence à mes amis",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -45674,8 +46637,14 @@
     "game/online/RaidRecap.cpp",
     "ui/online/ContribTable.cpp",
     "ui/screens/ResultsScene.cpp",
-    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/StatisticsLevels.cpp",
     "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
+   "fr": "Morts / passages",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -46075,15 +47044,27 @@
    ]
   },
   {
-   "fr": "MÉDIANE (20 DERNIÈRES)",
+   "fr": "Médiane",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "MÉDIANE (20)",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Médiane des 5",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Médiane des 5 dernières",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -46164,6 +47145,12 @@
    "fr": "même PC, réseau local ou en ligne",
    "where": [
     "data/trailer/trailer.json"
+   ]
+  },
+  {
+   "fr": "même échelle (0 à 100 %) pour les deux courbes",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -46915,12 +47902,6 @@
    "fr": "niveau {0} absent du catalogue (src/challengeCatalog.json)",
    "where": [
     "server/src/challengeSpec.mjs"
-   ]
-  },
-  {
-   "fr": "Niveau {0} sur {1}",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -47843,21 +48824,15 @@
    ]
   },
   {
+   "fr": "Nouveau meilleur segment !",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Nouveau meilleur temps",
    "where": [
     "ui/screens/ChallengesScene.cpp"
-   ]
-  },
-  {
-   "fr": "Nouveau meilleur à l'entraînement !",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Nouveau meilleur à l'entraînement ! ({0})",
-   "where": [
-    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -47941,6 +48916,12 @@
    "where": [
     "ui/screens/GhostRun.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveau record de cet enchaînement !",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -48213,10 +49194,22 @@
    ]
   },
   {
+   "fr": "Nova apparaît au point {0}, comme l'entraînement par segment.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Nova de givre",
    "where": [
     "data/powers/frost_nova.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Nova doit être en jeu, visible et seule.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -48418,7 +49411,8 @@
   {
    "fr": "n° {0}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -49413,6 +50407,12 @@
    ]
   },
   {
+   "fr": "OR",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Or",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -49437,6 +50437,12 @@
     "game/progression/NewsCenter.cpp",
     "ui/screens/AdminGifts.h",
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "OR : enchaînement égal à la somme de ses meilleurs",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -49699,7 +50705,13 @@
    ]
   },
   {
-   "fr": "Origine des coups reçus (et des chutes)",
+   "fr": "Origine des coups reçus (et des chutes) · {0} coup sur la période",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Origine des coups reçus (et des chutes) · {0} coups sur la période",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -50012,7 +51024,7 @@
    ]
   },
   {
-   "fr": "OÙ ET QUAND",
+   "fr": "OÙ ET COMMENT",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -50057,7 +51069,7 @@
   {
    "fr": "OÙ LE COMBAT S'ARRÊTE",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -50069,7 +51081,7 @@
   {
    "fr": "OÙ VOUS TOMBEZ",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -50308,6 +51320,12 @@
    ]
   },
   {
+   "fr": "PAR BOSS",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Par calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -50337,6 +51355,12 @@
    "fr": "par la couleur 1 :",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "PAR SEGMENT",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -50659,6 +51683,12 @@
    ]
   },
   {
+   "fr": "Part du fichier",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "part du parcours de l'Argent (%)",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -50751,8 +51781,9 @@
   {
    "fr": "Partie",
    "where": [
+    "game/ghost/PersonalBests.cpp",
     "ui/screens/SettingsScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -50760,6 +51791,24 @@
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Partie : {0} segment",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Partie : {0} segments",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "partie complète du {0}",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -50835,9 +51884,9 @@
    ]
   },
   {
-   "fr": "Partie n° {0} — {1}",
+   "fr": "Partie n° {0} · {1}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -50880,12 +51929,6 @@
    "fr": "Parties abattues",
    "where": [
     "game/online/RaidRecap.cpp"
-   ]
-  },
-  {
-   "fr": "PARTIES ARRIVÉES AU BOUT",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -50943,6 +51986,18 @@
    ]
   },
   {
+   "fr": "Partir d'une startpos",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Partir de SP {0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "parts",
    "where": [
     "game/online/AsterionBody.cpp",
@@ -50956,7 +52011,7 @@
   {
    "fr": "pas assez de parties il y a 30 jours",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -50975,12 +52030,6 @@
    "fr": "Pas d'avatar personnalisé.",
    "where": [
     "server/src/players.ts"
-   ]
-  },
-  {
-   "fr": "pas d'essai",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -51102,13 +52151,7 @@
    ]
   },
   {
-   "fr": "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le dans une course complète pour l'ajouter.",
-   "where": [
-    "ui/screens/SobMontageScene.cpp"
-   ]
-  },
-  {
-   "fr": "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le en entraînement par segment pour l'ajouter.",
+   "fr": "Pas de replay pour ce meilleur temps (d'avant la version 2.60.3, ou repris d'un autre ordinateur) : battez-le, en course ou à l'entraînement, pour l'ajouter.",
    "where": [
     "ui/screens/SobMontageScene.cpp"
    ]
@@ -51158,7 +52201,9 @@
   {
    "fr": "pas encore",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -51205,6 +52250,18 @@
    ]
   },
   {
+   "fr": "Pas encore d'arrivée",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "pas encore d'essai",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore d'essai sur ce défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -51217,19 +52274,19 @@
    ]
   },
   {
-   "fr": "Pas encore de course complète : aucun segment de référence",
-   "where": [
-    "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Pas encore de course complète de cette version du niveau : terminez-la pour voir vos meilleurs segments, votre record et la somme des meilleurs (SoB).",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
-   ]
-  },
-  {
    "fr": "Pas encore de données sur la période.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "pas encore de fichier",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de fichier : il est écrit à la fin de la première tentative.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -51243,7 +52300,13 @@
   {
    "fr": "Pas encore de segment chronométré.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de somme des meilleurs pour cette version : terminez le niveau ou entraînez ses segments.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -51287,6 +52350,12 @@
    "fr": "pas encore envoyé au serveur",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "pas encore passé",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -51365,6 +52434,12 @@
    "fr": "pas impossible depuis le début de l'instance",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "pas joué",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -51453,6 +52528,12 @@
    ]
   },
   {
+   "fr": "passage",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Passage : en attente de",
    "where": [
     "ui/screens/PassageWaitView.cpp"
@@ -51462,6 +52543,12 @@
    "fr": "passage fermé (le levier est dans la Tempe)",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "passage le plus dur : {0}–{1} %",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -51947,6 +53034,12 @@
    ]
   },
   {
+   "fr": "PASSAGE · CE QU'ON Y TROUVE",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Passage étroit : glissez (Bas en pleine course) pour vous faufiler.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -51955,8 +53048,20 @@
   {
    "fr": "Passages",
    "where": [
-    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/StatisticsLevels.cpp",
     "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
+   "fr": "passages",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Passages : parties, entraînements et en ligne",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -51975,12 +53080,6 @@
    "fr": "passages à 1/30 s près",
    "where": [
     "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
-   "fr": "Passages à moins de 5 % du meilleur temps",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -52250,13 +53349,15 @@
   {
    "fr": "PB",
    "where": [
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "PB − SOB, en théorie",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -52341,6 +53442,18 @@
    "fr": "Perchoir de braise",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Perdu",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Perdu en moyenne",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -52513,6 +53626,12 @@
    ]
   },
   {
+   "fr": "peu",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Peut être activé par un événement",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -52533,7 +53652,7 @@
     "game/enemies/EnemyDefinition.cpp",
     "game/enemies/EnemyDefinition.h",
     "ui/screens/BossTrainingScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -52603,6 +53722,12 @@
   {
    "fr": "Phase la plus dure",
    "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
+   "fr": "phase la plus dure : {0} / {1}",
+   "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -52636,7 +53761,7 @@
     "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GameScene.cpp",
-    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/StatisticsBoss.cpp",
     "ui/widgets/HitPartsView.cpp"
    ]
   },
@@ -52693,7 +53818,7 @@
    "fr": "Phase {0} : {1}",
    "where": [
     "ui/screens/BossTrainingScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -52728,7 +53853,7 @@
    "fr": "phases",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -52754,7 +53879,7 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -53963,7 +55088,7 @@
   {
    "fr": "Plus la dispersion est faible, plus vos temps se ressemblent",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -54263,17 +55388,49 @@
    ]
   },
   {
+   "fr": "point de mesure",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point de mesure (A puis B)",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Point de mesure : posez A, puis B, là où ils doivent aller",
+   "where": [
+    "ui/screens/TrainingMarksScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point de mesure impossible ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Point de mesure impossible ici.",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Point de passage",
    "where": [
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PauseScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsArt.cpp",
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
    "fr": "Point de passage {0}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsArt.cpp"
    ]
   },
   {
@@ -54351,11 +55508,13 @@
   {
    "fr": "Point {0}",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/SegmentsScene.cpp",
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -54417,6 +55576,18 @@
    "fr": "Points de contribution calculés par le serveur (objectifs, gigaboss, soutien, dégâts), pas seulement les dégâts.",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "POINTS DE MESURE ({0} PAIRE)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "POINTS DE MESURE ({0} PAIRES)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -54746,9 +55917,45 @@
    ]
   },
   {
+   "fr": "Poser A, puis B",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Poser ici",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Poser la balise",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Poser une startpos ici",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Posez B{0} plus loin (même touche).",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Posez maintenant B{0}.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Posez-en une d'abord.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -54801,6 +56008,12 @@
    ]
   },
   {
+   "fr": "position, direction de Nova",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Positions approximatives : centre du pays",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -54846,6 +56059,18 @@
    "fr": "Posé : dégâts reçus {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "posée le {0} · {1} essai depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "posée le {0} · {1} essais depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -55196,6 +56421,12 @@
    ]
   },
   {
+   "fr": "Pouvoirs : ceux du départ et des tablettes d'avant (ou ceux choisis pour ce passage).",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoirs : coûts d'énergie selon leur force (référence : le tir chargé à 20, une attaque moins forte coûte moins). Leurs caractéristiques (énergie, dégâts, rayon, portée, recharge…) sont affichées dans le guide, dans la fiche de chaque pouvoir et quand on les ramasse.",
    "where": [
     "data/news/changelog.json"
@@ -55259,6 +56490,12 @@
    "fr": "pouvoirs utilisés",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "pouvoirs, cœurs, énergie",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -55352,6 +56589,12 @@
    ]
   },
   {
+   "fr": "première victoire",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
    "fr": "PREMIÈRE VICTOIRE !",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -55413,6 +56656,18 @@
    "fr": "Principale",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Pris à la pose",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Pris à la pose :",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -55643,9 +56898,9 @@
    ]
   },
   {
-   "fr": "Progression : à chaque tentative est enregistrée la part des points de vie totaux du boss (toutes phases) retirée au moment de la défaite ou de l'abandon ; la courbe montre le meilleur résultat obtenu jusque-là, une victoire vaut 100 %. Une tentative reprise après une mort retrouve le boss avec ses blessures. Les 200 dernières tentatives sont gardées par boss. Les victoires et phases sans dégât d'avant le suivi viennent des statistiques de boss existantes.",
+   "fr": "Progression : à chaque tentative est enregistrée la part des points de vie totaux du boss (toutes phases) retirée au moment de la défaite ou de l'abandon ; la courbe montre le meilleur résultat obtenu jusque-là, une victoire vaut 100 % (l'étoile marque la première). Une tentative reprise après une mort retrouve le boss avec ses blessures. Les 200 dernières tentatives sont gardées par boss. Les victoires et phases sans dégât d'avant le suivi viennent des statistiques de boss existantes. La couleur d'un boss suit le boss sur la page, jamais son rang.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -55729,7 +56984,7 @@
   {
    "fr": "PROGRESSION SUR CHAQUE BOSS",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -55966,7 +57221,7 @@
    ]
   },
   {
-   "fr": "Précision : un coup de l'attaque, un tir ou une lame (Onde, Tir chargé, Bombe à plasma, Boomerangs, Frappe sismique) « touche » s'il retire des points de vie à au moins un ennemi ; un tir qui en traverse plusieurs compte une seule fois. Les pouvoirs qui n'infligent pas de dégâts (Nova de givre, Bouclier, Dash…) ne comptent pas. Le mode Invincible (admin) n'est jamais compté.",
+   "fr": "Précision : un coup de l'attaque, un tir ou une lame (Onde, Tir chargé, Bombe à plasma, Boomerangs, Frappe sismique) « touche » s'il retire des points de vie à au moins un ennemi ; un tir qui en traverse plusieurs compte une seule fois. Les pouvoirs qui n'infligent pas de dégâts (Nova de givre, Bouclier, Dash…) ne comptent pas. Le mode Invincible (admin) n'est jamais compté. Les images des origines montrent un exemple de chacune : le jeu garde l'origine d'un coup, jamais l'ennemi qui l'a porté.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -55987,6 +57242,12 @@
    "fr": "Précédent",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Précédente",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -56530,6 +57791,12 @@
    ]
   },
   {
+   "fr": "puis fusion par mois",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Puis il sentit notre galaxie. Toutes nos planètes, alignées comme un festin.",
    "where": [
     "data/raids/asterion_film.json"
@@ -56865,7 +58132,13 @@
    "fr": "P{0}",
    "where": [
     "ui/screens/ReplayScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
+   "fr": "P{0} · {1}",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -58029,7 +59302,8 @@
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowerStats.cpp",
     "game/raid/AsterionHeartRoutine.cpp",
-    "game/raid/GravitonRoutine.cpp"
+    "game/raid/GravitonRoutine.cpp",
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -58402,6 +59676,12 @@
    ]
   },
   {
+   "fr": "recharges, élan (départ arrêté)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Recherche",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -58608,6 +59888,12 @@
    ]
   },
   {
+   "fr": "Recommencer repart d'ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Reconnexions",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -58633,13 +59919,21 @@
   {
    "fr": "RECORD (PB)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Record (PB)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/ReplayGapSources.cpp",
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Record (PB) · {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -58662,6 +59956,18 @@
    ]
   },
   {
+   "fr": "Record de cet enchaînement",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Record de l'enchaînement {0} ({1})",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "Record du classement",
    "where": [
     "game/ghost/Ghost.cpp"
@@ -58677,6 +59983,12 @@
    "fr": "Record du monde · {0}",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Record illisible : {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -58747,13 +60059,20 @@
    "fr": "Record {0}",
    "where": [
     "game/gameplay/Hud.cpp",
-    "ui/screens/PlanetMapScene.cpp"
+    "ui/screens/PlanetMapScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
    "fr": "record {0}",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Record {0} · SOB {1}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -58817,6 +60136,12 @@
    "fr": "records : {0} doit être un entier positif",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "RECORDS DE TOUTES LES COMBINAISONS (SEGMENTS QUI SE SUIVENT)",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -59290,6 +60615,7 @@
    "fr": "Regarder",
    "where": [
     "ui/screens/AdminScene.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/FilmCatalog.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -59656,6 +60982,12 @@
    ]
   },
   {
+   "fr": "Remis à zéro",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "remise en ligne d'une révision de « {0} »",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -59903,6 +61235,7 @@
     "ui/screens/AdminClans.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/SocialScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/studio/Studio.cpp"
    ]
   },
@@ -59965,8 +61298,7 @@
    "fr": "replay",
    "where": [
     "game/ghost/GhostStore.cpp",
-    "game/ghost/SegmentHistory.cpp",
-    "game/ghost/TrainingSegments.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CommunityPublishScene.cpp"
@@ -60007,6 +61339,12 @@
    "fr": "Replay de comparaison : la barre de progression du niveau montre les deux personnages, A sur la barre et B dessous, chacun avec sa lettre et sa couleur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Replay de référence refusé : {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -60330,7 +61668,8 @@
     "ui/screens/DeviceLostUi.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PauseScene.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/TrainingMarksScene.cpp"
    ]
   },
   {
@@ -60759,6 +62098,7 @@
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/GiftsScene.cpp",
@@ -61579,6 +62919,7 @@
     "game/enemies/Enemy.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/KeptReplays.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
     "game/player/PlayerActions.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -61586,6 +62927,7 @@
     "ui/screens/CreatureArt.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/RewardsScene.cpp",
+    "ui/screens/StatisticsScene.cpp",
     "ui/screens/TutorialScenes.cpp",
     "ui/studio/StudioDoc.cpp",
     "ui/studio/StudioFrise.cpp",
@@ -61629,12 +62971,13 @@
    "fr": "runs",
    "where": [
     "game/GameServices.cpp",
-    "game/ghost/SegmentHistory.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/Spectate.cpp",
     "game/records/PlayStats.cpp",
+    "game/records/PlayStatsViews.cpp",
     "ui/screens/OnlineComputer.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -62011,6 +63354,12 @@
    ]
   },
   {
+   "fr": "RÉCEMMENT JOUÉ",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Récents",
    "where": [
     "ui/online/CommentsPanel.cpp",
@@ -62321,6 +63670,12 @@
    ]
   },
   {
+   "fr": "référence : {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Réglage enregistré.",
    "where": [
     "ui/screens/NotificationsScene.cpp",
@@ -62366,6 +63721,18 @@
    ]
   },
   {
+   "fr": "RÉGULARITÉ",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "RÉGULARITÉ DES PARTIES COMPLÈTES",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Réinitialiser",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
@@ -62379,13 +63746,13 @@
    ]
   },
   {
-   "fr": "Réinitialiser les statistiques",
+   "fr": "Réinitialiser les statistiques ?",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
-   "fr": "Réinitialiser les statistiques ?",
+   "fr": "Réinitialiser les statistiques…",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -62448,6 +63815,12 @@
    "fr": "Répartition du clan",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "RÉPARTITION DU FICHIER",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -63098,21 +64471,39 @@
    ]
   },
   {
+   "fr": "S'entraîner",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "S'entraîner (hors classement)",
    "where": [
     "ui/screens/ChallengesScene.cpp"
    ]
   },
   {
+   "fr": "S'entraîner contre ce boss",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
    "fr": "S'entraîner sur ce segment",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "S'entraîner sur cette phase",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "S'entraîner sur la phase {0}",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -63546,7 +64937,8 @@
    "fr": "Samedi",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -63641,6 +65033,12 @@
    "fr": "sans décalage",
    "where": [
     "game/ghost/ReplayCompare.cpp"
+   ]
+  },
+  {
+   "fr": "sans décalage de B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -64509,19 +65907,26 @@
     "ui/screens/GhostRun.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SegmentsScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "segment",
    "where": [
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/SegmentsScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "SEGMENT  {0}",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "SEGMENT (APERÇU DU NIVEAU)",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -64537,9 +65942,21 @@
    ]
   },
   {
+   "fr": "SEGMENT D'OR · {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Segment précédent",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "segment seul",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -64551,15 +65968,22 @@
   {
    "fr": "Segment {0}",
    "where": [
+    "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SobMontageScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Segment {0} : {1}",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Segment {0} : {1} → {2}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -64583,7 +66007,8 @@
   {
    "fr": "Segments",
    "where": [
-    "ui/screens/ResultsScene.cpp"
+    "ui/screens/ResultsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -64596,6 +66021,24 @@
    "fr": "segments d'or",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Segments et enchaînements",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Segments et enchaînements…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "segments {0}",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -64815,6 +66258,12 @@
    "fr": "Ses ailes déchirent l'aurore !",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Ses anciens temps ne se comparent plus : oubliés.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -65815,6 +67264,18 @@
    ]
   },
   {
+   "fr": "SOB : {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "SOB {0}",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "SOCIAL",
    "where": [
     "ui/screens/OnlineNav.cpp"
@@ -65915,9 +67376,9 @@
    ]
   },
   {
-   "fr": "Somme de mes meilleurs segments",
+   "fr": "SOMME DES MEILL.",
    "where": [
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -65929,19 +67390,16 @@
   {
    "fr": "Somme des meilleurs",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "SOMME DES MEILLEURS (SOB)",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/GameScene.cpp",
+    "ui/screens/ReplayGapSources.cpp",
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Somme des meilleurs (SOB)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/SegmentsScene.cpp"
    ]
   },
   {
@@ -65957,9 +67415,21 @@
    ]
   },
   {
+   "fr": "SOMME DES MEILLEURS (SOB) · UNE SEULE, TOUTES SOURCES",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Somme des meilleurs : incomplète",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Somme des meilleurs : pas encore complète",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -66507,6 +67977,12 @@
    ]
   },
   {
+   "fr": "source|Partie",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
    "fr": "Souris : cliquez sur un lieu sûr",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -66516,6 +67992,12 @@
    "fr": "Souris : glissez un élément pour le déplacer, molette pour changer sa taille. Clavier et manette : choisissez un élément dans la liste, puis réglez sa taille et sa position avec les curseurs. Deux éléments ne peuvent jamais se chevaucher.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Souris : un clic sur une case choisit cette combinaison ; Entrée (A) la lance.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -66730,6 +68212,19 @@
    "fr": "Soyez le premier : terminez ce niveau connecté à Cosmic Online.",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "SP {0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp",
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "SP {0} active",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -66952,6 +68447,80 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "StartPos",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
+   "fr": "startpos",
+   "where": [
+    "game/ghost/PersonalBests.cpp",
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS ({0})",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos et mesures",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp",
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS ET POINTS DE MESURE",
+   "where": [
+    "ui/screens/TrainingMarksScene.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos et points de mesure, pendant un entraînement de segment ou d'enchaînement. À la manette : Vue maintenue + la croix (bas : poser, gauche / droite : précédente / suivante, haut : point de mesure) ; Vue seule recommence l'essai.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos impossible ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos posée : SP {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos précédente",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos suivante",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS {0} / {1}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "STARTPOS — / {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -67602,6 +69171,12 @@
    ]
   },
   {
+   "fr": "Suivante",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Suivants",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -67796,6 +69371,7 @@
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/studio/StudioFrise.cpp"
    ]
   },
@@ -67964,7 +69540,13 @@
    ]
   },
   {
-   "fr": "Sur la période choisie",
+   "fr": "sur la période",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sur la période choisie · touchent / lancées",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -68564,7 +70146,8 @@
   {
    "fr": "Tableau",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp",
+    "ui/screens/StatisticsScene.h"
    ]
   },
   {
@@ -68638,6 +70221,12 @@
    "fr": "Tableaux des zones",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "tablette",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -68830,6 +70419,7 @@
     "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/HudEditorScene.cpp",
+    "ui/screens/StatisticsScene.cpp",
     "ui/studio/StudioCanvas.cpp",
     "ui/widgets/GigabossStatsView.cpp"
    ]
@@ -68838,6 +70428,12 @@
    "fr": "Taille : {0} %",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Taille actuelle",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -68883,12 +70479,6 @@
    "fr": "Taille incorrecte : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
-   ]
-  },
-  {
-   "fr": "TAILLE MAÎTRISÉE",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -68973,6 +70563,12 @@
    ]
   },
   {
+   "fr": "Taux de défaite",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
    "fr": "Taïwan",
    "where": [
     "data/online/countries.json",
@@ -69044,7 +70640,7 @@
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -69062,7 +70658,7 @@
   {
    "fr": "temps d'arrivée",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -69074,7 +70670,8 @@
   {
    "fr": "Temps de jeu",
    "where": [
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -69138,6 +70735,12 @@
    ]
   },
   {
+   "fr": "TEMPS DE PASSAGE · ESSAI {0}",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Temps de recharge (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -69162,9 +70765,9 @@
    ]
   },
   {
-   "fr": "TEMPS DES 20 DERNIÈRES PARTIES COMPLÈTES",
+   "fr": "Temps des 20 dernières parties complètes, et la médiane des 5 dernières",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -69180,21 +70783,15 @@
    ]
   },
   {
-   "fr": "TEMPS GAGNABLE",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
    "fr": "Temps gagnable",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Temps gardés",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -69290,9 +70887,21 @@
    ]
   },
   {
-   "fr": "Temps perdu en moyenne sur chaque segment : médiane des derniers temps − meilleur temps",
+   "fr": "TEMPS PERDU",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Temps perdu en moyenne : médiane des derniers temps − meilleur",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "TEMPS PERDU POSSIBLE",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -69318,6 +70927,12 @@
    "fr": "temps à envoyer aux classements",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "TEMPS À MOINS DE 5 % DU MEILLEUR",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -69433,7 +71048,7 @@
   {
    "fr": "Tentative",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -69499,20 +71114,20 @@
   {
    "fr": "Tentative {0}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
    "fr": "Tentatives",
    "where": [
     "ui/screens/AdminScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
    "fr": "Tentatives arrivées là",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -71138,6 +72753,12 @@
    ]
   },
   {
+   "fr": "Total cumulé, jour par jour · {0} étoiles (+{1} sur la période)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Touche : {0}",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
@@ -71446,9 +73067,9 @@
    ]
   },
   {
-   "fr": "Tous les niveaux et toutes les phases de boss",
+   "fr": "tous les niveaux et toutes les phases de boss",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -71533,7 +73154,8 @@
   {
    "fr": "Tout effacer",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -72028,6 +73650,18 @@
    ]
   },
   {
+   "fr": "Trajet du niveau inconnu : la distance ne se mesure pas",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "trajet du niveau inconnu : points de passage seulement",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Trajet sous le sol",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -72036,25 +73670,21 @@
   {
    "fr": "Tranche",
    "where": [
+    "ui/screens/StatisticsLevels.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
    "fr": "Tranche {0}–{1} %",
    "where": [
+    "ui/screens/StatisticsLevels.cpp",
     "ui/widgets/Charts.cpp"
    ]
   },
   {
-   "fr": "Tranche {0}–{1} % · {2} mort pour {3} passages · difficulté {4}",
+   "fr": "Tranche {0}–{1} % · {2}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Tranche {0}–{1} % · {2} morts pour {3} passages · difficulté {4}",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -72450,9 +74080,27 @@
    ]
   },
   {
+   "fr": "Trop de points de mesure",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Trop de points de mesure dans ce niveau : retirez-en un à l'entraînement.",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Trop de requêtes, réessayez plus tard.",
    "where": [
     "server/src/ratelimit.ts"
+   ]
+  },
+  {
+   "fr": "Trop de startpos",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -73176,6 +74824,12 @@
    ]
   },
   {
+   "fr": "un carré par jour · plus clair = plus de temps de jeu",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Un cercle de runes se referme autour de vous : encore dedans quand il se ferme, vos sauts s'alourdissent un moment. Un pas hors du cercle suffit.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -73723,9 +75377,9 @@
    ]
   },
   {
-   "fr": "Un point à chaque date où l'un des deux a changé",
+   "fr": "Un point à chaque date où l'un des deux a changé · la bande = temps gagnable (PB − SOB)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -73861,12 +75515,6 @@
    ]
   },
   {
-   "fr": "Un résumé par jour, gardé 365 jours (les jours plus anciens sont fusionnés par mois). Par boss, les 200 dernières tentatives ; par segment, les 50 derniers temps. Au total, moins de 300 Ko même après des années de jeu ou une migration.",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
    "fr": "Un sanctuaire caché dans la voûte !",
    "where": [
     "data/levels/aethra_01.json",
@@ -73879,6 +75527,12 @@
    "fr": "Un secteur va s'inverser : quittez-le ou visez un abri.",
    "where": [
     "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Un segment ({0})",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -75851,13 +77505,25 @@
    "where": [
     "ui/screens/RaidTitanScene.cpp",
     "ui/screens/RaidWorldScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
    "fr": "Vaincu {0} fois, jamais sans être touché",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Vaincu · {0} tentative",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vaincu · {0} tentatives",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -76021,7 +77687,8 @@
    "fr": "Vendredi",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -76270,9 +77937,10 @@
     "game/coop/CoopRelay.cpp",
     "game/cosmetics/CreationLooks.cpp",
     "game/cosmetics/SuitRecolor.cpp",
+    "game/ghost/MeasurePoints.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/ReplayLibrary.cpp",
-    "game/ghost/SegmentHistory.cpp",
-    "game/ghost/TrainingSegments.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
@@ -76307,6 +77975,12 @@
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Version actuelle du niveau",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -76683,7 +78357,7 @@
   {
    "fr": "Victoire après",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -76703,7 +78377,7 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -76715,7 +78389,7 @@
   {
    "fr": "Victoires (au total)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -77500,19 +79174,13 @@
   {
    "fr": "VOS 5 PASSAGES LES PLUS DIFFICILES",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "Vos amis n'ont pas encore publié de niveau.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Vos courses complètes ne passent pas par ces deux points à la suite : ce segment n'a pas de référence.",
-   "where": [
-    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -77873,9 +79541,21 @@
    ]
   },
   {
+   "fr": "Votre meilleur (entraînement)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre meilleur : rang {0} · {1}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre meilleur A{0} → B{1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -78840,6 +80520,12 @@
    ]
   },
   {
+   "fr": "Vue + bas : poser une startpos · Vue + gauche / droite : choisir · Vue + haut : point de mesure",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Vue d'ensemble",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -79048,6 +80734,12 @@
    "fr": "x 00 · y 00",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "x {0} m",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -79500,7 +81192,7 @@
   {
    "fr": "ZONES À TRAVAILLER",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -79866,6 +81558,12 @@
    "fr": "{0} (ou Vue à la manette) : fermer la carte · le groupe continue à jouer · glisser à la souris : déplacer",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (record)",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -80381,6 +82079,12 @@
    "fr": "{0} : plateforme mobile immobile (déplacement nul)",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : poser une startpos · {1} / {2} : choisir · {3} : point de mesure (A puis B)",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -80903,6 +82607,18 @@
    ]
   },
   {
+   "fr": "{0} boss, {1} tentative",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} boss, {1} tentatives",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} branches",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -81130,6 +82846,18 @@
    ]
   },
   {
+   "fr": "{0} coup",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} coups",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} créé sur Cosmic Online · récompense de ce défi",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -81155,7 +82883,14 @@
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœur · énergie {1} %",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -81166,7 +82901,14 @@
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœurs · énergie {1} %",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -81209,12 +82951,6 @@
    "fr": "{0} de large, {1} de haut",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
-   ]
-  },
-  {
-   "fr": "{0} de morts par passage",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -81294,6 +83030,24 @@
    ]
   },
   {
+   "fr": "{0} DERNIERS JOURS",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} derrière",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} derrière B",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
    "fr": "{0} des dégâts",
    "where": [
     "ui/online/ContribTable.cpp"
@@ -81308,19 +83062,43 @@
   {
    "fr": "{0} des tentatives",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
-   "fr": "{0} défaite sur {1} tentatives arrivées là · difficulté {2}",
+   "fr": "{0} devant",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/ReplayGapView.cpp"
    ]
   },
   {
-   "fr": "{0} défaites sur {1} tentatives arrivées là · difficulté {2}",
+   "fr": "{0} devant B",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défaite sur {1} arrivée",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défaite sur {1} arrivées",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défaites sur {1} arrivée",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défaites sur {1} arrivées",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -81481,15 +83259,39 @@
    ]
   },
   {
+   "fr": "{0} essai",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "{0} essai cette séance",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
   {
+   "fr": "{0} essai · dernier {1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "{0} essais",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "{0} essais cette séance",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} essais · dernier {1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -82145,6 +83947,18 @@
    ]
   },
   {
+   "fr": "{0} jour, {1} mois fusionné",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jour, {1} mois fusionnés",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} jours",
    "where": [
     "ui/screens/AdminRaids.cpp",
@@ -82164,11 +83978,24 @@
    ]
   },
   {
+   "fr": "{0} jours, {1} mois fusionné",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jours, {1} mois fusionnés",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} Ko",
    "where": [
     "game/content/AssetCatalog.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/StatisticsScene.cpp",
     "ui/studio/StudioImport.cpp"
    ]
   },
@@ -82374,10 +84201,48 @@
    ]
   },
   {
+   "fr": "{0} mort dans ce niveau",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} mort sur {1} passage",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} mort sur {1} passages",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "{0} morts",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/records/Records.cpp"
+   ]
+  },
+  {
+   "fr": "{0} morts dans ce niveau",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} morts sur {1} passage",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} morts sur {1} passages",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -82462,6 +84327,18 @@
    ]
   },
   {
+   "fr": "{0} niveau classique, {1} segment",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveau classique, {1} segments",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} niveau créé",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -82492,9 +84369,27 @@
    ]
   },
   {
+   "fr": "{0} niveau × {1} tranches",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} niveaux",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveaux classiques, {1} segment",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveaux classiques, {1} segments",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -82531,6 +84426,12 @@
    "fr": "{0} niveaux terminés sur {1}",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} niveaux × {1} tranches",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -83146,6 +85047,12 @@
    ]
   },
   {
+   "fr": "{0} segment sur {1} a son replay : comparé aux points de passage seulement",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} segment sur {1} en replay",
    "where": [
     "ui/screens/SobMontageScene.cpp"
@@ -83158,9 +85065,21 @@
    ]
   },
   {
+   "fr": "{0} segments sur {1} ont leur replay : comparé aux points de passage seulement",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} segments sur {1} ont leur replay : le montage annonce les autres.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} segments à la suite ({1})",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -83226,6 +85145,8 @@
   {
    "fr": "{0} sur {1}",
    "where": [
+    "ui/screens/StatisticsBoss.cpp",
+    "ui/screens/StatisticsLevels.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -83256,7 +85177,13 @@
   {
    "fr": "{0} sur {1} tentatives",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} sur {1} · {2}",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -83280,7 +85207,7 @@
   {
    "fr": "{0} tentative",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -83291,9 +85218,27 @@
    ]
   },
   {
-   "fr": "{0} tentatives",
+   "fr": "{0} tentative · pas encore vaincu",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentative · {1} arrivée",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentative · {1} arrivées",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentatives",
+   "where": [
+    "ui/screens/StatisticsBoss.cpp"
    ]
   },
   {
@@ -83301,6 +85246,24 @@
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentatives · pas encore vaincu",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentatives · {1} arrivée",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentatives · {1} arrivées",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -83607,6 +85570,12 @@
    ]
   },
   {
+   "fr": "{0} · exact",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · historique",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -83691,6 +85660,12 @@
    ]
   },
   {
+   "fr": "{0} · Pause › Startpos et mesures",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · personnalisé",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -83712,6 +85687,12 @@
    "fr": "{0} · rang mondial n°{1}",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Recommencer repart d'ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -83823,6 +85804,12 @@
    ]
   },
   {
+   "fr": "{0} · tranches {1}–{2} %",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "{0} · vaincu",
    "where": [
     "game/online/Raids.cpp"
@@ -83832,6 +85819,12 @@
    "fr": "{0} · validation du serveur en attente",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · version actuelle",
+   "where": [
+    "ui/screens/TrainingMarksScene.cpp"
    ]
   },
   {
@@ -83893,6 +85886,18 @@
    "fr": "{0} · {1} sur {2}",
    "where": [
     "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} tentative",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} tentatives",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -84137,19 +86142,15 @@
   {
    "fr": "{0} — phase {1}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} — phase {1} / {2}",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
    "fr": "{0} — phase {1} : {2}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsBoss.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -84222,8 +86223,10 @@
   {
    "fr": "{0},{1} s",
    "where": [
+    "game/ghost/GhostRace.cpp",
     "game/raid/GravitonRoutine.cpp",
     "game/raid/TitanusRoutine.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -84303,6 +86306,30 @@
    "fr": "{0}en ligne (Cosmic Online)",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "{0}hors classement · {1} / Vue : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}hors classement · {1} / Vue : recommencer depuis la startpos",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}INVINCIBLE · hors classement · {1} / Vue : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}INVINCIBLE · hors classement · {1} / Vue : recommencer depuis la startpos",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -84732,6 +86759,12 @@
    ]
   },
   {
+   "fr": "± {0} s",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "±5 s",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -84771,6 +86804,18 @@
    "fr": "×4 (accéléré)",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "×{0} dalle fragile",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "×{0} dalles fragiles",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -84832,6 +86877,12 @@
    "fr": "à finir",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "À GAGNER",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -84946,7 +86997,7 @@
   {
    "fr": "À moins de 5 % du meilleur",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -85082,6 +87133,36 @@
    ]
   },
   {
+   "fr": "à égalité avec l'autre replay à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec la somme des meilleurs à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec la somme des meilleurs à l'arrivée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec la somme des meilleurs à {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "À équiper",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -85188,9 +87269,33 @@
    ]
   },
   {
-   "fr": "Écart A − B",
+   "fr": "ÉCART A − B",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "écart au meilleur segment",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART AU PB",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART AU RECORD (PB), EN DIRECT",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Écart cumulé à la SOB du début de l'essai",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -85244,7 +87349,7 @@
   {
    "fr": "Écart interquartile ÷ médiane",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -85260,9 +87365,51 @@
    ]
   },
   {
-   "fr": "ÉCART TYPE (20 DERNIÈRES)",
+   "fr": "ÉCART TYPE (20)",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "écart type des 20 dernières parties",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À L'AUTRE REPLAY",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À L'AUTRE REPLAY, EN DIRECT",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA RÉFÉRENCE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA SOMME DES MEILLEURS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA SOMME DES MEILLEURS, AUX POINTS DE PASSAGE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA SOMME DES MEILLEURS, EN DIRECT",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -86217,8 +88364,7 @@
   {
    "fr": "égalité",
    "where": [
-    "ui/screens/GhostRun.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/GhostRun.cpp"
    ]
   },
   {
@@ -86850,7 +88996,7 @@
   {
    "fr": "ÉVOLUTION DU RECORD ET DE LA SOMME DES MEILLEURS",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -87321,6 +89467,12 @@
    ]
   },
   {
+   "fr": "… et {0} de plus",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "… et {0} joueur de plus",
    "where": [
     "ui/online/RaidHud.cpp"
@@ -87454,21 +89606,21 @@
    ]
   },
   {
-   "fr": "▲ plus régulier qu'il y a 30 jours",
+   "fr": "▲ +{0} · en progrès",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
-   "fr": "▲ {0} — en progrès",
+   "fr": "▲ +{0} · en recul",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
-   "fr": "▲ {0} — en recul",
+   "fr": "▲ moins régulier qu'il y a 30 j",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -87478,19 +89630,25 @@
    ]
   },
   {
-   "fr": "▼ moins régulier qu'il y a 30 jours",
+   "fr": "▶ Regarder",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "▼ plus régulier qu'il y a 30 j",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "▼ −{0} · en progrès",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
-   "fr": "▼ {0} — en progrès",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "▼ {0} — en recul",
+   "fr": "▼ −{0} · en recul",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]

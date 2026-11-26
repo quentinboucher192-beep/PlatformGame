@@ -17,7 +17,7 @@
 #include "game/ghost/Ghost.h"
 #include "game/ghost/GhostRace.h"
 #include "game/ghost/GhostStore.h"
-#include "game/ghost/SegmentHistory.h"
+#include "game/ghost/PersonalBests.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "tests/TestFramework.h"
@@ -475,16 +475,24 @@ TEST_CASE("ghost: personal best, previous record and last run are kept per level
 }
 
 TEST_CASE("ghost: segment history keeps the best segments and the last runs") {
-    fs::path file = fs::temp_directory_path() / ("cosmic_segments_" + makeUuidV4().substr(0, 8) + ".json");
+    // 2.91: the ONE personal Sum of Best (PersonalBests) keeps them.
+    fs::path file = fs::temp_directory_path() / ("cosmic_bests_" + makeUuidV4().substr(0, 8) + ".json");
+    auto run = [](std::vector<float> splits, float time, const char* date) {
+        BestAttempt a;
+        a.passage = BestPassage::ofSplits(splits, std::vector<std::string>{"a", "b"}, time);
+        a.date = date;
+        return a;
+    };
     {
-        SegmentHistory h(file);
-        h.add("lvl-abc", {10.0f, 25.0f}, 40.0f, "2026-11-01 10:00");
-        h.add("lvl-abc", {9.0f, 26.0f}, 39.0f, "2026-11-02 10:00");
-        h.add("lvl-abc", {-1.0f}, 5.0f, "bad");            // refused
-        h.add("lvl-abc", {10.0f, 5.0f}, 40.0f, "bad");     // not in order: refused
+        PersonalBests h(file, {}, {});
+        h.load();
+        h.add("lvl-abc", run({10.0f, 25.0f}, 40.0f, "2026-11-01 10:00"));
+        h.add("lvl-abc", run({9.0f, 26.0f}, 39.0f, "2026-11-02 10:00"));
+        h.add("lvl-abc", run({-1.0f, 2.0f}, 5.0f, "bad"));      // refused (a time before the start)
+        h.add("lvl-abc", run({10.0f, 5.0f}, 40.0f, "bad"));     // not in order: only its first segment
         CHECK(h.save());
     }
-    SegmentHistory h(file);
+    PersonalBests h(file, {}, {});
     h.load();
     const auto* runs = h.runs("lvl-abc");
     CHECK(runs != nullptr);
@@ -492,12 +500,14 @@ TEST_CASE("ghost: segment history keeps the best segments and the last runs") {
         CHECK(runs->size() == 2);
         CHECK(std::abs(runs->front().time - 39.0f) < 1e-4f);  // most recent first
     }
-    auto best = h.bestSegments("lvl-abc", 2);
-    CHECK(best.size() == 3);
-    CHECK(std::abs(best[0] - 9.0f) < 1e-4f);
-    CHECK(std::abs(best[1] - 15.0f) < 1e-4f);
-    CHECK(std::abs(best[2] - 13.0f) < 1e-4f);
-    CHECK(h.bestSegments("other", 2)[0] < 0.0f);
+    auto segs = h.segments("lvl-abc");
+    CHECK(segs.size() == 3);
+    CHECK(std::abs(segs[0].best() - 9.0f) < 1e-4f);
+    CHECK(std::abs(segs[1].best() - 15.0f) < 1e-4f);
+    CHECK(std::abs(segs[2].best() - 13.0f) < 1e-4f);
+    CHECK(h.segments("other").empty());
+    std::error_code ec0;
+    fs::remove(file, ec0);
     // Gold segments and "ahead of the record" during a race.
     LevelData level = ghostLevel(false);
     Run a = world().run(level, {1.0f});

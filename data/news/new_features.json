@@ -2145,6 +2145,20 @@
    ]
   },
   {
+   "id": "stats.recent",
+   "version": "2.91.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "stats.file_parts",
+   "version": "2.91.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
    "id": "admin.calendar.running",
    "version": "2.60.2",
    "parents": [

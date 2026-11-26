@@ -61,6 +61,15 @@ struct PlayOptions {
     /// duration in full runs and its duration in the personal best run.
     float trainingBest = -1.0f;
     float trainingPbSegment = -1.0f;
+    /// 2.91: the attempt starts from this StartPos (game/gameplay/StartPos.h; its id in
+    /// StartPosStore), not from `trainingCheckpoint` (still the training's own start, to go back to).
+    std::optional<StartPosState> trainingStartPos;
+    int trainingStartPosId = 0;
+    /// 2.91: launched from « Segments et enchaînements »: leaving goes back there.
+    bool trainingFromChains = false;
+    /// 2.91: the replay of the best time of the range trained (an enchaînement's record, a
+    /// segment's best) runs as a ghost (« Fantôme » of the training screen).
+    bool trainingBestGhost = true;
     /// Boss training (boss statistics → Entraînement): set up with the world, never recorded.
     std::optional<BossTrainingSetup> bossTraining;
     /// A daily challenge (2.32): its rules apply to the world (GameWorld::setChallenge). A
@@ -124,7 +133,33 @@ struct GhostSetupRequest {
     /// checkpoint, "" = the level's start).
     bool training = false;
     std::string trainingCheckpoint;
+    /// 2.91: back from an attempt launched by « Segments et enchaînements »: that screen again,
+    /// on the same range (checkpoint ids, "" = the level's start / its exit).
+    bool chains = false;
+    std::string chainFrom, chainTo;
 };
+
+/// 2.91: ENTRAÎNEMENT › « Segments et enchaînements » and « Startpos et mesures » (ui/screens/
+/// ChainTrainingScene.cpp): what the ghost setup knows of the level when it opens it.
+struct ChainTrainingRequest {
+    std::string levelId, levelName, levelHash;  // the version: GhostStore::levelKey(levelId, levelHash)
+    Rect levelBounds;                           // the level (its strip, left to right)
+    struct Point {
+        std::string id, label;  // a checkpoint
+        Vec2 feet;
+        float at = 0.0f;  // along the route (0..1)
+    };
+    std::vector<Point> checkpoints;                      // in the route's order
+    std::vector<std::pair<float, std::string>> tablets;  // the power tablets along the route (at, power)
+    std::vector<std::string> startPowers;                // the level's start powers
+    int powerSlots = 0;                                  // the level's slots (0: no limit)
+    std::vector<GhostEntry> ghosts;                      // the ghosts chosen in the setup
+    bool fromOnline = false;
+    std::string from, to;  // the range shown first (both empty with `pickFirst`: the first segment)
+    bool pickFirst = true;
+    int tab = 0;  // 0: Segments et enchaînements, 1: Startpos et mesures
+};
+std::unique_ptr<Scene> makeChainTraining(GameServices& g, ChainTrainingRequest req);
 
 // Factories of every screen (implemented next to each scene).
 std::unique_ptr<Scene> makeSplashScene(GameServices& g);

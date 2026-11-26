@@ -495,27 +495,47 @@ et les fiches des boss) · *Paramètres* · *Quitter*.
 Calculées à partir de **vos vraies parties**, sans compte ni Internet, et gardées dans
 `saves/stats.json`. L'écran démarre vide et se remplit au fil des parties. Six sections :
 
-* **Vue d'ensemble** — sur 7, 30 ou 90 jours : temps de jeu et jours joués, taux d'esquive,
-  précision, morts par heure, chacun comparé à la période précédente de même durée (▲ / ▼, l'écart
-  et « en progrès » / « en recul ») ; étoiles de succès cumulées ; morts par heure jour après jour
-  avec la moyenne des 7 derniers jours joués.
+* **Vue d'ensemble** — sur 7, 30 ou 90 jours : temps de jeu, jours joués et leur calendrier (un
+  carré par jour, plus clair = plus de temps de jeu), taux d'esquive, précision, morts par heure,
+  chacun comparé à la période précédente de même durée (▲ / ▼, l'écart et « en progrès » / « en
+  recul ») avec sa petite courbe ; étoiles de succès cumulées ; morts par heure jour après jour avec
+  la moyenne des 7 derniers jours joués ; **Récemment joué** (2.91) : les niveaux et les boss joués en
+  dernier, d'après le dernier jour de chaque niveau et l'ordre des combats (aucune donnée en plus),
+  sur la bannière de leur planète ou avec le portrait du boss ; Entrée / clic mène à leur section.
 * **Combat** — taux d'esquive (une attaque ennemie vous menace quand elle passe à moins d'une tuile
   et demie de vous ; esquivée si elle ne vous blesse pas) et précision (un tir, un coup ou une lame
-  touche s'il retire des points de vie à au moins un ennemi), précision par pouvoir, et ce qui vous
-  touche (tirs, attaques d'ennemis, de boss, contacts, pièges, chutes).
-* **Boss** — votre meilleure part des points de vie retirée, tentative après tentative (trois boss
-  à la fois, les plus récents d'abord), une fiche par boss, les défaites par phase ; les fiches des
-  boss d'avant (lieux, animations, entraînement) sont à un clic.
-* **Niveaux** (classiques, hors EXTRÊME, joués depuis le début) — évolution du record (PB) et de la
-  somme des meilleurs segments (SOB), temps gagnable, zones à travailler (temps perdu en moyenne
-  par segment, avec « S'entraîner sur ce segment »), constance de chaque segment et régularité des
-  parties complètes.
-* **Passages difficiles** — où vous tombez dans un niveau (40 tranches sur son vrai relief, avec
-  ses points de passage) et vos 5 passages les plus difficiles, niveaux et phases de boss mêlés,
-  chacun avec son entraînement.
-* **Données et sauvegarde** — ce qui est enregistré, où et quand, comment les statistiques
-  voyagent avec la progression, et « Réinitialiser les statistiques ». *Paramètres › Jeu ›
-  « Enregistrer mes statistiques »* (activé par défaut).
+  touche s'il retire des points de vie à au moins un ennemi), côte à côte sur la même échelle ;
+  précision par pouvoir (icône de chaque pouvoir) et ce qui vous touche (tirs, attaques d'ennemis,
+  de boss, contacts, pièges, chutes ; une image d'exemple par origine : le jeu ne garde que
+  l'origine d'un coup).
+* **Boss** — tous les boss, trois par page (les combattus d'abord, les plus récents en premier),
+  chacun avec son portrait animé sur la bannière de sa planète ; votre meilleure part des points de
+  vie retirée, tentative après tentative (une couleur par boss, son nom au bout de sa courbe, une
+  étoile à la première victoire) ; la fiche du boss choisi, les défaites par phase (sur les
+  tentatives arrivées à la phase) avec l'entraînement sur la phase la plus dure et la fiche complète
+  (lieux, animations, entraînement).
+* **Niveaux** (classiques, hors EXTRÊME, joués depuis le début) — la **somme des meilleurs (SOB)
+  unique** du niveau (2.91, la même partout : le meilleur temps de chaque segment, qu'il ait été fait
+  en partie, à l'entraînement — segment, enchaînement, segment entier après une startpos — ou dans
+  vos courses vérifiées en ligne ; voir [Course aux fantômes](docs/GHOST_RACING.md)), avec la source
+  de chaque segment ; record, temps perdu possible, arrivées, régularité ; une ligne par segment avec
+  l'**aperçu du niveau** entre ses deux points de passage, ce qu'on y trouve (créatures, boss,
+  tablettes, stations, dalles fragiles), son meilleur temps (« ▶ Regarder » rejoue le replay exact qui
+  le tient), son temps dans le record, sa constance et « S'entraîner » ; puis l'évolution du record et
+  de la SOB (le temps gagnable en bande entre les deux), les zones à travailler, la constance de
+  chaque segment et la régularité des parties complètes.
+* **Passages difficiles** — où vous tombez dans un niveau : ses 40 tranches en couleurs de chaleur
+  posées sur le **vrai rendu du niveau**, tranche par tranche le long de son parcours, avec ses points
+  de passage ; vos 5 passages les plus difficiles, niveaux et phases de boss mêlés, chacun avec son
+  image (le morceau du niveau, ou le boss sur sa planète) et son entraînement.
+* **Données et sauvegarde** — ce qui est enregistré, où et quand, la taille du fichier, comment les
+  statistiques voyagent avec la progression, l'interrupteur « Enregistrer mes statistiques » (aussi
+  dans *Paramètres › Jeu*, activé par défaut), « Réinitialiser les statistiques » et la
+  **Répartition du fichier** (2.91 : la taille de chaque partie de `stats.json`, lue dans le fichier).
+
+Les images des niveaux sont faites par le moteur du jeu (terrain, décors, créatures) : le niveau est
+lu hors du fil principal, son terrain cuit quelques millisecondes par image, puis chaque aperçu est
+dessiné une fois et gardé ; l'écran n'attend jamais.
 
 **Avec votre progression** (2.55) : connecté à Cosmic Online, `stats.json` fait partie de la copie
 privée de la progression (comme les records et les succès ; aucun autre joueur ne la voit), et la
@@ -535,7 +555,8 @@ rien deux fois, et restaurer deux fois la même copie ne change rien :
 * le fichier fusionné reste sous 300 Ko (mêmes plafonds qu'en jeu).
 
 Chaque graphique a une info-bulle à la souris, un curseur au clavier et à la manette (← →) et une
-vue **Tableau**. Les statistiques lisent la partie sans la changer : replays, records et classements
+vue **Tableau** ; les couleurs des séries suivent une palette lisible par les daltoniens, et chaque
+valeur est aussi écrite. Les statistiques lisent la partie sans la changer : replays, records et classements
 sont identiques. L'entraînement est compté à part, le mode Invincible (admin), les replays relus et
 les parties d'amis regardées jamais.
 

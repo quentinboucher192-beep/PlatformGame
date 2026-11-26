@@ -8,6 +8,7 @@
 #include <format>
 
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "engine/core/Log.h"
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
@@ -195,7 +196,12 @@ void GameScene::onEnter() {
         if (ended_) return;
         if (trig == "jump" && src == "player") ++runJumps_;
         else if (trig == "powerUsed") ++runPowers_[src];
-        else if (trig == "checkpoint") runCheckpoints_.push_back(src);
+        else if (trig == "checkpoint") {
+            runCheckpoints_.push_back(src);
+            // 2.91: on the chronometer of its split (exact), for the personal Sum of Best.
+            const auto& splits = world_->timer().splits();
+            session_.onCheckpoint(src, splits.empty() ? world_->timer().elapsed() : splits.back());
+        }
     };
     // Ghost Racing: the hash of this exact version of the level (the one its replays carry).
     if (!opt_.editorTest && !opt_.level && counted) {
@@ -211,6 +217,22 @@ void GameScene::onEnter() {
         attemptId_ = makeUuidV4();
         recorder_.begin(levelId_, ghostHash_, attemptId_, world_->gameplaySeed());
         recordMode_ = RecordMode::Training;
+    }
+    {
+        // 2.91: what this attempt gives the personal Sum of Best (a run from the level's start, a
+        // section training, an enchaînement, an attempt from a StartPos), and training's marks.
+        TrainingSession::Setup ss;
+        if (!ghostHash_.empty()) ss.levelKey = GhostStore::levelKey(levelId_, ghostHash_);
+        ss.training = opt_.training;
+        ss.counts = counted && !ss.levelKey.empty() && !opt_.editorTest && !opt_.level && !opt_.challenge && !opt_.bossTraining && !opt_.tutorial &&
+                    !world_->practiceRespawn() && (opt_.training || !opt_.spawn);
+        ss.from = opt_.trainingCheckpoint;
+        ss.to = opt_.trainingEnd;
+        ss.startPosId = opt_.trainingStartPos ? opt_.trainingStartPosId : 0;
+        if (opt_.training) ss.start = trainingStart();
+        static std::map<std::string, int> attempts;  // this session's attempts, per range (« ESSAI n »)
+        if (opt_.training) ss.attempt = ++attempts[ss.levelKey + "|" + ss.from + "|" + ss.to];
+        session_.begin(g_, level_, std::move(ss));
     }
     startSpectate();
     // 2.54: the player's statistics (they read the run, never change it); a classic campaign level
@@ -409,20 +431,40 @@ void GameScene::startGhosts() {
     for (const GhostEntry& e : local)
         if (e.meta.source == "pb" && e.meta.levelHash == ghostHash_) pb = &e;
     if (pb) pbGhostMs_ = pb->meta.timeMs;
-    {
-        // 2.60.3: the Sum of Best « tout confondu » (the training screen's): the full runs' gold
-        // segments, completed with the record's, and the section trainings' best times.
-        const std::string key = GhostStore::levelKey(levelId_, ghostHash_);
-        SegmentReferences::RunInput pbRun;
-        if (pb) {
-            pbRun.time = static_cast<float>(pb->meta.timeMs) / 1000.0f;
-            pbRun.splits = pb->meta.splits;
-        }
-        sobAtStart_ = buildSegmentReferences(g_.segments.goldSegments(key), g_.segments.goldCheckpoints(key), {}, pbRun, {}, g_.training.bests(key)).sob;
-    }
+    // 2.91: the ONE personal Sum of Best of this level version (every source together).
+    const std::string key = GhostStore::levelKey(levelId_, ghostHash_);
+    sobAtStart_ = g_.bests.sob(key);
     std::vector<GhostEntry> choices;
     if (opt_.ghostsChosen) choices = opt_.ghosts;
     else if (gs.enabled && gs.personalByDefault && pb) choices.push_back(*pb);
+    // 2.91: a training races the replay of the best time of its range too (an enchaînement's
+    // record, a segment's best: « Fantôme » of the training screen), whatever it comes from.
+    if (opt_.training && opt_.trainingBestGhost && !opt_.trainingStartPos)
+        if (const PersonalBests::Record* rec = g_.bests.record(key, opt_.trainingCheckpoint, opt_.trainingEnd); rec && rec->replay.has()) {
+            const fs::path file = g_.bests.replayPath(key, rec->replay.file);
+            std::error_code ec;
+            if (!file.empty() && fs::is_regular_file(file, ec)) {
+                GhostEntry best;
+                best.file = file;
+                best.meta.source = "range";  // one of mine (its colour), named by its label
+                // An enchaînement: more than one segment of the route between its ends.
+                bool chain = false;
+                if (auto route = g_.bests.route(key)) {
+                    const int n = static_cast<int>(route->size());
+                    auto at = [&](const std::string& id, int none) {
+                        auto it = std::find(route->begin(), route->end(), id);
+                        return id.empty() ? none : it == route->end() ? -1 : static_cast<int>(it - route->begin()) + 1;
+                    };
+                    const int a = at(opt_.trainingCheckpoint, 0), b = at(opt_.trainingEnd, n + 1);
+                    chain = a >= 0 && b > a + 1;
+                }
+                best.meta.label = chain ? "Meilleur enchaînement" : "Meilleur segment";
+                best.meta.levelId = levelId_;
+                best.meta.levelHash = ghostHash_;
+                best.meta.date = rec->date;
+                choices.insert(choices.begin(), std::move(best));
+            }
+        }
     if (choices.empty()) return;
     // Each ghost wears its player's suit (2.23): mine the one equipped now, the others the one
     // their leaderboard entry gave (a look this game knows — a suit created on Cosmic Online
@@ -433,11 +475,14 @@ void GameScene::startGhosts() {
     // 2.59: and leaves its player's trail (mine: the one equipped now).
     ghostRun_.setTrailLook([this](const GhostMeta& m) { return m.mine() ? g_.cosmeticLook("trail") : g_.cosmetics.lookOr("trail", m.trail); });
     ghostRun_.begin(std::move(choices), level_, g_.content, ghostHash_, gs, opt_.training);
-    if (opt_.training && opt_.spawn) ghostRun_.setTrainingFrom(*opt_.spawn);
+    // The ghosts start where they passed the attempt's start (its checkpoint, or its StartPos).
+    if (opt_.training && opt_.trainingStartPos) ghostRun_.setTrainingFrom(opt_.trainingStartPos->feet);
+    else if (opt_.training && opt_.spawn) ghostRun_.setTrainingFrom(*opt_.spawn);
     if (pb) {
-        std::string key = GhostStore::levelKey(levelId_, ghostHash_);
-        ghostRun_.setPersonal(g_.segments.bestSegments(key, pb->meta.splits.size()), pb->meta.splits,
-                              static_cast<float>(pb->meta.timeMs) / 1000.0f);
+        // 2.91: the gold segments compare with the ONE Sum of Best (each segment of the route).
+        std::vector<float> golds;
+        for (const PersonalBests::Segment& s : g_.bests.segments(key)) golds.push_back(s.best());
+        ghostRun_.setPersonal(std::move(golds), pb->meta.splits, static_cast<float>(pb->meta.timeMs) / 1000.0f);
     }
     ghostRun_.setSumOfBest(sobAtStart_);
     ghostRun_.setVisible(gs.enabled || opt_.ghostsChosen);
@@ -531,15 +576,41 @@ void GameScene::saveGhosts(const RunResult& r) {
     if (fingerprint_) m.levelVersion = fingerprint_->version;
     bool newBest = pbGhostMs_ <= 0 || m.timeMs < pbGhostMs_;
     g_.ghosts.recordRun(*lastReplay_, m, newBest);
-    // 2.60.3: the run's exact replay stays with the gold segments it sets (« Regarder » the
-    // Sum of Best in section training); kept only while a gold segment refers to it.
-    std::vector<uint8_t> replay;
-    if (lastReplay_->exact()) replay = lastReplay_->encode();
-    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date, runCheckpoints_, replay.empty() ? nullptr : &replay);
-    g_.segments.save();
+    // 2.91: its segments join the ONE personal Sum of Best at the end of finishRun (commitBests).
+}
+
+std::string GameScene::levelKey() const { return ghostHash_.empty() ? std::string{} : GhostStore::levelKey(levelId_, ghostHash_); }
+
+std::vector<uint8_t> GameScene::attemptReplay() const {
+    // A copy, finished where the attempt is now (the recording itself goes on unchanged).
+    if (!recorder_.active() || !world_ || recorder_.data().frames.empty()) return {};
+    ReplayRecorder copy = recorder_;
+    copy.finish(*world_, world_->timer().elapsed());
+    ReplayData d = copy.take();
+    return d.exact() ? d.encode() : std::vector<uint8_t>{};
+}
+
+PersonalBests::Added GameScene::commitBests(float exitTime, const std::vector<uint8_t>* replay) {
+    if (session_.committed() || !world_) return {};
+    return session_.commit(exitTime, replay);
+}
+
+void GameScene::restartFrom(int startPosId) {
+    if (!opt_.training) return;
+    const std::string key = levelKey();
+    if (!key.empty()) {
+        g_.startPositions.setActive(key, startPosId);
+        g_.startPositions.save();
+    }
+    restart();
 }
 
 void GameScene::onExit() {
+    // 2.91: an attempt left or restarted: what it crossed whole joins the personal Sum of Best.
+    if (!loadFailed_ && world_ && !session_.committed()) {
+        const std::vector<uint8_t> replay = attemptReplay();
+        commitBests(-1.0f, replay.empty() ? nullptr : &replay);
+    }
     endSpectate("quit");  // left another way (a finished run has already ended it)
     g_.app.input().clearPowerSlotKeys();  // the keys of this level's powers stay here
     noteAchievementStats(false, nullptr);  // a run left or restarted (a finished one is already counted)
@@ -739,6 +810,19 @@ void GameScene::restart() {
     if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: restarting ends the attempt
     PlayOptions o = opt_;
     if (!o.level && !opt_.editorTest) o.level.reset();
+    if (opt_.training) {
+        // 2.91: the next attempt starts from the StartPos in use (« Recommencer depuis SP n »), else
+        // from the training's own start.
+        o.trainingStartPos.reset();
+        o.trainingStartPosId = 0;
+        const std::string key = levelKey();
+        if (const StartPosEntry* e = key.empty() ? nullptr : g_.startPositions.find(key, g_.startPositions.activeId(key))) {
+            o.trainingStartPos = e->state;
+            o.trainingStartPosId = e->id;
+            g_.startPositions.noteAttempt(key, e->id);
+            g_.startPositions.save();
+        }
+    }
     g_.app.replaceTop(makeGameScene(g_, levelId_, o), 0.3f);
 }
 
@@ -778,6 +862,10 @@ void GameScene::quitToMenu() {
         req.fromOnline = opt_.fromOnline;
         req.training = true;
         req.trainingCheckpoint = opt_.trainingCheckpoint;
+        // 2.91: launched from « Segments et enchaînements »: back there, on the same range.
+        req.chains = opt_.trainingFromChains;
+        req.chainFrom = opt_.trainingCheckpoint;
+        req.chainTo = opt_.trainingEnd;
         g_.app.switchScene(makeGhostSetup(g_, levelId_, std::move(req)), 0.4f);
         return;
     }
@@ -836,9 +924,12 @@ void GameScene::fixedUpdate(float dt) {
     }
     hud_.setSkipHold(skipHold_);
     frame.choice = choice;
+    // 2.91: training's marks (a StartPos, a measure point), read by the world after this step.
+    if (!ended_ && opt_.training && !(frame.flags & InputFrame::SkipCinematic)) frame.flags |= session_.takeFlags();
     if (!ended_) recorder_.recordInput(frame);
     if (!ended_ && spectateToken_) g_.spectate.input(spectateToken_, frame);  // the same step, for the friends watching
     stepWorld(*world_, frame, kSimDt);
+    session_.afterStep(*world_);  // 2.91: the marks kept, the measure chronometers (read only)
     if (playStats_) playStats_->step(*world_);  // 2.54: statistics (read only)
     syncPowerKeys();  // a power picked up, replaced: its own key on its slot from the next input
     if (!ended_) recorder_.tick(*world_);
@@ -941,6 +1032,7 @@ void GameScene::drawPowerNames(const WorldView& view) {
     if (ghostRun_.active()) keepOut.push_back(ghostRun_.hudRect());
     keepOut.push_back(trainingRefsRect_);  // empty when never drawn
     keepOut.push_back(trainingTagRect_);
+    keepOut.insert(keepOut.end(), session_.drawn().begin(), session_.drawn().end());  // 2.91
     if (segmentBanner_ > 0.0f) keepOut.push_back(trainingBannerRect_);
     if (opt_.challenge || g_.settings.graphics.showFps) keepOut.push_back({0.0f, ui.screenH() - ui.s(48), ui.screenW() * 0.5f + ui.s(30), ui.s(48)});
     if (powerLabelsAllowed(ui, *world_, keepOut)) drawPowerLabels(ui, std::move(labels), keepOut);
@@ -976,6 +1068,7 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
         l.keepOut.push_back(trainingTagRect_);
         if (segmentBanner_ > 0.0f) l.keepOut.push_back(trainingBannerRect_);
     }
+    l.keepOut.insert(l.keepOut.end(), session_.drawn().begin(), session_.drawn().end());  // 2.91: training's panels
     if (opt_.training || opt_.bossTraining || world_->practiceRespawn() || opt_.challenge) {
         const float bfs = std::max(15.0f, 11.5f / ui.s(1.0f));  // the banners' text (drawTrainingBanner)
         const float bh = ui.s(16) + ui.s(bfs + 18) + ui.s(6);
@@ -1063,6 +1156,8 @@ void GameScene::finishRun(bool completed) {
             g_.progression.save();
         }
     }
+    // 2.91: a run that failed keeps its replay so far for the bests it set (segments crossed whole).
+    std::vector<uint8_t> attemptBytes = completed ? std::vector<uint8_t>{} : attemptReplay();
     std::optional<OnlineAttempt> online;
     std::vector<uint8_t> raceReplay;  // the same replay, for the EXTRÊME race
     if (completed && fingerprint_ && recorder_.active()) {
@@ -1169,8 +1264,13 @@ void GameScene::finishRun(bool completed) {
         seg->bestSegments = gr.personalBestSegments();
         seg->pbSplits = gr.personalSplits();
         seg->pbTime = gr.personalTime();
-        if (seg->bestSegments.empty()) seg->bestSegments = g_.segments.bestSegments(seg->levelKey, r.splits.size());
-        seg->sob = sobAtStart_;  // 2.60.3: section trainings included
+        // 2.91: my best of each segment of this run before it, every source (the ONE Sum of Best).
+        seg->bestSegments.clear();
+        for (size_t i = 0; i <= runCheckpoints_.size() && runCheckpoints_.size() == r.splits.size(); ++i)
+            seg->bestSegments.push_back(session_.bestAtStart(i == 0 ? std::string{} : runCheckpoints_[i - 1],
+                                                             i < runCheckpoints_.size() ? runCheckpoints_[i] : std::string{}));
+        if (seg->bestSegments.empty()) seg->bestSegments = gr.personalBestSegments();
+        seg->sob = sobAtStart_;  // 2.91: the ONE Sum of Best when the run started
         // 2.60.3: the world record's splits (online, this version), shown by « Segments »: the
         // official leaderboard lists verified records only and says whose replay was verified.
         seg->levelHash = ghostHash_;
@@ -1191,6 +1291,10 @@ void GameScene::finishRun(bool completed) {
         }
         data.segments = seg;
     }
+    // 2.91: the run joins the ONE personal Sum of Best (every range it crossed whole), with its
+    // exact replay (kept while one of its times is a best); after the summary above (« before it »).
+    if (completed && lastReplay_ && lastReplay_->exact() && lastReplay_->levelHash == ghostHash_) attemptBytes = lastReplay_->encode();
+    commitBests(completed ? r.time : -1.0f, attemptBytes.empty() ? nullptr : &attemptBytes);
     if (race_.active()) {
         data.raceBosses = race_.progress().bossesBeaten();
         data.raceBossTotal = static_cast<int>(race_.layout().bosses.size());
@@ -1355,8 +1459,13 @@ void GameScene::update(float dt) {
             return;
         }
     }
-    // Quick restart (contre-la-montre, training): R key or the gamepad View/Back button.
-    if (!ended_ && (in.keyPressed(SDL_SCANCODE_R) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK)) &&
+    // 2.91: training's StartPos and measure points (F5 to F8, View held + the d-pad); View
+    // released alone restarts the attempt (from the StartPos in use).
+    const bool padRestart = session_.update(in, dt);
+    // Quick restart (contre-la-montre, training): R key or the gamepad View/Back button (in
+    // training: on its release, View being held for the marks too).
+    const bool padBack = opt_.training ? padRestart : in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK);
+    if (!ended_ && (in.keyPressed(SDL_SCANCODE_R) || padBack) &&
         world_->state() == WorldState::Playing &&
         (level_.timerMode == TimerMode::TimeAttack || opt_.training || opt_.bossTraining || opt_.challenge || world_->practiceRespawn())) {
         restart();
@@ -1378,6 +1487,10 @@ void GameScene::update(float dt) {
 
 SectionTrainingStart GameScene::trainingStart() const {
     SectionTrainingStart s;
+    if (opt_.trainingStartPos) {
+        s.startPos = *opt_.trainingStartPos;  // 2.91: from a StartPos (no start checkpoint)
+        return s;
+    }
     s.checkpointId = opt_.trainingCheckpoint;
     if (opt_.spawn) {
         s.hasSpawn = true;
@@ -1399,35 +1512,30 @@ void GameScene::trainingSegmentDone() {
     float t = world_->timer().elapsed();
     // The segment's comparison is its last split (the run itself is not over: no finish).
     if (opt_.trainingEnd.empty()) ghostRun_.finish(t);  // a segment ending at the exit
-    std::string key = levelId_ + ":" + opt_.trainingCheckpoint;
+    // This session's attempts (per range, and per StartPos: an attempt from one is not the range's).
+    std::string key = levelId_ + ":" + opt_.trainingCheckpoint + ":" + opt_.trainingEnd +
+                      (opt_.trainingStartPos ? ":sp" + std::to_string(opt_.trainingStartPosId) : std::string());
     std::vector<float>& tries = g_.trainingAttempts[key];
     segmentBest_ = tries.empty() ? -1.0f : *std::min_element(tries.begin(), tries.end());
     tries.push_back(t);
     if (tries.size() > 50) tries.erase(tries.begin());
     segmentTime_ = t;
-    // The best training time of this segment, kept (saves/training.json): never a record,
-    // never a gold segment of the full runs.
-    trainingBestBefore_ = -1.0f;
+    // 2.91: the range's best before (every source: the ONE Sum of Best), then the attempt joins
+    // it with its exact replay (this computer only): every range it crossed whole.
+    trainingBestBefore_ = opt_.trainingStartPos ? -1.0f : session_.bestAtStart(opt_.trainingCheckpoint, opt_.trainingEnd);
     trainingNewBest_ = false;
-    if (!ghostHash_.empty()) {
-        std::string lk = GhostStore::levelKey(levelId_, ghostHash_);
-        if (const TrainingRecords::Entry* e = g_.training.get(lk, opt_.trainingCheckpoint, opt_.trainingEnd)) trainingBestBefore_ = e->best;
-        // 2.60.3: a new best attempt keeps its exact replay (this computer only), shown in the
-        // Sum of Best's montage. Compared to the millisecond, as the training records compare.
-        std::vector<uint8_t> replay;
-        const bool best = trainingBestBefore_ <= 0.0f ||
-                          std::llround(static_cast<double>(t) * 1000.0) < std::llround(static_cast<double>(trainingBestBefore_) * 1000.0);
-        if (recordMode_ == RecordMode::Training && recorder_.active()) {
-            recorder_.finish(*world_, t);
-            ReplayData rd = recorder_.take();
-            if (best && rd.exact()) replay = rd.encode();
-        }
-        const SectionTrainingStart start = trainingStart();
-        trainingNewBest_ = g_.training.add(lk, opt_.trainingCheckpoint, opt_.trainingEnd, t, FileUtil::nowString(), replay.empty() ? nullptr : &replay,
-                                           &start);
-        g_.training.save();
-        // The statistics' Sum of Best counts it too (never the PB, the times nor the regularity).
-        if (playStats_) playStats_->noteTrainingSegment(opt_.trainingCheckpoint, opt_.trainingEnd, t);
+    std::vector<uint8_t> replay;
+    if (recordMode_ == RecordMode::Training && recorder_.active()) {
+        recorder_.finish(*world_, t);
+        ReplayData rd = recorder_.take();
+        if (rd.exact()) replay = rd.encode();
+    }
+    const PersonalBests::Added added = commitBests(opt_.trainingEnd.empty() ? t : -1.0f, replay.empty() ? nullptr : &replay);
+    if (!opt_.trainingStartPos) {
+        const PersonalBests::Range range{opt_.trainingCheckpoint, opt_.trainingEnd};
+        trainingNewBest_ = std::find(added.newBests.begin(), added.newBests.end(), range) != added.newBests.end();
+        // The statistics' segment times (they travel with the copy of the progression).
+        if (playStats_ && !session_.chain()) playStats_->noteTrainingSegment(opt_.trainingCheckpoint, opt_.trainingEnd, t);
     }
     segmentBanner_ = 3.0f;
     g_.uiSound(trainingNewBest_ || segmentBest_ < 0.0f || t < segmentBest_ ? "medal" : "ui_confirm", 0.6f);
@@ -1474,6 +1582,7 @@ void GameScene::render(float alpha) {
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
     if (opt_.tutorial) drawTutorialWorld(view, alpha);  // 2.64: Bip, the sleeping creatures' « z »
     if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
+    session_.drawWorld(r, view, world_->player().anim.set());  // 2.91: the StartPos, the measure gates
     trail_.draw(r, trailLook_, true);
     if (victoryT_ >= 0.0f) drawVictoryFx(r, victoryLook_, victoryAt_, victoryT_, true);
     // A challenge has its own rules: the level's record is no reference for it.
@@ -1493,6 +1602,7 @@ void GameScene::render(float alpha) {
             keepOut.push_back(trainingTagRect_);
             if (segmentBanner_ > 0.0f) keepOut.push_back(trainingBannerRect_);
         }
+        keepOut.insert(keepOut.end(), session_.drawn().begin(), session_.drawn().end());  // 2.91: training's panels
         // Nor under the arrows towards the enemies out of view (2.52, their places of the previous frame).
         keepOut.insert(keepOut.end(), enemyArrowAreas_.begin(), enemyArrowAreas_.end());
         Hud::Place sp = hud_.place(g_.ui, *world_, gs, HudElement::Splits);
@@ -1519,6 +1629,32 @@ void GameScene::render(float alpha) {
     drawPowerNames(view);  // 2.81.2: the names of the powers over their tablets
     if (opt_.training || opt_.bossTraining || (world_ && world_->practiceRespawn())) drawTrainingBanner();
     else if (opt_.challenge && !ended_) drawChallengeBanner();
+    {
+        // 2.91: training's panels (the StartPos in use, the measure, an enchaînement's splits, a gold
+        // segment), clear of everything drawn above.
+        const GameplaySettings& gs = g_.settings.gameplay;
+        std::vector<Rect> keep;
+        for (int e = 0; e < kHudElements; ++e) {
+            auto el = static_cast<HudElement>(e);
+            if (!hudVisible(gs, el)) continue;
+            Rect a = hud_.area(g_.ui, *world_, el, hud_.place(g_.ui, *world_, gs, el));
+            if (a.w > 0.0f && a.h > 0.0f) keep.push_back(a);
+        }
+        for (int k = 0; k < Hud::kFadeBlocks; ++k) keep.push_back(hud_.drawn(k));
+        if (ghostRun_.active() && ghostRun_.visible()) keep.push_back(ghostRun_.hudRect());
+        keep.push_back(bossArrowRect_);
+        keep.insert(keep.end(), enemyArrowAreas_.begin(), enemyArrowAreas_.end());
+        if (opt_.training) {
+            keep.push_back(trainingRefsRect_);
+            keep.push_back(trainingTagRect_);
+            if (segmentBanner_ > 0.0f) keep.push_back(trainingBannerRect_);
+            // The training's line at the bottom left (its keys).
+            const float bfs = std::max(15.0f, 11.5f / g_.ui.s(1.0f));
+            keep.push_back({0.0f, g_.ui.screenH() - g_.ui.s(16) - g_.ui.s(bfs + 18) * 2.0f, g_.ui.screenW() * 0.62f + g_.ui.s(16),
+                            g_.ui.s(16) + g_.ui.s(bfs + 18) * 2.0f});
+        }
+        if (!world_->cinematic().active() && world_->state() != WorldState::Intro) session_.drawHud(g_.ui, *world_, view, std::move(keep));
+    }
     if (g_.settings.graphics.showFps) {
         char buf[32];
         std::snprintf(buf, sizeof(buf), "%.0f FPS", g_.app.fps());
@@ -1579,14 +1715,30 @@ void GameScene::drawTrainingBanner() {
             ui.label(keys, {kx, pill.center().y}, fs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         return;
     }
-    // Always: what this run is (no record), at the bottom left.
+    // Always: what this run is (no record), at the bottom left; 2.91: an enchaînement, an attempt
+    // from a StartPos, and the keys of the StartPos and the measure points above it.
     const float H = ui.screenH();
     const float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
-    std::string tag = std::string("ENTRAÎNEMENT · ") + (world_ && world_->invincible() ? "INVINCIBLE · " : "") + "aucun record · " +
-                      keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
-    std::string shownTag = ui.elide(tag, FontFace::Bold, fs, W * 0.5f);
+    std::string what = "ENTRAÎNEMENT · ";
+    if (opt_.trainingStartPos) {
+        const int rank = g_.startPositions.rank(levelKey(), opt_.trainingStartPosId);
+        what += rank >= 0 ? "DEPUIS SP " + std::to_string(rank + 1) + " · " : std::string("DEPUIS UNE STARTPOS · ");
+    } else if (session_.chain()) {
+        what = "ENCHAÎNEMENT · " + session_.pointName(opt_.trainingCheckpoint, true) + " → " + session_.pointName(opt_.trainingEnd, false) + " · ";
+    }
+    std::string tag = what + (world_ && world_->invincible() ? "INVINCIBLE · " : "") + "hors classement · " + keyName(SDL_SCANCODE_R) +
+                      " / Vue : recommencer" + (opt_.trainingStartPos ? " depuis la startpos" : "");
+    std::string shownTag = ui.elide(tag, FontFace::Bold, fs, W * 0.6f);
     Vec2 ts = ui.label(shownTag, {ui.s(24), H - ui.s(28)}, fs, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
-    const Rect tagRect{ui.s(24), H - ui.s(28) - ts.y * 0.5f, ts.x, ts.y};
+    Rect tagRect{ui.s(24), H - ui.s(28) - ts.y * 0.5f, ts.x, ts.y};
+    if (const std::string keys = session_.keysLine(g_.app.input()); !keys.empty()) {
+        const float kf = std::max(13.0f, 11.5f / ui.s(1.0f));
+        const std::string shownKeys = ui.elide(keys + " · Pause › Startpos et mesures", FontFace::Body, kf, W * 0.6f);
+        const Vec2 ks = ui.label(shownKeys, {ui.s(24), tagRect.y - ui.s(6) - ui.s(kf) * 0.6f}, kf, ui.theme().textDim, Align::Left, FontFace::Body,
+                                 VAlign::Middle);
+        const Rect keysRect{ui.s(24), tagRect.y - ui.s(6) - ui.s(kf) * 0.6f - ks.y * 0.5f, ks.x, ks.y};
+        tagRect = {tagRect.x, keysRect.y, std::max(tagRect.w, keysRect.w), tagRect.bottom() - keysRect.y};
+    }
     // The end of an attempt: centred, above the middle (its place is kept clear even before).
     const float bw = std::min(ui.s(680), W - ui.s(40));
     struct Line {
@@ -1597,18 +1749,19 @@ void GameScene::drawTrainingBanner() {
     std::vector<Line> lines;  // under the time, each on its own line
     if (segmentTime_ >= 0.0f) {
         const UITheme& th = ui.theme();
+        // 2.91: against the range's best of every source (the ONE Sum of Best).
+        const std::string kind = session_.chain() ? "Nouveau record de cet enchaînement !" : "Nouveau meilleur segment !";
         if (trainingNewBest_)
-            lines.push_back({trainingBestBefore_ > 0.0f ? "Nouveau meilleur à l'entraînement ! (" + formatGhostDelta(segmentTime_ - trainingBestBefore_) + ")"
-                                                        : "Nouveau meilleur à l'entraînement !",
-                             th.success, true});
+            lines.push_back({trainingBestBefore_ > 0.0f ? kind + " (" + formatGhostDelta(segmentTime_ - trainingBestBefore_) + ")" : kind, th.success, true});
         else if (trainingBestBefore_ > 0.0f)
-            lines.push_back({"Meilleur à l'entraînement " + formatGhostTime(trainingBestBefore_) + " (" + formatGhostDelta(segmentTime_ - trainingBestBefore_) + ")",
+            lines.push_back({(session_.chain() ? "Record de l'enchaînement " : "Meilleur segment ") + formatGhostTime(trainingBestBefore_) + " (" +
+                                 formatGhostDelta(segmentTime_ - trainingBestBefore_) + ")",
                              th.textDim, false});
         std::string refs;
-        if (opt_.trainingBest > 0.0f) refs = "Meilleur segment " + formatGhostDelta(segmentTime_ - opt_.trainingBest);
-        if (opt_.trainingPbSegment > 0.0f)
-            refs += (refs.empty() ? "" : "   ·   ") + std::string("Dans mon record ") + formatGhostDelta(segmentTime_ - opt_.trainingPbSegment);
-        if (refs.empty()) refs = "Pas encore de course complète : aucun segment de référence";
+        if (opt_.trainingPbSegment > 0.0f && !session_.chain() && !opt_.trainingStartPos)
+            refs = std::string("Dans mon record ") + formatGhostDelta(segmentTime_ - opt_.trainingPbSegment);
+        if (session_.sobNow() > 0.0f) refs += (refs.empty() ? "" : "   ·   ") + std::string("SOB ") + formatGhostTime(session_.sobNow());
+        if (refs.empty()) refs = "Somme des meilleurs : pas encore complète";
         lines.push_back({refs, th.text, false});
         std::string more;
         const GhostRace& gr = ghostRun_.race();
@@ -1617,7 +1770,8 @@ void GameScene::drawTrainingBanner() {
             if (gr.splits().back().ghostSegment >= 0.0f) d = gr.splits().back().segment - gr.splits().back().ghostSegment;
             more = formatGhostDelta(d) + " sur le fantôme   ·   ";
         }
-        std::vector<float>& tries = g_.trainingAttempts[levelId_ + ":" + opt_.trainingCheckpoint];
+        const std::vector<float>& tries = g_.trainingAttempts[levelId_ + ":" + opt_.trainingCheckpoint + ":" + opt_.trainingEnd +
+                                                             (opt_.trainingStartPos ? ":sp" + std::to_string(opt_.trainingStartPosId) : std::string())];
         more += std::to_string(tries.size()) + (tries.size() > 1 ? " essais cette séance" : " essai cette séance");
         lines.push_back({more, th.textDim, false});
     }
@@ -1626,7 +1780,10 @@ void GameScene::drawTrainingBanner() {
     const Rect b = Rect::fromCenter({W * 0.5f, H * 0.36f}, {bw, bh});
     trainingTagRect_ = tagRect;
     trainingBannerRect_ = b;
-    drawTrainingRefs(tagRect, b);
+    // 2.91: an enchaînement shows its splits instead (TrainingSession); an attempt from a StartPos
+    // its StartPos.
+    if (!session_.chain() && !opt_.trainingStartPos) drawTrainingRefs(tagRect, b);
+    else trainingRefsRect_ = {};
     if (segmentBanner_ <= 0.0f) return;
     ui.r().fillRoundedRect(b, ui.s(14), Color{8, 12, 26, 225});
     ui.r().drawRoundedRect(b, ui.s(14), ui.theme().accent.withAlpha(140), ui.s(2));
@@ -1636,7 +1793,7 @@ void GameScene::drawTrainingBanner() {
         ui.label(miss, b.center(), ui.fitFont(miss, FontFace::Bold, 26, room), ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
         return;
     }
-    std::string head = "SEGMENT  " + formatGhostTime(segmentTime_);
+    std::string head = (session_.chain() ? "ENCHAÎNEMENT  " : opt_.trainingStartPos ? "DEPUIS LA STARTPOS  " : "SEGMENT  ") + formatGhostTime(segmentTime_);
     ui.label(head, {b.center().x, b.y + ui.s(38)}, ui.fitFont(head, FontFace::Title, 34, room), ui.theme().text, Align::Center,
              FontFace::Title, VAlign::Middle);
     float y = b.y + ui.s(70) + lineH * 0.5f;
@@ -1657,13 +1814,14 @@ void GameScene::drawTrainingRefs(const Rect& tagRect, const Rect& banner) {
     const UITheme& th = ui.theme();
     const float W = ui.screenW(), H = ui.screenH();
     const float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
-    float train = -1.0f;
-    if (!ghostHash_.empty())
-        if (const TrainingRecords::Entry* e = g_.training.get(GhostStore::levelKey(levelId_, ghostHash_), opt_.trainingCheckpoint, opt_.trainingEnd))
-            train = e->best;
-    const std::pair<std::string, float> rows[3] = {{"Meilleur segment", opt_.trainingBest},
+    // 2.91: the segment's best of every source (its part of the ONE Sum of Best, with where it was
+    // done), its time in my record, and the Sum of Best now (a gold segment counted at once).
+    std::string bestLabel = "Meilleur segment";
+    if (const PersonalBests::Record* rec = g_.bests.record(levelKey(), opt_.trainingCheckpoint, opt_.trainingEnd); rec && rec->best > 0.0f)
+        bestLabel += " · " + i18n::tr(bestSourceLabel(rec->source));  // translated first: its context is never shown
+    const std::pair<std::string, float> rows[3] = {{bestLabel, trainingBestBefore_ > 0.0f ? trainingBestBefore_ : session_.bestAtStart(opt_.trainingCheckpoint, opt_.trainingEnd)},
                                                    {"Dans mon record", opt_.trainingPbSegment},
-                                                   {"Meilleur à l'entraînement", train}};
+                                                   {"Somme des meilleurs", session_.sobNow()}};
     float lw = 0.0f, vw = 0.0f;
     for (const auto& [label, v] : rows) {
         lw = std::max(lw, ui.text().measure(label, FontFace::Body, ui.s(fs)).x);

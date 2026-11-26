@@ -16,13 +16,25 @@
 // shifted by an offset the player sets (fine, coarse, typed, or aligned on a checkpoint)
 // to make them meet again; every gap shown includes it and says so. Read only: nothing here
 // changes a record, the progression or anything online.
+//
+// The gap (2.91): live at the top of the run (in time, the Ghost Racing estimate exact at the
+// checkpoints, and in distance along the route, 1 m = 1 tile) and as a curve over the whole run
+// at the bottom, which is the timeline (a click goes there). The viewer compares the run with
+// the record (PB), the Sum of Best (continuous when each best segment has its replay here, at
+// the checkpoints only otherwise) or another replay; the comparison draws A − B, B's offset
+// included. Everything is read from the replays' recorded trajectories and splits, off the main
+// thread (ReplayGapSources), and kept until the reference or the offset changes.
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <future>
+#include <map>
 
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
@@ -31,6 +43,7 @@
 #include "game/ghost/Ghost.h"
 #include "game/ghost/GhostRace.h"
 #include "game/ghost/ReplayCompare.h"
+#include "game/ghost/ReplayGap.h"
 #include "game/ghost/ReplayPlayback.h"
 #include "game/online/AdminView.h"
 #include "game/online/LevelFingerprint.h"
@@ -38,6 +51,8 @@
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
+#include "ui/screens/ReplayGapSources.h"
+#include "ui/screens/ReplayGapView.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -141,7 +156,16 @@ public:
             trackA_.mapProgress(route_);
             hud_.setProgressTrack(route_);
             if (comparing_) cmp_.setRoute(route_);
+            // The level's checkpoints in the route's order (the Sum of Best's segments, by id).
+            std::vector<std::pair<float, std::pair<std::string, Vec2>>> cps;
+            for (const LevelObject& o : level_.objects)
+                if (o.type == "checkpoint") cps.push_back({route_.valid() ? route_.fractionAt(o.rect.bottomCenter()) : o.rect.x, {o.id, o.rect.bottomCenter()}});
+            std::stable_sort(cps.begin(), cps.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+            routeCheckpoints_.clear();
+            for (auto& c : cps) routeCheckpoints_.push_back(std::move(c.second));
         }
+        pollGap();
+        updateMeasurePasses();
         if (!loaded()) return;
         if (playback_) updateExact(dt);
         else updateTrace(dt);
@@ -185,11 +209,18 @@ public:
         if ((comparing_ && showPaths_) || !playback_) drawPaths(r, view);
         if (!playback_) drawGhost(r, view, animA_, poseA(), kColorA, 0.95f);
         if (comparing_) drawGhost(r, view, animB_, poseB(), kColorB, ghostAlpha());
+        GhostTrack::Pose refPose;
+        const bool refShown = !comparing_ && refGhostPose(refPose);
+        if (refShown) drawGhost(r, view, animRef_, refPose, kColorB, 0.7f);
+        drawGates(r);
         r.setView(WorldView{});
         hudRects_.clear();
+        layoutLive();
         if (playback_) drawGameHud(view);
         if (comparing_) drawCompareProgress();
-        if (comparing_) drawTags(view);
+        drawLive();
+        drawGateLabels(view);
+        if (comparing_ || refShown) drawTags(view, refShown ? &refPose : nullptr);
         drawSeekOverlay();
         drawAdminNote();
         if (showInfo_) {
@@ -313,12 +344,14 @@ private:
         routeFuture_ = std::async(std::launch::async, [l = level_, &content = g_.content] { return buildProgressTrack(l, content); });
         startA();
         if (b_.valid()) setupComparison();
+        refreshMeasures();
         playing_ = true;
         g_.ui.setFocus("replay/play");
         applyAutomation();
     }
 
-    /// Automated screenshots (--replay-view): "at=<s>,offset=<ms>,align=<row>,cam=<n>,pause".
+    /// Automated screenshots (--replay-view): "at=<s>,offset=<ms>,align=<row>,cam=<n>,pause",
+    /// 2.91: "ref=pb|sob" (the gap's reference), "unit=dist" (the curve in metres).
     void applyAutomation() {
         if (g_.onlineOpen.rfind("rview:", 0) != 0) return;
         std::string opts = g_.onlineOpen.substr(6);
@@ -337,6 +370,8 @@ private:
             else if (k == "align" && comparing_) alignOn(std::atoi(v.c_str()));
             else if (k == "cam" && comparing_) camMode_ = std::clamp(std::atoi(v.c_str()), 0, 2);
             else if (k == "speed") speedIdx_ = std::clamp(std::atoi(v.c_str()), 0, static_cast<int>(kSpeeds.size()) - 1);
+            else if (k == "ref" && (v == "pb" || v == "sob")) selectGapRef(v == "pb" ? replaygap::RefKind::Record : replaygap::RefKind::SumOfBest);
+            else if (k == "unit") gapDistance_ = v == "dist";
         }
     }
 
@@ -369,6 +404,11 @@ private:
         splitsA_ = replaySplitsMs(*a_.replay, &splitsExactA_);
         animA_.setSet(world().player().anim.set());
         animB_.setSet(world().player().anim.set());
+        animRef_.setSet(world().player().anim.set());
+        curveDirty_ = true;
+        exactTimers_.clear();  // A's measures on the simulation start again with it
+        exactPasses_.clear();
+        fedValid_ = false;
         t_ = 0.0f;
         extra_ = 0.0;
         acc_ = 0.0f;
@@ -380,6 +420,8 @@ private:
         cmp_.set(CompareRun::fromReplay(*a_.replay, a_.meta), CompareRun::fromReplay(*b_.replay, b_.meta));
         if (routeReady_) cmp_.setRoute(route_);
         comparing_ = true;
+        curveDirty_ = true;
+        refreshMeasures();
         noteAchievement("replay_compares");  // 2.24: « Analyste »
         alignRow_ = 0;
         offsetText_.clear();
@@ -415,6 +457,317 @@ private:
         setupComparison();
         cmp_.setOffsetMs(off);
         seekTo(std::max(0.0, at));
+    }
+
+    // --------------------------------------------------------------- gap (2.91)
+    template <class T>
+    static bool jobDone(std::future<T>& f) {
+        return f.valid() && f.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+    }
+
+    /// Every frame: the runs along the route and the references read off the main thread, the
+    /// curve made again only when what it depends on changed (reference, B's offset).
+    void pollGap() {
+        if (routeReady_ && a_.replay && runAOf_ != a_.replay) {
+            runAOf_ = a_.replay;
+            runAReady_ = false;
+            runAJob_ = std::async(std::launch::async, [rep = a_.replay, route = route_] { return RouteRun::fromReplay(*rep, route); });
+            // The viewer's references are matched with that run.
+            for (GapRefSlot& s : gapRefs_) {
+                if (s.job.valid()) s.job.wait();
+                s = GapRefSlot{};
+            }
+            curveDirty_ = true;
+        }
+        if (routeReady_ && comparing_ && b_.replay && runBOf_ != b_.replay) {
+            runBOf_ = b_.replay;
+            runBReady_ = false;
+            runBJob_ = std::async(std::launch::async, [rep = b_.replay, route = route_] { return RouteRun::fromReplay(*rep, route); });
+            curveDirty_ = true;
+        }
+        if (jobDone(runAJob_)) {
+            runA_ = runAJob_.get();
+            runAReady_ = true;
+            curveDirty_ = true;
+        }
+        if (jobDone(runBJob_)) {
+            runB_ = runBJob_.get();
+            runBReady_ = true;
+            curveDirty_ = true;
+        }
+        for (size_t i = 0; i < gapRefs_.size(); ++i) {
+            GapRefSlot& s = gapRefs_[i];
+            if (!jobDone(s.job)) continue;
+            s.res = s.job.get();
+            s.ready = true;
+            curveDirty_ = true;
+            // The record is the very run watched: the Sum of Best tells more when there is one
+            // (unless a reference was chosen).
+            if (i == static_cast<size_t>(replaygap::RefKind::Record) && s.res.sameRun && !gapKindChosen_ && gapKind_ == replaygap::RefKind::Record &&
+                routeReady_) {
+                startGapRef(replaygap::RefKind::SumOfBest);
+                const GapRefSlot& sob = gapRefs_[static_cast<size_t>(replaygap::RefKind::SumOfBest)];
+                if (sob.ready && sob.res.ok) gapKind_ = replaygap::RefKind::SumOfBest;
+            }
+            if (i == static_cast<size_t>(replaygap::RefKind::SumOfBest) && s.res.ok && !gapKindChosen_ && gapKind_ == replaygap::RefKind::Record) {
+                const GapRefSlot& rec = gapRefs_[static_cast<size_t>(replaygap::RefKind::Record)];
+                if (rec.ready && rec.res.sameRun) gapKind_ = replaygap::RefKind::SumOfBest;
+            }
+        }
+        ensureGapRef();
+        if (comparing_ && cmp_.ready() && cmp_.offsetMs() != curveOffset_) curveDirty_ = true;
+        if (curveDirty_) rebuildCurve();
+    }
+
+    /// The viewer's reference chosen, read once (then kept); the record too while measures are
+    /// shown (« Le PB sur A → B »).
+    void ensureGapRef() {
+        if (comparing_ || !routeReady_ || !a_.replay || failed_) return;
+        startGapRef(gapKind_);
+        if (measuring()) startGapRef(replaygap::RefKind::Record);
+    }
+
+    void startGapRef(replaygap::RefKind kind) {
+        GapRefSlot& slot = gapRefs_[static_cast<size_t>(kind)];
+        if (slot.started) return;
+        replaygap::RefRequest req;
+        switch (kind) {
+            case replaygap::RefKind::Record: req = replaygap::prepareRecord(g_, levelId_, a_.replay->levelHash); break;
+            case replaygap::RefKind::SumOfBest: req = replaygap::prepareSumOfBest(g_, levelId_, a_.replay->levelHash); break;
+            case replaygap::RefKind::Other:
+                if (!otherRef_) return;
+                req.kind = replaygap::RefKind::Other;
+                req.memory = otherRef_;
+                req.meta = otherMeta_;
+                break;
+        }
+        req.route = route_;
+        req.run = a_.replay;
+        req.checkpoints = routeCheckpoints_;
+        req.bounds = level_.bounds;
+        slot.started = true;
+        slot.job = std::async(std::launch::async, [r = std::move(req)]() mutable { return replaygap::loadReference(std::move(r)); });
+    }
+
+    const replaygap::LoadedRef* viewerRef() const {
+        const GapRefSlot& s = gapRefs_[static_cast<size_t>(gapKind_)];
+        return s.ready ? &s.res : nullptr;
+    }
+
+    void rebuildCurve() {
+        curveDirty_ = false;
+        curveReady_ = false;
+        curve_ = {};
+        if (!runAReady_ || !a_.replay) return;
+        if (comparing_) {
+            if (!runBReady_ || !cmp_.ready()) return;
+            curveRef_ = gapReferenceOf(cmp_, runB_);
+            curveRun_ = gapRunOf(cmp_.a(), &runA_);
+            curveRun_.finished = a_.replay->countEvents(ReplayEventType::Finish) > 0;
+            curveOffset_ = cmp_.offsetMs();
+            curve_ = gapCurve(curveRun_, curveRef_, endTime());
+        } else {
+            const replaygap::LoadedRef* ref = viewerRef();
+            if (!ref || !ref->ok) return;
+            curveRef_ = ref->ref;
+            curveRun_.run = &runA_;
+            curveRun_.splitsMs = splitsA_;
+            curveRun_.durationMs = a_.replay->durationMs;
+            curveRun_.finished = a_.replay->countEvents(ReplayEventType::Finish) > 0;
+            curve_ = gapCurve(curveRun_, curveRef_, aEnd());
+        }
+        curveReady_ = true;
+    }
+
+    /// The gap at `t` (the live counter, the cursor of the curve).
+    GapSample gapNow(double t) const { return curveReady_ ? gapAt(curveRun_, curveRef_, t) : GapSample{t}; }
+
+    void selectGapRef(replaygap::RefKind k) {
+        gapKind_ = k;
+        gapKindChosen_ = true;
+        curveDirty_ = true;
+    }
+
+    /// « Autre replay… »: the choice of the comparison, the run watched being A; B becomes the
+    /// reference (another A chosen opens the full comparison).
+    void openOtherReference() {
+        ReplayCompareRequest req;
+        req.levelId = level_.id;
+        req.current = a_.replay;
+        req.currentMeta = a_.meta;
+        if (req.currentMeta.label.empty()) req.currentMeta.label = playerName_;
+        auto alive = std::weak_ptr<int>(life_);
+        req.onChosen = [this, alive](ReplayChoice a, ReplayChoice b) {
+            if (!alive.lock()) return;
+            if (a.replay == a_.replay && b.valid()) setOtherReference(std::move(b));
+            else if (b.replay == a_.replay && a.valid()) setOtherReference(std::move(a));
+            else applyChoice(std::move(a), std::move(b));
+        };
+        playing_ = false;
+        g_.app.pushScene(makeReplayCompareSetup(g_, std::move(req)));
+    }
+
+    void setOtherReference(ReplayChoice c) {
+        otherRef_ = c.replay;
+        otherMeta_ = c.meta;
+        otherMeta_.label = displayName(c.meta);
+        GapRefSlot& slot = gapRefs_[static_cast<size_t>(replaygap::RefKind::Other)];
+        if (slot.job.valid()) slot.job.wait();
+        slot = GapRefSlot{};
+        selectGapRef(replaygap::RefKind::Other);
+    }
+
+    // ------------------------------------------------- measure points (2.91)
+    // The same gates A / B as in training (MeasureStore, per level version), timed in every
+    // replay: on the recorded trajectories (about 1/30 s), and on the simulation itself (1/120 s)
+    // while an exact replay plays through them. Read only: a time measured here never goes to the
+    // store nor to the statistics; F8 (Vue + ↑) only places a gate, as in training.
+    bool measuring() const { return g_.measures.inReplays && !measurePairs_.empty(); }
+    const MeasurePair* measurePair() const {
+        return measureSel_ >= 0 && measureSel_ < static_cast<int>(measurePairs_.size()) ? &measurePairs_[static_cast<size_t>(measureSel_)] : nullptr;
+    }
+
+    void refreshMeasures() {
+        measureKey_ = a_.replay && !levelId_.empty() ? GhostStore::levelKey(levelId_, a_.replay->levelHash) : std::string{};
+        measurePairs_.clear();
+        if (g_.measures.inReplays && !measureKey_.empty()) measurePairs_ = g_.measures.list(measureKey_);
+        measureSel_ = std::clamp(measureSel_, 0, std::max(0, static_cast<int>(measurePairs_.size()) - 1));
+        measuredValid_ = false;
+        exactTimers_.clear();
+    }
+
+    /// The passes of each pair in A, B (comparison) and the record (viewer), on their recorded
+    /// trajectories: made again only when one of them changes.
+    void updateMeasurePasses() {
+        if (!measuring()) return;
+        std::shared_ptr<const ReplayData> pb;
+        if (!comparing_) {
+            const GapRefSlot& s = gapRefs_[static_cast<size_t>(replaygap::RefKind::Record)];
+            if (s.ready && s.res.ok) pb = s.res.replay;
+        }
+        std::shared_ptr<const ReplayData> b = comparing_ ? b_.replay : nullptr;
+        if (measuredValid_ && measuredA_ == a_.replay && measuredB_ == b && measuredPb_ == pb) return;
+        measuredA_ = a_.replay;
+        measuredB_ = b;
+        measuredPb_ = pb;
+        measuredValid_ = true;
+        measurePasses_.clear();
+        for (const MeasurePair& p : measurePairs_) {
+            if (!p.b) continue;
+            PairPasses pp;
+            if (a_.replay) pp.a = measurePasses(*a_.replay, p.a, *p.b);
+            if (b) pp.b = measurePasses(*b, p.a, *p.b);
+            if (pb) pp.pb = measurePasses(*pb, p.a, *p.b);
+            measurePasses_[p.id] = std::move(pp);
+        }
+    }
+
+    /// After each step of an exact replay: A's passes timed on the simulation (1/120 s). A jump
+    /// (a seek, a step back) starts the chronometers again.
+    void feedMeasures() {
+        if (!playback_ || !measuring()) return;
+        const uint32_t tick = playback_->tick();
+        const bool continuous = fedValid_ && tick == fedTick_ + 1 && playback_->generation() == fedGen_;
+        fedValid_ = true;
+        fedTick_ = tick;
+        fedGen_ = playback_->generation();
+        const double t = playback_->runTime();
+        const Vec2 feet = world().player().feet();
+        for (const MeasurePair& p : measurePairs_) {
+            if (!p.b) continue;
+            auto it = exactTimers_.find(p.id);
+            if (it == exactTimers_.end()) it = exactTimers_.emplace(p.id, MeasurePassTimer(p.a, *p.b)).first;
+            if (!continuous) it->second.reset();
+            MeasurePass pass;
+            if (!it->second.feed(t, feet, pass)) continue;
+            std::vector<MeasurePass>& v = exactPasses_[p.id];
+            v.erase(std::remove_if(v.begin(), v.end(), [&](const MeasurePass& q) { return std::abs(q.a - pass.a) < 0.1; }), v.end());
+            v.push_back(pass);
+        }
+    }
+
+    /// A's pass timed on the simulation that matches `p` (its trajectory's), nullptr if none.
+    const MeasurePass* exactOf(int id, const MeasurePass& p) const {
+        auto it = exactPasses_.find(id);
+        if (it == exactPasses_.end()) return nullptr;
+        for (const MeasurePass& q : it->second)
+            if (std::abs(q.a - p.a) < 0.1) return &q;
+        return nullptr;
+    }
+
+    struct PassView {
+        bool any = false, running = false, exact = false;
+        double time = 0.0;
+    };
+    /// A's pass of the pair at A's time `t`: the last one begun by then, finished or going on.
+    PassView aPassAt(int id, double t) const {
+        PassView v;
+        auto it = measurePasses_.find(id);
+        if (it == measurePasses_.end()) return v;
+        const MeasurePass* cur = nullptr;
+        for (const MeasurePass& p : it->second.a)
+            if (p.a <= t + 1e-6) cur = &p;
+        if (!cur) return v;
+        v.any = true;
+        const MeasurePass* ex = exactOf(id, *cur);
+        if (cur->done() && cur->b <= t + 1e-6) {
+            v.time = ex ? ex->time() : cur->time();
+            v.exact = ex != nullptr;
+            return v;
+        }
+        v.running = true;
+        double since = cur->a;
+        if (auto e = exactTimers_.find(id); playback_ && e != exactTimers_.end() && e->second.openSince() >= 0.0 && std::abs(e->second.openSince() - cur->a) < 0.1) {
+            since = e->second.openSince();
+            v.exact = true;
+        }
+        v.time = std::max(0.0, t - since);
+        return v;
+    }
+    /// The first finished pass of a list (A's exact when it was timed so).
+    PassView firstPass(int id, const std::vector<MeasurePass>& list, bool isA) const {
+        PassView v;
+        for (const MeasurePass& p : list) {
+            if (!p.done()) continue;
+            v.any = true;
+            const MeasurePass* ex = isA ? exactOf(id, p) : nullptr;
+            v.time = ex ? ex->time() : p.time();
+            v.exact = ex != nullptr;
+            return v;
+        }
+        return v;
+    }
+
+    /// A's windows between A and B of the pair shown (shaded on the curve).
+    std::vector<std::pair<double, double>> measureWindows() const {
+        std::vector<std::pair<double, double>> out;
+        const MeasurePair* mp = measurePair();
+        if (!measuring() || !mp) return out;
+        auto it = measurePasses_.find(mp->id);
+        if (it == measurePasses_.end()) return out;
+        for (const MeasurePass& p : it->second.a) {
+            const MeasurePass* ex = exactOf(mp->id, p);
+            const MeasurePass& q = ex ? *ex : p;
+            out.push_back({q.a, q.done() ? q.b : endTime()});
+        }
+        return out;
+    }
+
+    /// F8 / Vue + ↑: a gate at A's feet (A, then B of the same pair), as in training. Only the
+    /// gate is kept: no time measured here is ever written.
+    void placeMeasure() {
+        if (!loaded() || failed_) return;
+        if (!g_.measures.inReplays) return say("Mesures dans les replays désactivées : « Mesurer aussi dans les replays ».");
+        if (measureKey_.empty() || g_.measures.readOnly()) return say("Point de mesure impossible ici.");
+        const int id = g_.measures.place(measureKey_, feetA(), FileUtil::nowString());
+        if (id <= 0) return say("Trop de points de mesure dans ce niveau : retirez-en un à l'entraînement.");
+        g_.measures.save();
+        refreshMeasures();
+        for (size_t i = 0; i < measurePairs_.size(); ++i)
+            if (measurePairs_[i].id == id) measureSel_ = static_cast<int>(i);
+        const MeasurePair* p = measurePair();
+        if (p && p->complete()) say("B" + std::to_string(id) + " posé : mesure A" + std::to_string(id) + " → B" + std::to_string(id) + " prête");
+        else say("A" + std::to_string(id) + " posé : posez B plus loin (F8)");
     }
 
     // ------------------------------------------------------------- clock
@@ -460,6 +813,7 @@ private:
             if (dir > 0) {
                 if (!playback_->finished() && !playback_->desynced()) {
                     playback_->step();
+                    feedMeasures();
                     world().update(kSimDt);
                     hud_.update(world(), kSimDt);
                 } else if (clock() + 1e-6 < endTime()) {
@@ -540,7 +894,11 @@ private:
 
     bool advanceOne() {
         if (playback_->desynced()) return false;
-        if (!playback_->finished()) return playback_->step();
+        if (!playback_->finished()) {
+            const bool ok = playback_->step();
+            if (ok) feedMeasures();
+            return ok;
+        }
         // A has finished: the comparison clock goes on until B has too.
         if (clock() + 1e-6 < endTime()) {
             extra_ = std::min(extra_ + kSimDt, endTime() - static_cast<double>(playback_->runTime()));
@@ -591,6 +949,16 @@ private:
         };
         if (!playback_) animate(animA_, poseA());
         if (comparing_) animate(animB_, poseB());
+        GhostTrack::Pose rp;
+        if (!comparing_ && refGhostPose(rp)) animate(animRef_, rp);
+    }
+
+    /// The viewer's reference as a ghost (the record, the other replay, each best segment of the
+    /// Sum of Best from its replay), on the run's clock. False when there is none to show.
+    bool refGhostPose(GhostTrack::Pose& out) const {
+        const replaygap::LoadedRef* ref = viewerRef();
+        if (!ref || !ref->ok || ref->sameRun || ref->ghost.empty()) return false;
+        return ref->poseAt(clock(), out);
     }
 
     void updateCamera(float dt) {
@@ -684,9 +1052,13 @@ private:
     float px(float size) const { return g_.ui.s(fz(g_.ui, size)); }
     float lineH(float size) const { return px(size) * 1.45f; }
     float buttonH() const { return std::max(g_.ui.s(42), px(18) * 2.1f); }
+    /// The gap's header row (its reference and unit buttons) and its curve (2.91).
+    float gapHeaderH() const { return std::max(g_.ui.s(30), px(15) * 1.9f); }
+    float chartH() const { return std::max(g_.ui.s(104), lineH(13) * 3.2f + lineH(12) + g_.ui.s(26)); }
     float stripHeight() const {
         const UIContext& ui = g_.ui;
-        return ui.s(10) + lineH(22) + lineH(15) + ui.s(26) + buttonH() + ui.s(10) + std::max(ui.s(26), px(13) * 1.7f) + ui.s(12);
+        return ui.s(10) + lineH(22) + ui.s(2) + gapHeaderH() + ui.s(6) + chartH() + replaygap::axisHeight(ui) + ui.s(8) + buttonH() + ui.s(10) +
+               std::max(ui.s(26), px(13) * 1.7f) + ui.s(12);
     }
 
     void drawPaths(Renderer& r, const WorldView& view) {
@@ -784,16 +1156,26 @@ private:
         for (HudElement e : {HudElement::Vitals, HudElement::Powers}) hs.hud[e].custom = false;
         Rect vitals = hudVisible(hs, HudElement::Vitals) ? hud_.area(ui, w, HudElement::Vitals, hud_.place(ui, w, hs, HudElement::Vitals)) : Rect{};
         Rect powers = hudVisible(hs, HudElement::Powers) ? hud_.area(ui, w, HudElement::Powers, hud_.place(ui, w, hs, HudElement::Powers)) : Rect{};
-        // Collectibles: centred on the free part, right of the vitals if needed.
+        // Collectibles: centred on the free part, right of the vitals if needed; under the live
+        // gap when they would meet (2.91), clear of the powers there.
         {
             HudPlace& hp = hs.hud[HudElement::Collectibles];
             float k = std::clamp(hp.scale, HudLayout::kMinScale, HudLayout::kMaxScale);
             float half = ui.s(153) * k;
             float cx = std::max(free.center().x, vitals.w > 0.0f ? vitals.right() + half + ui.s(16) : 0.0f);
+            float cy = ui.s(34);
+            auto box = [&] { return Rect{cx - half, cy - ui.s(8) * k, 2.0f * half, ui.s(50) * k}; };
+            if (liveRect_.w > 0.0f && box().intersects(liveRect_.expanded(ui.s(6)))) {
+                cy = liveRect_.bottom() + ui.s(10) + ui.s(8) * k;
+                for (const Rect& a : {vitals, powers})
+                    if (a.w > 0.0f && box().intersects(a.expanded(ui.s(8)))) cx = std::max(cx, a.right() + half + ui.s(16));
+            }
             hp.custom = true;
             hp.x = cx / W;
-            hp.y = ui.s(34) / H;
-            if (cx + half > free.right() - m) setHudVisible(hs, HudElement::Collectibles, false);
+            hp.y = cy / H;
+            if (cx + half > free.right() - m || box().bottom() > free.bottom() - m) setHudVisible(hs, HudElement::Collectibles, false);
+            else if (Rect c = hud_.area(ui, w, HudElement::Collectibles, hud_.place(ui, w, hs, HudElement::Collectibles)); c.w > 0.0f && hudVisible(hs, HudElement::Collectibles))
+                collectRect_ = c;
         }
         // Boss gauge: at the bottom of the free part, above the controls, never under the
         // powers.
@@ -811,7 +1193,7 @@ private:
             else if (boss.w > 0.0f && w.activeBoss())
                 hudRects_.push_back(boss.expanded(ui.s(6)));
         }
-        for (const Rect& a : {vitals, powers})
+        for (const Rect& a : {vitals, powers, collectRect_})
             if (a.w > 0.0f) hudRects_.push_back(a.expanded(ui.s(6)));
         hud_.render(ui, w, view, nullptr, hs);
     }
@@ -824,7 +1206,9 @@ private:
         GameWorld& w = world();
         const Rect& free = layout_.worldArea;
         float left = free.x + ui.s(40);
-        float bottomOfHud = ui.s(76);  // the collectibles counter (top centre)
+        // The collectibles counter (top centre) and the live gap above them (2.91).
+        float bottomOfHud = std::max({ui.s(76), liveRect_.w > 0.0f ? liveRect_.bottom() + ui.s(8) : 0.0f,
+                                      collectRect_.w > 0.0f ? collectRect_.bottom() + ui.s(4) : 0.0f});
         if (playback_ && !w.cinematic().active() && w.state() == WorldState::Playing) {
             GameplaySettings hs = g_.settings.gameplay;
             for (HudElement e : {HudElement::Vitals, HudElement::Powers}) {
@@ -839,9 +1223,10 @@ private:
         float y = std::max(ui.s(176), bottomOfHud + Hud::progressAbove(ui.s(1), true));
         if (right - left < ui.s(260)) {  // narrow screen: under the vitals and powers
             left = free.x + ui.s(40);
-            y = ui.s(260) + Hud::progressAbove(ui.s(1), true);
+            y = std::max(ui.s(260), bottomOfHud) + Hud::progressAbove(ui.s(1), true);
         }
         if (right - left < ui.s(160)) return;
+        if (y + Hud::progressBelow(ui.s(1), true) > free.bottom()) return;  // no room left under the counters
         auto racer = [](float at, Color c, const char* letter, const Animator& anim, const Texture* skin, bool flip) {
             Hud::ProgressRacer rc;
             rc.at = std::clamp(at, 0.0f, 1.0f);
@@ -871,8 +1256,9 @@ private:
     }
 
     /// "A · Astrid" / "B · Record mondial" above each of them, in the free part, never on
-    /// each other (moved under the feet, else left out).
-    void drawTags(const WorldView& view) {
+    /// each other (moved under the feet, else left out). The viewer: its reference's ghost
+    /// (« Record (PB) · 22/11 », 2.91).
+    void drawTags(const WorldView& view, const GhostTrack::Pose* refPose = nullptr) {
         UIContext& ui = g_.ui;
         Rect placed[2];
         int n = 0;
@@ -898,6 +1284,12 @@ private:
             ui.r().fillRoundedRect(box, ui.s(5), Color{8, 12, 26, 170});
             ui.label(text, box.center(), fs, c, Align::Center, FontFace::Bold, VAlign::Middle);
         };
+        if (liveRect_.w > 0.0f) hudRects_.push_back(liveRect_.expanded(ui.s(4)));
+        if (!comparing_) {
+            const replaygap::LoadedRef* ref = viewerRef();
+            if (refPose && ref) tag(ref->name, refPose->feet, kColorB);
+            return;
+        }
         tag("A · " + displayName(a_.meta), feetA(), kColorA);
         tag("B · " + displayName(b_.meta), poseB().feet, kColorB);
     }
@@ -906,14 +1298,222 @@ private:
     void drawAdminNote() {
         if (adminNote_.empty()) return;
         UIContext& ui = g_.ui;
+        float fs = 0.0f;
+        std::string t;
+        const Rect box = adminNoteBox(&fs, &t);
+        ui.r().fillRoundedRect(box, ui.s(8), Color{60, 40, 10, 225});
+        ui.r().drawRoundedRect(box, ui.s(8), ui.theme().warm, ui.s(1.5f));
+        ui.label(t, box.center(), fs, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
+    }
+
+    /// Where the admin's note goes (top of the free part), measured; empty without one.
+    Rect adminNoteBox(float* fontOut = nullptr, std::string* textOut = nullptr) {
+        if (adminNote_.empty()) return {};
+        UIContext& ui = g_.ui;
         const float room = std::max(ui.s(120), layout_.worldArea.w - ui.s(40));
         const float fs = std::max(ui.fitFont(adminNote_, FontFace::Bold, fz(ui, 16), room - ui.s(32), 0.75f), 11.5f / ui.s(1.0f));
         const std::string t = ui.elide(adminNote_, FontFace::Bold, fs, room - ui.s(32));
         const Vec2 sz = ui.text().measure(t, FontFace::Bold, ui.s(fs));
-        const Rect box{layout_.worldArea.center().x - sz.x * 0.5f - ui.s(16), layout_.worldArea.y + ui.s(12), sz.x + ui.s(32), sz.y + ui.s(14)};
-        ui.r().fillRoundedRect(box, ui.s(8), Color{60, 40, 10, 225});
-        ui.r().drawRoundedRect(box, ui.s(8), ui.theme().warm, ui.s(1.5f));
-        ui.label(t, box.center(), fs, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
+        if (fontOut) *fontOut = fs;
+        if (textOut) *textOut = t;
+        return {layout_.worldArea.center().x - sz.x * 0.5f - ui.s(16), layout_.worldArea.y + ui.s(12), sz.x + ui.s(32), sz.y + ui.s(14)};
+    }
+
+    // ------------------------------------------------------- live gap (2.91)
+    struct LiveText {
+        std::string kicker, value, words, line;
+        Color valueColor, wordsColor, lineColor;
+        float kf = 13, vf = 30, wf = 19, lf = 14;  // fitted font sizes
+        float padY = 0.0f, rowH = 0.0f;
+        int sign = 0;  // +1 behind, -1 ahead (the box's edge; the words say it too)
+    };
+
+    /// « en retard sur le record à cet instant »: what the sign of the gap means, in words
+    /// (never the colour alone). `sign`: +1 behind, -1 ahead, 0 level.
+    std::string liveSentence(int sign) const {
+        if (comparing_) {
+            if (sign > 0) return "A en retard sur B à cet instant";
+            if (sign < 0) return "A en avance sur B à cet instant";
+            return "A et B à égalité à cet instant";
+        }
+        switch (gapKind_) {
+            case replaygap::RefKind::Record:
+                if (sign > 0) return "en retard sur le record à cet instant";
+                if (sign < 0) return "en avance sur le record à cet instant";
+                return "à égalité avec le record à cet instant";
+            case replaygap::RefKind::SumOfBest:
+                if (sign > 0) return "en retard sur la somme des meilleurs à cet instant";
+                if (sign < 0) return "en avance sur la somme des meilleurs à cet instant";
+                return "à égalité avec la somme des meilleurs à cet instant";
+            case replaygap::RefKind::Other: break;
+        }
+        if (sign > 0) return "en retard sur l'autre replay à cet instant";
+        if (sign < 0) return "en avance sur l'autre replay à cet instant";
+        return "à égalité avec l'autre replay à cet instant";
+    }
+
+    /// The Sum of Best compared at the checkpoints only: where the gap shown was taken.
+    std::string checkpointSentence(int sign, int split) const {
+        if (split >= static_cast<int>(splitsA_.size())) {
+            if (sign > 0) return "en retard sur la somme des meilleurs à l'arrivée";
+            if (sign < 0) return "en avance sur la somme des meilleurs à l'arrivée";
+            return "à égalité avec la somme des meilleurs à l'arrivée";
+        }
+        const std::string where = checkpointName(trackA_.poseAt(static_cast<float>(splitsA_[static_cast<size_t>(split)]) / 1000.0f).feet, split);
+        if (sign > 0) return "en retard sur la somme des meilleurs à " + where;
+        if (sign < 0) return "en avance sur la somme des meilleurs à " + where;
+        return "à égalité avec la somme des meilleurs à " + where;
+    }
+
+    std::string liveKicker() const {
+        if (comparing_) {
+            if (cmp_.offsetMs() == 0) return "A − B EN DIRECT · SANS DÉCALAGE";
+            return "A − B EN DIRECT · DÉCALAGE " + formatDeltaMs(cmp_.offsetMs()) + " COMPRIS";
+        }
+        switch (gapKind_) {
+            case replaygap::RefKind::Record: return "ÉCART AU RECORD (PB), EN DIRECT";
+            case replaygap::RefKind::SumOfBest:
+                return curveReady_ && !curve_.continuous ? "ÉCART À LA SOMME DES MEILLEURS, AUX POINTS DE PASSAGE" : "ÉCART À LA SOMME DES MEILLEURS, EN DIRECT";
+            case replaygap::RefKind::Other: break;
+        }
+        return "ÉCART À L'AUTRE REPLAY, EN DIRECT";
+    }
+
+    /// What the live counter says now (texts and colours).
+    LiveText liveContent() const {
+        const UITheme& th = g_.ui.theme();
+        LiveText L;
+        L.kicker = liveKicker();
+        L.valueColor = L.wordsColor = th.text;
+        L.lineColor = th.textDim;
+        if (!curveReady_) {
+            const replaygap::LoadedRef* ref = comparing_ ? nullptr : viewerRef();
+            if (ref && !ref->ok) {
+                L.line = ref->why;
+                L.lineColor = th.warm;
+            } else {
+                L.value = "…";
+                L.line = "Calcul de l'écart…";
+            }
+            return L;
+        }
+        const GapSample s = gapNow(clock());
+        if (!s.hasTime && !s.hasDistance) {
+            L.value = "—";
+            L.line = curve_.continuous ? "au départ : pas encore d'écart" : "avant le premier point de passage";
+            return L;
+        }
+        auto tone = [&](int sign) { return sign > 0 ? replaygap::kBehindText : sign < 0 ? replaygap::kAheadText : th.text; };
+        int sign = 0;
+        if (s.hasTime) {
+            sign = s.timeMs > 0 ? 1 : s.timeMs < 0 ? -1 : 0;
+            L.value = formatDeltaMs(s.timeMs);
+            L.valueColor = tone(sign);
+        } else {
+            L.value = "—";
+        }
+        if (s.hasDistance) {
+            const int dsign = s.metres < -0.05f ? 1 : s.metres > 0.05f ? -1 : 0;
+            if (!s.hasTime) sign = dsign;
+            L.words = replaygap::distanceWords(s.metres, comparing_);
+            L.wordsColor = tone(dsign);
+        }
+        if (!curve_.continuous) L.line = checkpointSentence(sign, s.split);
+        else L.line = s.exact ? liveSentence(sign) + " · exact" : liveSentence(sign);
+        L.sign = sign;
+        return L;
+    }
+
+    /// The live counter's box: at the top of the free part (under the admin's note), clear of
+    /// the vitals and powers, every line fitted to its width.
+    void layoutLive() {
+        liveRect_ = {};
+        collectRect_ = {};
+        if (!loaded() || failed_) return;
+        UIContext& ui = g_.ui;
+        const Rect& free = layout_.worldArea;
+        LiveText L = liveContent();
+        const float pad = ui.s(18);
+        const float maxW = std::min(free.w - ui.s(40), ui.s(660));
+        if (maxW < ui.s(180)) return;
+        const float inner = maxW - 2 * pad;
+        auto w = [&](const std::string& t, FontFace f, float size) { return t.empty() ? 0.0f : ui.text().measure(t, f, ui.s(size)).x; };
+        L.kf = ui.fitFont(L.kicker, FontFace::Bold, fz(ui, 13), inner, 0.75f);
+        L.lf = ui.fitFont(L.line, FontFace::Body, fz(ui, 14), inner, 0.75f);
+        L.vf = fz(ui, 30);
+        L.wf = fz(ui, 19);
+        const float gapW = L.words.empty() ? 0.0f : ui.s(14);
+        const float rowW = w(L.value, FontFace::Title, L.vf) + gapW + w(L.words, FontFace::Bold, L.wf);
+        if (rowW > inner) {
+            const float k = std::max(0.6f, inner / rowW);
+            L.vf = std::max(L.vf * k, 11.5f / ui.s(1.0f));
+            L.wf = std::max(L.wf * k, 11.5f / ui.s(1.0f));
+        }
+        const float contentW = std::max({w(L.kicker, FontFace::Bold, L.kf), w(L.value, FontFace::Title, L.vf) + gapW + w(L.words, FontFace::Bold, L.wf),
+                                         w(L.line, FontFace::Body, L.lf)});
+        const float bw = std::min(maxW, std::max(ui.s(240), contentW + 2 * pad));
+        L.padY = ui.s(10);
+        L.rowH = L.value.empty() ? 0.0f : std::max(ui.s(L.vf), ui.s(L.wf)) * 1.25f;
+        const float bh = L.padY * 2 + ui.s(L.kf) * 1.45f + L.rowH + (L.line.empty() ? 0.0f : ui.s(L.lf) * 1.45f);
+        float top = free.y + ui.s(12);
+        if (Rect a = adminNoteBox(); a.w > 0.0f) top = a.bottom() + ui.s(8);
+        Rect box{free.center().x - bw * 0.5f, top, bw, bh};
+        // Clear of the game's vitals and powers (top left): to their right, else under them.
+        Rect vitals, powers;
+        topHudAreas(vitals, powers);
+        for (const Rect& a : {vitals, powers})
+            if (a.w > 0.0f && box.intersects(a.expanded(ui.s(8)))) box.x = a.right() + ui.s(16);
+        if (box.right() > free.right() - ui.s(12)) {
+            box.x = free.center().x - bw * 0.5f;
+            for (const Rect& a : {vitals, powers})
+                if (a.w > 0.0f && box.intersects(a.expanded(ui.s(8)))) box.y = a.bottom() + ui.s(12);
+        }
+        if (box.bottom() > free.bottom() - ui.s(12) || box.x < free.x + ui.s(4)) return;
+        liveRect_ = box;
+        liveText_ = std::move(L);
+    }
+
+    void drawLive() {
+        if (liveRect_.w <= 0.0f) return;
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        const LiveText& L = liveText_;
+        const Rect& b = liveRect_;
+        const float pad = ui.s(18), inner = b.w - 2 * pad;
+        ui.r().fillRoundedRect(b, ui.s(10), Color{8, 12, 26, 228});
+        const Color edge = L.sign > 0 ? replaygap::kBehind.withAlpha(170) : L.sign < 0 ? replaygap::kAhead.withAlpha(170) : th.border;
+        ui.r().drawRoundedRect(b, ui.s(10), edge, std::max(1.0f, ui.s(1.5f)));
+        float y = b.y + L.padY;
+        const float cx = b.center().x;
+        ui.label(ui.elide(L.kicker, FontFace::Bold, L.kf, inner), {cx, y}, L.kf, th.textDim, Align::Center, FontFace::Bold);
+        y += ui.s(L.kf) * 1.45f;
+        if (!L.value.empty()) {
+            const float gapW = L.words.empty() ? 0.0f : ui.s(14);
+            const float vw = ui.text().measure(L.value, FontFace::Title, ui.s(L.vf)).x;
+            const float room = std::max(0.0f, inner - vw - gapW);
+            const std::string words = L.words.empty() ? std::string{} : ui.elide(L.words, FontFace::Bold, L.wf, room);
+            const float ww = words.empty() ? 0.0f : ui.text().measure(words, FontFace::Bold, ui.s(L.wf)).x;
+            const float x0 = cx - (vw + gapW + ww) * 0.5f;
+            const float cy = y + L.rowH * 0.5f;
+            ui.label(L.value, {x0, cy}, L.vf, L.valueColor, Align::Left, FontFace::Title, VAlign::Middle);
+            if (!words.empty()) ui.label(words, {x0 + vw + gapW, cy}, L.wf, L.wordsColor, Align::Left, FontFace::Bold, VAlign::Middle);
+            y += L.rowH;
+        }
+        if (!L.line.empty()) ui.label(ui.elide(L.line, FontFace::Body, L.lf, inner), {cx, y}, L.lf, L.lineColor, Align::Center, FontFace::Body);
+    }
+
+    /// The game's vitals and powers as drawGameHud places them (exact replays, while playing).
+    void topHudAreas(Rect& vitals, Rect& powers) {
+        vitals = powers = {};
+        if (!playback_) return;
+        GameWorld& w = world();
+        if (w.cinematic().active() || w.state() != WorldState::Playing) return;
+        UIContext& ui = g_.ui;
+        GameplaySettings hs = g_.settings.gameplay;
+        hs.focusMode = false;
+        for (HudElement e : {HudElement::Vitals, HudElement::Powers}) hs.hud[e].custom = false;
+        if (hudVisible(hs, HudElement::Vitals)) vitals = hud_.area(ui, w, HudElement::Vitals, hud_.place(ui, w, hs, HudElement::Vitals));
+        if (hudVisible(hs, HudElement::Powers)) powers = hud_.area(ui, w, HudElement::Powers, hud_.place(ui, w, hs, HudElement::Powers));
     }
 
     void drawSeekOverlay() {
@@ -989,20 +1589,32 @@ private:
         }
         ui.r().fillRect({x, y, inner, std::max(1.0f, ui.s(1))}, th.accent.withAlpha(60));
         y += ui.s(8);
-        ui.label("TEMPS DE PASSAGE", {x, y}, fz(ui, 15), th.textDim, Align::Left, FontFace::Bold);
+        // 2.91: the gap to the reference at each checkpoint passed (exact), in its own column.
+        std::string head = "TEMPS DE PASSAGE";
+        if (gapKind_ == replaygap::RefKind::Record) head += " · ÉCART AU PB";
+        else if (gapKind_ == replaygap::RefKind::SumOfBest) head += " · ÉCART À LA SOMME DES MEILLEURS";
+        else head += " · ÉCART À L'AUTRE REPLAY";
+        const float hf = ui.fitFont(head, FontFace::Bold, fz(ui, 15), inner, 0.8f);
+        ui.label(ui.elide(head, FontFace::Bold, hf, inner), {x, y}, hf, th.textDim, Align::Left, FontFace::Bold);
         y += lineH(15);
-        // Columns, measured: point | time | segment.
+        // Columns, measured: point | time | segment | gap (left out when the panel is too narrow).
         const float fs = fz(ui, 15);
         const float numW = ui.text().measure("10:00,000", FontFace::Body, ui.s(fs)).x + ui.s(10);
-        float cSeg = x + inner, cTime = cSeg - numW;
+        const float gapW = std::max(ui.text().measure("+1:15,500", FontFace::Bold, ui.s(fs)).x, ui.text().measure("Écart", FontFace::Body, ui.s(fz(ui, 13))).x) +
+                           ui.s(10);
+        const bool gapCol = inner - 2 * numW - gapW - ui.s(6) >= ui.s(70);
+        float cGap = x + inner, cSeg = gapCol ? cGap - gapW : cGap, cTime = cSeg - numW;
         float nameRoom = cTime - numW - x - ui.s(6);
         ui.label("Point", {x, y}, fz(ui, 13), th.textDim);
         ui.label("Temps", {cTime, y}, fz(ui, 13), th.textDim, Align::Right);
         ui.label("Segment", {cSeg, y}, fz(ui, 13), th.textDim, Align::Right);
+        if (gapCol) ui.label("Écart", {cGap, y}, fz(ui, 13), th.textDim, Align::Right);
         y += lineH(13);
         float rh = std::max(ui.s(30), lineH(15) + ui.s(6));
         size_t n = splitsA_.size() + 1;
-        Rect list{area.x + ui.s(4), y, area.w - ui.s(8), area.bottom() - pad - y};
+        float mh = measureBoxH();  // 2.91: the measure A → B under the list (when the list keeps two rows)
+        if (area.bottom() - pad - y - mh - ui.s(8) < 2.0f * std::max(ui.s(30), lineH(15) + ui.s(6))) mh = 0.0f;
+        Rect list{area.x + ui.s(4), y, area.w - ui.s(8), area.bottom() - pad - y - (mh > 0.0f ? mh + ui.s(8) : 0.0f)};
         ui.beginScroll("rows", list, static_cast<float>(n) * rh);
         float ry = list.y - ui.scrollOffset();
         int64_t t = clockMs();
@@ -1027,8 +1639,18 @@ private:
             ui.label(ui.elide(name, FontFace::Body, fs, nameRoom), {x, cy}, fs, c, Align::Left, FontFace::Body, VAlign::Middle);
             ui.label(formatRunMs(at), {cTime, cy}, fs, c, Align::Right, FontFace::Bold, VAlign::Middle);
             ui.label(formatRunMs(seg), {cSeg, cy}, fs, passed ? th.textDim : th.textDim.withAlpha(150), Align::Right, FontFace::Body, VAlign::Middle);
+            if (gapCol) {
+                const GapSample* gs = passed && curveReady_ ? curve_.atSplit(static_cast<int>(i)) : nullptr;
+                if (gs && gs->hasTime) {
+                    const Color gc = gs->timeMs > 0 ? replaygap::kBehindText : gs->timeMs < 0 ? replaygap::kAheadText : th.text;
+                    ui.label(formatDeltaMs(gs->timeMs, false), {cGap, cy}, fs, gc, Align::Right, FontFace::Bold, VAlign::Middle);
+                } else {
+                    ui.label("—", {cGap, cy}, fs, th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
+                }
+            }
         }
         ui.endScroll();
+        if (mh > 0.0f) drawMeasureBox({x, area.bottom() - pad - mh, inner, mh});
         ui.popId();
     }
 
@@ -1084,17 +1706,8 @@ private:
         side("A", a_, cmp_.a(), kColorA, howA);
         side("B", b_, cmp_.b(), kColorB, "fantôme, trajectoire enregistrée");
 
-        // Live gap.
+        // The live gap A − B is above the run and its curve under it (2.91); here, B's offset.
         y += ui.s(2);
-        auto live = cmp_.liveGapMs(clock());
-        ui.label("Écart A − B", {x, y}, fz(ui, 14), th.textDim);
-        std::string gapText = live ? formatDeltaMs(*live) : "…";
-        Color gc = !live ? th.textDim : *live > 0 ? th.danger : *live < 0 ? th.success : th.text;
-        float gf = ui.fitFont(gapText, FontFace::Title, fz(ui, 28), inner * 0.55f, 0.6f);
-        ui.label(gapText, {right, y}, gf, gc, Align::Right, FontFace::Title);
-        const char* word = !live ? "" : *live > 0 ? "A en retard" : *live < 0 ? "A en avance" : "égalité";
-        ui.label(word, {x, y + lineH(14)}, fz(ui, 15), gc, Align::Left, FontFace::Bold);
-        y += std::max(ui.s(gf) * 1.35f, lineH(14) + lineH(15));
         std::string offLine = msgTimer_ > 0.0f ? msg_ : formatCompareOffset(cmp_.offsetMs()) + (cmp_.offsetMs() != 0 ? " compris" : "");
         if (msgTimer_ <= 0.0f && cmp_.alignedRow() >= 0) offLine += " · recalé sur " + rowName(cmp_.alignedRow());
         ui.label(ui.elide(offLine, FontFace::Body, fz(ui, 14), inner), {x, y}, fz(ui, 14), msgTimer_ > 0.0f ? th.warm : th.textDim);
@@ -1170,7 +1783,10 @@ private:
         }
         ui.r().fillRect({x, y, inner, std::max(1.0f, ui.s(1))}, th.accent.withAlpha(60));
         y += ui.s(6);
-        drawCompareTable({area.x, y, area.w, area.bottom() - y - ui.s(6)}, pad);
+        float mh = measureBoxH();  // 2.91: the measure A → B under the table (when it keeps three rows)
+        if (area.bottom() - y - ui.s(6) - mh - ui.s(8) < lineH(13) + 4.0f * std::max(ui.s(26), lineH(14) + ui.s(4))) mh = 0.0f;
+        drawCompareTable({area.x, y, area.w, area.bottom() - y - ui.s(6) - (mh > 0.0f ? mh + ui.s(8) : 0.0f)}, pad);
+        if (mh > 0.0f) drawMeasureBox({x, area.bottom() - ui.s(6) - mh, inner, mh});
         ui.popId();
     }
 
@@ -1255,6 +1871,158 @@ private:
         ui.label(formatDeltaMs(t.gapMs, false), {cGap, cy}, fs, col(t.gapMs), Align::Right, FontFace::Bold, VAlign::Middle);
     }
 
+    // ------------------------------------------- measure A → B (2.91), panels
+    static std::string secondsText(double s) {
+        if (s >= 60.0) return formatRunMs(std::llround(s * 1000.0));
+        const long long ms = std::llround(std::max(0.0, s) * 1000.0);
+        char buf[32];
+        std::snprintf(buf, sizeof buf, "%lld,%03lld s", ms / 1000, ms % 1000);
+        return buf;
+    }
+
+    int measureRows() const {
+        const MeasurePair* p = measurePair();
+        return !p || !p->complete() ? 1 : comparing_ ? 4 : 3;
+    }
+    float measureBoxH() const {
+        if (!measuring()) return 0.0f;
+        return lineH(15) + g_.ui.s(4) + g_.ui.s(14) + static_cast<float>(measureRows()) * lineH(14);
+    }
+
+    /// « MESURE A1 → B1 · Les piliers »: this replay's time against the player's best and the
+    /// record's (the viewer), A's and B's and their difference (the comparison). Each value says
+    /// how it was timed: on the simulation (exact) or on a trajectory (about 1/30 s).
+    void drawMeasureBox(const Rect& area) {
+        const MeasurePair* p = measurePair();
+        if (!p) return;
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        const std::string n = std::to_string(p->id);
+        std::string head = p->complete() ? "MESURE A" + n + " → B" + n : "MESURE A" + n + " → …";
+        // Several pairs: ‹ › to go from one to the other (focusable).
+        const float hh = lineH(15);
+        float headRoom = area.w;
+        if (measurePairs_.size() > 1) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = fz(ui, 14);
+            const float bw = std::max(hh * 1.3f, ui.text().measure("›", FontFace::Bold, px(14)).x + ui.s(16));
+            const int count = static_cast<int>(measurePairs_.size());
+            if (ui.button("mnext", {area.right() - bw, area.y, bw, hh}, "›", st)) measureSel_ = (measureSel_ + 1) % count;
+            if (ui.button("mprev", {area.right() - 2 * bw - ui.s(4), area.y, bw, hh}, "‹", st)) measureSel_ = (measureSel_ + count - 1) % count;
+            headRoom -= 2 * bw + ui.s(14);
+            p = measurePair();
+        }
+        const float hf = fz(ui, 14);
+        const std::string shownHead = ui.elide(head, FontFace::Bold, hf, headRoom);
+        const float headW = ui.text().measure(shownHead, FontFace::Bold, ui.s(hf)).x;
+        ui.label(shownHead, {area.x, area.y + hh * 0.5f}, hf, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        if (!p->name.empty() && headRoom - headW > ui.s(60)) {
+            i18n::Verbatim playerWords;  // given by the player: never translated
+            const float nx = area.x + headW + ui.s(8);
+            ui.label(ui.elide("· " + p->name, FontFace::Bold, hf, area.x + headRoom - nx), {nx, area.y + hh * 0.5f}, hf, th.accent, Align::Left,
+                     FontFace::Bold, VAlign::Middle);
+        }
+        const Rect box{area.x, area.y + hh + ui.s(4), area.w, area.bottom() - (area.y + hh + ui.s(4))};
+        ui.r().fillRoundedRect(box, ui.s(8), Color{40, 32, 10, 150});
+        ui.r().drawRoundedRect(box, ui.s(8), kGold.withAlpha(120), std::max(1.0f, ui.s(1.2f)));
+        const float fs = fz(ui, 14), rx = box.right() - ui.s(10), lx = box.x + ui.s(10);
+        float y = box.y + ui.s(7);
+        auto row = [&](const std::string& label, const std::string& value, Color vc, bool strong) {
+            const FontFace f = strong ? FontFace::Bold : FontFace::Body;
+            const float vw = ui.text().measure(value, FontFace::Bold, ui.s(fs)).x;
+            const float room = rx - vw - ui.s(12) - lx;
+            const float cy = y + lineH(14) * 0.5f;
+            if (room > ui.s(30)) ui.label(ui.elide(label, f, fs, room), {lx, cy}, fs, strong ? th.text : th.textDim, Align::Left, f, VAlign::Middle);
+            ui.label(value, {rx, cy}, fs, vc, Align::Right, FontFace::Bold, VAlign::Middle);
+            y += lineH(14);
+        };
+        if (!p->complete()) {
+            const std::string t = "B" + n + " pas encore posé : F8 (ou Vue + ↑) plus loin";
+            ui.label(ui.elide(t, FontFace::Body, fs, rx - lx), {lx, y + lineH(14) * 0.5f}, fs, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            return;
+        }
+        auto tone = [&](double mine, double other) {
+            const long long d = std::llround((mine - other) * 1000.0);
+            return d > 0 ? replaygap::kBehindText : d < 0 ? replaygap::kAheadText : th.text;
+        };
+        const std::string best = p->best > 0.0f ? secondsText(p->best) : "—";
+        const auto it = measurePasses_.find(p->id);
+        if (!comparing_) {
+            const PassView v = aPassAt(p->id, clock());
+            const std::string label = !v.any ? "Ce replay" : v.exact ? "Ce replay (rejoué, exact)" : "Ce replay (trajectoire, à 0,03 s près)";
+            std::string value = !v.any ? "pas encore passé" : v.running ? "en cours · " + secondsText(v.time) : secondsText(v.time);
+            const Color vc = !v.any ? th.textDim : v.running ? kGold : p->best > 0.0f ? tone(v.time, p->best) : th.text;
+            row(label, value, vc, true);
+            row("Votre meilleur (entraînement)", best, th.text, false);
+            const GapRefSlot& rec = gapRefs_[static_cast<size_t>(replaygap::RefKind::Record)];
+            std::string pb = "…";
+            if (rec.ready) {
+                const PassView pv = it != measurePasses_.end() && rec.res.ok ? firstPass(p->id, it->second.pb, false) : PassView{};
+                pb = pv.any ? secondsText(pv.time) : "—";
+            }
+            row("Le PB sur A → B (trajectoire)", pb, th.text, false);
+            return;
+        }
+        const PassView a = it != measurePasses_.end() ? firstPass(p->id, it->second.a, true) : PassView{};
+        const PassView b = it != measurePasses_.end() ? firstPass(p->id, it->second.b, false) : PassView{};
+        const std::string diff = a.any && b.any ? formatDeltaMs(std::llround((a.time - b.time) * 1000.0)) : "—";
+        row("A − B sur A" + n + " → B" + n, diff, a.any && b.any ? tone(a.time, b.time) : th.textDim, true);
+        row(a.exact ? "A (rejoué, exact)" : "A (trajectoire, à 0,03 s près)", a.any ? secondsText(a.time) : "—", th.text, false);
+        row("B (trajectoire, à 0,03 s près)", b.any ? secondsText(b.time) : "—", th.text, false);
+        row("Votre meilleur A" + n + " → B" + n, best, th.text, false);
+    }
+
+    /// The gates in the level: dashed lines where they were placed (the pair shown brighter).
+    void drawGates(Renderer& r) {
+        if (!measuring() || !g_.measures.showGates) return;
+        const MeasurePair* sel = measurePair();
+        for (const MeasurePair& p : measurePairs_) {
+            const bool on = sel && sel->id == p.id;
+            auto gate = [&](const MeasureGate& g) {
+                const Color c = kGold.withAlpha(on ? 220 : 110);
+                for (float y = g.top(); y < g.bottom(); y += 16.0f) r.drawWorldLine({g.at.x, y}, {g.at.x, std::min(g.bottom(), y + 9.0f)}, c, on ? 3.0f : 2.0f);
+            };
+            gate(p.a);
+            if (p.b) gate(*p.b);
+        }
+    }
+
+    /// « A1 » / « B1 » at the top of each gate, in the free part, never on the HUD, the live gap,
+    /// the tags or each other (moved to the gate's foot, else left out).
+    void drawGateLabels(const WorldView& view) {
+        if (!measuring() || !g_.measures.showGates) return;
+        UIContext& ui = g_.ui;
+        const float fs = fz(ui, 15);
+        const Rect area = layout_.worldArea.expanded(-ui.s(6));
+        std::vector<Rect> placed;
+        auto free = [&](const Rect& b) {
+            if (!area.containsRect(b)) return false;
+            for (const Rect& o : placed)
+                if (b.intersects(o)) return false;
+            for (const Rect& o : hudRects_)
+                if (b.intersects(o)) return false;
+            return !(liveRect_.w > 0.0f && b.intersects(liveRect_));
+        };
+        const MeasurePair* sel = measurePair();
+        for (const MeasurePair& p : measurePairs_) {
+            const bool on = sel && sel->id == p.id;
+            for (int k = 0; k < (p.b ? 2 : 1); ++k) {
+                const MeasureGate& g = k == 0 ? p.a : *p.b;
+                const std::string t = (k == 0 ? "A" : "B") + std::to_string(p.id);
+                const Vec2 sz = ui.text().measure(t, FontFace::Bold, ui.s(fs));
+                const Vec2 top = view.toScreen({g.at.x, g.top()}), foot = view.toScreen({g.at.x, g.bottom()});
+                Rect box{top.x - sz.x * 0.5f - ui.s(8), top.y - sz.y - ui.s(10), sz.x + ui.s(16), sz.y + ui.s(8)};
+                if (!free(box)) box.y = foot.y + ui.s(4);
+                if (!free(box)) continue;
+                placed.push_back(box);
+                ui.r().fillRoundedRect(box, ui.s(6), on ? kGold : kGold.withAlpha(150));
+                ui.label(t, box.center(), fs, Color{30, 22, 4, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+            }
+        }
+        for (const Rect& b : placed) hudRects_.push_back(b.expanded(ui.s(2)));
+    }
+
     // ------------------------------------------------------------ controls
     void drawStrip(const Rect& s) {
         UIContext& ui = g_.ui;
@@ -1266,7 +2034,8 @@ private:
         const float x0 = s.x + ui.s(24), x1 = s.right() - ui.s(24), w = x1 - x0;
         float y = s.y + ui.s(10);
 
-        // Title and integrity.
+        // Title, what is shown and its integrity, on one row (measured: the mode first, the title,
+        // then what is shown in the room left).
         std::string title = comparing_ ? "COMPARAISON DE REPLAYS" : "REPLAY - " + playerName_;  // the title font has no « · »
         std::string mode;
         Color mc = th.textDim;
@@ -1286,17 +2055,6 @@ private:
                                                                               : "Trajectoire enregistrée (autre version du niveau)";
             mc = th.warm;
         }
-        float tf = fz(ui, 22);
-        float modeRoom = w * 0.55f;
-        float mf = ui.fitFont(mode, FontFace::Bold, fz(ui, 15), modeRoom, 0.85f);
-        std::string modeShown = ui.elide(mode, FontFace::Bold, mf, modeRoom);
-        float modeW = ui.text().measure(modeShown, FontFace::Bold, ui.s(mf)).x;
-        float cy = y + lineH(22) * 0.5f;
-        ui.label(ui.elide(title, FontFace::Title, tf, w - modeW - ui.s(24)), {x0, cy}, tf, kColorA, Align::Left, FontFace::Title, VAlign::Middle);
-        ui.label(modeShown, {x1, cy}, mf, mc, Align::Right, FontFace::Bold, VAlign::Middle);
-        y += lineH(22);
-
-        // What is shown.
         std::string sub;
         if (comparing_) {
             sub = level_.name + "  ·  A : " + displayName(a_.meta) + "  ·  B : " + displayName(b_.meta) + "  ·  " + formatCompareOffset(cmp_.offsetMs());
@@ -1308,41 +2066,60 @@ private:
             // 2.75.3: a record an administrator watches before (or after refusing) its verification.
             if (!recordStatus_.empty() && !adminview::countsAsVerified(recordStatus_)) sub += " · non vérifié : " + adminview::statusLabel(recordStatus_);
         }
-        ui.label(ui.elide(sub, FontFace::Body, fz(ui, 15), w), {x0, y + lineH(15) * 0.5f}, fz(ui, 15), th.text, Align::Left, FontFace::Body, VAlign::Middle);
-        y += lineH(15);
-
-        // Timeline: A's checkpoints above, B's (offset included) below; drag to go anywhere.
-        const double end = std::max(0.001, endTime());
-        std::string chrono = formatRunMs(dragging_ ? std::llround(dragAt_ * 1000.0) : clockMs()) + " / " + formatRunMs(std::llround(end * 1000.0));
-        float cf = fz(ui, 17);
-        float chronoW = ui.text().measure("00:00,000 / 00:00,000", FontFace::Bold, ui.s(cf)).x;
-        Rect bar{x0, y + ui.s(8), w - chronoW - ui.s(18), ui.s(10)};
-        r.fillRoundedRect(bar, ui.s(5), Color{20, 30, 56, 230});
-        auto xAt = [&](double t) { return bar.x + bar.w * static_cast<float>(std::clamp(t / end, 0.0, 1.0)); };
-        double shownT = dragging_ ? dragAt_ : clock();
-        r.fillRoundedRect({bar.x, bar.y, xAt(shownT) - bar.x, bar.h}, ui.s(5), kColorA.withAlphaF(0.75f));
-        for (int64_t ms : splitsA_) {
-            float mx = xAt(static_cast<double>(ms) / 1000.0);
-            r.fillRect({mx - ui.s(1), bar.y - ui.s(6), std::max(1.0f, ui.s(2)), ui.s(6)}, kColorA);
+        {
+            const float tf = fz(ui, 22), sf = fz(ui, 15);
+            const float modeRoom = w * 0.45f;
+            const float mf = ui.fitFont(mode, FontFace::Bold, fz(ui, 15), modeRoom, 0.85f);
+            const std::string modeShown = ui.elide(mode, FontFace::Bold, mf, modeRoom);
+            const float modeW = ui.text().measure(modeShown, FontFace::Bold, ui.s(mf)).x;
+            const float cy = y + lineH(22) * 0.5f;
+            const float left = w - modeW - ui.s(24);
+            const std::string titleShown = ui.elide(title, FontFace::Title, tf, std::min(left, std::max(left * 0.55f, left - ui.s(260))));
+            const float titleW = ui.text().measure(titleShown, FontFace::Title, ui.s(tf)).x;
+            ui.label(titleShown, {x0, cy}, tf, kColorA, Align::Left, FontFace::Title, VAlign::Middle);
+            const float subRoom = left - titleW - ui.s(18);
+            if (subRoom >= ui.s(80)) ui.label(ui.elide(sub, FontFace::Body, sf, subRoom), {x0 + titleW + ui.s(18), cy}, sf, th.text, Align::Left, FontFace::Body, VAlign::Middle);
+            ui.label(modeShown, {x1, cy}, mf, mc, Align::Right, FontFace::Bold, VAlign::Middle);
+            y += lineH(22);
         }
+
+        // The gap (2.91): its reference and unit, then the curve, which is the timeline (A's
+        // checkpoints dashed and named, B's on A's clock under the curve; a click or a drag goes
+        // anywhere).
+        y += ui.s(2);
+        drawGapHeader({x0, y, w, gapHeaderH()});
+        y += gapHeaderH() + ui.s(6);
+        const double end = std::max(0.001, endTime());
+        const double shownT = dragging_ ? dragAt_ : clock();
+        replaygap::ChartSpec spec;
+        const GapSample cursorSample = gapNow(shownT);
+        spec.curve = curveReady_ ? &curve_ : nullptr;
+        spec.distance = gapDistance_;
+        spec.compare = comparing_;
+        spec.end = end;
+        spec.cursor = shownT;
+        spec.cursorSample = curveReady_ ? &cursorSample : nullptr;
+        spec.message = gapNote(true);
+        spec.chrono = formatRunMs(std::llround(shownT * 1000.0)) + " / " + formatRunMs(std::llround(end * 1000.0));
+        spec.chronoColor = kColorA;
+        for (size_t i = 0; i < splitsA_.size(); ++i)
+            spec.checkpoints.push_back({static_cast<double>(splitsA_[i]) / 1000.0,
+                                        checkpointName(trackA_.poseAt(static_cast<float>(splitsA_[i]) / 1000.0f).feet, static_cast<int>(i))});
+        spec.topColor = kColorA;
+        spec.bottomColor = kColorB;
+        spec.windows = measureWindows();  // 2.91: A between the gates of the measure shown
         if (comparing_) {
             for (const auto& row : cmp_.rows())
-                if (!row.exit && row.bCumMs >= 0 && row.bCumMs <= std::llround(end * 1000.0)) {
-                    float mx = xAt(static_cast<double>(row.bCumMs) / 1000.0);
-                    r.fillRect({mx - ui.s(1), bar.bottom(), std::max(1.0f, ui.s(2)), ui.s(6)}, kColorB);
-                }
-            float be = xAt(static_cast<double>(cmp_.b().durationMs + cmp_.offsetMs()) / 1000.0);
-            r.fillRect({be - ui.s(1.5f), bar.bottom(), std::max(1.0f, ui.s(3)), ui.s(7)}, kColorB);
-            float ae = xAt(aEnd());
-            r.fillRect({ae - ui.s(1.5f), bar.y - ui.s(7), std::max(1.0f, ui.s(3)), ui.s(7)}, kColorA);
+                if (!row.exit && row.bCumMs >= 0 && row.bCumMs <= std::llround(end * 1000.0)) spec.bottomTicks.push_back(static_cast<double>(row.bCumMs) / 1000.0);
+            spec.bottomTicks.push_back(static_cast<double>(cmp_.b().durationMs + cmp_.offsetMs()) / 1000.0);
+            spec.topTicks.push_back(aEnd());
         }
-        r.fillCircle({xAt(shownT), bar.center().y}, ui.s(8), Color::white());
-        r.fillCircle({xAt(shownT), bar.center().y}, ui.s(5), kColorA);
-        ui.label(chrono, {x1, bar.center().y}, cf, kColorA, Align::Right, FontFace::Bold, VAlign::Middle);
-        Rect grab = bar.expanded(ui.s(10));
+        const Rect chartArea{x0, y, w, chartH() + replaygap::axisHeight(ui)};
+        const replaygap::ChartOut co = replaygap::drawChart(ui, chartArea, spec);
+        const Rect grab = co.plot.expanded(ui.s(4));
         if (ui.acceptsInput() && in.mousePressed(SDL_BUTTON_LEFT) && grab.contains(in.mousePos())) dragging_ = true;
         if (dragging_) {
-            dragAt_ = std::clamp(static_cast<double>((in.mousePos().x - bar.x) / bar.w), 0.0, 1.0) * end;
+            dragAt_ = std::clamp(static_cast<double>((in.mousePos().x - co.plot.x) / co.plot.w), 0.0, 1.0) * end;
             // The trajectory follows at once; an exact replay jumps when the button is let go
             // (going back means simulating the run again from its start).
             if (!playback_) t_ = dragAt_;
@@ -1351,7 +2128,7 @@ private:
                 seekTo(dragAt_);
             }
         }
-        y = bar.bottom() + ui.s(16);
+        y = chartArea.bottom() + ui.s(8);
 
         // Buttons.
         drawButtons(x0, y, w);
@@ -1361,6 +2138,132 @@ private:
         float rowH = std::max(ui.s(26), px(13) * 1.7f);
         float used = drawInputs({x0, y, w, rowH});
         drawShortcuts({x0 + used + ui.s(24), y, w - used - ui.s(24), rowH});
+    }
+
+    /// What the gap compares, in words: the header's note (`forChart` false) or, when there is
+    /// no curve to draw in the unit chosen, why (in the chart).
+    std::string gapNote(bool forChart) const {
+        if (comparing_) {
+            if (!curveReady_) return "Calcul de l'écart…";
+            if (forChart) return gapDistance_ && !curve_.continuous ? "Trajet du niveau inconnu : la distance ne se mesure pas" : "";
+            std::string n = cmp_.offsetMs() == 0 ? "sans décalage de B" : "décalage de B : " + formatDeltaMs(cmp_.offsetMs()) + ", compris dans la courbe";
+            if (gapDistance_ && curve_.continuous) n += " · 1 m = 1 tuile (16 px)";
+            return n;
+        }
+        if (gapKind_ == replaygap::RefKind::Other && !otherRef_) return "Choisissez l'autre replay : « Autre replay… »";
+        const GapRefSlot& s = gapRefs_[static_cast<size_t>(gapKind_)];
+        if (!routeReady_ || !s.ready || !runAReady_) return "Calcul de l'écart…";
+        if (!s.res.ok) return s.res.why;
+        if (forChart) return gapDistance_ && curveReady_ && !curve_.continuous ? "Aux points de passage seulement : pas de distance entre eux" : "";
+        std::string n;
+        if (gapKind_ == replaygap::RefKind::SumOfBest) {
+            if (curve_.continuous) n = "chaque meilleur segment lu sur son replay";
+            else if (s.res.withReplay <= 1)
+                n = std::to_string(s.res.withReplay) + " segment sur " + std::to_string(s.res.segments) + " a son replay : comparé aux points de passage seulement";
+            else
+                n = std::to_string(s.res.withReplay) + " segments sur " + std::to_string(s.res.segments) + " ont leur replay : comparé aux points de passage seulement";
+        } else if (gapKind_ == replaygap::RefKind::Record && s.res.sameRun) {
+            n = "ce replay est votre record : écart nul";
+        } else if (gapKind_ == replaygap::RefKind::Other) {
+            n = "référence : " + s.res.name;
+        } else if (curveReady_ && !curve_.continuous) {
+            n = "trajet du niveau inconnu : points de passage seulement";
+        }
+        if (gapDistance_ && curveReady_ && curve_.continuous) n += n.empty() ? "1 m = 1 tuile (16 px)" : " · 1 m = 1 tuile (16 px)";
+        return n;
+    }
+
+    /// « ÉCART À LA RÉFÉRENCE » [Record (PB) | Somme des meilleurs | Autre replay…] [En temps |
+    /// En distance], what is compared, and the colours' legend: measured, the buttons' font
+    /// shrunk first, then the legend and the note left out when there is no room.
+    void drawGapHeader(const Rect& row) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        struct Seg {
+            const char* id;
+            std::string label;
+            bool on;
+        };
+        std::vector<Seg> refs, units;
+        if (!comparing_)
+            refs = {{"pb", "Record (PB)", gapKind_ == replaygap::RefKind::Record},
+                    {"sob", "Somme des meilleurs", gapKind_ == replaygap::RefKind::SumOfBest},
+                    {"other", "Autre replay…", gapKind_ == replaygap::RefKind::Other}};
+        units = {{"time", "En temps", !gapDistance_}, {"dist", "En distance", gapDistance_}};
+        const std::string kicker = comparing_ ? "ÉCART A − B" : "ÉCART À LA RÉFÉRENCE";
+        const float kf = fz(ui, 14), pad = ui.s(22), segGap = ui.s(3), groupGap = ui.s(14);
+        float fs = fz(ui, 15);
+        auto segW = [&](const Seg& s) { return ui.text().measure(s.label, FontFace::Bold, ui.s(fs)).x + pad; };
+        auto groupW = [&](const std::vector<Seg>& g) {
+            float t = 0.0f;
+            for (const Seg& s : g) t += segW(s) + segGap;
+            return g.empty() ? 0.0f : t - segGap;
+        };
+        float kw = ui.text().measure(kicker, FontFace::Bold, ui.s(kf)).x;
+        auto need = [&] { return (kw > 0.0f ? kw + groupGap : 0.0f) + groupW(refs) + (refs.empty() ? 0.0f : groupGap) + groupW(units); };
+        if (need() > row.w) {
+            const float fixed = (kw > 0.0f ? kw + groupGap : 0.0f) + (refs.empty() ? 0.0f : groupGap) + pad * static_cast<float>(refs.size() + units.size());
+            const float textNow = need() - fixed;
+            fs = std::max(11.5f / ui.s(1.0f), fs * std::max(0.1f, (row.w - fixed) / std::max(1.0f, textNow)));
+        }
+        if (need() > row.w) kw = 0.0f;  // the kicker goes last
+        float x = row.x;
+        const float cy = row.center().y;
+        if (kw > 0.0f) {
+            ui.label(kicker, {x, cy}, kf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+            x += kw + groupGap;
+        }
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = fs;
+        std::string pressed;
+        ui.pushId("gap");
+        for (const std::vector<Seg>* g : {&refs, &units}) {
+            if (g->empty()) continue;
+            for (const Seg& s : *g) {
+                const float bw = segW(s);
+                st.selected = s.on;
+                if (ui.button(s.id, {x, row.y, bw, row.h}, s.label, st)) pressed = s.id;
+                x += bw + segGap;
+            }
+            x += groupGap - segGap;
+        }
+        ui.popId();
+        // The legend at the right, then what is compared between the buttons and it.
+        const float lf = fz(ui, 13), sw = ui.s(14);
+        struct Leg {
+            Color c;
+            std::string text;
+        };
+        std::vector<Leg> legend = {{replaygap::kBehind, comparing_ ? "A en retard" : "en retard"}, {replaygap::kAhead, comparing_ ? "A en avance" : "en avance"}};
+        if (const MeasurePair* mp = measurePair(); mp && mp->complete() && !measureWindows().empty())
+            legend.push_back({replaygap::kWindow, "entre A" + std::to_string(mp->id) + " et B" + std::to_string(mp->id)});
+        float legendW = 0.0f;
+        for (const Leg& l : legend) legendW += sw + ui.s(6) + ui.text().measure(l.text, FontFace::Body, ui.s(lf)).x + ui.s(14);
+        float right = row.right();
+        if (right - x >= legendW + ui.s(140)) {
+            float lx = right - legendW + ui.s(14);
+            for (const Leg& l : legend) {
+                ui.r().fillRoundedRect({lx, cy - sw * 0.35f, sw, sw * 0.7f}, ui.s(2), l.c.withAlpha(170));
+                lx += sw + ui.s(6);
+                lx += ui.label(l.text, {lx, cy}, lf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle).x + ui.s(14);
+            }
+            right -= legendW + ui.s(8);
+        }
+        const std::string note = gapNote(false);
+        const GapRefSlot& slot = gapRefs_[static_cast<size_t>(gapKind_)];
+        const bool warn = !comparing_ && slot.ready && !slot.res.ok;
+        if (!note.empty() && right - x >= ui.s(60)) {
+            const float nf = ui.fitFont(note, FontFace::Body, fz(ui, 14), right - x, 0.85f);
+            ui.label(ui.elide(note, FontFace::Body, nf, right - x), {x, cy}, nf, warn ? th.warm : th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        if (pressed == "pb") selectGapRef(replaygap::RefKind::Record);
+        else if (pressed == "sob") selectGapRef(replaygap::RefKind::SumOfBest);
+        else if (pressed == "other") {
+            if (gapKind_ != replaygap::RefKind::Other && otherRef_) selectGapRef(replaygap::RefKind::Other);
+            else openOtherReference();
+        } else if (pressed == "time") gapDistance_ = false;
+        else if (pressed == "dist") gapDistance_ = true;
     }
 
     void drawButtons(float x0, float y, float w) {
@@ -1499,6 +2402,7 @@ private:
                      {{{"", B::axisPos(SDL_GAMEPAD_AXIS_RIGHTX)}}, "±5 s"}};
             if (comparing_) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_NORTH)}}, "caméra"});
             hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_BACK)}}, "infos"});
+            if (g_.measures.inReplays) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_BACK)}, {"", B::button(SDL_GAMEPAD_BUTTON_DPAD_UP)}}, "point de mesure"});
         } else {
             hints = {{{{"K", {}}}, "lecture"}, {{{",", {}}, {".", {}}}, "image"}, {{{"J", {}}, {"L", {}}}, "±5 s"},
                      {{{"", {}, Action::MenuTabPrev}, {"", {}, Action::MenuTabNext}}, "point"}, {{{"−", {}}, {"+", {}}}, "vitesse"}};
@@ -1507,6 +2411,7 @@ private:
                 hints.push_back({{{"R", {}}}, "recaler"});
             }
             hints.push_back({{{"I", {}}}, "infos"});
+            if (g_.measures.inReplays) hints.push_back({{{"F8", {}}}, "point de mesure"});
         }
         const float h = std::max(ui.s(22), px(13) * 1.5f);
         const float fs = fz(ui, 13), gap = ui.s(4), sep = ui.s(14);
@@ -1584,6 +2489,7 @@ private:
         if (key(SDLK_PLUS) || key(SDLK_EQUALS) || in.keyPressed(SDL_SCANCODE_KP_PLUS))
             speedIdx_ = std::min(static_cast<int>(kSpeeds.size()) - 1, speedIdx_ + 1);
         if (key(SDLK_I)) toggleInfo();
+        if (in.keyPressed(SDL_SCANCODE_F8)) placeMeasure();  // 2.91: a measure point, as in training
         if (comparing_) {
             if (key(SDLK_C)) cycleCamera();
             if (key(SDLK_T)) showPaths_ = !showPaths_;
@@ -1599,7 +2505,23 @@ private:
         };
         if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST), padX_)) togglePlay();
         if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), padY_) && comparing_) cycleCamera();
-        if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK), padBack_)) toggleInfo();
+        // Vue alone shows / hides the infos (when let go); held with ↑, a measure point (2.91, as
+        // in training; ↑ then moves nothing between the buttons).
+        {
+            const bool back = in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK);
+            if (back && !padBack_) backChord_ = false;
+            if (back) {
+                ui.consumeNavigation(false, true);
+                if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_DPAD_UP), padUp_)) {
+                    backChord_ = true;
+                    placeMeasure();
+                }
+            } else {
+                padUp_ = false;
+                if (padBack_ && !backChord_) toggleInfo();
+            }
+            padBack_ = back;
+        }
         auto repeat = [&](bool held, float& timer, float first, float next) {
             if (!held) {
                 timer = -1.0f;
@@ -1688,6 +2610,46 @@ private:
     std::future<LevelProgressTrack> routeFuture_;
     LevelProgressTrack route_;
     bool routeReady_ = false;
+    std::vector<std::pair<std::string, Vec2>> routeCheckpoints_;  // the level's (id, feet), in the route's order
+    // Gap to a reference (2.91).
+    struct GapRefSlot {
+        bool started = false, ready = false;
+        std::future<replaygap::LoadedRef> job;
+        replaygap::LoadedRef res;
+    };
+    replaygap::RefKind gapKind_ = replaygap::RefKind::Record;
+    bool gapKindChosen_ = false;
+    bool gapDistance_ = false;  // the curve in metres
+    std::array<GapRefSlot, 3> gapRefs_;
+    std::shared_ptr<const ReplayData> otherRef_;  // « Autre replay… »
+    GhostMeta otherMeta_;
+    std::future<RouteRun> runAJob_, runBJob_;
+    RouteRun runA_, runB_;
+    std::shared_ptr<const ReplayData> runAOf_, runBOf_;  // the replays runA_ / runB_ are made from
+    bool runAReady_ = false, runBReady_ = false;
+    GapCurve curve_;
+    GapReference curveRef_;
+    GapRun curveRun_;
+    bool curveReady_ = false, curveDirty_ = true;
+    int64_t curveOffset_ = 0;
+    Rect liveRect_, collectRect_;  // this frame's live counter and collectibles (the HUD and the tags keep clear of them)
+    LiveText liveText_;
+    // Measure points (2.91).
+    struct PairPasses {
+        std::vector<MeasurePass> a, b, pb;  // on the recorded trajectories (own clocks)
+    };
+    std::string measureKey_;
+    std::vector<MeasurePair> measurePairs_;
+    int measureSel_ = 0;
+    std::map<int, PairPasses> measurePasses_;            // by pair id
+    std::map<int, MeasurePassTimer> exactTimers_;        // A on the simulation, by pair id
+    std::map<int, std::vector<MeasurePass>> exactPasses_;  // A's passes timed so (1/120 s)
+    std::shared_ptr<const ReplayData> measuredA_, measuredB_, measuredPb_;
+    bool measuredValid_ = false;
+    bool fedValid_ = false;
+    uint32_t fedTick_ = 0, fedGen_ = 0;
+    bool backChord_ = false;  // Vue held: ↑ placed a gate (Vue alone shows / hides the infos on release)
+    Animator animRef_;             // the viewer's reference ghost
     // Comparison.
     bool comparing_ = false;
     ReplayComparison cmp_;
@@ -1720,7 +2682,7 @@ private:
     float msgTimer_ = 0.0f;
     bool closeRequested_ = false;
     bool editedThisFrame_ = false;
-    bool padX_ = false, padY_ = false, padBack_ = false;
+    bool padX_ = false, padY_ = false, padBack_ = false, padUp_ = false;
     float ltTimer_ = -1.0f, rtTimer_ = -1.0f, rsLeft_ = -1.0f, rsRight_ = -1.0f;
 };
 
