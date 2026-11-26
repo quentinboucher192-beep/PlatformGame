@@ -1,4 +1,7 @@
 {
+  "2.89.0": [
+    "Joueurs simulés : le saut par-dessus une onde tenu jusqu'en haut, la voûte de Graviton quittée à temps ; Heartbreaker tombe dans 18 départs sur 32 (avant 14), Dreadfang tombe pour la première fois (2 sur 32) et perd 57 % de sa vie (avant 53 %)."
+  ],
   "2.88.0": [
     "Joueurs simulés : les lances du Cœur et les rochers lus sur toute leur chute, les rayons balayants lus pendant qu'ils tournent, le bouclier contre la lame de Dreadfang levé aussi en l'air, chacun sur un ventricule du Cœur qu'il peut atteindre ; Skullmaw tombe dans 26 départs sur 32, Heartbreaker dans 6 sur 8, Dreadfang perd 53 % de sa vie (avant 41 %) et le Cœur 58 % (avant 47 %)."
   ],
