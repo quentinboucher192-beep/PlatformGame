@@ -66285,6 +66285,12 @@
    ]
   },
   {
+   "fr": "sort du secteur inversé",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "sorte de défi inconnue",
    "where": [
     "game/online/DailyChallenges.cpp"
