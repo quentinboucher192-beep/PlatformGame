@@ -35,6 +35,15 @@ void GameServices::loadAll() {
     replayLibrary.open(Paths::userDir() / "replays" / "downloaded");
     segments.load();
     training.load();
+    // 2.91: ONE personal Sum of Best per level version (saves/bests.json): the old segment and
+    // training files merged once, then the statistics' segment bests (stats.json) once.
+    bests.load();
+    if (!bests.statsImported() && !bests.readOnly()) {
+        bests.importStats(playStats.data());
+        bests.save();
+    }
+    startPositions.load();
+    measures.load();
     powerKeyOverrides.load();
     for (size_t i = 0; i < coopPowerKeys.size(); ++i) coopPowerKeys[i].loadFile(Paths::savesDir() / ("power_keys_j" + std::to_string(i + 2) + ".json"));
     if (std::string err; !achievementCatalog.loadDefault(&err)) Log::warn("Succès : {}", err);
@@ -651,7 +660,12 @@ GameServices::RestoreOutcome GameServices::restoreProgressCopy(const Json& files
     collection.fromJson(merged["collection"]);
     bossStats.touch();
     // 2.55: the statistics (written on their worker thread, like after a run).
-    if (files.contains("stats")) playStats.replace(PlayStatsData::fromJson(merged["stats"]));
+    if (files.contains("stats")) {
+        playStats.replace(PlayStatsData::fromJson(merged["stats"]));
+        // 2.91: the segment bests the copy's statistics carry join the personal Sum of Best.
+        bests.importStats(playStats.data());
+        bests.save();
+    }
     if (!sha256.empty()) copiesMergedThisSession_.insert(sha256);  // in memory now: never added twice
     // Every save is written, even after one failed (the next save writes what is in memory).
     std::string failed;

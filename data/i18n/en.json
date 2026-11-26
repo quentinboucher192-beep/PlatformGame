@@ -14879,6 +14879,9 @@
     "à l'entraînement": "in practice",
     "écart type des 20 dernières parties": "standard deviation of the last 20 runs",
     "▲ moins régulier qu'il y a 30 j": "▲ less steady than 30 days ago",
-    "▼ plus régulier qu'il y a 30 j": "▼ steadier than 30 days ago"
+    "▼ plus régulier qu'il y a 30 j": "▼ steadier than 30 days ago",
+    "Enchaînement": "Chain",
+    "StartPos": "StartPos",
+    "source|Partie": "Run"
   }
 }
