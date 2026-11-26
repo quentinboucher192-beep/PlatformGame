@@ -39,7 +39,7 @@ struct GhostMeta {
     std::string trail;
 
     /// The player's own run on this computer (best, previous best, last).
-    bool mine() const { return source == "pb" || source == "prev" || source == "last"; }
+    bool mine() const { return source == "pb" || source == "prev" || source == "last" || source == "range"; }
     Json toJson() const;
     static GhostMeta fromJson(const Json& j);
     /// "Record mondial", "Mon meilleur temps"... (menus).

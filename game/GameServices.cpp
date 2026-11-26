@@ -33,8 +33,6 @@ void GameServices::loadAll() {
     ghosts.open(Paths::userDir() / "ghosts");
     ghosts.trimCache(static_cast<uint64_t>(settings.ghosts.cacheMB) * 1024 * 1024);
     replayLibrary.open(Paths::userDir() / "replays" / "downloaded");
-    segments.load();
-    training.load();
     // 2.91: ONE personal Sum of Best per level version (saves/bests.json): the old segment and
     // training files merged once, then the statistics' segment bests (stats.json) once.
     bests.load();

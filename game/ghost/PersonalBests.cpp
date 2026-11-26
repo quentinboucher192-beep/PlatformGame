@@ -515,6 +515,11 @@ std::vector<PersonalBests::SobPoint> PersonalBests::sobHistory(const std::string
     return it == levels_.end() ? std::vector<SobPoint>{} : it->second.history;
 }
 
+bool PersonalBests::knowsOnline(const std::string& levelKey, const std::string& onlineId) const {
+    auto it = levels_.find(levelKey);
+    return it != levels_.end() && std::find(it->second.onlineIds.begin(), it->second.onlineIds.end(), onlineId) != it->second.onlineIds.end();
+}
+
 const std::vector<std::string>* PersonalBests::powers(const std::string& levelKey, const Range& r) const {
     auto it = levels_.find(levelKey);
     if (it == levels_.end()) return nullptr;

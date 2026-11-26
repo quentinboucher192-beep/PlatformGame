@@ -20,6 +20,8 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"focus_toggle", "Mode concentré"}, {"raid_map", "Carte du raid (agrandir)"},
     {"raid_menu", "Menu du raid"},
     {"bot_orders", "Ordres aux joueurs simulés"}, {"bot_thoughts", "Pensées des joueurs simulés"},
+    {"startpos_place", "Poser une startpos ici"}, {"startpos_prev", "Startpos précédente"},
+    {"startpos_next", "Startpos suivante"},       {"measure_place", "Point de mesure (A puis B)"},
     {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
     {"menu_left", "Menu gauche"},     {"menu_right", "Menu droite"},   {"menu_confirm", "Valider"},
     {"menu_back", "Retour"},          {"menu_tab_prev", "Onglet précédent"}, {"menu_tab_next", "Onglet suivant"},
@@ -71,6 +73,12 @@ void InputBindings::resetKeyboard() {
     set(Action::RaidMenu, SDL_SCANCODE_TAB);  // 2.75.5: the raid's menu
     set(Action::BotOrders, SDL_SCANCODE_C);    // 2.79: a raid test's order wheel
     set(Action::BotThoughts, SDL_SCANCODE_V);  // 2.79: the simulated players' thoughts
+    // 2.91: training's StartPos and measure points (no gameplay key uses F5 to F8; the gamepad
+    // has no button of its own for them: View held + the d-pad, see GameScene).
+    set(Action::StartPosPlace, SDL_SCANCODE_F5);
+    set(Action::StartPosPrev, SDL_SCANCODE_F6);
+    set(Action::StartPosNext, SDL_SCANCODE_F7);
+    set(Action::MeasurePlace, SDL_SCANCODE_F8);
     set(Action::MenuUp, SDL_SCANCODE_UP, SDL_SCANCODE_W);
     set(Action::MenuDown, SDL_SCANCODE_DOWN, SDL_SCANCODE_S);
     set(Action::MenuLeft, SDL_SCANCODE_LEFT, SDL_SCANCODE_A);
@@ -327,7 +335,9 @@ InputBindings InputBindings::fromJson(const Json& j) {
     // 2.75.5: a file written before the raid's menu (no « raid_menu »): its key (Tab) and its button
     // (L3) only when no command of that file has them (L3 stays shared with the ghosts' toggle).
     // 2.79: the same for the order wheel and the thoughts of a raid test's simulated players (C, V, R3).
-    for (Action added : {Action::RaidMenu, Action::BotOrders, Action::BotThoughts}) {
+    // 2.91: the same for training's StartPos and measure points (F5 to F8).
+    for (Action added : {Action::RaidMenu, Action::BotOrders, Action::BotThoughts, Action::StartPosPlace, Action::StartPosPrev, Action::StartPosNext,
+                         Action::MeasurePlace}) {
         const int menu = static_cast<int>(added);
         auto lacksMenu = [&](const char* device) { return !j.contains(device) || !j[device].is_object() || !j[device].contains(actionId(added)); };
         if (lacksMenu("keyboard") && d.keys[menu][0] != SDL_SCANCODE_UNKNOWN)

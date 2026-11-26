@@ -358,7 +358,9 @@ void PauseScene::render(float /*alpha*/) {
             tracked.push_back(a);
             note = note || !achievementMovesDuringRun(a->condition);
         }
-    const int buttons = 6 + (keys ? 1 : 0) + (invincible ? 1 : 0) + (ghosts ? 1 : 0);
+    // 2.91: « Startpos et mesures » in a section training (a level version known).
+    const bool marks = game_.sectionTraining() && !game_.levelKey().empty();
+    const int buttons = 6 + (keys ? 1 : 0) + (invincible ? 1 : 0) + (ghosts ? 1 : 0) + (marks ? 1 : 0);
     // The map of what was explored sits on the right of the menu when the window has room;
     // « Succès suivis » then goes under it (2.60), the column keeping the buttons.
     float w = ui.s(560);
@@ -462,6 +464,11 @@ void PauseScene::render(float /*alpha*/) {
     }
     if (ghosts) {
         if (plate("ghosts", game_.ghostsVisible() ? "Fantômes" : "Fantômes (masqués)", "coop", violet)) g_.app.pushScene(makeGhostOptions(g_, &game_));
+        y += step;
+    }
+    if (marks) {
+        // 2.91: the StartPos and the measure points of this level version.
+        if (plate("marks", "Startpos et mesures", "stats", gold)) g_.app.pushScene(makeTrainingMarks(g_, game_));
         y += step;
     }
     std::string quitLabel = game_.editorTest()        ? "Retour à l'éditeur"

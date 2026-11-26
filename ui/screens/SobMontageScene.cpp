@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/gameplay/BossTraining.h"
 #include "game/gameplay/GameRenderer.h"
@@ -294,15 +295,16 @@ private:
 
     static std::string noReplayText(const MontageSegment& s) {
         if (s.duration < 0.0f) return "Temps inconnu : aucune course complète ni aucun entraînement n'a fait ce segment seul.";
-        return s.training ? "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le en entraînement par segment pour l'ajouter."
-                          : "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le dans une course complète pour l'ajouter.";
+        return "Pas de replay pour ce meilleur temps (d'avant la version 2.60.3, ou repris d'un autre ordinateur) : battez-le, en course ou à "
+               "l'entraînement, pour l'ajouter.";
     }
 
     /// « Segment 2 · entraînement du 17/11 · 0:23,45 ».
     std::string segmentLine(int k) const {
         const MontageSegment& s = segs()[static_cast<size_t>(k)];
-        std::string where = s.training ? "entraînement" : "course";
-        if (std::string d = dayMonth(s.date); !d.empty()) where += " du " + d;
+        // 2.91: where its best was done (Partie, Entraînement, Enchaînement, StartPos, En ligne).
+        std::string where = i18n::tr(bestSourceLabel(s.source));
+        if (std::string d = dayMonth(s.date); !d.empty()) where += " · " + d;
         return "Segment " + std::to_string(k + 1) + " · " + where + " · " + (s.duration > 0.0f ? formatGhostTime(s.duration) : std::string("temps inconnu"));
     }
     std::string segmentName(int k) const {
@@ -498,7 +500,7 @@ private:
             lines.push_back({rec, FontFace::Body, fz(ui, 17), ui.theme().textDim});
         }
         int training = 0;
-        for (const MontageSegment& s : segs()) training += s.training ? 1 : 0;
+        for (const MontageSegment& s : segs()) training += s.source != BestSource::Run && s.source != BestSource::Online ? 1 : 0;
         std::string shown = std::to_string(p.withReplay) + " segment" + (p.withReplay > 1 ? "s" : "") + " sur " + std::to_string(count()) + " en replay";
         if (training > 0) shown += " · " + std::to_string(training) + " d'entraînement";
         lines.push_back({shown, FontFace::Body, fz(ui, 15), ui.theme().textDim});

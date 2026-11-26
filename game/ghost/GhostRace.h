@@ -18,6 +18,8 @@ std::vector<float> segmentDurations(const std::vector<float>& splits, float fina
 std::string formatGhostDelta(float seconds, bool unit = true);
 /// A run time with hundredths, French style: "1:02,35" ("1:02:03,40" beyond an hour).
 std::string formatGhostTime(float seconds);
+/// 2.91: a short duration to the millisecond, without a sign: "3,182 s" ("1:04,930" beyond a minute).
+std::string formatGhostSeconds(float seconds);
 
 /// Comparison of the current run with one or more ghosts, on the level timer.
 ///

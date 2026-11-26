@@ -49,6 +49,13 @@ enum class Action : int {
     RaidMenu,     // 2.75.5: the raid's menu (what is left, zones finished, journal, group, titan), never recorded
     BotOrders,    // 2.79: a raid test's order wheel for the simulated players (the order rides on the frame, not this key)
     BotThoughts,  // 2.79: show / hide what the simulated players think (display only, never recorded)
+    // 2.91, a training run (docs/GHOST_RACING.md): a StartPos placed here, the previous / next one
+    // chosen, a measure point placed here (A, then B). Never bits of the recorded actions: the scene
+    // sets the frame's mark flags from them (InputFrame::PlaceStartPos…), which the replay keeps.
+    StartPosPlace,
+    StartPosPrev,
+    StartPosNext,
+    MeasurePlace,
     MenuUp,
     MenuDown,
     MenuLeft,

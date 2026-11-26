@@ -194,6 +194,8 @@ public:
     /// The last full runs, most recent first (nullptr: none).
     const std::vector<Run>* runs(const std::string& levelKey) const;
     std::vector<SobPoint> sobHistory(const std::string& levelKey) const;
+    /// A verified online run of the player already given (BestAttempt::onlineId): never fetched twice.
+    bool knowsOnline(const std::string& levelKey, const std::string& onlineId) const;
     /// The powers chosen to train a range (nullptr: the route's ones).
     const std::vector<std::string>* powers(const std::string& levelKey, const Range& r) const;
     /// The file of a best's replay (empty when none is kept).

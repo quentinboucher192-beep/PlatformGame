@@ -355,3 +355,37 @@ TEST_CASE("measure points: placed A then B, times kept per level version") {
     std::error_code ec;
     fs::remove(file, ec);
 }
+
+TEST_CASE("startpos: F5 to F8 by default, rebindable, never taken from another command") {
+    const InputBindings d = InputBindings::defaults();
+    const std::pair<Action, SDL_Scancode> marks[] = {{Action::StartPosPlace, SDL_SCANCODE_F5},
+                                                     {Action::StartPosPrev, SDL_SCANCODE_F6},
+                                                     {Action::StartPosNext, SDL_SCANCODE_F7},
+                                                     {Action::MeasurePlace, SDL_SCANCODE_F8}};
+    for (const auto& [a, key] : marks) {
+        CHECK(actionIsRebindable(a));
+        CHECK(d.keys[static_cast<int>(a)][0] == key);
+        CHECK(actionFromId(actionId(a)) == a);
+        // No other command (game or menu) uses that key by default.
+        for (int o = 0; o < kActionCount; ++o)
+            if (o != static_cast<int>(a)) CHECK(d.keys[static_cast<size_t>(o)][0] != key && d.keys[static_cast<size_t>(o)][1] != key);
+        // The gamepad: View held + the d-pad (no button of their own).
+        CHECK(d.pad[static_cast<int>(a)][0].kind == PadBinding::Kind::None);
+    }
+    // A settings file of before them: their keys, unless that file gave one to another command.
+    Json old = d.toJson();
+    for (const auto& [a, key] : marks) {
+        old["keyboard"].erase(actionId(a));
+        old["gamepad"].erase(actionId(a));
+    }
+    old["keyboard"][actionId(Action::Jump)] = Json::array({"F6", ""});
+    const InputBindings b = InputBindings::fromJson(old);
+    CHECK(b.keys[static_cast<int>(Action::StartPosPlace)][0] == SDL_SCANCODE_F5);
+    CHECK(b.keys[static_cast<int>(Action::StartPosPrev)][0] == SDL_SCANCODE_UNKNOWN);  // F6 is the jump there
+    CHECK(b.keys[static_cast<int>(Action::Jump)][0] == SDL_SCANCODE_F6);
+    // Kept in the file once rebound.
+    InputBindings c = d;
+    c.keys[static_cast<int>(Action::MeasurePlace)][0] = SDL_SCANCODE_M;
+    c.keys[static_cast<int>(Action::RaidMap)] = {SDL_SCANCODE_UNKNOWN, SDL_SCANCODE_UNKNOWN};
+    CHECK(InputBindings::fromJson(c.toJson()).keys[static_cast<int>(Action::MeasurePlace)][0] == SDL_SCANCODE_M);
+}

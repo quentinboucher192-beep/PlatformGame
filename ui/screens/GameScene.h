@@ -24,6 +24,7 @@
 #include "ui/screens/GhostRun.h"
 #include "ui/screens/PauseMap.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/TrainingSession.h"
 
 namespace cosmic {
 
@@ -53,6 +54,9 @@ struct ChallengeEndData {
     std::shared_ptr<ReplayData> replay;
 };
 std::unique_ptr<Scene> makeChallengeEnd(GameServices& g, GameScene& game, ChallengeEndData data);
+/// 2.91: Pause › « Startpos et mesures » (a section training): the StartPos and the measure points
+/// of this level version, to start from one, delete, rename, move; the display options.
+std::unique_ptr<Scene> makeTrainingMarks(GameServices& g, GameScene& game);
 
 /// Plays a level: simulation, rendering, HUD, pause menu and end of level.
 class GameScene : public Scene, public PowerChoiceHost {
@@ -92,6 +96,13 @@ public:
     void quitToMenu();
     bool editorTest() const { return opt_.editorTest; }
     bool sectionTraining() const { return opt_.training; }  // « Répéter un segment »: quitting returns to its setup
+    /// 2.91: the training's StartPos and measure points (Pause › « Startpos et mesures »).
+    TrainingSession& trainingSession() { return session_; }
+    /// This level version (GhostStore::levelKey), empty when nothing is kept.
+    std::string levelKey() const;
+    /// The attempt again from the StartPos `id` (0: from the training's own start).
+    void restartFrom(int startPosId);
+    const std::string& levelName() const { return level_.name; }
     /// Answer of the power choice window (InputFrame::choice), used by the next step.
     void answerPowerOffer(uint8_t choice) override { pendingChoice_ = choice; }
     const std::string& levelId() const { return levelId_; }
@@ -264,8 +275,14 @@ private:
     /// time), always in view, clear of the HUD, of the tag `tagRect` and of the banner.
     void drawTrainingRefs(const Rect& tagRect, const Rect& banner);
     Rect trainingRefsRect_, trainingTagRect_, trainingBannerRect_;  // where they were drawn last
-    float trainingBestBefore_ = -1.0f;  // best training time before this attempt (-1: none)
+    float trainingBestBefore_ = -1.0f;  // the range's best before this attempt (-1: none)
     bool trainingNewBest_ = false;
+    // 2.91: the personal Sum of Best of this attempt, training's StartPos and measure points.
+    TrainingSession session_;
+    /// This attempt's exact replay so far (encoded; empty: not recorded), for the bests it sets.
+    std::vector<uint8_t> attemptReplay() const;
+    /// The attempt ends (once): its passage joins the personal bests.
+    PersonalBests::Added commitBests(float exitTime, const std::vector<uint8_t>* replay);
     float segmentBanner_ = 0.0f;
     float segmentTime_ = 0.0f;
     float segmentBest_ = -1.0f;

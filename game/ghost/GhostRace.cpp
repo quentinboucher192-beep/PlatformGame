@@ -31,6 +31,14 @@ std::string formatGhostDelta(float seconds, bool unit) {
     return buf;
 }
 
+std::string formatGhostSeconds(float seconds) {
+    const long ms = std::lround(static_cast<double>(std::max(0.0f, seconds)) * 1000.0);
+    char buf[32];
+    if (ms >= 60000) std::snprintf(buf, sizeof buf, "%ld:%02ld,%03ld", ms / 60000, (ms / 1000) % 60, ms % 1000);
+    else std::snprintf(buf, sizeof buf, "%ld,%03ld s", ms / 1000, ms % 1000);
+    return buf;
+}
+
 std::string formatGhostTime(float seconds) {
     long cs = std::lround(static_cast<double>(std::max(0.0f, seconds)) * 100.0);
     char buf[32];
