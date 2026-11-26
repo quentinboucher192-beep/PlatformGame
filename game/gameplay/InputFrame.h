@@ -23,7 +23,21 @@ struct InputFrame {
     /// Standby (2.62, a team): set by the relay only, on the inputs of a player who is absent
     /// (disconnected); never accepted from a game (docs/COOP.md).
     /// Vacant (2.65, raids): set by the relay only, on the frames of a seat nobody holds.
-    enum Flag : uint8_t { SkipCinematic = 1, Standby = 2, Vacant = 4 };
+    /// 2.91, a training run only (docs/GHOST_RACING.md): marks the player asks for at this
+    /// step — a StartPos placed here, the previous or the next one chosen (for the next
+    /// attempt), a measure point placed here (A, then B). The world reads Nova's state after
+    /// the step (GameWorld::noteMarks); nothing of the simulation changes: a run plays the same
+    /// with or without them, and its replay keeps them (the flags byte is stored as it is).
+    enum Flag : uint8_t {
+        SkipCinematic = 1,
+        Standby = 2,
+        Vacant = 4,
+        PlaceStartPos = 8,
+        PrevStartPos = 16,
+        NextStartPos = 32,
+        PlaceMeasure = 64
+    };
+    static constexpr uint8_t kMarkFlags = PlaceStartPos | PrevStartPos | NextStartPos | PlaceMeasure;
     /// Answer to a pending power offer (GameWorld::powerOffer): 1..8 replaces that slot,
     /// kChoiceLeave leaves the new power on its tablet, 0 = no answer this step.
     static constexpr uint8_t kChoiceLeave = 255;

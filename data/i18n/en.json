@@ -14715,6 +14715,9 @@
     "Écoulé depuis le début · zone : {0}": "Elapsed since the start · zone: {0}",
     "Écoulé {0}": "{0} elapsed",
     "s'écarte sur sa plaque": "steps aside on its plate",
-    "attend son bouclier pour réanimer": "waits for its shield to revive"
+    "attend son bouclier pour réanimer": "waits for its shield to revive",
+    "Enchaînement": "Chain",
+    "StartPos": "StartPos",
+    "source|Partie": "Run"
   }
 }

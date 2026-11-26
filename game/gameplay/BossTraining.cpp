@@ -46,6 +46,7 @@ std::vector<std::string> fitTrainingPowers(const ContentDatabase& content, const
 Json SectionTrainingStart::toJson() const {
     Json j{{"checkpoint", checkpointId}, {"powers", powers}, {"powers_chosen", powersChosen}};
     if (hasSpawn) j["spawn"] = {spawn.x, spawn.y};
+    if (startPos) j["startpos"] = startPos->toJson();
     return j;
 }
 
@@ -76,10 +77,18 @@ std::optional<SectionTrainingStart> SectionTrainingStart::fromJson(const Json& j
             s.powers.push_back(id.get<std::string>());
         }
     }
+    if (j.contains("startpos")) {  // 2.91
+        s.startPos = StartPosState::fromJson(j["startpos"]);
+        if (!s.startPos || !s.checkpointId.empty()) return std::nullopt;
+    }
     return s;
 }
 
 void applySectionTraining(GameWorld& w, const SectionTrainingStart& s) {
+    if (s.startPos) {  // 2.91: from a StartPos, Nova as it was taken
+        applyStartPos(w, *s.startPos);
+        return;
+    }
     if (s.hasSpawn) w.startAt(s.spawn);
     // The checkpoint the segment starts from is reached (silently): the timer's first split.
     if (!s.checkpointId.empty())

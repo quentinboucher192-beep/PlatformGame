@@ -6,6 +6,7 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "engine/camera/Camera.h"
@@ -19,6 +20,7 @@
 #include "game/gameplay/Entity.h"
 #include "game/gameplay/Projectile.h"
 #include "game/gameplay/RunStats.h"
+#include "game/gameplay/StartPos.h"
 #include "game/gameplay/WorldListener.h"
 #include "game/levels/Cinematic.h"
 #include "game/levels/EventSystem.h"
@@ -558,6 +560,16 @@ public:
     /// its shots carry it, and damage dealt while it is the current tag is credited to it.
     uint32_t newAttackTag(const std::string& power);
     uint32_t attackTag() const { return attackTag_; }
+
+    // ------------------------------------ 2.91: training marks (never the simulation)
+    /// The marks the player's inputs asked for at the step just simulated (the mark flags of
+    /// InputFrame: a StartPos placed, the previous / next one chosen, a measure point placed),
+    /// each with Nova's state after that step (game/gameplay/StartPos.h). Called by stepWorld;
+    /// a read-only capture, never part of the simulation nor of its digest: a run plays the same
+    /// with or without them, and its replay gives them back at the same steps.
+    void noteMarks(uint8_t flags);
+    /// The marks noted since the last call (the scene that plays, a replay viewer).
+    std::vector<TrainingMark> takeMarks() { return std::exchange(marks_, {}); }
     /// The current tag while it lives (restored after).
     struct AttackScope {
         AttackScope(GameWorld& w, uint32_t tag) : w_(w), prev_(w.attackTag_) { w.attackTag_ = tag; }
@@ -693,6 +705,7 @@ private:
     float timeSlow_ = 0.0f;
     float timeSlowFactor_ = 1.0f;
     std::optional<PowerOffer> powerOffer_;
+    std::vector<TrainingMark> marks_;  // 2.91 (noteMarks)
     bool keysPerSlot_ = false;
     int simVersion_ = kSimulationVersion;  // 2.71
     Color flash_{255, 255, 255, 0};

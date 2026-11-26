@@ -15,6 +15,7 @@
 
 #include "engine/core/Json.h"
 #include "engine/core/Math.h"
+#include "game/gameplay/StartPos.h"
 
 namespace cosmic {
 
@@ -72,6 +73,9 @@ struct SectionTrainingStart {
     Vec2 spawn;
     std::vector<std::string> powers;  // chosen ones, or the tablets placed before the start on the route
     bool powersChosen = false;        // exactly `powers`; else they are added to the level's start powers
+    /// 2.91: an attempt from a StartPos (game/gameplay/StartPos.h): Nova set as it was taken
+    /// (the fields above are then unused; the attempt has no start checkpoint).
+    std::optional<StartPosState> startPos;
     Json toJson() const;
     /// Never trusts the file: nullopt when a field is damaged.
     static std::optional<SectionTrainingStart> fromJson(const Json& j);

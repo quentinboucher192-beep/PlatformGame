@@ -1762,6 +1762,7 @@
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/gameplay/entities/PlatformEntities.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/PlayerProfileScene.cpp",
@@ -24329,6 +24330,7 @@
    "fr": "En ligne",
    "where": [
     "game/content/AssetCatalog.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/OnlineTypes.cpp",
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminGifts.cpp",
@@ -24584,6 +24586,12 @@
    "fr": "Enchaîne {0} attaques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Enchaînement",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
    ]
   },
   {
@@ -25315,6 +25323,7 @@
   {
    "fr": "Entraînement",
    "where": [
+    "game/ghost/PersonalBests.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
@@ -28103,8 +28112,11 @@
     "game/enemies/HitParts.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/GhostStore.cpp",
+    "game/ghost/MeasurePoints.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/ReplayLibrary.cpp",
     "game/ghost/SegmentHistory.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/ghost/TrainingSegments.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
@@ -31709,7 +31721,9 @@
     "game/coop/CoopLevels.cpp",
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
+    "game/ghost/MeasurePoints.cpp",
     "game/ghost/ReplayLibrary.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/levels/LevelData.cpp",
     "game/online/AsterionBody.cpp",
     "game/online/CampaignRevisions.cpp",
@@ -50744,6 +50758,7 @@
   {
    "fr": "Partie",
    "where": [
+    "game/ghost/PersonalBests.cpp",
     "ui/screens/SettingsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -59958,6 +59973,7 @@
    "fr": "replay",
    "where": [
     "game/ghost/GhostStore.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/SegmentHistory.cpp",
     "game/ghost/TrainingSegments.cpp",
     "game/online/DailyChallenges.cpp",
@@ -61572,6 +61588,7 @@
     "game/enemies/Enemy.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/KeptReplays.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
     "game/player/PlayerActions.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -61622,6 +61639,7 @@
    "fr": "runs",
    "where": [
     "game/GameServices.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/SegmentHistory.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/Spectate.cpp",
@@ -66494,6 +66512,12 @@
    ]
   },
   {
+   "fr": "source|Partie",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
    "fr": "Souris : cliquez sur un lieu sûr",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -66939,6 +66963,12 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "StartPos",
+   "where": [
+    "game/ghost/PersonalBests.cpp"
    ]
   },
   {
@@ -76257,8 +76287,11 @@
     "game/coop/CoopRelay.cpp",
     "game/cosmetics/CreationLooks.cpp",
     "game/cosmetics/SuitRecolor.cpp",
+    "game/ghost/MeasurePoints.cpp",
+    "game/ghost/PersonalBests.cpp",
     "game/ghost/ReplayLibrary.cpp",
     "game/ghost/SegmentHistory.cpp",
+    "game/ghost/StartPosStore.cpp",
     "game/ghost/TrainingSegments.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelData.cpp",

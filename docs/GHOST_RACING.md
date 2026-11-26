@@ -108,6 +108,111 @@ téléchargements se font avant le départ.
 * Les classements en ligne ne gardent un replay que pour les records vérifiés : un joueur
   sans record vérifié n'a pas de fantôme en ligne.
 
+## Une seule somme des meilleurs, enchaînements, startpos et mesures (2.91)
+
+### Une seule SOB par version du niveau
+
+Il n'existe plus qu'**une** somme des meilleurs segments (SOB) personnelle par version du
+niveau (`GhostStore::levelKey`), tenue par `PersonalBests` (`game/ghost/PersonalBests.h`,
+fichier `saves/bests.json`). Toutes les sources s'y rejoignent :
+
+| Source (étiquette) | Ce qui compte |
+|---|---|
+| **Partie** | chaque course depuis le départ du niveau, terminée ou non : tout ce qu'elle a traversé en entier |
+| **Entraînement** | l'entraînement d'un segment (« Répéter un segment ») |
+| **Enchaînement** | l'entraînement de plusieurs segments à la suite (ex. zone 1 → 2) |
+| **StartPos** | après une startpos, chaque segment parcouru **en entier** (de son point de départ à son point d'arrivée) |
+| **En ligne** | les courses du joueur vérifiées en ligne (jamais comptées deux fois) |
+
+Chaque essai donne au magasin les **bornes** qu'il a franchies (départ du niveau, points de
+passage, arrivée) avec son chronomètre à chacune. Pour **toute paire de bornes** qui se
+suivent sur la route du niveau (aucun point sauté, aucun autre ordre), le magasin compte un
+**passage** et garde le **meilleur temps** (à la milliseconde : une égalité garde l'ancien),
+sa source, sa date et le **replay exact** de l'essai qui l'a fait (copie dans
+`ghosts/bests/<version>/`, gardée tant qu'un meilleur temps la désigne ; 256 Mo au plus,
+les versions jouées il y a le plus longtemps perdent d'abord leurs replays) :
+
+* une paire de bornes voisines = **un segment** : son meilleur temps est sa part de la SOB
+  (la diagonale de la grille des enchaînements) ;
+* une paire plus éloignée = **un enchaînement** : son record (les cases au-dessus de la
+  diagonale). Chaque segment traversé pendant un enchaînement étant aussi un temps de
+  segment, un enchaînement ne peut jamais battre la somme de ses meilleurs, au mieux
+  l'égaler (case « OR ») ;
+* (départ, arrivée) = la course entière. Les courses complètes (Partie, En ligne) sont aussi
+  gardées à part (les 20 dernières, et la meilleure : le PB personnel avec ses temps de
+  passage).
+
+La **route** (l'ordre des points de passage) vient du niveau (`setRoute`, calculée par les
+écrans d'entraînement) ; tant qu'elle n'est pas donnée, elle est apprise de la première
+course complète. La SOB est la somme des meilleurs des segments de cette route ; elle est
+inconnue (−1) tant qu'un segment n'a jamais été traversé. Ses changements sont notés jour
+par jour (`sobHistory`, 60 points au plus, avec le PB du moment).
+
+**Tout reste personnel** : rien de ce magasin n'est envoyé ; les records en ligne et les
+records du monde ne comptent que les courses complètes vérifiées par le serveur, comme
+avant.
+
+#### Reprise des anciennes données
+
+Au premier lancement, `saves/segments.json` (segments d'or des courses complètes, 2.30 à
+2.90) et `saves/training.json` (meilleurs temps d'entraînement) sont **lus une fois** et
+fusionnés ; leurs replays (`ghosts/golds`, `ghosts/training`) sont copiés dans
+`ghosts/bests`, et les anciens dossiers supprimés seulement une fois le nouveau fichier écrit
+(les deux anciens fichiers restent tels quels sur le disque). Un segment d'or dont les
+points de passage n'étaient pas connus attend que la route du niveau le dise. Puis les
+meilleurs temps de segments des statistiques (`stats.json`, qui voyage avec la copie de la
+progression) sont fusionnés une fois, et à nouveau après chaque restauration d'une copie
+(« Migrer vers un nouveau compte ») : un temps meilleur devient le meilleur (sans replay),
+les passages ne diminuent jamais. Un fichier abîmé est mis de côté (`bests.json.corrupt`) ;
+un fichier écrit par un jeu plus récent est lu, jamais réécrit.
+
+### Startpos (principe de Geometry Dash)
+
+En entraînement, une **startpos** se pose n'importe où (`game/gameplay/StartPos.h`). Elle
+prend Nova telle qu'elle est : position, direction, pouvoirs (dans l'ordre des
+emplacements), cœurs (et cœurs bonus), énergie, et les points de passage déjà allumés. Un
+essai qui part d'elle remet le niveau comme au début (ennemis, mécanismes), place Nova ainsi
+(départ arrêté : recharges et élan remis à zéro ; c'est aussi son point de réapparition) et
+rallume en silence les points déjà allumés (sans temps de passage : revenir sur l'un d'eux
+ne fait pas partir un segment du mauvais côté).
+
+* **Poser, choisir passent par les entrées** : `InputFrame::PlaceStartPos`,
+  `PrevStartPos`, `NextStartPos` (et `PlaceMeasure` pour les points de mesure) sont des
+  drapeaux de l'entrée du pas. Après ce pas, le monde lit l'état de Nova
+  (`GameWorld::noteMarks`, `takeMarks`) : une lecture, jamais une partie de la simulation ni
+  de son empreinte. Une course joue donc exactement pareil avec ou sans eux (même empreinte
+  finale), et son replay, qui garde l'octet des drapeaux tel quel, rend les mêmes marques aux
+  mêmes pas (test `startpos: placed through the inputs…`).
+* **Un essai depuis une startpos** a pour départ `SectionTrainingStart::startPos` (le même
+  départ que l'entraînement d'un segment, appliqué avant le premier pas par la course et par
+  son replay) : son replay se rejoue à l'identique avec ce départ (test `startpos: an attempt
+  from it…`).
+* Aucune règle du déroulement d'une partie ne change (les courses existantes, leurs replays
+  et leurs empreintes restent identiques) : `kSimulationVersion`, `kRankingGeneration` et les
+  empreintes de référence ne bougent pas.
+* Jamais une partie complète, ni un record, ni envoyée en ligne.
+* **Rémanence** : les startpos restent d'une session à l'autre, par version du niveau
+  (`StartPosStore`, `saves/startpos.json`, 32 par version), rangées dans l'ordre de la route
+  (« SP 1 », « SP 2 »…, Précédente / Suivante en boucle). Une autre version du niveau a sa
+  propre liste.
+
+### Points de mesure
+
+Deux points de passage fictifs **A** puis **B** (`game/ghost/MeasurePoints.h`) : franchir A
+lance un chrono, franchir B l'arrête. Une porte est verticale (de 12 m au-dessus des pieds de
+Nova quand elle a été posée à 2 m en dessous ; **1 m = 1 tuile = 16 pixels**) et se franchit
+dans les deux sens ; le moment exact est interpolé entre deux positions (même temps à 120 Hz
+en jeu qu'à 30 Hz sur la trace d'un replay). Repasser A relance le chrono ; un saut de plus de
+20 m entre deux positions (réapparition, saut dans un replay) l'arrête.
+
+* `MeasureTimer` chronomètre un flux de positions (`feed(t, pieds)` rend le temps A → B
+  quand B est franchi), `measureTimes` toute une trace : en entraînement et dans **tous les
+  replays** (les vôtres et ceux en ligne).
+* `MeasureStore` (`saves/measures.json`, par version du niveau, 16 paires au plus) garde les
+  paires, leur nom, le meilleur temps de l'entraînement et les 20 derniers. Déplacer A ou B
+  oublie ses temps (ils ne se comparent plus).
+* Un temps A → B reste personnel : il ne touche ni la SOB ni aucun record.
+
 ## Lecteur de replay avancé (2.19)
 
 *Voir le replay*, *Revoir la partie*, `CosmicPlatformer --replay fichier.cprz` : un replay exact
