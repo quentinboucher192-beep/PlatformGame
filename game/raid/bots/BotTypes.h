@@ -55,6 +55,7 @@ struct Danger {
     bool attack = false; // a blow of the boss itself around its body (the tactic dodges it; its navigation goes past)
     bool unblockable = false;  // 2.84: no shield stops it (Voidworm's maw swallows): leave it, even from a place held
     bool shieldFirst = false;  // 2.84 (fight plan): a wave too fast to jump surely (Dreadfang's sweeps): the shield as it comes
+    bool ceiling = false;      // 2.87: a field over the arena (Graviton's vault): never a liquid to climb above
     float radius = 0.0f, reach = 0.0f;  // Ring: its radius now, the farthest it goes
     float gap = 0.0f, gapHalf = 0.0f;   // Ring: the angle of its opening and its half-width (radians)
     float angle = 0.0f, turn = 0.0f;    // 2.87: a sweeping beam: its angle now, how fast it turns (radians/s, signed; 0: unknown)

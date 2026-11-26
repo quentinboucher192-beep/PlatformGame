@@ -80,6 +80,7 @@ struct HurtLog : WorldListener {
     std::map<std::string, int> blows;
     const raid::TestSession* session = nullptr;
     std::string watch;  // COSMIC_GOAT_HIT: print each blow of this attack with the state of the player hit
+    const int* steps = nullptr;  // 2.87: the fight's step (its time, as the other probes print it)
     std::string last[8];  // the last blow on each seat (what put it down, when it falls)
     void playerHurt(const GameWorld& w, const DamageInfo& d, const HurtSource& src) override {
         static const char* kOrigin[] = {"tir", "attaque", "boss", "contact", "piège", "chute", "autre"};
@@ -89,7 +90,8 @@ struct HurtLog : WorldListener {
         if (session && !watch.empty() && src.attack.find(watch) != std::string::npos) {
             const int k = w.currentPlayer();
             const Player& p = w.playerAt(k);
-            std::printf("      %s → %d (%.0f, %.0f) sol %d vy %.0f bouclier %d énergie %.0f · %s · %s\n", src.attack.c_str(), k + 1, p.feet().x, p.feet().y,
+            std::printf("      %6.1f s %s → %d (%.0f, %.0f) sol %d vy %.0f bouclier %d énergie %.0f · %s · %s\n", steps ? *steps / 120.0 : 0.0, src.attack.c_str(), k + 1,
+                        p.feet().x, p.feet().y,
                         p.grounded() ? 1 : 0, p.vel.y, p.shieldActive() ? 1 : [&] {
                             for (const auto& pw : p.powers())
                                 if (pw->id() == "shield") return pw->ready(p) ? 2 : 0;
@@ -197,6 +199,7 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     hurts.session = &session;
     if (const char* h = std::getenv("COSMIC_GOAT_HIT")) hurts.watch = h;
     int steps = 0;
+    hurts.steps = &steps;
     uint8_t downBefore = 0;
     std::map<std::string, int> deaths;
     const bool hist = std::getenv("COSMIC_GOAT_HIST") != nullptr;
@@ -268,7 +271,7 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
             }
         if (const char* sw = std::getenv("COSMIC_GOAT_SEAT"); sw && steps % 12 == 0) {
             // 2.87 (tuning runs): one seat every tenth of a second (« 3 » or « 3:150:160 », seconds) — where it is, how it moves.
-            int k = std::atoi(sw) - 1, a = 0, z = 1 << 30;
+            int k = std::atoi(sw) - 1, a = 0, z = 1 << 20;
             if (const char* c = std::strchr(sw, ':')) std::sscanf(c + 1, "%d:%d", &a, &z);
             const GameWorld& w = session.run().world();
             if (k >= 0 && k < w.teamSize() && steps >= a * kSimHz && steps <= z * kSimHz) {
@@ -277,6 +280,9 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 std::printf("      %6.1f s siège %d (%.0f, %.0f) v (%.0f, %.0f) %s · nav %d · but (%.0f, %.0f) nœud %d chemin %zu à %zu · place %d · %s · %s\n", steps / 120.0, k + 1,
                             p.feet().x, p.feet().y, p.vel.x, p.vel.y, p.grounded() ? "sol" : "air", static_cast<int>(session.bots().moveThought(k).intent), bt.goal.x,
                             bt.goal.y, bt.goalNode, bt.path.size(), bt.at, bt.spot, session.bots().thought(k).intent.c_str(), session.bots().thought(k).move.c_str());
+                for (const auto& d : session.bots().view().dangers)
+                    if (d.kind == raid::bots::Danger::Kind::FloorWave && std::fabs(d.floorY - p.feet().y) < 30.0f && std::fabs(d.area.center().x - p.center().x) < 400.0f)
+                        std::printf("          onde %.0f..%.0f v %.0f dans %d haut %.0f\n", d.area.x, d.area.right(), d.speed, d.in, d.height);
             }
         }
         if (std::getenv("COSMIC_GOAT_FOES") && steps % 120 == 0) {

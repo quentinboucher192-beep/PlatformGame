@@ -3165,6 +3165,39 @@ gardé pour sa lame dès 2,5 s après la précédente (50 % au lieu de 53 %) ; t
 mobile comptée dans le coût de la navigation (le Cœur : 47 % / 54 %, des groupes balayés plus tôt) ; tirer en esquivant
 contre Graviton (`Plan::fireOnTheRun` : 38 %, pareil) ; les places près du pied de Titanus pour son entrave est (35 %).
 
+2.88 : **le saut d'une onde tenu jusqu'en haut, la voûte de Graviton**. La sonde `COSMIC_GOAT_SEAT` montre aussi les ondes
+au sol près du joueur, `COSMIC_GOAT_HIT` le moment du coup. Constats : un joueur qui sautait une onde de choc de Titanus
+(40 px de haut) lâchait son saut le pas suivant — la navigation, qui joue ses mouvements en l'air, remettait la touche à
+zéro dès qu'il avait quitté le sol (elle ne la gardait qu'au sol) : un saut coupé (`jumpCutMultiplier`), sous l'onde. Et
+contre Graviton, un joueur dans un secteur retourné ne bougeait plus (« trop tard ») : soulevé jusqu'à la voûte, il y
+restait les 4,5 à 6 s ; pire, le champ de la voûte (une bande large au-dessus de sa tête) passait pour un liquide à fuir
+(`monte au-dessus du liquide`), ce qui coupait le reste. Maintenant :
+
+* le saut d'une onde est tenu jusqu'à son sommet, même quand la navigation joue un mouvement ;
+* dans un secteur retourné, hors d'une dalle, il en sort par le côté le plus proche en montant (« sort du secteur
+  inversé ») ; un secteur annoncé trop large pour être quitté au pas, il le quitte en dash ; le champ de la voûte
+  (`Danger::ceiling`) n'est plus un liquide.
+
+| Combat (départs 1 à 8 / 9 à 16 / 17 à 24 / 25 à 32) | avant (2.88.0) | après |
+|---|---|---|
+| Heartbreaker | 6/8 · 3/8 · 4/8 · 1/8 — 14 / 32, 76 % | 3/8 · 4/8 · 7/8 · 4/8 — **18 / 32, 85 %** |
+| Dreadfang | 53 · 57 · 50 · 55 (53 %) | 57 · 49 · 58 · 66 (**57 %**, ses 2 premières victoires) |
+| Pyroclast | 41 · 46 · 43 · 48 (44 %) | 42 · 50 · 52 · 44 (47 %) |
+| Cœur | 58 · 58 · 63 · 55 (58 %) | 63 · 51 · 55 · 54 (56 %, autant de coups par seconde) |
+| Titanus | 36 · 36 | 36 · 36 · 35 · 37 (ses ondes de choc : 120 coups au lieu de 214 sur 8 départs) |
+| Graviton | 38 · 39 | 38 · 35 · 37 · 37 (la voûte : 35 coups au lieu de 197) |
+| Skullmaw, Voidworm | | mêmes résultats départ par départ |
+
+Ce qui bloque encore Graviton : sa phase 1 dure 170 à 220 s (un tiers de sa vie) — ses joueurs ne tirent qu'un quart du
+temps qu'ils pourraient (`COSMIC_FIREDBG`, mesure jetée : la moitié du temps aucune direction ne l'atteint, un tiers de
+leur énergie sous la réserve) ; ses cœurs à nu, une trentaine d'ondes par exposition. Et Titanus : ses poings (« Écrasement
+», une colonne sous chaque joueur, côte à côte quand le groupe est serré) et les fissures de son séisme. Essayés et
+retirés : les générateurs lointains de Graviton tenus pendant qu'il est effondré, pour couper son champ dès son retour
+(il retombe plus souvent, ses cœurs à peine touchés : 37 %, et tous tenus : 36 %) ; sa Couronne de débris lue comme son
+cercle tourne, le bouclier quand il arrive (sans le disque à quitter : 32 % ; avec : pareil) ; une esquive qui ne
+traverse jamais un autre coup sur son chemin (Titanus : 35 %) ; la sortie d'un coup mesurée jusqu'au premier endroit
+sûr, pas jusqu'au bord de sa seule colonne (Pyroclast : 43 % au lieu de 47 %).
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`

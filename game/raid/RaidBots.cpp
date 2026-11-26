@@ -1451,7 +1451,9 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     if (pad.my != 0) f.moveY = pad.my;
     // A move through the air under way is the navigation's own (no jump of the tactic's over it).
     // 2.84: except its jump over a wave running at it (a move along the ground gives way to it).
-    if (navi_.pilot(seat).committed() && !(b.waveJumpCool > 0 && w.playerAt(seat).grounded()) && b.beamJump <= 0) b.jumpHold = 0;
+    // 2.87: and once it is off the ground, held to its top (released by the navigation the step after, the jump was cut
+    // short — a hop under the wave).
+    if (navi_.pilot(seat).committed() && b.waveJumpCool <= 0 && b.beamJump <= 0) b.jumpHold = 0;
 }
 
 InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
@@ -1511,7 +1513,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     if (flood.w <= 0.0f)
         for (const Danger& d : dangers_)
             if (d.kind == Danger::Kind::Area && d.area.w > 260.0f && d.in < kSimHz && d.area.expanded(6.0f).intersects(me.box) &&
-                (!fight_ || d.area.h < 120.0f) && (flood.w <= 0.0f || d.area.w > flood.w))
+                (!fight_ || d.area.h < 120.0f) && (flood.w <= 0.0f || d.area.w > flood.w) && !d.ceiling)  // 2.87: not Graviton's vault
                 flood = d.area;
     const bool under = flood.w > 0.0f && feet.x > flood.x - 6.0f && feet.x < flood.right() + 6.0f && feet.y > flood.y - 6.0f;
     if (under && nav) {
@@ -1576,12 +1578,20 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // ------------------------------------------------------------ a sector whose gravity turns over (Graviton)
     int forced = 0;  // a side it must go to this step (a reaction), 0 none
     bool stay = false;  // it holds where it is this step (sheltered)
+    float sectorRun = 0.0f;  // 2.87: how far it still has to go out of a sector, against the time left (> 1: too far at a walk)
     if (!fleeing && !holding)
         for (const Danger& d : dangers_) {
             if (d.kind != Danger::Kind::Sector || d.in > 3 * kSimHz || !d.area.contains(me.center())) continue;
             if (d.in == 0) {
-                // Turned over: too late to move (it rises); under a slab, it stays there.
+                // Turned over: under a slab, it stays there.
                 for (const Rect& s : view_.shelters) stay = stay || (feet.x > s.x && feet.x < s.right() && s.y < feet.y);
+                // 2.87: otherwise out by its nearest side as it rises (only who is in the sector is lifted; a player stayed
+                // under the vault, in its field, for the whole of it — 4,5 to 6 s).
+                if (!stay) {
+                    forced = feet.x - d.area.x < d.area.right() - feet.x ? -1 : 1;
+                    react = "sort du secteur inversé";
+                    sectorRun = 2.0f;  // rising toward the vault: as fast as it can
+                }
                 break;
             }
             // Out of it by its nearest side, or under a slab of it, whichever is nearer.
@@ -1601,6 +1611,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             if (bestD > 4.0f) {
                 forced = bestX > feet.x ? 1 : -1;
                 react = "quitte le secteur qui s'inverse";
+                sectorRun = bestD / (me.config().maxRunSpeed * std::max(0.05f, static_cast<float>(d.in) / static_cast<float>(kSimHz)));
             } else {
                 react = "s'abrite sous une dalle";
                 stay = true;
@@ -2130,9 +2141,13 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         if (const Power* dp = powerOf(me, "dash"); dp && keyBit(dp) >= 0 && dp->ready(me) && me.energy >= 25.0f && !(b.prevHeld & (1u << keyBit(dp))) &&
                                                    me.box.expanded(30.0f).intersects(bossBody_))
             held |= 1u << keyBit(dp);
-    } else if (forced != 0 && !navi_.pilot(seat).committed()) {
+    } else if (forced != 0 && (!navi_.pilot(seat).committed() || sectorRun > 0.0f)) {
         dir = forced;
         b.moveText = "s'écarte";
+        // 2.87: out of a sector about to turn over (or turned over) too far for a walk in time: dashing (its 800 px sectors).
+        if (sectorRun > 0.7f)
+            if (const Power* dp = powerOf(me, "dash"); dp && keyBit(dp) >= 0 && dp->ready(me) && me.energy >= 10.0f && !(b.prevHeld & (1u << keyBit(dp))))
+                held |= 1u << keyBit(dp);
     } else {
         if (stay && !navi_.pilot(seat).committed()) dir = 0;
         // Never into what is coming (a mark, a cloud, a column, the boss's body): it waits at its edge, the way

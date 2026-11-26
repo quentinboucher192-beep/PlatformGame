@@ -52,7 +52,9 @@ public:
                 v.dangers.push_back(d);
                 sectors = true;
             } else if (m.kind == BossMark::Kind::Zone && m.strong && m.label.empty()) {
-                v.dangers.push_back({Danger::Kind::Area, m.area.expanded(6.0f)});  // the vault's field
+                Danger f{Danger::Kind::Area, m.area.expanded(6.0f)};  // the vault's field
+                f.ceiling = true;
+                v.dangers.push_back(f);
             } else if (m.kind == BossMark::Kind::Target && m.clip == "well") {
                 Danger d;
                 d.kind = Danger::Kind::Area;
