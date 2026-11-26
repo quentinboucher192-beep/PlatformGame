@@ -96,7 +96,7 @@
 //                           compare two replay files (A played, B as a ghost)
 //   --compare-setup <level> open « Comparer deux replays » for a level
 //   --replay-view <options> with --replay / --compare (screenshots): at=<s>,offset=<ms>,
-//                           align=<row>,cam=<0..2>,pause
+//                           align=<row>,cam=<0..2>,pause, ref=pb|sob, unit=dist (2.91)
 //   --analyze-levels <dir>  shortcut detector on the campaign levels (report + PPM maps)
 //   --seal-levels <dir>     add gates against the shortcuts found (tools/levelgen/seals)
 //   --plan-power-keys <dir> the keys of the powers of every campaign level, for

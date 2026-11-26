@@ -305,9 +305,11 @@ compris », « B recalé sur Grand saut ». Le décalage ne change pas les duré
 
 ### Écart et tableau
 
-* **Écart A − B en direct** : le temps de A pour atteindre le point le plus avancé de la route
-  qu'il a atteint, moins celui de B (décalage compris) — l'estimation du Ghost Racing ; exact
-  quand les deux ont fini. Positif : A en retard ; négatif : A en avance.
+* **Écart A − B en direct** (au-dessus de la course depuis la 2.91, avec sa courbe en bas :
+  voir « Écart à la référence » plus bas) : le temps de A pour atteindre le point le plus
+  avancé de la route qu'il a atteint, moins celui de B (décalage compris) — l'estimation du
+  Ghost Racing ; exact aux points de passage et quand les deux ont fini. Positif : A en
+  retard ; négatif : A en avance.
 * **Tableau segment par segment** (points appariés par position, comme en Ghost Racing) :
   durée de A, durée de B, **A − B** sur le segment, **écart** au point (A − (B + d)) ; la
   durée la plus rapide des deux est en **or** ; la ligne du point de recalage est marquée.
@@ -338,6 +340,106 @@ Code : `game/ghost/ReplayCompare.*` (décalage, recalage, tableau, écart),
 `game/ghost/ReplayPlayback.*` (re-simulation avec sauts et points de reprise),
 `ui/screens/ReplayScene.cpp` (lecteur et comparaison), `ui/screens/ReplayCompareSetupScene.cpp`
 (choix de A et B). Tests : `tests/test_replay_compare.cpp`.
+
+## Écart à la référence et mesures dans les replays (2.91)
+
+Le lecteur de replay et la comparaison montrent **l'écart à une référence** tout au long de la
+course : en direct au-dessus de la course, et en **courbe** sur toute la durée du replay en bas
+de l'écran.
+
+### Référence
+
+* **Lecteur** : au choix (boutons au-dessus de la courbe, clavier, manette, souris)
+  * **Record (PB)** : votre meilleur temps de **cette version** du niveau
+    (`ghosts/local/<niveau>-<version>/pb.cprz`) ; si le replay regardé *est* ce record (« écart
+    nul »), la somme des meilleurs est choisie d'elle-même quand elle existe ;
+  * **Somme des meilleurs** : la SOB unique de `PersonalBests` (§ « Une seule SOB ») : chaque
+    meilleur segment, quelle que soit sa source, lu sur le replay exact qui le tient, mis bout à
+    bout. La courbe est **continue seulement si chaque meilleur segment a son replay** sur cet
+    ordinateur ; sinon l'écart n'est comparé **qu'aux points de passage** (somme des meilleurs
+    segments jusque-là), et l'écran le dit (« 3 segments sur 5 ont leur replay : comparé aux
+    points de passage seulement ») ;
+  * **Autre replay…** : l'écran « Comparer deux replays » choisit B (le replay regardé reste A) ;
+    B devient la référence (choisir un autre A ouvre la comparaison complète).
+* **Comparaison** : la référence est B, **décalage compris** (et dit : « décalage de B :
+  +1,250 s, compris dans la courbe »).
+
+La référence est dessinée en fantôme dans le lecteur (« Record (PB) · 22/11 »), sur le
+chronomètre du replay ; celle de la somme des meilleurs passe d'un replay à l'autre à chaque
+point de passage.
+
+### Ce qui est mesuré (et ce qui est exact)
+
+Tout vient de ce que les replays ont enregistré : leurs **trajectoires** (positions des pieds à
+30 Hz) et leurs **temps de passage** (à la milliseconde) ; jamais une valeur inventée pour
+l'affichage (`game/ghost/ReplayGap.*`).
+
+* **Le trajet le long de la route** (`RouteRun`) : chaque position est projetée sur la route du
+  niveau (celle de la barre de progression), sur ses segments et non seulement sur ses points ;
+  on garde la distance la plus avancée atteinte (une chute en arrière ne la fait pas reculer),
+  les positions loin de la route (plus de 200 px : chute, détour) ne comptent pas, la sortie est
+  atteinte au temps final.
+* **En temps** : le temps qu'il a fallu au replay pour atteindre le point le plus avancé de la
+  route, moins celui de la référence (décalage compris) — l'estimation du Ghost Racing.
+  **Exact** aux points de passage (les deux temps de passage, appariés par position, ou par
+  identifiant de point pour la somme des meilleurs) et à l'arrivée. « +0,846 s » : en retard.
+* **En distance** : où chacun se trouve sur la route à cet instant ; « 6,8 m derrière ».
+  **1 m = 1 tuile = 16 pixels** (une convention : le jeu n'a pas d'unité de longueur ; dit à
+  l'écran). Dans la courbe, « en retard » est toujours **au-dessus de zéro** (en distance :
+  des mètres négatifs, derrière).
+* La courbe a un point tous les 1/30 s au plus (3 000 en tout) plus chaque point de passage et
+  l'arrivée ; elle est calculée une fois, puis gardée tant que la référence ou le décalage ne
+  changent pas. Les replays de la référence sont lus et placés sur la route **hors du fil
+  principal**.
+
+### À l'écran
+
+* **En direct** (en haut, au centre de la partie libre, sous la note d'administration, jamais
+  sur la vie, les pouvoirs ou les objets : ceux-ci passent dessous) : « ÉCART AU RECORD (PB), EN
+  DIRECT », « +0,846 s · 6,8 m derrière », « en retard sur le record à cet instant » ; aux
+  points de passage seulement : l'écart au dernier passé (« … à Racines »). En retard / en
+  avance est toujours **écrit**, jamais dit par la couleur seule.
+* **La courbe** (en bas) **est la barre de temps** : un clic ou un glissement va à cet instant ;
+  le curseur suit la lecture, une bulle donne l'écart (en temps et en distance) à l'instant
+  montré ou sous la souris ; les points de passage sont en pointillés et nommés (chaque nom
+  dans la place avant le suivant) ; en comparaison, les passages de B (sur l'horloge de A) sont
+  marqués dessous. Rouge au-dessus de zéro : en retard ; bleu dessous : en avance. Boutons « En
+  temps » / « En distance ».
+* **Temps de passage** (lecteur) : une colonne « Écart » donne l'écart exact à chaque point
+  passé.
+
+### Points de mesure dans les replays
+
+Les mêmes portes A / B qu'en entraînement (§ « Points de mesure », `MeasureStore`, par version
+du niveau) sont chronométrées dans **tous les replays**, les vôtres et ceux en ligne, quand
+« Mesurer aussi dans les replays » est activé ; leurs portes se dessinent dans le niveau
+(« Montrer les portes de mesure »).
+
+* **Lecteur** : « MESURE A1 → B1 · nom » : le temps de **ce replay** (« en cours · 2,734 s »
+  entre A et B), **votre meilleur** (entraînement) et **le PB** sur A → B (lu sur la trajectoire
+  du record).
+* **Comparaison** : **A − B** sur A → B, **A** (rejoué : exact), **B** (sa trajectoire
+  enregistrée, « à 0,03 s près », dit comme tel) et votre meilleur.
+* **Exact ou à 0,03 s près** : un replay exact qu'on lit en continu à travers A et B est
+  chronométré **sur la simulation** (1/120 s, interpolé) ; sinon (saut dans le temps, ancien
+  replay, B) sur la trajectoire enregistrée (30 Hz, interpolée). Chaque valeur dit laquelle.
+* Le passage de A entre les deux portes est **grisé en or** sur la courbe (« entre A1 et B1 »).
+* **F8** (manette : **Vue + ↑**) pose une porte aux pieds de A, comme en entraînement (A, puis
+  B de la même paire) ; ‹ › passent d'une paire à l'autre.
+* **Lecture seule** : un temps mesuré dans un replay n'est jamais écrit (ni meilleur temps de la
+  paire, ni statistiques, ni SOB, ni record) ; seule la porte posée est gardée.
+
+| Action (écart, mesures) | Clavier | Manette | Souris |
+|---|---|---|---|
+| Référence, temps / distance | flèches + Entrée sur les boutons | croix + A | boutons |
+| Aller à un instant | J / L, Q / E… (lecteur) | (lecteur) | clic ou glissement dans la courbe |
+| Poser une porte de mesure | F8 | Vue + ↑ (Vue seule : infos) | — |
+| Paire de mesure montrée | flèches + Entrée sur ‹ › | croix + A | ‹ › |
+
+Code : `game/ghost/ReplayGap.*` (trajet sur la route, écart en temps et en distance, somme des
+meilleurs bout à bout, passages A → B), `ui/screens/ReplayGapSources.*` (références lues hors
+du fil principal), `ui/screens/ReplayGapView.*` (la courbe), `ui/screens/ReplayScene.cpp`.
+Tests : `tests/test_replay_gap.cpp`.
 
 ## Succès
 

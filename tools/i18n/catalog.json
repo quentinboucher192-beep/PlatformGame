@@ -397,6 +397,12 @@
    ]
   },
   {
+   "fr": "0,0 m : côte à côte",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
    "fr": "0,000 s",
    "where": [
     "game/ghost/GhostRace.cpp",
@@ -438,6 +444,12 @@
    "where": [
     "game/raid/RaidSheets.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "1 m = 1 tuile (16 px)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -938,6 +950,18 @@
    ]
   },
   {
+   "fr": "A (rejoué, exact)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A (trajectoire, à 0,03 s près)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "A / Croix",
    "where": [
     "ui/screens/DeviceLostUi.cpp"
@@ -1040,7 +1064,19 @@
    ]
   },
   {
+   "fr": "A en avance sur B à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "A en retard",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A en retard sur B à cet instant",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -1085,6 +1121,12 @@
    "fr": "a envoyé {0} cadeaux ({1}) à {2} · {3} ignorés",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "A et B à égalité à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -1335,6 +1377,36 @@
   },
   {
    "fr": "A − B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A − B EN DIRECT · DÉCALAGE {0} COMPRIS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A − B EN DIRECT · SANS DÉCALAGE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A − B en temps",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "A − B en temps (exact)",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "A − B sur A{0} → B{1}",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -5264,6 +5336,12 @@
    ]
   },
   {
+   "fr": "au départ : pas encore d'écart",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Au fond de l'étoile, un cœur mort s'est éveillé : Singularis et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/noyau_03.json"
@@ -6226,6 +6304,12 @@
    ]
   },
   {
+   "fr": "Aucun record (PB) de cette version du niveau sur cet ordinateur.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
+   ]
+  },
+  {
    "fr": "Aucun record envoyé.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -6296,6 +6380,12 @@
    "fr": "Aucun replay à montrer.",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun replay.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -7121,6 +7211,12 @@
    ]
   },
   {
+   "fr": "Autre replay…",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Autre version : comparaison non officielle",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -7226,6 +7322,12 @@
    ]
   },
   {
+   "fr": "Aux points de passage seulement : pas de distance entre eux",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Avalé",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -7307,6 +7409,12 @@
    "fr": "avant le premier combat de chaque giga-boss",
    "where": [
     "data/trailer/trailer.json"
+   ]
+  },
+  {
+   "fr": "avant le premier point de passage",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -7587,6 +7695,18 @@
    ]
   },
   {
+   "fr": "A{0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "A{0} posé : posez B plus loin (F8)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "B",
    "where": [
     "engine/input/InputTypes.cpp",
@@ -7594,6 +7714,12 @@
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "B (trajectoire, à 0,03 s près)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -9686,6 +9812,24 @@
    ]
   },
   {
+   "fr": "B{0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} pas encore posé : F8 (ou Vue + ↑) plus loin",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "B{0} posé : mesure A{1} → B{2} prête",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Bâti d'une presse hydraulique, sous la voûte. Dans l'arène du Titan Mécanique, sa tête s'abat sur la surface située dessous quand le Titan la déclenche (des bandes jaunes et noires l'annoncent).",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -10136,6 +10280,12 @@
    "fr": "Calcul de l'empreinte du fichier…",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Calcul de l'écart…",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -11494,6 +11644,24 @@
    ]
   },
   {
+   "fr": "Ce replay",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay (rejoué, exact)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay (trajectoire, à 0,03 s près)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce replay a été enregistré sur une autre version du niveau ou du jeu.",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -11515,6 +11683,12 @@
    "fr": "Ce replay est celui d'un autre niveau ({0}).",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "ce replay est votre record : écart nul",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -12599,6 +12773,12 @@
    ]
   },
   {
+   "fr": "chaque meilleur segment lu sur son replay",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Chaque membre travaille sur sa copie dans l'éditeur habituel ; chaque envoi crée une révision, et une copie faite d'après une ancienne révision n'écrase jamais la plus récente.",
    "where": [
     "data/news/changelog.json"
@@ -13354,6 +13534,12 @@
    ]
   },
   {
+   "fr": "Choisissez l'autre replay : « Autre replay… »",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez la couleur à remplacer.",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -13441,6 +13627,12 @@
    "fr": "Choisissez un pseudonyme d'au moins 3 caractères.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un replay.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -21972,6 +22164,12 @@
    ]
   },
   {
+   "fr": "décalage de B : {0}, compris dans la courbe",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Décalage de départ (0-1)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -24105,6 +24303,42 @@
    ]
   },
   {
+   "fr": "en avance",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur l'autre replay à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur la somme des meilleurs à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur la somme des meilleurs à l'arrivée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur la somme des meilleurs à {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "En bas de l'écran",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -24203,6 +24437,12 @@
    ]
   },
   {
+   "fr": "en cours · {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "En cours, personne n'a encore de résultat : vous pouvez encore le changer.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -24261,6 +24501,13 @@
    "fr": "EN DIRECT · {0}",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "En distance",
+   "where": [
+    "ui/screens/ReplayGapView.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -24485,6 +24732,42 @@
    ]
   },
   {
+   "fr": "en retard",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur l'autre replay à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur la somme des meilleurs à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur la somme des meilleurs à l'arrivée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur la somme des meilleurs à {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "en route",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -24500,6 +24783,19 @@
    "fr": "En service ({0})",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "En temps",
+   "where": [
+    "ui/screens/ReplayGapView.cpp",
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "En temps (exact)",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
    ]
   },
   {
@@ -25459,6 +25755,12 @@
    "fr": "entre 0,5 et 5",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "entre A{0} et B{1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -26458,6 +26760,12 @@
    "fr": "EXTRÊME : une seule vie",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "F8",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -39241,6 +39549,12 @@
    ]
   },
   {
+   "fr": "Le PB sur A → B (trajectoire)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Le perchoir des vents !",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -44440,6 +44754,24 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → B{1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "MESURE A{0} → …",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mesures dans les replays désactivées : « Mesurer aussi dans les replays ».",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -51255,6 +51587,12 @@
    ]
   },
   {
+   "fr": "Pas encore de somme des meilleurs pour cette version : terminez le niveau ou entraînez ses segments.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore de temps classé : à vous !",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -51295,6 +51633,12 @@
    "fr": "pas encore envoyé au serveur",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "pas encore passé",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -54268,6 +54612,18 @@
    "fr": "point de contrôle « {0} » inaccessible selon le modèle",
    "where": [
     "game/levels/LevelAnalyzer.cpp"
+   ]
+  },
+  {
+   "fr": "point de mesure",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point de mesure impossible ici.",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -58647,7 +59003,15 @@
   {
    "fr": "Record (PB)",
    "where": [
+    "ui/screens/ReplayGapSources.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Record (PB) · {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -58685,6 +59049,12 @@
    "fr": "Record du monde · {0}",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Record illisible : {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -60016,6 +60386,12 @@
    "fr": "Replay de comparaison : la barre de progression du niveau montre les deux personnages, A sur la barre et B dessous, chacun avec sa lettre et sa couleur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Replay de référence refusé : {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
    ]
   },
   {
@@ -62326,6 +62702,12 @@
    ]
   },
   {
+   "fr": "référence : {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Réglage enregistré.",
    "where": [
     "ui/screens/NotificationsScene.cpp",
@@ -63646,6 +64028,12 @@
    "fr": "sans décalage",
    "where": [
     "game/ghost/ReplayCompare.cpp"
+   ]
+  },
+  {
+   "fr": "sans décalage de B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -65934,6 +66322,8 @@
   {
    "fr": "Somme des meilleurs",
    "where": [
+    "ui/screens/ReplayGapSources.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -72045,6 +72435,18 @@
    ]
   },
   {
+   "fr": "Trajet du niveau inconnu : la distance ne se mesure pas",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "trajet du niveau inconnu : points de passage seulement",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Trajet sous le sol",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -72464,6 +72866,12 @@
    "fr": "Trop de modifications d'un coup : elles sont gardées et renvoyées dans un instant.",
    "where": [
     "server/src/live.ts"
+   ]
+  },
+  {
+   "fr": "Trop de points de mesure dans ce niveau : retirez-en un à l'entraînement.",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -77893,9 +78301,21 @@
    ]
   },
   {
+   "fr": "Votre meilleur (entraînement)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre meilleur : rang {0} · {1}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre meilleur A{0} → B{1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -81314,6 +81734,18 @@
    ]
   },
   {
+   "fr": "{0} derrière",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} derrière B",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
    "fr": "{0} des dégâts",
    "where": [
     "ui/online/ContribTable.cpp"
@@ -81329,6 +81761,18 @@
    "fr": "{0} des tentatives",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} devant",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} devant B",
+   "where": [
+    "ui/screens/ReplayGapView.cpp"
    ]
   },
   {
@@ -83166,6 +83610,12 @@
    ]
   },
   {
+   "fr": "{0} segment sur {1} a son replay : comparé aux points de passage seulement",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} segment sur {1} en replay",
    "where": [
     "ui/screens/SobMontageScene.cpp"
@@ -83175,6 +83625,12 @@
    "fr": "{0} segments sur {1} en replay",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} segments sur {1} ont leur replay : comparé aux points de passage seulement",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -83624,6 +84080,12 @@
    "fr": "{0} · défis · menu principal → Collection",
    "where": [
     "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · exact",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -84244,6 +84706,7 @@
    "where": [
     "game/raid/GravitonRoutine.cpp",
     "game/raid/TitanusRoutine.cpp",
+    "ui/screens/ReplayScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -85102,6 +85565,36 @@
    ]
   },
   {
+   "fr": "à égalité avec l'autre replay à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec la somme des meilleurs à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec la somme des meilleurs à l'arrivée",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec la somme des meilleurs à {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "à égalité avec le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "À équiper",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -85208,7 +85701,19 @@
    ]
   },
   {
-   "fr": "Écart A − B",
+   "fr": "ÉCART A − B",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART AU PB",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART AU RECORD (PB), EN DIRECT",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -85283,6 +85788,42 @@
    "fr": "ÉCART TYPE (20 DERNIÈRES)",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À L'AUTRE REPLAY",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À L'AUTRE REPLAY, EN DIRECT",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA RÉFÉRENCE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA SOMME DES MEILLEURS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA SOMME DES MEILLEURS, AUX POINTS DE PASSAGE",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART À LA SOMME DES MEILLEURS, EN DIRECT",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -86237,8 +86778,7 @@
   {
    "fr": "égalité",
    "where": [
-    "ui/screens/GhostRun.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/GhostRun.cpp"
    ]
   },
   {
