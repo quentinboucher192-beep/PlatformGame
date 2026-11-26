@@ -9,7 +9,8 @@
 //  * the days of a period (the calendar of the days played, the small curves of the tiles);
 //  * « Répartition du fichier » (Données et sauvegarde): the size of each part of stats.json, read
 //    from the file itself, and what each part holds;
-//  * the sources of a level's Sum of Best (full runs, section training), segment by segment.
+//  * « Niveaux »: a segment's time in the record run, the day of a best (the one Sum of Best of a
+//    level version is game/ghost/PersonalBests.h's).
 
 #include <cstddef>
 #include <string>
@@ -65,17 +66,12 @@ struct FileBreakdown {
 /// that is not the statistics' gives ok = false.
 FileBreakdown fileBreakdown(const Json& file, size_t fileBytes);
 
-/// Where the best time of a segment of the Sum of Best comes from.
-enum class SobSource { None, Run, Training };
-struct SobPart {
-    std::string from, to;
-    int index = 0;        // its place in the PB route
-    float best = -1.0f;   // its part of the Sum of Best (-1: none yet)
-    SobSource source = SobSource::None;
-};
-/// The segments of the PB route with their best time and where it comes from (a section
-/// training's when strictly better than the full runs').
-std::vector<SobPart> sobParts(const LevelRuns& l);
+/// The time of the segment `from` → `to` ("" = the start / the exit) in a full run of `time`
+/// seconds whose cumulative splits were taken at the checkpoints `ids` (as many); -1 when it is
+/// not known (the run did not go through both, the splits and the checkpoints do not match).
+float segmentInRun(const std::vector<float>& splits, const std::vector<std::string>& ids, float time, const std::string& from, const std::string& to);
+/// « 2026-11-22 18:05 » (FileUtil::nowString) → its day (days since 1970-01-01; 0 when it is not a date).
+int dayOfDate(const std::string& date);
 
 }  // namespace playstats
 }  // namespace cosmic

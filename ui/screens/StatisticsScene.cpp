@@ -30,6 +30,8 @@
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
 #include "game/enemies/EnemyDefinition.h"
+#include "game/ghost/GhostStore.h"
+#include "game/ghost/PersonalBests.h"
 #include "game/powers/PowerDefinition.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/CosmicStyle.h"
@@ -226,7 +228,7 @@ void StatisticsScene::render(float) {
     const float titleW = cframe::measureTitle(ui, "STATISTIQUES", 40).x;
     const float tabsX = m + titleW + ui.s(24), tabsRoom = back.x - ui.s(20) - tabsX;
     float widest = 0.0f;
-    for (const auto& l : labels) widest = std::max(widest, ui.text().measure(l, FontFace::Bold, ui.s(17)).x);
+    for (const auto& l : labels) widest = std::max(widest, ui.text().measure(l, FontFace::Bold, ui.s(fz(17))).x);
     const bool oneRow = tabsRoom > 0.0f && widest + ui.s(30) <= tabsRoom / static_cast<float>(labels.size());
     cframe::title(ui, "STATISTIQUES", {m, ui.s(49)}, 40, Align::Left, VAlign::Middle, (oneRow ? tabsX - ui.s(24) : back.x - ui.s(24)) - m);
     const Rect tabsR = oneRow ? Rect{tabsX, ui.s(26), tabsRoom, ui.s(46)} : Rect{m, ui.s(92), W - 2 * m, ui.s(48)};
@@ -304,7 +306,7 @@ void StatisticsScene::cardFrame(const Rect& r, Color top, bool selected) {
 
 float StatisticsScene::tableSwitch(const std::string& id, float right, float y, bool draw, const std::string& on, const std::string& off) {
     UIContext& ui = g_.ui;
-    const float f = 14.0f;
+    const float f = fz(14);
     const float w1 = ui.text().measure(off, FontFace::Bold, ui.s(f)).x + ui.s(22), w2 = ui.text().measure(on, FontFace::Bold, ui.s(f)).x + ui.s(22);
     const float total = w1 + ui.s(6) + w2;
     if (!draw) return total;
@@ -333,6 +335,15 @@ Rect StatisticsScene::card(const Rect& r, const CardHead& h) {
             right -= ew + ui.s(12);
         }
     }
+    bool legendInHead = false;
+    if (!h.legend.empty()) {
+        const float lw = legendWidth(h.legend);
+        if (right - lw - ui.s(12) > r.x + pad + ui.s(200)) {
+            legend(right - lw, topY + ui.s(6), lw + ui.s(2), h.legend);
+            right -= lw + ui.s(12);
+            legendInHead = true;
+        }
+    }
     const float tf = fz(15), sf = fz(14);
     const float room = right - (r.x + pad);
     float y = r.y + ui.s(14);
@@ -348,7 +359,13 @@ Rect StatisticsScene::card(const Rect& r, const CardHead& h) {
         y += lineHeight(ui, FontFace::Body, ui.s(sf));
     }
     y = std::max(y, r.y + ui.s(46));
-    return {r.x + pad, y + ui.s(10), r.w - 2 * pad, r.bottom() - y - ui.s(10) - ui.s(14)};
+    Rect in{r.x + pad, y + ui.s(10), r.w - 2 * pad, r.bottom() - y - ui.s(10) - ui.s(14)};
+    if (!h.legend.empty() && !legendInHead) {
+        const float lh = legend(in.x, in.y, in.w, h.legend);
+        in.y += lh + ui.s(8);
+        in.h -= lh + ui.s(8);
+    }
+    return in;
 }
 
 float StatisticsScene::legendWidth(const std::vector<LegendItem>& items) {
@@ -416,10 +433,10 @@ float StatisticsScene::periodRow(float x, float y, float w) {
     for (int p : {7, 30, 90}) {
         UIContext::ButtonStyle st;
         st.small = true;
-        st.fontSize = 16;
+        st.fontSize = fz(16);
         st.selected = period_ == p;
         const std::string t = std::to_string(p) + " j";
-        const float bw = ui.text().measure(t, FontFace::Bold, ui.s(16)).x + ui.s(30);
+        const float bw = ui.text().measure(t, FontFace::Bold, ui.s(fz(16))).x + ui.s(30);
         if (cframe::button(ui, "period" + std::to_string(p), {bx, y, bw, h}, t, st)) period_ = p;
         bx += bw + ui.s(8);
     }
@@ -538,6 +555,14 @@ float StatisticsScene::bigValue(const std::string& v, Vec2 pos, float size, floa
     return total;
 }
 
+float StatisticsScene::miniTileHeight(bool value, bool detail) {
+    UIContext& ui = g_.ui;
+    float h = ui.s(9) + lineHeight(ui, FontFace::Bold, ui.s(fz(12))) + ui.s(5);
+    if (value) h += lineHeight(ui, FontFace::Title, ui.s(22)) + ui.s(4);
+    if (detail) h += lineHeight(ui, FontFace::Body, ui.s(fz(12)));
+    return h + ui.s(9);
+}
+
 void StatisticsScene::miniTile(const Rect& r, const std::string& key, const std::string& value, const std::string& detail, Color detailColor,
                                Color keySwatch) {
     UIContext& ui = g_.ui;
@@ -567,8 +592,11 @@ StatisticsScene::Delta StatisticsScene::deltaText(const Comparison& c, bool perc
     const double a = std::abs(c.delta);
     std::string gap = percentPoints ? std::to_string(static_cast<int>(std::lround(a * 100.0))) + " pts" : frNum(a, 1);
     if (c.same || gap == "0 pts" || gap == "0,0") return {"= stable", 0};
-    const std::string sign = c.delta > 0.0 ? "+" : "−";
-    return {std::string(c.delta > 0.0 ? "▲ " : "▼ ") + sign + gap + (c.progress ? " · en progrès" : " · en recul"), c.progress ? 1 : -1};
+    // Whole models (« ▲ +{0} · en progrès »…): translated as such.
+    std::string t;
+    if (c.delta > 0.0) t = c.progress ? "▲ +" + gap + " · en progrès" : "▲ +" + gap + " · en recul";
+    else t = c.progress ? "▼ −" + gap + " · en progrès" : "▼ −" + gap + " · en recul";
+    return {t, c.progress ? 1 : -1};
 }
 
 float StatisticsScene::pill(const std::string& t, Vec2 pos, int mood, float size, float room) {
@@ -616,7 +644,6 @@ float StatisticsScene::sectionTitle(float x, float y, float w, const std::string
     const float th = lineHeight(ui, FontFace::Bold, ui.s(tf));
     float cx = x + kicker(title, {x, y}, ui.theme().text, 15, w) + ui.s(12);
     if (!feature.empty() && ui.isNew(feature)) {
-        ui.newBadge(badgeWidget, {0, 0, 0, 0}, feature, false);  // seen with its widget (focus or click)
         const float pw = ui.newPillWidth(true);
         if (cx + pw <= x + w) {
             ui.drawNewPill(cx + pw, y + th * 0.5f, true);
@@ -762,11 +789,17 @@ void StatisticsScene::kpiTile(const Rect& r, const std::string& key, const std::
     float y = r.y + ui.s(12);
     kicker(key, {r.x + pad, y}, ui.theme().textDim, 13, room);
     y += lineHeight(ui, FontFace::Bold, ui.s(fz(13))) + ui.s(2);
-    bigValue(value, {r.x + pad, y}, 32, room, ui.theme().text);
-    const float valueBottom = y + lineHeight(ui, FontFace::Title, ui.s(32));
-    // The pill at the bottom left, the small curve in what is left at the right (never under the value).
+    // The pill at the bottom left; the value between the kicker and the pill (smaller when the tile is
+    // short); the small curve in what is left at the right (never under the value).
     const float ph = lineHeight(ui, FontFace::Bold, ui.s(fz(13))) + ui.s(6);
     const float py = r.bottom() - ui.s(10) - ph;
+    float vs = 32.0f, vh = lineHeight(ui, FontFace::Title, ui.s(vs));
+    if (const float avail = py - ui.s(3) - y; vh > avail && avail > 0.0f) {
+        vs *= avail / vh;
+        vh = avail;
+    }
+    bigValue(value, {r.x + pad, y}, vs, room, ui.theme().text);
+    const float valueBottom = y + vh;
     const float pw = pill(d.text, {r.x + pad, py}, d.mood, 13, room * 0.62f);
     const float sx = std::max(r.x + pad + pw + ui.s(10), r.x + r.w * 0.45f);
     const Rect sp{sx, std::max(valueBottom, r.y + r.h * 0.45f), r.right() - pad * 0.6f - sx, r.bottom() - ui.s(8) - std::max(valueBottom, r.y + r.h * 0.45f)};
@@ -874,11 +907,7 @@ float StatisticsScene::drawOverview(float x, float y0, float w) {
         h.title = "MORTS PAR HEURE DE JEU";
         h.sub = "Plus la courbe descend, plus vous progressez";
         h.table = "dph";
-        h.extra = [&](float right, float yy, bool draw) {
-            const float lw = legendWidth(leg);
-            if (draw) legend(right - lw, yy + ui.s(6), lw + ui.s(2), leg);
-            return lw;
-        };
+        h.legend = leg;
         const float ch = ui.s(300);
         Rect in = card({x, y, w, ch}, h);
         if (tables_["dph"]) tableIn("dph", in, head, rows);
@@ -909,6 +938,7 @@ float StatisticsScene::recentRow(float x, float y0, float w) {
         const auto& it = recent[i];
         const Rect r{x + (cw + gap) * static_cast<float>(static_cast<int>(i) % per), y + (ch + gap) * static_cast<float>(static_cast<int>(i) / per), cw, ch};
         const std::string wid = "recent" + std::to_string(i);
+        if (i == 0) ui.newBadge(wid, r, "stats.recent", false);  // the pill is after the section's title; seen with the first card
         bool hovered = false;
         const bool open = ui.hotspot(wid, r, &hovered);
         const bool lit = hovered || ui.focused(wid);
@@ -948,7 +978,11 @@ float StatisticsScene::recentRow(float x, float y0, float w) {
             auto ir = data().runs.find(it.id);
             if (ir != data().runs.end() && ir->second.attempts > 0) {
                 const LevelRuns& lr = ir->second;
-                m1 = lr.pb > 0.0f ? "Record " + clockTime(lr.pb) + (lr.sob() > 0.0f ? " · SOB " + clockTime(lr.sob()) : std::string()) : "Pas encore d'arrivée";
+                // 2.91: the one Sum of Best of the level version (game/ghost/PersonalBests.h) and its record.
+                const std::string key = lr.version.empty() ? std::string() : GhostStore::levelKey(it.id, lr.version);
+                const PersonalBests::Run* pbRun = key.empty() ? nullptr : g_.bests.pb(key);
+                const float pb = pbRun ? pbRun->time : lr.pb, sob = key.empty() ? -1.0f : g_.bests.sob(key);
+                m1 = pb > 0.0f ? "Record " + clockTime(pb) + (sob > 0.0f ? " · SOB " + clockTime(sob) : std::string()) : "Pas encore d'arrivée";
                 m2 = std::to_string(lr.attempts) + (lr.attempts > 1 ? " tentatives · " : " tentative · ") + std::to_string(lr.finished) +
                      (lr.finished > 1 ? " arrivées" : " arrivée");
             }
@@ -1245,7 +1279,8 @@ float StatisticsScene::drawData(float x, float y0, float w) {
         {[this](const Rect& b) { drawEnemy(g_, "mycelia", b); }, "**Par boss** : chaque tentative (part des points de vie retirés, phase atteinte, "
                                                                   "attaque fatale), les 200 dernières."},
         {[this](const Rect& b) { drawSprite(g_, "animations/checkpoint.json", "active", 0, b); },
-         "**Par niveau classique** : les temps de chaque segment (les 50 derniers), vos arrivées, votre record et votre somme des meilleurs."},
+         "**Par niveau classique** : les temps de chaque segment (les 50 derniers), vos arrivées, votre record. La somme des meilleurs, une "
+         "seule par version du niveau et toutes sources confondues, est gardée avec vos meilleurs segments (bests.json)."},
         {[this](const Rect& b) { drawSprite(g_, "animations/nova.json", "idle", 0, b); }, "**Jamais** : aucune donnée personnelle, aucune position."},
     };
     auto recordedCard = [&](const Rect& r, bool draw) {
@@ -1308,7 +1343,7 @@ float StatisticsScene::drawData(float x, float y0, float w) {
         }
         yy += lh + ui.s(8) + ui.s(12) + ui.s(16);
         // What keeps it small.
-        const float tg = ui.s(10), mw = (tw - 2 * tg) / 3.0f, mh = ui.s(84);
+        const float tg = ui.s(10), mw = (tw - 2 * tg) / 3.0f, mh = miniTileHeight(true, true);
         if (draw) {
             miniTile({r.x + pad, yy, mw, mh}, "JOURS GARDÉS", std::to_string(playstats::kDaysKept), "puis fusion par mois");
             miniTile({r.x + pad + mw + tg, yy, mw, mh}, "PAR BOSS", std::to_string(playstats::kBossAttemptsKept), "dernières tentatives");
@@ -1319,8 +1354,8 @@ float StatisticsScene::drawData(float x, float y0, float w) {
         return yy - r.y;
     };
     const std::string outside = "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent "
-                                "pas. Les replays relus et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode "
-                                "Invincible ; l'entraînement est compté à part.";
+                                "pas. Les replays relus (mesures A → B comprises) et les parties d'amis regardées ne sont pas comptés, ni les tests de "
+                                "l'éditeur ni le mode Invincible ; l'entraînement est compté à part.";
     const std::string travels = "Connecté à Cosmic Online, le jeu envoie vos statistiques dans la copie privée de votre progression, avec vos records "
                                 "et vos succès (aucun autre joueur ne la voit). Sans compte ni Internet, rien ne part et tout fonctionne ; pour les "
                                 "garder vous-même, copiez stats.json.";
@@ -1363,12 +1398,12 @@ float StatisticsScene::drawData(float x, float y0, float w) {
         }
         yy += rowH + ui.s(12);
         UIContext::ButtonStyle st, danger;
-        st.fontSize = 17;
+        st.fontSize = fz(17);
         danger.danger = true;
-        danger.fontSize = 17;
+        danger.fontSize = fz(17);
         const std::string ot = "Ouvrir les Paramètres", rt = "Réinitialiser les statistiques…";
-        const float ow = ui.text().measure(ot, FontFace::Bold, ui.s(17)).x + ui.s(36);
-        const float rw = ui.text().measure(rt, FontFace::Bold, ui.s(17)).x + ui.s(36);
+        const float ow = ui.text().measure(ot, FontFace::Bold, ui.s(fz(17))).x + ui.s(36);
+        const float rw = ui.text().measure(rt, FontFace::Bold, ui.s(fz(17))).x + ui.s(36);
         const bool sideBySide = ow + ui.s(12) + rw <= r.w - 2 * pad;
         const float bh = ui.s(44);
         if (draw) {
@@ -1434,18 +1469,18 @@ float StatisticsScene::drawData(float x, float y0, float w) {
                            (p.count2 > 1 ? " segments" : " segment");
             }
         };
-        const float tilesH = ui.s(70);
+        const float tilesH = miniTileHeight(false, true);
         const float ch = ui.s(16) + ui.s(28) + ui.s(10) + lineHeight(ui, FontFace::Body, ui.s(fz(14))) + ui.s(16) + ui.s(40) + ui.s(16) + tilesH + ui.s(18);
         const Rect r{x, y, w, ch};
         cardFrame(r);
         float yy = r.y + ui.s(16);
         head(r, hud(4), "RÉPARTITION DU FICHIER", yy, ui.isNew("stats.file_parts"));
-        ui.newBadge("c/fileparts", {0, 0, 0, 0}, "stats.file_parts", false);
         yy += ui.s(28) + ui.s(10);
         const std::string sub = "Calculée en lisant stats.json : la taille de chaque partie, rien de plus n'est enregistré.";
         ui.label(ui.elide(sub, FontFace::Body, fz(14), r.w - 2 * pad), {r.x + pad, yy}, fz(14), ui.theme().textDim);
         yy += lineHeight(ui, FontFace::Body, ui.s(fz(14))) + ui.s(16);
         const Rect bar{r.x + pad, yy, r.w - 2 * pad, ui.s(40)};
+        ui.newBadge("c/fileparts", bar, "stats.file_parts", false);  // the pill is after the title; seen with the bar
         if (!breakdown_) {
             picturePending(bar, false);
         } else if (!breakdown_->ok) {

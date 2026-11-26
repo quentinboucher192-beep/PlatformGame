@@ -11,9 +11,13 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
+#include "game/ghost/GhostStore.h"
+#include "game/ghost/PersonalBests.h"
+#include "game/ghost/SobMontage.h"
 #include "game/enemies/EnemyDefinition.h"
 #include "game/levels/LevelData.h"
 #include "game/planets/PlanetData.h"
@@ -28,6 +32,30 @@ using charts::LineSpec;
 using charts::Series;
 using playstats::kSlices;
 using namespace statsui;
+
+namespace {
+
+/// How a best's source is shown: its pill (three kinds: a run, a training — segment, enchaînement,
+/// StartPos —, online), its colour, the detail after its date.
+struct SourceLook {
+    const char* pill;
+    Color color;
+    const char* detail;
+};
+SourceLook sourceLook(const PersonalBests::Record* rec) {
+    if (!rec) return {"Partie", kSrcRun, ""};  // the statistics' own best: a full run's
+    switch (rec->source) {
+        case BestSource::Training: return {"Entraînement", kSrcTraining, "segment"};
+        case BestSource::Chain: return {"Entraînement", kSrcTraining, "enchaînement"};
+        case BestSource::StartPos: return {"Entraînement", kSrcTraining, "startpos"};
+        case BestSource::Online: return {"En ligne", kSrcOnline, "course vérifiée"};
+        default: return {"Partie", kSrcRun, ""};
+    }
+}
+
+using playstats::dayOfDate;
+
+}  // namespace
 
 // ------------------------------------------------------------------ the level chosen
 
@@ -86,11 +114,11 @@ float StatisticsScene::chooseLevel(float x, float y, float w, const std::string&
     // The planets (and « Autres niveaux »), at the right when they fit, else on a line of their own.
     UIContext::ButtonStyle chip;
     chip.small = true;
-    chip.fontSize = 15;
+    chip.fontSize = fz(15);
     std::vector<float> cw;
     float chipsW = 0.0f;
     for (const auto& grp : groups) {
-        cw.push_back(ui.text().measure(grp.name, FontFace::Bold, ui.s(15)).x + ui.s(26));
+        cw.push_back(ui.text().measure(grp.name, FontFace::Bold, ui.s(fz(15))).x + ui.s(26));
         chipsW += cw.back() + ui.s(6);
     }
     const float nameRoomMin = ui.s(420);
@@ -105,7 +133,7 @@ float StatisticsScene::chooseLevel(float x, float y, float w, const std::string&
         }
         chip.selected = static_cast<int>(a) == curGroup;
         const float bwid = std::min(cw[a], w);
-        if (cframe::button(ui, id + "planet" + std::to_string(a), {cx, chipsY, bwid, ui.s(36)}, ui.elide(groups[a].name, FontFace::Bold, 15, bwid - ui.s(16)),
+        if (cframe::button(ui, id + "planet" + std::to_string(a), {cx, chipsY, bwid, ui.s(36)}, ui.elide(groups[a].name, FontFace::Bold, fz(15), bwid - ui.s(16)),
                            chip) &&
             static_cast<int>(a) != curGroup) {
             // Its last level played, else its first.
@@ -207,9 +235,31 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
     const std::string& levelId = wantRuns_;
     const LevelRuns& r = data().runs.at(levelId);
     const statsart::LevelInfo* li = art_.info(levelId);
-    const float sob = r.sob();
-    const std::vector<playstats::SobPart> parts = playstats::sobParts(r);
+    // 2.91: ONE Sum of Best per level version, every source together (game/ghost/PersonalBests.h):
+    // its segments, their bests, where and when they were done, their replays; the record's splits.
+    // The times, the consistency and the regularity stay the statistics' (they describe the runs).
+    const std::string key = r.version.empty() ? std::string() : GhostStore::levelKey(levelId, r.version);
+    struct SegRow {
+        std::string from, to;
+        int index = 0;
+        float best = -1.0f;
+        const PersonalBests::Record* rec = nullptr;  // the unified store's (nullptr: the statistics' own best)
+        float inPb = -1.0f;                          // its time in the record run (-1: not known)
+    };
+    std::vector<SegRow> segRows;
+    if (!key.empty())
+        for (const auto& sg : g_.bests.segments(key)) segRows.push_back({sg.from, sg.to, static_cast<int>(segRows.size()), sg.best(), sg.record, -1.0f});
     const std::vector<SegmentReport> reps = segmentReports(r);
+    if (segRows.empty())  // a version the unified store does not know: the statistics' route and bests
+        for (const auto& sr : reps) segRows.push_back({sr.from, sr.to, sr.index, sr.best, nullptr, -1.0f});
+    const float sob = key.empty() ? -1.0f : g_.bests.sob(key);
+    const PersonalBests::Run* pbRun = key.empty() ? nullptr : g_.bests.pb(key);
+    const float pbTime = pbRun ? pbRun->time : r.pb;
+    {
+        const std::vector<std::string> route = key.empty() ? std::vector<std::string>{} : g_.bests.route(key).value_or(std::vector<std::string>{});
+        for (auto& row : segRows)
+            if (pbRun) row.inPb = playstats::segmentInRun(pbRun->splits, pbRun->checkpoints.empty() ? route : pbRun->checkpoints, pbRun->time, row.from, row.to);
+    }
     const Regularity reg = regularity(r, today_);
     const float gap = ui.s(16);
     auto checkpointName = [&](const std::string& id, bool end) { return li ? li->checkpointName(id, end) : (id.empty() ? std::string(end ? "Arrivée" : "Départ") : std::string("Point de passage")); };
@@ -244,35 +294,37 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             ui.r().drawRoundedRect(c, ui.s(12), kGold.withAlpha(110), std::max(1.0f, ui.s(1.2f)));
             const float pad = ui.s(20), room = c.w - 2 * pad;
             float yy = c.y + ui.s(16);
-            kicker("SOMME DES MEILLEURS (SOB) · TOUTES SOURCES", {c.x + pad, yy}, Color{243, 230, 189, 255}, 14, room);
+            kicker("SOMME DES MEILLEURS (SOB) · UNE SEULE, TOUTES SOURCES", {c.x + pad, yy}, Color{243, 230, 189, 255}, 14, room);
             yy += lineHeight(ui, FontFace::Bold, ui.s(fz(14))) + ui.s(4);
             const float vf = 56.0f;
             const std::string v = sob > 0.0f ? clockLong(sob) : std::string("—");
             const float vw = bigValue(v, {c.x + pad, yy}, vf, room * 0.5f, kGold);
-            const std::string expl = sob > 0.0f ? "Le meilleur temps de chaque segment du parcours de votre record, en partie complète ou à l'entraînement par "
-                                                  "segment (même version du niveau)."
-                                                : "Finissez le niveau depuis son début : chaque segment de votre record compte son meilleur temps.";
+            const std::string expl = sob > 0.0f ? "Le meilleur temps de chaque segment, où qu'il ait été fait : en partie, à l'entraînement (segment, "
+                                                  "enchaînement, segment entier après une startpos), en ligne."
+                                                : "Chaque segment compte son meilleur temps, où qu'il ait été fait : il en manque encore un pour la somme.";
             const float ex = c.x + pad + vw + ui.s(22), ew = c.right() - pad - ex;
             const float vh = lineHeight(ui, FontFace::Title, ui.s(vf));
+            float eh = 0.0f;
             if (ew > ui.s(120)) {
-                const float eh = ui.text().measureWrapped(expl, FontFace::Body, ui.s(fz(14)), ew).y;
+                eh = ui.text().measureWrapped(expl, FontFace::Body, ui.s(fz(14)), ew).y;
                 ui.labelWrapped(expl, {ex, yy + std::max(0.0f, (vh - eh) * 0.5f)}, ew, fz(14), kText2);
             }
-            yy += vh + ui.s(12);
+            yy += std::max(vh, eh) + ui.s(12);
             // The segments, in the order of the route, the width of their time, coloured by source.
             const Rect bar{c.x + pad, yy, room, ui.s(34)};
             std::vector<charts::Part> ps;
-            int runs = 0, trains = 0;
-            for (const auto& p : parts) {
+            int runs = 0, trains = 0, online = 0;
+            for (const auto& p : segRows) {
                 if (p.best <= 0.0f) continue;
-                const bool tr = p.source == playstats::SobSource::Training;
-                (tr ? trains : runs)++;
+                const SourceLook look = sourceLook(p.rec);
+                (look.color == kSrcRun ? runs : look.color == kSrcOnline ? online : trains)++;
                 const std::string seg = checkpointName(p.from, false) + " → " + checkpointName(p.to, true);
                 std::string t = clockTime(p.best);
                 if (t.size() > 2 && t.compare(t.size() - 2, 2, " s") == 0) t.resize(t.size() - 2);  // « 31,20 », « 1:02,35 »
-                ps.push_back({p.best, tr ? kSrcTraining : kSrcRun, std::to_string(p.index + 1) + " · " + t,
-                              "Segment " + std::to_string(p.index + 1) + " : " + seg,
-                              {{charts::kNoSwatch, "Meilleur", clockTime(p.best)}, {charts::kNoSwatch, "Fait", tr ? std::string("à l'entraînement") : std::string("en partie")}}});
+                std::vector<Tip::Row> rows = {{charts::kNoSwatch, "Meilleur", clockTime(p.best)}, {look.color, look.pill, look.detail}};
+                if (p.rec && dayOfDate(p.rec->date) > 0) rows.push_back({charts::kNoSwatch, "Le", dayShort(dayOfDate(p.rec->date))});
+                if (p.rec) rows.push_back({charts::kNoSwatch, "Passages", std::to_string(p.rec->passages)});
+                ps.push_back({p.best, look.color, std::to_string(p.index + 1) + " · " + t, "Segment " + std::to_string(p.index + 1) + " : " + seg, rows});
             }
             if (ps.empty()) picturePending(bar, true);
             else charts::stackedBar(ui, "c/sobparts", bar, ps, cursorOf("sobparts"), tip_);
@@ -280,10 +332,9 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             std::vector<LegendItem> leg;
             if (runs) leg.push_back({kSrcRun, "Partie : " + std::to_string(runs) + (runs > 1 ? " segments" : " segment"), 2, {}});
             if (trains) leg.push_back({kSrcTraining, "Entraînement : " + std::to_string(trains), 2, {}});
+            if (online) leg.push_back({kSrcOnline, "En ligne : " + std::to_string(online), 2, {}});
             const std::string ver = "Version actuelle du niveau";
             const float verW = ui.text().measure(ver, FontFace::Body, ui.s(fz(13))).x;
-            const float lw = legend(c.x + pad, yy, room - verW - ui.s(16), leg, false);
-            (void)lw;
             legend(c.x + pad, yy, room - verW - ui.s(16), leg);
             if (legendWidth(leg) + verW + ui.s(16) <= room) ui.label(ver, {c.right() - pad, yy}, fz(13), ui.theme().textDim, Align::Right);
         }
@@ -292,11 +343,13 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             const Rect t{x + bannerW + sobW + 2 * gap, y, w - bannerW - sobW - 2 * gap, hh};
             const Rect area = wide ? t : Rect{x, y + hh + gap, w, hh};
             std::string pbDay;
-            for (const auto& h : r.history)
-                if (std::abs(h.pb - r.pb) < 0.005f) {
-                    pbDay = dayShort(h.day);
-                    break;
-                }
+            if (pbRun && dayOfDate(pbRun->date) > 0) pbDay = dayShort(dayOfDate(pbRun->date));
+            else
+                for (const auto& h : r.history)
+                    if (std::abs(h.pb - pbTime) < 0.005f) {
+                        pbDay = dayShort(h.day);
+                        break;
+                    }
             const float tg = ui.s(12), tw = (area.w - tg) / 2.0f, th = (area.h - tg) / 2.0f;
             auto tile = [&](const Rect& rr, const std::string& k, const std::string& v, const std::string& d, Color accent) {
                 ui.r().fillRoundedRect(rr, ui.s(12), kCard);
@@ -305,14 +358,17 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                 float yy = rr.y + ui.s(12);
                 kicker(k, {rr.x + pad, yy}, accent.a ? accent : ui.theme().textDim, 13, room);
                 yy += lineHeight(ui, FontFace::Bold, ui.s(fz(13))) + ui.s(4);
-                bigValue(v, {rr.x + pad, yy}, 30, room, accent.a ? accent : ui.theme().text);
                 const float df = ui.fitFont(d, FontFace::Body, fz(13), room, 0.85f);
+                const float dTop = rr.bottom() - ui.s(12) - lineHeight(ui, FontFace::Body, ui.s(df));
+                float vs = 30.0f;
+                if (const float vh = lineHeight(ui, FontFace::Title, ui.s(vs)), avail = dTop - ui.s(2) - yy; vh > avail && avail > 0.0f) vs *= avail / vh;
+                bigValue(v, {rr.x + pad, yy}, vs, room, accent.a ? accent : ui.theme().text);
                 ui.label(ui.elide(d, FontFace::Body, df, room), {rr.x + pad, rr.bottom() - ui.s(12)}, df, ui.theme().textDim, Align::Left, FontFace::Body,
                          VAlign::Bottom);
             };
-            tile({area.x, area.y, tw, th}, "RECORD (PB)", clockLong(r.pb), pbDay.empty() ? std::string("meilleure partie complète") : "partie complète du " + pbDay,
+            tile({area.x, area.y, tw, th}, "RECORD (PB)", clockLong(pbTime), pbDay.empty() ? std::string("meilleure partie complète") : "partie complète du " + pbDay,
                  {0, 0, 0, 0});
-            tile({area.x + tw + tg, area.y, tw, th}, "TEMPS PERDU POSSIBLE", r.pb > 0.0f && sob > 0.0f ? frNum(std::max(0.0f, r.pb - sob), 3) + " s" : "—",
+            tile({area.x + tw + tg, area.y, tw, th}, "TEMPS PERDU POSSIBLE", pbTime > 0.0f && sob > 0.0f ? frNum(std::max(0.0f, pbTime - sob), 3) + " s" : "—",
                  "PB − SOB, en théorie", ui.theme().warm);
             tile({area.x, area.y + th + tg, tw, th}, "ARRIVÉES", std::to_string(r.finished) + " / " + std::to_string(r.attempts),
                  r.attempts > 0 ? pct(static_cast<double>(r.finished) / r.attempts) + " des tentatives" : std::string("—"), {0, 0, 0, 0});
@@ -334,27 +390,22 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             kicker(heads[i], {colX[i] + (i == 0 ? ui.s(14) : ui.s(6)), y}, ui.theme().textDim, 12, room);
         }
         y += lineHeight(ui, FontFace::Bold, ui.s(hf)) + ui.s(10);
-        std::vector<const SegmentReport*> repOf;
-        for (const auto& p : parts) {
-            const SegmentReport* found = nullptr;
-            for (const auto& s : reps)
-                if (s.from == p.from && s.to == p.to) found = &s;
-            repOf.push_back(found);
-        }
-        // Without a record, the segments as kept.
-        std::vector<playstats::SobPart> rows = parts;
-        if (rows.empty())
-            for (const auto& s : reps) rows.push_back({s.from, s.to, s.index, s.best, playstats::SobSource::Run}), repOf.push_back(&s);
+        auto repOf = [&](const SegRow& row) -> const SegmentReport* {
+            for (const auto& sr : reps)
+                if (sr.from == row.from && sr.to == row.to) return &sr;
+            return nullptr;
+        };
+        // Time lost in the record: its time in the record run − its best (the worst in red).
         float worstLost = 0.0f;
-        for (const SegmentReport* s : repOf)
-            if (s) worstLost = std::max(worstLost, s->lost);
+        for (const auto& row : segRows)
+            if (row.inPb > 0.0f && row.best > 0.0f) worstLost = std::max(worstLost, row.inPb - row.best);
         const float rowH = ui.s(112), rg = ui.s(10);
-        for (size_t i = 0; i < rows.size(); ++i) {
-            const playstats::SobPart& p = rows[i];
-            const SegmentReport* rep = i < repOf.size() ? repOf[i] : nullptr;
+        for (size_t i = 0; i < segRows.size(); ++i) {
+            const SegRow& p = segRows[i];
+            const SegmentReport* rep = repOf(p);
             const Rect row{x, y, w, rowH};
             const std::string wid = "seg" + std::to_string(i);
-            const bool lit = ui.focused(wid + "/train") || ui.mouseOver(row);
+            const bool lit = ui.focused(wid + "/watch") || ui.focused(wid + "/train") || ui.mouseOver(row);
             ui.r().fillRoundedRect(row, ui.s(12), kCard);
             ui.r().drawRoundedRect(row, ui.s(12), lit ? ui.theme().accent : kCardLine, std::max(1.0f, ui.s(lit ? 1.5f : 1.0f)));
             const float a = atOf(p.from, false), b = atOf(p.to, true);
@@ -367,52 +418,58 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                 const std::string no = std::to_string(p.index + 1);
                 const Rect badge{pic.x + ui.s(8), pic.y + ui.s(8), ui.s(28), ui.s(28)};
                 ui.r().fillRoundedRect(badge, ui.s(6), Color{5, 7, 15, 220});
-                ui.label(no, badge.center(), 16, ui.theme().text, Align::Center, FontFace::Title, VAlign::Middle);
+                ui.label(no, badge.center(), fz(16), ui.theme().text, Align::Center, FontFace::Title, VAlign::Middle);
             }
             const float cy = row.y + ui.s(16);
+            const std::string nm = checkpointName(p.from, false) + " → " + checkpointName(p.to, true);
             // The passage: where it goes, what is met there.
             {
                 const float px0 = colX[1] + ui.s(16), room = colX[2] - px0 - ui.s(12);
-                const std::string nm = checkpointName(p.from, false) + " → " + checkpointName(p.to, true);
                 const float nf = ui.fitFont(nm, FontFace::Bold, fz(18), room, 0.8f);
                 ui.label(ui.elide(nm, FontFace::Bold, nf, room), {px0, cy}, nf, ui.theme().text, Align::Left, FontFace::Bold);
                 segmentChips(li, a, b, px0, row.bottom() - ui.s(14) - ui.s(42), room, ui.s(42));
             }
-            // The best (its part of the Sum of Best) and where it was made.
+            // The best (its part of the Sum of Best), where and when it was made.
             {
                 const float bx = colX[2] + ui.s(6), room = colX[3] - bx - ui.s(8);
                 bigValue(clockLong(p.best), {bx, cy}, 26, room, kGold);
-                if (p.source != playstats::SobSource::None) {
-                    const bool tr = p.source == playstats::SobSource::Training;
-                    const std::string src = tr ? "Entraînement" : "Partie";
+                if (p.best > 0.0f) {
+                    const SourceLook look = sourceLook(p.rec);
                     const float sf = fz(13);
-                    const float sw = ui.text().measure(src, FontFace::Bold, ui.s(sf)).x + ui.s(18);
+                    const float sw = ui.text().measure(look.pill, FontFace::Bold, ui.s(sf)).x + ui.s(18);
                     const Rect pr{bx, cy + lineHeight(ui, FontFace::Title, ui.s(26)) + ui.s(8), std::min(sw, room), lineHeight(ui, FontFace::Bold, ui.s(sf)) + ui.s(6)};
-                    const Color sc = tr ? kSrcTraining : kSrcRun;
-                    ui.r().fillRoundedRect(pr, pr.h * 0.5f, sc.withAlpha(60));
-                    ui.r().drawRoundedRect(pr, pr.h * 0.5f, sc, std::max(1.0f, ui.s(1.0f)));
-                    ui.label(ui.elide(src, FontFace::Bold, sf, pr.w - ui.s(12)), pr.center(), sf, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+                    ui.r().fillRoundedRect(pr, pr.h * 0.5f, look.color.withAlpha(60));
+                    ui.r().drawRoundedRect(pr, pr.h * 0.5f, look.color, std::max(1.0f, ui.s(1.0f)));
+                    ui.label(ui.elide(look.pill, FontFace::Bold, sf, pr.w - ui.s(12)), pr.center(), sf, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+                    std::string when = p.rec && dayOfDate(p.rec->date) > 0 ? dayShort(dayOfDate(p.rec->date)) : std::string();
+                    if (look.detail[0]) when += (when.empty() ? "" : " · ") + std::string(look.detail);
+                    const float dr = bx + room - (pr.right() + ui.s(8));
+                    if (!when.empty() && dr > ui.s(30))
+                        ui.label(ui.elide(when, FontFace::Body, sf, dr), {pr.right() + ui.s(8), pr.center().y}, sf, ui.theme().textDim, Align::Left, FontFace::Body,
+                                 VAlign::Middle);
                 }
             }
-            // In the PB: the segment's time in the record run (not kept by these statistics yet).
-            ui.label("—", {colX[3] + ui.s(6), row.center().y}, 22, ui.theme().textDim, Align::Left, FontFace::Title, VAlign::Middle);
-            // Lost on average: the median of its last times − its best.
+            // In the record: the segment's time in the record run.
+            ui.label(p.inPb > 0.0f ? clockLong(p.inPb) : std::string("—"), {colX[3] + ui.s(6), row.center().y}, 22,
+                     p.inPb > 0.0f ? ui.theme().text : ui.theme().textDim, Align::Left, FontFace::Title, VAlign::Middle);
+            // Time lost: its time in the record − its best.
             {
                 const float lx = colX[4] + ui.s(6), room = colX[5] - lx - ui.s(12);
-                if (rep && rep->count > 0) {
-                    const bool worst = rep->lost > 0.0f && rep->lost >= worstLost - 1e-4f;
-                    ui.label("+" + frNum(rep->lost, 3) + " s", {lx, cy}, fz(18), worst ? ui.theme().danger : ui.theme().text, Align::Left, FontFace::Bold);
+                if (p.inPb > 0.0f && p.best > 0.0f) {
+                    const float lost = std::max(0.0f, p.inPb - p.best);
+                    const bool worst = lost > 0.0f && lost >= worstLost - 1e-4f;
+                    ui.label("+" + frNum(lost, 3) + " s", {lx, cy}, fz(18), worst ? ui.theme().danger : ui.theme().text, Align::Left, FontFace::Bold);
                     const Rect tr{lx, cy + lineHeight(ui, FontFace::Bold, ui.s(fz(18))) + ui.s(8), room, ui.s(8)};
                     ui.r().fillRoundedRect(tr, ui.s(4), kTrack);
-                    const float k = worstLost > 0.0f ? std::clamp(rep->lost / worstLost, 0.0f, 1.0f) : 0.0f;
-                    ui.r().fillRoundedRect({tr.x, tr.y, std::max(ui.s(6), tr.w * k), tr.h}, ui.s(4), worst ? ui.theme().danger : ui.theme().warm);
+                    const float k = worstLost > 0.0f ? std::clamp(lost / worstLost, 0.0f, 1.0f) : 0.0f;
+                    if (lost > 0.0f) ui.r().fillRoundedRect({tr.x, tr.y, std::max(ui.s(6), tr.w * k), tr.h}, ui.s(4), worst ? ui.theme().danger : ui.theme().warm);
                     const float mf = fz(12);
-                    ui.label(ui.elide("médiane − meilleur", FontFace::Body, mf, room), {lx, tr.bottom() + ui.s(6)}, mf, ui.theme().textDim);
+                    ui.label(ui.elide("dans le PB − meilleur", FontFace::Body, mf, room), {lx, tr.bottom() + ui.s(6)}, mf, ui.theme().textDim);
                 } else {
                     ui.label("—", {lx, row.center().y}, fz(18), ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
                 }
             }
-            // Consistency.
+            // Consistency (the full runs' times).
             {
                 const float kx = colX[5] + ui.s(6), room = colX[6] - kx - ui.s(8);
                 if (rep && rep->count > 0) {
@@ -424,14 +481,45 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                     ui.label("—", {kx, row.center().y}, fz(18), ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
                 }
             }
-            // Its training (the section training from its first checkpoint).
+            // Watch the best (its exact replay, when one holds it) and train on the segment.
             {
                 UIContext::ButtonStyle st;
                 st.small = true;
-                st.fontSize = 16;
+                st.fontSize = fz(16);
+                const float bw = x + w - ui.s(14) - colX[6] - ui.s(4), bx = colX[6] + ui.s(4);
+                const bool canWatch = p.rec && p.rec->replay.has() && !key.empty();
+                const float bh = ui.s(38), bg = ui.s(10);
+                float by = row.center().y - (canWatch ? bh + bg * 0.5f : bh * 0.5f);
+                if (canWatch) {
+                    st.primary = true;
+                    if (cframe::button(ui, wid + "/watch", {bx, by, bw, bh}, ui.elide("▶ Regarder", FontFace::Bold, fz(16), bw - ui.s(16)), st)) {
+                        // The montage of this one segment, from the replay that holds its best.
+                        MontageSegment m;
+                        m.index = p.index;
+                        m.from = p.from;
+                        m.to = p.to;
+                        m.duration = p.best;
+                        m.date = p.rec->date;
+                        m.file = Paths::toUtf8(g_.bests.replayPath(key, p.rec->replay.file));
+                        m.start = p.rec->replay.start;
+                        m.end = p.rec->replay.end;
+                        m.training = !p.rec->replay.fromLevelStart;  // its replay starts as that attempt did
+                        m.trainingStart = p.rec->replay.setup;
+                        SobMontageRequest req;
+                        req.levelId = levelId;
+                        req.levelHash = r.version;
+                        req.levelName = levelName(levelId);
+                        req.plan.segments = {m};
+                        req.plan.total = p.best;
+                        req.plan.withReplay = 1;
+                        req.names = {nm};
+                        g_.app.pushScene(makeSobMontage(g_, std::move(req)));
+                    }
+                    st.primary = false;
+                    by += bh + bg;
+                }
                 st.enabled = g_.content.level(levelId) != nullptr;
-                const Rect br{colX[6] + ui.s(4), row.center().y - ui.s(20), x + w - ui.s(14) - colX[6] - ui.s(4), ui.s(40)};
-                if (cframe::button(ui, wid + "/train", br, ui.elide("S'entraîner", FontFace::Bold, 16, br.w - ui.s(16)), st)) trainSegment(levelId, p.from);
+                if (cframe::button(ui, wid + "/train", {bx, by, bw, bh}, ui.elide("S'entraîner", FontFace::Bold, fz(16), bw - ui.s(16)), st)) trainSegment(levelId, p.from);
             }
             y += rowH + rg;
         }
@@ -447,7 +535,14 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             Series pb{"Record (PB)", ui.theme().accent, Series::Kind::Step, false, {}};
             Series so{"Somme des meilleurs", kSeries[0], Series::Kind::Step, false, {}};
             float lo = 1e9f, hi = 0.0f;
-            for (const auto& h : r.history) {
+            // The unified Sum of Best's history (its dated changes); a version it does not know: the statistics'.
+            std::vector<SobPoint> history;
+            if (!key.empty())
+                for (const auto& h : g_.bests.sobHistory(key))
+                    if (const int d = dayOfDate(h.day); d > 0) history.push_back({d, h.pb, h.sob});
+            std::stable_sort(history.begin(), history.end(), [](const SobPoint& a, const SobPoint& b) { return a.day < b.day; });
+            if (history.empty()) history = r.history;
+            for (const auto& h : history) {
                 if (h.pb > 0.0f) pb.pts.push_back({static_cast<float>(h.day), h.pb}), lo = std::min(lo, h.pb), hi = std::max(hi, h.pb);
                 if (h.sob > 0.0f) so.pts.push_back({static_cast<float>(h.day), h.sob}), lo = std::min(lo, h.sob), hi = std::max(hi, h.sob);
             }
@@ -465,7 +560,7 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             spec.yMax = hi > 0.0f ? std::ceil((hi + pad) / 5.0f) * 5.0f : 60.0f;
             spec.yLabel = [](float v) { return clockTime(v); };
             spec.xLabel = [](float v) { return dayShort(static_cast<int>(v)); };
-            auto hist = r.history;
+            auto hist = history;
             const Color pbc = ui.theme().accent, sbc = kSeries[0], gapc = ui.theme().warm;
             spec.tip = [hist, pbc, sbc, gapc](float xv, Tip& t) {
                 t.title = dayNamed(static_cast<int>(xv));
@@ -478,7 +573,7 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                 if (p->pb > 0.0f && p->sob > 0.0f) t.rows.push_back({gapc, "Temps gagnable", clockTime(std::max(0.0f, p->pb - p->sob))});
             };
             std::vector<std::vector<std::string>> rows;
-            for (auto it = r.history.rbegin(); it != r.history.rend(); ++it)
+            for (auto it = history.rbegin(); it != history.rend(); ++it)
                 rows.push_back({dayLong(it->day), clockTime(it->pb), clockTime(it->sob),
                                 it->pb > 0.0f && it->sob > 0.0f ? clockTime(std::max(0.0f, it->pb - it->sob)) : std::string("—")});
             const std::vector<LegendItem> leg = {{ui.theme().accent, "Record (PB)", 0, {}}, {kSeries[0], "Somme des meilleurs", 0, {}},
@@ -487,11 +582,7 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             h.title = "ÉVOLUTION DU RECORD ET DE LA SOMME DES MEILLEURS";
             h.sub = "Un point à chaque date où l'un des deux a changé · la bande = temps gagnable (PB − SOB)";
             h.table = "sob";
-            h.extra = [&](float right, float yy, bool draw) {
-                const float l = legendWidth(leg);
-                if (draw) legend(right - l, yy + ui.s(6), l + ui.s(2), leg);
-                return l;
-            };
+            h.legend = leg;
             Rect in = card({x, y, lw, ch}, h);
             if (tables_["sob"]) tableIn("sob", in, {"Jour", "Record (PB)", "Somme des meilleurs", "Temps gagnable"}, rows);
             else if (pb.pts.empty() && so.pts.empty()) emptyIn("sob", in, "Finissez le niveau depuis son début pour voir votre record et votre somme des meilleurs.");
@@ -590,7 +681,7 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                                                       : std::string("= aussi régulier qu'il y a 30 j");
             std::vector<float> lastTimes;
             for (const auto& f : reg.last) lastTimes.push_back(f.time);
-            const float tg = ui.s(10), tw = (in.w - 2 * tg) / 3.0f, th = ui.s(84);
+            const float tg = ui.s(10), tw = (in.w - 2 * tg) / 3.0f, th = miniTileHeight(true, true);
             miniTile({in.x, in.y, tw, th}, "ARRIVÉES AU BOUT", reg.attempts > 0 ? pct(static_cast<double>(reg.finished) / reg.attempts) : std::string("—"),
                      std::to_string(reg.finished) + " sur " + std::to_string(reg.attempts) + " tentatives");
             miniTile({in.x + tw + tg, in.y, tw, th}, "ÉCART TYPE (20)", reg.sd ? frNum(*reg.sd, 1) + " s" : std::string("—"), trend,
@@ -611,10 +702,10 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                 lo = std::min(lo, reg.last[i].time);
                 hi = std::max(hi, reg.last[i].time);
             }
-            if (r.pb > 0.0f && !reg.last.empty()) {
-                pbLine.pts = {{static_cast<float>(firstN), r.pb}, {static_cast<float>(firstN + static_cast<int>(reg.last.size()) - 1), r.pb}};
+            if (pbTime > 0.0f && !reg.last.empty()) {
+                pbLine.pts = {{static_cast<float>(firstN), pbTime}, {static_cast<float>(firstN + static_cast<int>(reg.last.size()) - 1), pbTime}};
                 pbLine.endLabel = "PB";
-                lo = std::min(lo, r.pb);
+                lo = std::min(lo, pbTime);
             }
             for (size_t i = reg.last.size(); i-- > 0;)
                 rows.push_back({std::to_string(firstN + static_cast<int>(i)), dayLong(reg.last[i].day), clockTime(reg.last[i].time), clockTime(reg.rollingMedian[i])});
@@ -631,7 +722,7 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             spec.xLabel = [](float v) { return "n° " + std::to_string(static_cast<int>(std::lround(v))); };
             auto last = reg.last;
             auto medians = reg.rollingMedian;
-            const float pbv = r.pb;
+            const float pbv = pbTime;
             spec.tip = [last, medians, firstN, pbv](float xv, Tip& t) {
                 const int i = static_cast<int>(std::lround(xv)) - firstN;
                 if (i < 0 || i >= static_cast<int>(last.size())) return;
@@ -649,11 +740,12 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
     y += note(x, y, w,
               "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties "
               "de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les "
-              "temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de "
-              "chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, "
-              "additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps "
-              "gagnable = record − SOB. Temps perdu = médiane des 50 derniers "
-              "temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières "
+              "temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) : une seule par version "
+              "du niveau, le meilleur temps de chaque segment où qu'il ait été fait (partie, entraînement par segment, enchaînement, segment "
+              "entier après une startpos, vos courses vérifiées en ligne), additionnés ; elle reste personnelle : les records en ligne officiels "
+              "ne comptent jamais rien de personnel. « Regarder » rejoue le replay exact qui tient ce meilleur temps. Temps perdu possible = "
+              "record − SOB ; temps perdu d'un segment = son temps dans le record − son meilleur. Zones à travailler : médiane des 50 derniers "
+              "temps du segment − son meilleur temps en partie. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières "
               "parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). "
               "Une nouvelle version du niveau repart de zéro. Les aperçus sont le vrai rendu du niveau entre deux points de passage.");
     return y - y0;
@@ -669,7 +761,7 @@ void StatisticsScene::hardCard(const Rect& r, const HardPassage& h, int rank) {
     cardFrame(r, {0, 0, 0, 0}, lit);
     const statsart::LevelInfo* li = boss ? nullptr : art_.info(h.id);
     // Its picture: the boss on its planet, or the level where the passage is.
-    const Rect im{r.x + ui.s(1), r.y + ui.s(1), r.w - ui.s(2), std::min(ui.s(150), r.h * 0.4f)};
+    const Rect im{r.x + ui.s(1), r.y + ui.s(1), r.w - ui.s(2), ui.s(150)};
     ui.r().pushClip(im);
     ui.r().fillRect(im, Color{11, 16, 32, 255});
     if (boss) {
@@ -698,7 +790,7 @@ void StatisticsScene::hardCard(const Rect& r, const HardPassage& h, int rank) {
                std::to_string(static_cast<int>(std::lround((h.to + 1) * 2.5))) + " %";
         l1 = std::to_string(h.deaths) + (h.deaths > 1 ? " morts" : " mort") + " sur " + std::to_string(h.passes) + (h.passes > 1 ? " passages" : " passage");
         if (li) {
-            const float at = (static_cast<float>(h.from) + 0.5f) / kSlices;
+            const float at = static_cast<float>(h.from) / kSlices;  // from the last checkpoint before the passage
             std::string a, b;
             bool found = false;
             for (const auto& [cpAt, id] : li->checkpoints) {
@@ -734,10 +826,10 @@ void StatisticsScene::hardCard(const Rect& r, const HardPassage& h, int rank) {
     const std::string bt = boss ? "S'entraîner sur cette phase" : "S'entraîner sur ce segment";
     UIContext::ButtonStyle st;
     st.small = true;
-    st.fontSize = 15;
+    st.fontSize = fz(15);
     st.enabled = boss ? g_.content.enemy(h.id) != nullptr : g_.content.level(h.id) != nullptr && li != nullptr;
     const Rect br{r.x + pad, r.bottom() - ui.s(14) - ui.s(42), room, ui.s(42)};
-    const float bf = ui.fitFont(bt, FontFace::Bold, 15, br.w - ui.s(16), 0.75f);
+    const float bf = ui.fitFont(bt, FontFace::Bold, fz(15), br.w - ui.s(16), 0.75f);
     st.fontSize = bf;
     if (cframe::button(ui, wid, br, ui.elide(bt, FontFace::Bold, bf, br.w - ui.s(16)), st)) {
         if (boss) g_.app.switchScene(makeBossTraining(g_, h.id, h.phase), 0.3f);
@@ -778,11 +870,7 @@ float StatisticsScene::drawHard(float x, float y0, float w) {
         h.sub = "Le niveau découpé en 40 tranches, sur son vrai décor : plus c'est chaud, plus on y meurt souvent";
         h.table = "heat";
         h.tableOff = "Carte";
-        h.extra = [&](float right, float yy, bool draw) {
-            const float lw = legendWidth(ramp);
-            if (draw) legend(right - lw, yy + ui.s(6), lw + ui.s(2), ramp);
-            return lw;
-        };
+        h.legend = ramp;
         const float ch = ui.s(330);
         Rect in = card({x, y, w, ch}, h);
         std::vector<std::string> segOf(kSlices);  // the segment of each slice (« Racines → Clairière »)
@@ -912,7 +1000,12 @@ float StatisticsScene::drawHard(float x, float y0, float w) {
         y += note(x, y, w, "Aucun passage ne se détache encore (il en faut au moins 5 passages pour en juger).") + gap;
     } else {
         const int per = w >= ui.s(1500) ? 5 : w >= ui.s(900) ? 3 : 1;
-        const float cg = ui.s(16), cw = (w - cg * static_cast<float>(per - 1)) / static_cast<float>(per), ch = ui.s(390);
+        const float cg = ui.s(16), cw = (w - cg * static_cast<float>(per - 1)) / static_cast<float>(per);
+        // Its picture, a name and two lines, the difficulty and its gauge, the button: the tallest it can be.
+        const float need = ui.s(150) + ui.s(12) + lineHeight(ui, FontFace::Bold, ui.s(fz(17))) + ui.s(4) +
+                           2 * (lineHeight(ui, FontFace::Body, ui.s(fz(13))) + ui.s(3)) + ui.s(10) + lineHeight(ui, FontFace::Body, ui.s(fz(14))) + ui.s(8) +
+                           ui.s(10) + ui.s(14) + ui.s(42) + ui.s(14);
+        const float ch = std::max(ui.s(390), need);
         for (size_t i = 0; i < top.size(); ++i) {
             const Rect r{x + (cw + cg) * static_cast<float>(static_cast<int>(i) % per), y + (ch + cg) * static_cast<float>(static_cast<int>(i) / per), cw, ch};
             hardCard(r, top[i], static_cast<int>(i));

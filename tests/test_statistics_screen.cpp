@@ -1,6 +1,6 @@
 // 2.91 — the redesigned « Statistiques » screen: what it computes for its display from what the game
 // already keeps (game/records/PlayStatsViews.h: « Récemment joué », the days of a period, « Répartition du
-// fichier », the sources of the Sum of Best), the pictures of the levels made from the game's own renderer
+// fichier », a segment's time in the record run), the pictures of the levels made from the game's own renderer
 // (ui/screens/StatisticsArt.h: read off the main thread, drawn a few per frame), the charts' new pieces,
 // and every tab drawn with real-looking statistics at 1280 x 720 and 1920 x 1080, in French and in English
 // with nothing left in French.
@@ -17,6 +17,8 @@
 #include "engine/core/Application.h"
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
+#include "game/ghost/GhostStore.h"
+#include "game/ghost/PersonalBests.h"
 #include "game/records/PlayStats.h"
 #include "game/records/PlayStatsViews.h"
 #include "tests/TestFramework.h"
@@ -193,21 +195,22 @@ TEST_CASE("statistics screen: « Répartition du fichier » — each part of sta
     CHECK(e.ok && e.parts.size() == 4 && e.parts[1].count == 0 && e.parts[3].count2 == 0);
 }
 
-TEST_CASE("statistics screen: the sources of the Sum of Best, segment by segment") {
-    const int today = daysFromCivil(2026, 11, 26);
-    const PlayStatsData d = played(today);
-    const LevelRuns& r = d.runs.at("aethra_01");
-    const auto parts = sobParts(r);
-    CHECK(parts.size() == 5);
-    float sum = 0.0f;
-    for (const auto& p : parts) sum += p.best;
-    CHECK_NEAR(sum, r.sob(), 1e-3);
-    CHECK(parts[0].source == SobSource::Run && parts[0].from.empty() && parts[0].to == "o104");
-    CHECK(parts[1].source == SobSource::Training);  // half a second better at the training
-    CHECK_NEAR(parts[1].best, 27.36f, 1e-4);
-    CHECK(parts[4].to.empty() && parts[4].index == 4);
-    LevelRuns none;
-    CHECK(sobParts(none).empty());  // no record: no route
+TEST_CASE("statistics screen: a segment's time in the record run, a best's day") {
+    const std::vector<std::string> ids = {"c1", "c2", "c3"};
+    const std::vector<float> splits = {10.0f, 25.5f, 40.0f};
+    CHECK_NEAR(segmentInRun(splits, ids, 60.0f, "", "c1"), 10.0, 1e-5);
+    CHECK_NEAR(segmentInRun(splits, ids, 60.0f, "c1", "c2"), 15.5, 1e-5);
+    CHECK_NEAR(segmentInRun(splits, ids, 60.0f, "c3", ""), 20.0, 1e-5);
+    CHECK_NEAR(segmentInRun(splits, ids, 60.0f, "", ""), 60.0, 1e-5);
+    CHECK(segmentInRun(splits, ids, 60.0f, "c1", "x") < 0.0f);           // not through it
+    CHECK(segmentInRun(splits, ids, 60.0f, "c2", "c1") < 0.0f);          // backwards
+    CHECK(segmentInRun(splits, {"c1", "c2"}, 60.0f, "c1", "c2") < 0.0f);  // the splits do not match
+    CHECK(segmentInRun(splits, ids, -1.0f, "c1", "c2") < 0.0f);          // not finished
+    CHECK(dayOfDate("2026-11-22 18:05") == daysFromCivil(2026, 11, 22));
+    CHECK(dayOfDate("2026-11-22") == daysFromCivil(2026, 11, 22));
+    CHECK(dayOfDate("") == 0);
+    CHECK(dayOfDate("hier, vers midi") == 0);
+    CHECK(dayOfDate("2026-13-01") == 0);
 }
 
 TEST_CASE("statistics screen: the charts' new pieces — the heat ramp, a level's things between two points, the window of a stretch") {
@@ -330,6 +333,23 @@ TEST_CASE("statistics screen: every tab drawn with statistics, 1280 x 720 and 19
             GameServices& g = *rig.g;
             const int today = g.playStats.today();
             g.playStats.setData(played(today));
+            // The one Sum of Best of the level version (game/ghost/PersonalBests.h): a full run, a section training.
+            {
+                const std::string key = GhostStore::levelKey("aethra_01", "v1");
+                const std::vector<std::string> route = {"o104", "o148", "o213", "o263"};
+                g.bests.setRoute(key, route);
+                BestAttempt run;
+                run.passage = BestPassage::ofSplits({31.2f, 59.5f, 89.4f, 113.6f}, route, 152.0f);
+                run.date = "2026-11-20 10:00";
+                g.bests.add(key, run);
+                BestAttempt train;
+                train.passage = BestPassage::ofSplits({27.0f}, {"o148"}, -1.0f, BestPassage::From::Checkpoint, "o104");
+                train.source = BestSource::Training;
+                train.date = "2026-11-22 10:00";
+                g.bests.add(key, train);
+                CHECK(g.bests.sob(key) > 0.0f);
+                CHECK(g.bests.pb(key) != nullptr);
+            }
             if (lang == Language::English) i18n::startAudit();
             rig.app.pushScene(makeMainMenu(g));
             rig.app.runFrames(2);

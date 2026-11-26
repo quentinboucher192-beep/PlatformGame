@@ -14882,6 +14882,23 @@
     "▼ plus régulier qu'il y a 30 j": "▼ steadier than 30 days ago",
     "Enchaînement": "Chain",
     "StartPos": "StartPos",
-    "source|Partie": "Run"
+    "source|Partie": "Run",
+    "**Par niveau classique** : les temps de chaque segment (les 50 derniers), vos arrivées, votre record. La somme des meilleurs, une seule par version du niveau et toutes sources confondues, est gardée avec vos meilleurs segments (bests.json).": "**Per classic level**: the times of each segment (the last 50), your finishes, your record. The sum of best, one per version of the level and every source together, is kept with your best segments (bests.json).",
+    "Chaque segment compte son meilleur temps, où qu'il ait été fait : il en manque encore un pour la somme.": "Each segment counts its best time, wherever it was done: one is still missing for the sum.",
+    "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) : une seule par version du niveau, le meilleur temps de chaque segment où qu'il ait été fait (partie, entraînement par segment, enchaînement, segment entier après une startpos, vos courses vérifiées en ligne), additionnés ; elle reste personnelle : les records en ligne officiels ne comptent jamais rien de personnel. « Regarder » rejoue le replay exact qui tient ce meilleur temps. Temps perdu possible = record − SOB ; temps perdu d'un segment = son temps dans le record − son meilleur. Zones à travailler : médiane des 50 derniers temps du segment − son meilleur temps en partie. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro. Les aperçus sont le vrai rendu du niveau entre deux points de passage.": "How it is computed: only complete segments count (from one checkpoint to the next, or to the finish) of campaign runs played from the start of a classic level (not EXTREME), no practice, no replay, no Invincible mode. The times come from the level's timer (the same as ghost racing). Sum of best (SOB): one per version of the level, the best time of each segment wherever it was done (run, segment practice, chain, whole segment after a startpos, your verified online runs), added up; it stays personal: the official online records never count anything personal. \"Watch\" plays the exact replay that holds that best time. Possible time lost = record − SOB; time lost on a segment = its time in the record − its best. Zones to work on: median of the segment's last 50 times − its best time in a run. Spread = interquartile range ÷ median. Regularity: standard deviation of the last 20 full runs, compared with that of the 20 runs before 30 days ago (more than 10% apart to call it a change). A new version of the level starts again from zero. The previews are the level's real render between two checkpoints.",
+    "Le": "On",
+    "Le meilleur temps de chaque segment, où qu'il ait été fait : en partie, à l'entraînement (segment, enchaînement, segment entier après une startpos), en ligne.": "The best time of each segment, wherever it was done: in a run, in practice (segment, chain, whole segment after a startpos), online.",
+    "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays relus (mesures A → B comprises) et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est compté à part.": "The statistics read what happens without changing the run: replays, records and rankings do not move. Replays watched again (A → B measures included) and friends' runs watched are not counted, nor editor tests nor Invincible mode; practice is counted apart.",
+    "SOMME DES MEILLEURS (SOB) · UNE SEULE, TOUTES SOURCES": "SUM OF BEST (SOB) · ONE, EVERY SOURCE",
+    "course vérifiée": "verified run",
+    "dans le PB − meilleur": "in the PB − best",
+    "enchaînement": "chain",
+    "startpos": "startpos",
+    "▶ Regarder": "▶ Watch",
+    "station": "station",
+    "▲ +{0} · en progrès": "▲ +{0} · improving",
+    "▲ +{0} · en recul": "▲ +{0} · slipping",
+    "▼ −{0} · en progrès": "▼ −{0} · improving",
+    "▼ −{0} · en recul": "▼ −{0} · slipping"
   }
 }

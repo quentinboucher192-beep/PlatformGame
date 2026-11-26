@@ -1,6 +1,7 @@
 #include "game/records/PlayStatsViews.h"
 
 #include <algorithm>
+#include <cstdio>
 
 namespace cosmic::playstats {
 
@@ -113,21 +114,22 @@ FileBreakdown fileBreakdown(const Json& file, size_t fileBytes) {
     return out;
 }
 
-std::vector<SobPart> sobParts(const LevelRuns& l) {
-    std::vector<SobPart> out;
-    int i = 0;
-    for (const auto& [from, to] : l.route()) {
-        SobPart p;
-        p.from = from;
-        p.to = to;
-        p.index = i++;
-        if (const SegmentRec* s = l.segment(from, to)) {
-            p.best = s->bestAll();
-            if (p.best > 0.0f) p.source = s->trainBest > 0.0f && (s->best <= 0.0f || s->trainBest < s->best) ? SobSource::Training : SobSource::Run;
-        }
-        out.push_back(std::move(p));
-    }
-    return out;
+float segmentInRun(const std::vector<float>& splits, const std::vector<std::string>& ids, float time, const std::string& from, const std::string& to) {
+    if (time <= 0.0f || ids.size() != splits.size()) return -1.0f;
+    auto at = [&](const std::string& id, bool end) -> float {
+        if (id.empty()) return end ? time : 0.0f;
+        for (size_t i = 0; i < ids.size(); ++i)
+            if (ids[i] == id) return splits[i];
+        return -1.0f;
+    };
+    const float a = at(from, false), b = at(to, true);
+    return a >= 0.0f && b >= a ? b - a : -1.0f;
+}
+
+int dayOfDate(const std::string& d) {
+    int y = 0, m = 0, dd = 0;
+    if (d.size() < 10 || std::sscanf(d.c_str(), "%d-%d-%d", &y, &m, &dd) != 3 || y < 1970 || m < 1 || m > 12 || dd < 1 || dd > 31) return 0;
+    return daysFromCivil(y, m, dd);
 }
 
 }  // namespace cosmic::playstats

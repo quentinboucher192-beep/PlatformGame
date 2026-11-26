@@ -209,12 +209,12 @@ void StatisticsScene::bossSheet(const Rect& r, const std::string& id, Color swat
     // Its training (on its hardest phase), its full sheet.
     UIContext::ButtonStyle pri, st;
     pri.primary = true;
-    pri.fontSize = 17;
+    pri.fontSize = fz(17);
     pri.enabled = def != nullptr;
-    st.fontSize = 17;
+    st.fontSize = fz(17);
     const std::string t1 = train >= 0 ? "S'entraîner sur la phase " + std::to_string(train + 1) : std::string("S'entraîner contre ce boss");
     const std::string t2 = "Fiche complète";
-    const float w1 = ui.text().measure(t1, FontFace::Bold, ui.s(17)).x + ui.s(36), w2 = ui.text().measure(t2, FontFace::Bold, ui.s(17)).x + ui.s(36);
+    const float w1 = ui.text().measure(t1, FontFace::Bold, ui.s(fz(17))).x + ui.s(36), w2 = ui.text().measure(t2, FontFace::Bold, ui.s(fz(17))).x + ui.s(36);
     const float by = r.bottom() - ui.s(16) - btnH;
     const float avail = r.w - 2 * pad;
     const float b1 = std::min(w1, avail - (w2 + ui.s(12) <= avail * 0.5f ? w2 + ui.s(12) : 0.0f));
@@ -238,11 +238,11 @@ float StatisticsScene::drawBoss(float x, float y0, float w) {
     {
         const float bh = ui.s(40);
         UIContext::ButtonStyle st;
-        st.fontSize = 17;
+        st.fontSize = fz(17);
         const std::string t = "Fiches des boss : lieux, animations, entraînement";
-        const float bw = std::min(w * 0.5f, ui.text().measure(t, FontFace::Bold, ui.s(17)).x + ui.s(40));
+        const float bw = std::min(w * 0.5f, ui.text().measure(t, FontFace::Bold, ui.s(fz(17))).x + ui.s(40));
         const Rect br{x + w - bw, y, bw, bh};
-        if (cframe::button(ui, "bossstats", br, ui.elide(t, FontFace::Bold, 17, bw - ui.s(24)), st)) g_.app.switchScene(makeBossStats(g_, selBoss_), 0.3f);
+        if (cframe::button(ui, "bossstats", br, ui.elide(t, FontFace::Bold, fz(17), bw - ui.s(24)), st)) g_.app.switchScene(makeBossStats(g_, selBoss_), 0.3f);
         ui.newBadge("bossstats", br, "stats.bosses");
         float lx = x;
         if (groups > 1) {
@@ -329,11 +329,7 @@ float StatisticsScene::drawBoss(float x, float y0, float w) {
             if (fw > 0) spec.marks.push_back({{static_cast<float>(fw), 1.0f}, star});
         }
         if (!spec.marks.empty()) leg.push_back({Color::white(), "première victoire", 3, star});
-        h.extra = [&](float right, float yy, bool draw) {
-            const float lw = legendWidth(leg);
-            if (draw) legend(right - lw, yy + ui.s(6), lw + ui.s(2), leg);
-            return lw;
-        };
+        h.legend = leg;
         spec.yMin = 0.0f;
         spec.yMax = 1.0f;
         spec.integerX = true;

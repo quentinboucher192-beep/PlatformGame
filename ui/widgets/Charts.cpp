@@ -60,21 +60,20 @@ void polyline(UIContext& ui, const std::vector<Vec2>& p, Color c) {
 
 /// A dashed line through `p` (thinner: a reference line).
 void dashedPolyline(UIContext& ui, const std::vector<Vec2>& p, Color c) {
-    const float th = std::max(1.0f, ui.s(1.5f)), dash = ui.s(5), gap = ui.s(5);
-    float phase = 0.0f;  // along the whole line: the dashes go on across its corners
+    const float th = std::max(1.0f, ui.s(1.5f)), dash = std::max(2.0f, ui.s(5)), period = 2.0f * dash;
+    float along = 0.0f;  // where the segment starts along the whole line: the dashes go on across its corners
     for (size_t i = 1; i < p.size(); ++i) {
         const Vec2 d = p[i] - p[i - 1];
         const float len = std::sqrt(d.x * d.x + d.y * d.y);
-        if (len <= 0.0f) continue;
+        if (!(len > 0.0f) || !std::isfinite(len)) continue;
         const Vec2 u{d.x / len, d.y / len};
-        float t = 0.0f;
-        while (t < len) {
-            const float cyc = std::fmod(phase, dash + gap);
-            const float step = cyc < dash ? std::min(dash - cyc, len - t) : std::min(dash + gap - cyc, len - t);
-            if (cyc < dash) ui.r().drawLine(p[i - 1] + u * t, p[i - 1] + u * (t + step), c, th);
-            t += step;
-            phase += step;
+        // Whole dashes from the period's start before this segment: every step moves on by half a dash at least.
+        const float first = std::floor(along / period) * period - along;  // <= 0
+        for (float s0 = first; s0 < len; s0 += period) {
+            const float a = std::max(0.0f, s0), b = std::min(len, s0 + dash);
+            if (b > a) ui.r().drawLine(p[i - 1] + u * a, p[i - 1] + u * b, c, th);
         }
+        along += len;
     }
 }
 

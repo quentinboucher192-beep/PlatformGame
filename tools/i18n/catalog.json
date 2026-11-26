@@ -210,7 +210,7 @@
    ]
   },
   {
-   "fr": "**Par niveau classique** : les temps de chaque segment (les 50 derniers), vos arrivées, votre record et votre somme des meilleurs.",
+   "fr": "**Par niveau classique** : les temps de chaque segment (les 50 derniers), vos arrivées, votre record. La somme des meilleurs, une seule par version du niveau et toutes sources confondues, est gardée avec vos meilleurs segments (bests.json).",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -12771,6 +12771,12 @@
    ]
   },
   {
+   "fr": "Chaque segment compte son meilleur temps, où qu'il ait été fait : il en manque encore un pour la somme.",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Chaque élément de ces films est animé en pixel art : la couronne dentée, le dôme de verre et ses six mondes qui s'allument comme les heures d'un cadran, les aiguilles, les engrenages, la déchirure, la main mécanique, les fils d'or, le regard du vieil homme, avec leurs sons (tic-tac, gong, déchirure, chaînes). À regarder dès maintenant dans Collection › Galerie › Films, ouverts à tous, et dans ADMINISTRATION › Films.",
    "where": [
     "data/news/changelog.json"
@@ -15267,7 +15273,7 @@
    ]
   },
   {
-   "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro. Les aperçus sont le vrai rendu du niveau entre deux points de passage.",
+   "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) : une seule par version du niveau, le meilleur temps de chaque segment où qu'il ait été fait (partie, entraînement par segment, enchaînement, segment entier après une startpos, vos courses vérifiées en ligne), additionnés ; elle reste personnelle : les records en ligne officiels ne comptent jamais rien de personnel. « Regarder » rejoue le replay exact qui tient ce meilleur temps. Temps perdu possible = record − SOB ; temps perdu d'un segment = son temps dans le record − son meilleur. Zones à travailler : médiane des 50 derniers temps du segment − son meilleur temps en partie. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro. Les aperçus sont le vrai rendu du niveau entre deux points de passage.",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
    ]
@@ -17774,6 +17780,12 @@
    ]
   },
   {
+   "fr": "course vérifiée",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Course · la traînée suit Nova",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -19239,6 +19251,12 @@
   },
   {
    "fr": "DANS LE PB",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "dans le PB − meilleur",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
    ]
@@ -24511,7 +24529,8 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -24546,7 +24565,8 @@
    "fr": "En ligne : {0}",
    "where": [
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/ReplayCompareSetupScene.cpp"
+    "ui/screens/ReplayCompareSetupScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -24638,12 +24658,6 @@
    "fr": "En partie",
    "where": [
     "ui/screens/SocialScene.cpp"
-   ]
-  },
-  {
-   "fr": "en partie",
-   "where": [
-    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -24772,6 +24786,12 @@
    "fr": "Enchaînement",
    "where": [
     "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
+   "fr": "enchaînement",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -26831,8 +26851,7 @@
   {
    "fr": "Fait",
    "where": [
-    "ui/online/RaidHud.cpp",
-    "ui/screens/StatisticsLevels.cpp"
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -27942,12 +27961,6 @@
    "fr": "Finissez d'abord la zone de votre groupe : seuls les groupes qui ont fini la leur reprennent une zone.",
    "where": [
     "server/src/raidWipe.ts"
-   ]
-  },
-  {
-   "fr": "Finissez le niveau depuis son début : chaque segment de votre record compte son meilleur temps.",
-   "where": [
-    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -37515,6 +37528,12 @@
    ]
   },
   {
+   "fr": "Le",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Le 1er de la semaine",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -39142,7 +39161,7 @@
    ]
   },
   {
-   "fr": "Le meilleur temps de chaque segment du parcours de votre record, en partie complète ou à l'entraînement par segment (même version du niveau).",
+   "fr": "Le meilleur temps de chaque segment, où qu'il ait été fait : en partie, à l'entraînement (segment, enchaînement, segment entier après une startpos), en ligne.",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
    ]
@@ -42017,7 +42036,7 @@
    ]
   },
   {
-   "fr": "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays relus et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est compté à part.",
+   "fr": "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays relus (mesures A → B comprises) et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est compté à part.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -46349,12 +46368,6 @@
   },
   {
    "fr": "Médiane des 5 dernières",
-   "where": [
-    "ui/screens/StatisticsLevels.cpp"
-   ]
-  },
-  {
-   "fr": "médiane − meilleur",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
    ]
@@ -64949,7 +64962,8 @@
   {
    "fr": "segment",
    "where": [
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/SegmentsScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -66392,7 +66406,7 @@
    ]
   },
   {
-   "fr": "SOMME DES MEILLEURS (SOB) · TOUTES SOURCES",
+   "fr": "SOMME DES MEILLEURS (SOB) · UNE SEULE, TOUTES SOURCES",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
    ]
@@ -67405,6 +67419,13 @@
    "fr": "StartPos",
    "where": [
     "game/ghost/PersonalBests.cpp"
+   ]
+  },
+  {
+   "fr": "startpos",
+   "where": [
+    "game/ghost/PersonalBests.cpp",
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -85610,12 +85631,6 @@
    ]
   },
   {
-   "fr": "à l'entraînement",
-   "where": [
-    "ui/screens/StatisticsLevels.cpp"
-   ]
-  },
-  {
    "fr": "À l'envoi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -88193,6 +88208,18 @@
    ]
   },
   {
+   "fr": "▲ +{0} · en progrès",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▲ +{0} · en recul",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "▲ moins régulier qu'il y a 30 j",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
@@ -88205,9 +88232,27 @@
    ]
   },
   {
+   "fr": "▶ Regarder",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "▼ plus régulier qu'il y a 30 j",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "▼ −{0} · en progrès",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▼ −{0} · en recul",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {

@@ -18,6 +18,7 @@
   "animations/checkpoint.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
    "game/levels/ObjectTypes.cpp": 1,
+   "ui/screens/StatisticsScene.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 1
   },
   "animations/cracked_floor.json": {
@@ -82,6 +83,7 @@
    "ui/screens/MainMenuScene.cpp": 1,
    "ui/screens/PlayerProfileScene.cpp": 1,
    "ui/screens/RewardsScene.cpp": 1,
+   "ui/screens/StatisticsScene.cpp": 4,
    "ui/screens/TutorialScenes.cpp": 1,
    "ui/studio/Studio.cpp": 1,
    "ui/studio/StudioFrise.cpp": 1,
@@ -109,7 +111,8 @@
    "editors/enemy_editor/EnemyEditorProperties.cpp": 4,
    "game/enemies/GuardianAttacks.cpp": 1,
    "game/gameplay/GameRenderer.cpp": 2,
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/screens/StatisticsScene.cpp": 1
   },
   "animations/pyroclast_vents.json": {
    "game/raid/RaidBranch.h": 1
@@ -682,7 +685,8 @@
   },
   "sprites/objects/crumble_platform.png": {
    "game/gameplay/entities/PlatformEntities.cpp": 2,
-   "packaging/DependencyCollector.cpp": 1
+   "packaging/DependencyCollector.cpp": 1,
+   "ui/screens/StatisticsLevels.cpp": 1
   },
   "sprites/objects/crumble_platform_basalt.png": {
    "game/gameplay/entities/PlatformEntities.cpp": 1
@@ -717,6 +721,9 @@
   "sprites/objects/lever.png": {
    "game/levels/ObjectTypes.cpp": 1
   },
+  "sprites/objects/liquid_acid.png": {
+   "ui/screens/StatisticsScene.cpp": 1
+  },
   "sprites/objects/moving_platform.png": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
    "game/levels/ObjectTypes.cpp": 1
@@ -742,7 +749,8 @@
   },
   "sprites/objects/spikes.png": {
    "game/gameplay/entities/HazardEntities.cpp": 1,
-   "game/levels/ObjectTypes.cpp": 1
+   "game/levels/ObjectTypes.cpp": 1,
+   "ui/screens/StatisticsScene.cpp": 1
   },
   "sprites/objects/updraft_vent.png": {
    "game/levels/ObjectTypes.cpp": 1
@@ -829,6 +837,9 @@
    "game/levels/ObjectTypes.cpp": 1,
    "game/levels/TerrainRenderer.cpp": 1
   },
+  "textures/tiles/sanctum_stone.png": {
+   "ui/screens/StatisticsScene.cpp": 1
+  },
   "ui/ambush_arrow.png": {
    "game/gameplay/EnemyArrows.cpp": 1
   },
@@ -891,7 +902,9 @@
    "packaging/DependencyCollector.cpp": 1,
    "ui/online/RaidHud.cpp": 1,
    "ui/screens/BossStatsScene.cpp": 1,
-   "ui/screens/PlanetMapScene.cpp": 2
+   "ui/screens/PlanetMapScene.cpp": 2,
+   "ui/screens/StatisticsBoss.cpp": 1,
+   "ui/screens/StatisticsScene.cpp": 3
   },
   "ui/icons_medals.png": {
    "packaging/DependencyCollector.cpp": 1,
@@ -910,6 +923,8 @@
    "ui/screens/LevelPowerKeysScene.cpp": 2,
    "ui/screens/PowerChoiceScene.cpp": 2,
    "ui/screens/PowerGuideScene.cpp": 2,
+   "ui/screens/StatisticsLevels.cpp": 1,
+   "ui/screens/StatisticsScene.cpp": 1,
    "ui/widgets/PowerLabels.cpp": 1
   },
   "ui/menu_icons.png": {

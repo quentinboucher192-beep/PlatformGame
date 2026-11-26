@@ -83,6 +83,13 @@ private:
     // ------------------------------------------------------------------ building blocks
     /// A card: its glass, its frame, a coloured stripe at the top (`top`).
     void cardFrame(const Rect& r, Color top = {0, 0, 0, 0}, bool selected = false);
+    /// A legend: a short line, a dot or a picture per item, then its name (measured; wraps).
+    struct LegendItem {
+        Color color;
+        std::string text;
+        int kind = 0;  // 0 line, 1 dot, 2 band (a wide swatch), 3 picture (`icon`)
+        std::function<void(const Rect&)> icon;
+    };
     /// A card with its title, its subtitle and, at its right, `right` (the room it takes, its
     /// drawing) and the « Courbe / Tableau » switch when `table` is given. Returns the room under it.
     struct CardHead {
@@ -91,17 +98,13 @@ private:
         Color top{0, 0, 0, 0};
         bool fresh = false;  // a « NOUVEAU » pill after the title
         std::function<float(float right, float y, bool draw)> extra;  // drawn left of the switch: returns its width
+        /// Its legend: at the right of the header when it fits beside the title (measured), else on a
+        /// line of its own under the header.
+        std::vector<LegendItem> legend;
     };
     Rect card(const Rect& r, const CardHead& h);
     /// « Courbe | Tableau » at the right of `right`: returns its width (measured; drawn when `draw`).
     float tableSwitch(const std::string& id, float right, float y, bool draw, const std::string& on, const std::string& off);
-    /// A legend: a short line, a dot or a picture per item, then its name (measured; wraps).
-    struct LegendItem {
-        Color color;
-        std::string text;
-        int kind = 0;  // 0 line, 1 dot, 2 band (a wide swatch), 3 picture (`icon`)
-        std::function<void(const Rect&)> icon;
-    };
     float legend(float x, float y, float w, const std::vector<LegendItem>& items, bool draw = true);
     float legendWidth(const std::vector<LegendItem>& items);
     /// A note: wrapped, measured, with an accent bar.
@@ -115,6 +118,8 @@ private:
     float richText(const std::string& text, float x, float y, float w, float size, Color c, bool draw = true);
     /// A big value (the title face for its digits, the body face for signs it lacks), fitted to `room`.
     float bigValue(const std::string& v, Vec2 pos, float size, float room, Color c, VAlign va = VAlign::Top);
+    /// The height a small tile needs (measured): its kicker, its value, its line.
+    float miniTileHeight(bool value, bool detail);
     /// A small tile: its kicker, its value, a line under it.
     void miniTile(const Rect& r, const std::string& key, const std::string& value, const std::string& detail, Color detailColor = {0, 0, 0, 0},
                   Color keySwatch = {0, 0, 0, 0});
