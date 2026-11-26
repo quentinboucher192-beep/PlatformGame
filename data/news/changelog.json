@@ -1,4 +1,15 @@
 {
+  "2.91.0": [
+    "Une seule somme des meilleurs (SOB) par version de niveau : parties, entraînements, enchaînements, startpos et vos courses vérifiées en ligne comptent ensemble ; chaque meilleur segment garde sa source et son replay. Vos anciens segments d'or et temps d'entraînement sont repris.",
+    "Entraînement › Segments et enchaînements : la grille des records de toutes les combinaisons de segments qui se suivent, l'enchaînement choisi (meilleur, somme des meilleurs, à gagner), Lancer, Regarder, Fantôme ; en course, temps de passage comparés à la SOB, segment d'or annoncé aussitôt, meilleur possible à l'arrivée.",
+    "Startpos (comme dans Geometry Dash) en entraînement : F5 pour poser, F6 / F7 pour choisir ; Recommencer repart de la startpos ; elles restent d'une session à l'autre. Les segments parcourus en entier ensuite entrent dans votre SOB.",
+    "Points de mesure A → B (F8) en entraînement et dans tous les replays : un chrono entre deux repères, meilleur et derniers temps gardés ; Pause › Startpos et mesures pour les gérer. À la manette : Vue maintenue + croix. Rien de ce qui est mesuré dans un replay n'est compté.",
+    "Les records en ligne et les records du monde ne comptent toujours que les courses complètes vérifiées.",
+    "« Statistiques » refondues : chaque onglet plus vivant, avec les vraies images du jeu (portraits des boss sur la bannière de leur planète, sprites des créatures, icônes des pouvoirs, aperçus réels des segments, carte de chaleur posée sur le vrai rendu du niveau) et des courbes plus lisibles, palette lisible par les daltoniens, infobulle à la souris, curseur au clavier et à la manette.",
+    "Statistiques : calendrier des jours joués et « Récemment joué » ; la SOB unique de chaque niveau avec la source de chaque segment, « ▶ Regarder » et « S'entraîner » ; « Répartition du fichier » dans Données et sauvegarde.",
+    "Lecteur de replay : écart au record (PB), à la somme des meilleurs ou à un autre replay, en direct (en temps et en mètres, 1 m = 1 tuile) et en courbe sur tout le replay ; un clic dans la courbe va à cet instant. Comparer deux replays : courbe A − B, décalage de B compris.",
+    "Joueurs simulés : une nouvelle façon d'esquiver contre Titanus, Graviton et Dreadfang (un endroit sûr au moment de l'impact, ruée couverte par la garde du dash, bouclier seulement sans issue) ; Dreadfang tombe dans 16 départs sur 32 (avant 2), Titanus perd 52 % de sa vie (avant 35 %), Graviton 45 % (avant 37 %)."
+  ],
   "2.90.1": [
     "Joueurs simulés : Pyroclast (4 / 32) et le Cœur d'Asterion (5 / 32) tombent enfin sans invincibilité, Voidworm 27 / 32 — le corps du boss évité, sa gueule quittée, la supernova prise sous le bouclier."
   ],

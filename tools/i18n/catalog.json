@@ -26183,6 +26183,12 @@
    ]
   },
   {
+   "fr": "Entraînement › Segments et enchaînements : la grille des records de toutes les combinaisons de segments qui se suivent, l'enchaînement choisi (meilleur, somme des meilleurs, à gagner), Lancer, Regarder, Fantôme ; en course, temps de passage comparés à la SOB, segment d'or annoncé aussitôt, meilleur possible à l'arrivée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "entraînement, compté à part : {0}",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -35143,6 +35149,12 @@
    ]
   },
   {
+   "fr": "Joueurs simulés : une nouvelle façon d'esquiver contre Titanus, Graviton et Dreadfang (un endroit sûr au moment de l'impact, ruée couverte par la garde du dash, bouclier seulement sans issue) ; Dreadfang tombe dans 16 départs sur 32 (avant 2), Titanus perd 52 % de sa vie (avant 35 %), Graviton 45 % (avant 37 %).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Joueurs simulés contre Heartbreaker : ses Côtes-pièges prises sous le bouclier quand il est prêt, et ses plaques brisées dès que possible au lieu d'attendre de les casser ensemble ; il tombe dans 5 départs sur 8 (avant : 2), 89 % de sa vie ôtée en moyenne.",
    "where": [
     "data/news/changelog.json"
@@ -41160,6 +41172,12 @@
    ]
   },
   {
+   "fr": "Lecteur de replay : écart au record (PB), à la somme des meilleurs ou à un autre replay, en direct (en temps et en mètres, 1 m = 1 tuile) et en courbe sur tout le replay ; un clic dans la courbe va à cet instant. Comparer deux replays : courbe A − B, décalage de B compris.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Lecteur de replay avancé : vitesses, image par image, barre de temps, sauts aux points de sauvegarde, entrées du joueur ; comparer deux replays avec un décalage de temps ou un recalage sur un point.",
    "where": [
     "data/news/changelog.json"
@@ -42474,6 +42492,12 @@
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp",
     "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Les records en ligne et les records du monde ne comptent toujours que les courses complètes vérifiées.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -55591,6 +55615,12 @@
    ]
   },
   {
+   "fr": "Points de mesure A → B (F8) en entraînement et dans tous les replays : un chrono entre deux repères, meilleur et derniers temps gardés ; Pause › Startpos et mesures pour les gérer. À la manette : Vue maintenue + croix. Rien de ce qui est mesuré dans un replay n'est compté.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Points de passage",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -68463,6 +68493,12 @@
    ]
   },
   {
+   "fr": "Startpos (comme dans Geometry Dash) en entraînement : F5 pour poser, F6 / F7 pour choisir ; Recommencer repart de la startpos ; elles restent d'une session à l'autre. Les segments parcourus en entier ensuite entrent dans votre SOB.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "STARTPOS ({0})",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
@@ -68779,6 +68815,12 @@
    "fr": "Statistiques",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Statistiques : calendrier des jours joués et « Récemment joué » ; la SOB unique de chaque niveau avec la source de chaque segment, « ▶ Regarder » et « S'entraîner » ; « Répartition du fichier » dans Données et sauvegarde.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -76320,6 +76362,12 @@
    "fr": "Une seule progression sur cet ordinateur",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Une seule somme des meilleurs (SOB) par version de niveau : parties, entraînements, enchaînements, startpos et vos courses vérifiées en ligne comptent ensemble ; chaque meilleur segment garde sa source et son replay. Vos anciens segments d'or et temps d'entraînement sont repris.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -86504,6 +86552,12 @@
    "fr": "« Réessayer en entraînement » : réapparition sur place après une chute, hors classements",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Statistiques » refondues : chaque onglet plus vivant, avec les vraies images du jeu (portraits des boss sur la bannière de leur planète, sprites des créatures, icônes des pouvoirs, aperçus réels des segments, carte de chaleur posée sur le vrai rendu du niveau) et des courbes plus lisibles, palette lisible par les daltoniens, infobulle à la souris, curseur au clavier et à la manette.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
