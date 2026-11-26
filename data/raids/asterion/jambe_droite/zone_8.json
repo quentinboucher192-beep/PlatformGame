@@ -2184,7 +2184,7 @@
     "players": 8
    },
    "gigaboss": {
-    "hpScale": 0.4,
+    "hpScale": 0.34,
     "boss": "o62",
     "name": "Titanus",
     "objective": "jd_titanus",
@@ -2195,14 +2195,14 @@
     ],
     "hold": 3.0,
     "reopen": 15.0,
-    "exposed": 15.0,
+    "exposed": 18.0,
     "exposedMult": 2.0,
     "fists": {
      "name": "Écrasement",
      "periods": [
-      8.5,
-      7.0,
-      5.5
+      9.5,
+      8.0,
+      6.5
      ],
      "warn": 1.5,
      "width": 96.0,
@@ -2229,9 +2229,9 @@
     "pressurePerPlayer": 0.06,
     "waves": {
      "periods": [
-      10.0,
-      8.0,
-      6.5
+      11.0,
+      9.0,
+      7.5
      ],
      "warn": 0.9,
      "speed": 430.0,
@@ -2247,8 +2247,8 @@
     "boulders": {
      "periods": [
       0.0,
-      9.0,
-      7.0
+      10.0,
+      8.0
      ],
      "count": [
       0,

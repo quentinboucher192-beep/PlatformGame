@@ -1,6 +1,6 @@
 {
  "format": "cosmic.raid_titan",
- "revision": 14,
+ "revision": 15,
  "raid": "asterion",
  "comment": "Written by tools/levelgen/raid_asterion.py: the seven branches of Asterion and the links between them (an objective of one branch acts on another), its heart (the final fight, 2.72: raid_coeur.py) and the links of kind « modifier » that the parts' falls give it. Never edit by hand.",
  "branches": [

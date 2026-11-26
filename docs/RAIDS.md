@@ -23,6 +23,7 @@
 # aucune embuscade derrière soi (titan 12, §35) ;
 # joueurs simulés contre les Gigaboss : mesure sur plusieurs départs, carapaces tenues ensemble (2.84, §36) ;
 # titan 13 : décomptes, plateformes, Gigaboss à leur mesure et difficulté réelle (2.84.1, §37)
+# titan 15 : Titanus allégé, un peu (§38)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -3437,6 +3438,52 @@ du Cœur**, de façon déterministe (`game/raid/Difficulty.h`) :
 `TITAN_REVISION` passe à **13** (catalogues, `titan.json`, `raidTitan.json` régénérés, empreintes des zones) : les jeux
 d'avant refusent les instances. `kSimulationVersion` et `kRankingGeneration` restent (rien ne change en solo ni en
 coopération).
+
+## 38. Titan 15 : Titanus allégé, un peu
+
+*Demandé* : « allège un peu » Titanus (Jambe droite, zone 8), pour environ 10 min de combat à un bon groupe de 8 à la
+difficulté 3 / 5. Mesuré avant : huit joueurs simulés Experts **invincibles** (l'indicateur d'un bon groupe, §37) ne
+l'achevaient que 12 fois sur 16 en 15 min (médiane 12 min 46 s), et sans invincibilité il restait le plus dur des sept
+(35 % de sa vie ôtée, 4,2 morts par minute). **Données seulement** (générées par `tools/levelgen/raid_titanus.py` dans
+`metadata.raid.gigaboss` de la zone 8, jamais à la main) : ses coups sont plus espacés, sa vie plus courte, sa mise à
+genou plus longue ; ses mécanismes, ses dégâts, ses textes et la règle de ses entraves ne changent pas.
+
+| Réglage (3 / 5) | Avant (titan 13 et 14) | Après (titan 15) |
+|---|---|---|
+| `hpScale` (sa vie dans le raid) | 0,40 | **0,34** (− 15 %) |
+| Écrasement (`fists.periods`, phases 1 / 2 / 3) | 8,5 / 7 / 5,5 s | **9,5 / 8 / 6,5 s** |
+| Ondes de choc (`waves.periods`, phases 1 / 2 / 3) | 10 / 8 / 6,5 s | **11 / 9 / 7,5 s** |
+| Rochers de la voûte (`boulders.periods`, phases 2 / 3) | 9 / 7 s | **10 / 8 s** |
+| À genou (`exposed`) | 15 s | **18 s** |
+
+Inchangés : l'écrasement annoncé 1,5 s (2 dégâts, 96 px), les ondes annoncées 0,9 s et par deux à la phase 3, 6 puis 9
+rochers annoncés 1,3 s, la fenêtre des entraves (3 s, × 1,5 une fois les réacteurs coupés), × 2 dégâts à genou, la lave de
+la forge (2 toutes les 0,6 s). La fiche du Gigaboss (CLANS › RAIDS) lit ces nombres dans ses règles : elle montre les
+nouveaux sans autre changement (`data/raids/asterion_sheets.json` n'a que les mots).
+
+**Mesure** (banc du §36 : `COSMIC_GOAT_BENCH=1 COSMIC_GOAT_PARTS=jambe_droite`, avec et sans `COSMIC_GOAT_INVINCIBLE=1`),
+départs 1 à 16, difficulté 3 / 5, 15 min au plus, le même binaire (joueurs simulés de la 2.90.1) sur les deux données :
+
+| Titanus, 16 départs | Avant (titan 14) | Après (titan 15) |
+|---|---|---|
+| Invincibles : vaincu en 15 min | 12 / 16 | 15 / 16 |
+| Invincibles : durée médiane (debout à 15 min compté 900 s) | 766 s (12 min 46) | **620 s (10 min 20)** |
+| Invincibles : victoires, la plus courte · médiane · la plus longue | 509 · 666 · 892 s | 337 · 575 · 867 s |
+| Sans invincibilité : vaincus | 0 / 16 | 0 / 16 |
+| Sans invincibilité : vie ôtée (moyenne) | 35,4 % | 36,6 % |
+| Sans invincibilité : morts par minute | 4,24 | 4,05 |
+| Sans invincibilité : durée médiane (groupe éliminé) | 229 s | 244 s |
+
+Un groupe qui survit le bat en 10 min environ au lieu de 13 ; il reste dur (les mêmes coups, un peu plus espacés). Sans
+invincibilité, les joueurs simulés sont toujours éliminés en phase 2, sous ses entraves (sa vie ne descend plus tant
+qu'elles tiennent : 34 % ôtés le plus souvent) : ce qui leur manque est leur survie près de lui (§36), pas ces réglages.
+
+### Versions
+
+`TITAN_REVISION` passe à **15** (la zone 8 de la Jambe droite, `titan.json` et `server/src/raidTitan.json` régénérés,
+l'empreinte des zones du titan dans `tests/test_raid_titan.cpp`) : une instance ne réunit que des jeux aux mêmes règles.
+`kSimulationVersion` et `kRankingGeneration` restent (le moteur ne change pas, rien en solo ni en coopération, aucun record
+effacé). Aucun texte nouveau.
 
 ---
 
