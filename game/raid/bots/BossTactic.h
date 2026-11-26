@@ -46,10 +46,14 @@ struct BossView {
     int flashIn = 0;
     /// 2.87 (fight plan): its sweeping beams read as they really turn (Danger::angle, turn).
     bool sweepRead = false;
+    /// 2.89 (fight plan): its titanic leap read as it goes (Pyroclast's meteor fist): when it lands (its shadow locked, its fall).
+    bool skyfallRead = false;
     /// Graviton: the x ranges sheltered under a slab when gravity turns over in a sector.
     std::vector<Rect> shelters;
     /// Players a routine holds (swallowed, nailed): no use striking near them, a rescue to make.
     std::vector<int> held;
+    /// 2.89: where no player can go (Voidworm's stomach, under the arena): a soul fallen there is nobody's task.
+    std::vector<Rect> noRevive;
     std::string phase;  // what the group does now (« Voile psychique : 4 miroirs sur 4 »), for the thoughts
     /// 2.84: the fight plan of this boss at this step (game/raid/bots/FightPlan), what its tactic sets beyond what is
     /// coming: how the group stands and spends its shield.
@@ -70,6 +74,9 @@ struct BossView {
         bool reviveShielded = false; // a soul in its body approached only with the shield ready
         bool hideArmoured = false;   // its body closed to blows: the strikers wait far off it (not where its weak points will be)
         bool jumpBeams = false;      // 2.86: a beam lying lower than steep (Skullmaw's gazes) jumped over as it fires, not stepped out of
+        bool dashOut = false;        // 2.89: out of a blow too wide to walk out of in time, dashing (Pyroclast's meteor fist)
+        float bodyBothSides = 0.0f;  // 2.89: > 0: its body read on both sides of its box (it turns), this much wider (Pyroclast)
+        bool bodyInNav = false;      // 2.89: its body among what the navigation's moves keep out of (it floats over the ledges)
     } plan;
 };
 

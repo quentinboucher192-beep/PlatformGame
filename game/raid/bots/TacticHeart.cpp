@@ -30,6 +30,12 @@ public:
     const char* name() const override { return "Cœur d'Asterion"; }
     void read(const RaidRun& run, BossView& v) const override {
         v.sweepRead = true;  // 2.87: its « Rayon du cœur » read as it turns (the shield as it comes)
+        // 2.89 (fight plan): its body floats over the ledges, drifting onto its nearest player as its crown turns: no jump of
+        // the navigation goes through it (a striker on its way to a ventricle jumped into it and died there, again and again);
+        // each artery its own player for the whole of its armour, revived first.
+        v.plan.bodyInNav = true;
+        v.plan.fixedHolders = true;
+        v.plan.noLure = true;  // its crown drags it toward its nearest player: nobody stays close to it on purpose
         readCommon(run, v);
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
@@ -100,6 +106,19 @@ public:
             v.phase = "Artères : tenir ses " + std::to_string(gb.vents().size()) + " plaques ensemble";
         } else if (v.exposed) {
             v.phase = "Ventricules à nu (× 2)";
+            // 2.89 (fight plan): its arteries are held again as soon as its ventricles are covered (its armour comes back with
+            // them open): their players wait on them instead of crossing the arena to its ventricles and back (half of each
+            // cycle was that walk).
+            if (gb.rules() && gb.phase() >= gb.rules()->carapaceFrom && gb.phase() < gb.rules()->carapaceUntil)
+                for (const auto& vt : gb.vents()) {
+                    Station s;
+                    s.plate = vt.area;
+                    s.need = 1;
+                    s.priority = 9;
+                    s.closed = true;  // nothing to hold yet: kept
+                    s.label = "l'artère";
+                    v.stations.push_back(s);
+                }
         } else {
             v.phase = "Frapper le Cœur, quitter ses lances";
         }

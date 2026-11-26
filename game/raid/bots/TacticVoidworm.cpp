@@ -37,6 +37,9 @@ public:
         // acid's height — never caught on the floor when it rises (3 s of warning, a climb of two storeys).
         v.plan.reviveShielded = true;  // its body bites who kneels in it
         v.plan.hideArmoured = true;  // armoured, nothing to strike: off its body (its bites, its spit), not where its rings will be
+        v.plan.bodyInNav = true;  // 2.89: its body among what the navigation's jumps keep out of (its ledges climb past it)
+        v.plan.dashOut = true;  // 2.90: out of its maw, its spikes, its marks dashing when too far for a walk (the dash guards 0,31 s)
+        v.plan.noLure = true;  // 2.89: it never moves: nobody keeps close to it on purpose (its lure died there, its revivers after)
         if (gb.rules()) {
             const Json ac = gb.rules()->extra.value("acid", Json::object());
             if (gb.phase() >= jget<int>(ac, "from", 3)) {
@@ -68,6 +71,10 @@ public:
         }
         for (int s = 0; s < w.teamSize(); ++s)
             if (rt->spared(s)) v.held.push_back(s);
+        // 2.89: its stomach, a closed pocket under the arena: a player digested there stays down (nobody reaches its soul).
+        if (gb.rules())
+            if (const Json st = gb.rules()->extra.value("swallow", Json::object()).value("stomach", Json()); st.is_array() && st.size() == 4)
+                v.noRevive.push_back({st[0].get<float>(), st[1].get<float>(), st[2].get<float>(), st[3].get<float>()});
         // The pocket of its stomach: burst it to free the swallowed (a rescue).
         std::vector<uint32_t> mech;
         rt->targets(mech);

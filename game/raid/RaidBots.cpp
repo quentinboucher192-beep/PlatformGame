@@ -410,7 +410,8 @@ void TestBots::ensureNav(const RaidRun& run) {
     // navigation itself, with their paths; the waves along a floor are jumped by drive()).
     std::vector<Rect> blows;
     for (const bots::Danger& d : dangers_) {
-        if (d.shot || d.body) continue;
+        // 2.89 (fight plan): a boss whose body stands over the ledges (the Cœur, Pyroclast, Voidworm): its body too, no jump through it.
+        if (d.shot || (d.body && !view_.plan.bodyInNav)) continue;
         switch (d.kind) {
             case bots::Danger::Kind::Area:
             case bots::Danger::Kind::Pull:
@@ -457,6 +458,19 @@ void TestBots::sense(RaidRun& run) {
         // 2.84: part by part (the box around them all closed the space between its legs, under its skull, to the
         // players and their shots).
         bossBody_ = bodyBox(*boss, w, &bodyParts_);
+        // 2.89 (fight plan): a walker that turns toward its target swings its arm to its other side at once (Pyroclast): its
+        // body read on both sides of its box, a little wider (it walks), so that nobody stands where it turns.
+        if (view_.plan.bodyBothSides > 0.0f) {
+            const float cx = boss->box.center().x, m = view_.plan.bodyBothSides;
+            const auto mirror = [&](const Rect& r) { return Rect{2.0f * cx - r.right(), r.y, r.w, r.h}; };
+            const auto both = [&](const Rect& r) {
+                const Rect o = mirror(r);
+                const float l = std::min(r.x, o.x);
+                return Rect{l - m, r.y, std::max(r.right(), o.right()) - l + 2.0f * m, r.h};
+            };
+            bossBody_ = both(bossBody_);
+            for (Rect& r : bodyParts_) r = both(r);
+        }
         // 2.84: bare (its few seconds to strike its weak points), part by part — the box around them all closes every
         // place near its weak points; otherwise that whole box (closer, the group took more blows: measured).
         // 2.87: its targets of a group finished together too (Titanus's restraints on its legs: the space between them).
@@ -949,6 +963,10 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                 drowned = drowned || (dg.kind == bots::Danger::Kind::Flood && fight_ && soul.x > dg.area.x - 10.0f && soul.x < dg.area.right() + 10.0f &&
                                       soul.y > dg.area.y - 12.0f);
             if (drowned && ord != bots::OrderKind::Revive) continue;
+            // 2.89: a soul where nobody can go (Voidworm's stomach): its reviver stood over it for the rest of the fight.
+            bool lost = false;
+            for (const Rect& r : view_.noRevive) lost = lost || (fight_ && r.expanded(4.0f).contains(soul));
+            if (lost) continue;
             // 2.84 (fight plan): a liquid that comes back on a cycle (Voidworm's acid): a soul under its height only in the
             // first seconds after it has fallen (the time to kneel 2 s and climb back before the next one).
             if (fight_ && view_.plan.reviveWindow > 0.0f && view_.plan.elevate > 0.0f && soul.y > view_.plan.floorY - view_.plan.elevate &&
@@ -1850,7 +1868,17 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         if (!inside && ((b.crossDir > 0 && me.box.x > bossBody_.right()) || (b.crossDir < 0 && me.box.right() < bossBody_.x))) b.cross = 0;
         react = "traverse sous son bouclier";
     }
-    if (!fleeing && !forced) {
+    // 2.89: what no shield stops (Voidworm's maw: it swallows) is left even on the way up above a liquid (it took two or three
+    // players climbing out of its acid at once), and never stepped back into to get out of something else.
+    const auto gulpAt = [&](const Rect& r) {
+        for (const Danger& d : dangers_)
+            if (d.unblockable && d.kind == Danger::Kind::Area && (d.seat < 0 || d.seat == seat) && d.in <= 3 * kSimHz && d.area.intersects(r)) return true;
+        return false;
+    };
+    const bool gulpOnMe = fleeing && gulpAt(me.box.expanded(5.0f));
+    bool dropThrough = false;  // 2.89: down through a one-way ledge out of what swallows
+    bool dashOut = false;      // 2.89 (Plan::dashOut): out of a blow too wide for a walk, dashing
+    if ((!fleeing || gulpOnMe) && !forced) {
         // The most pressing blow on it: the one whose time left is the shortest against the time it needs to get
         // out (its way out at a run, its level's reaction), the blows still far off left for later.
         const Danger* hit = nullptr;
@@ -1858,6 +1886,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         const Rect mine = me.box.expanded(5.0f);
         for (const Danger& d : dangers_) {
             if ((d.seat >= 0 && d.seat != seat) || d.in > 3 * kSimHz) continue;
+            if (gulpOnMe && !d.unblockable) continue;
             if (d.kind == Danger::Kind::Line && d.gapHalf > 0.0f) continue;  // a sweep: its shield (above)
             if (station.w > 0.0f && d.kind == Danger::Kind::Area && !d.body && d.area.intersects(station) && !d.shot && !d.unblockable) {
                 if (d.in <= 14 && d.area.intersects(mine)) {
@@ -1867,7 +1896,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 continue;
             }
             if (me.shieldActive() && !d.body && d.kind != Danger::Kind::Pull && !d.unblockable) continue;  // under its shield: nothing gets through
-            if ((crossing || pushing) && (d.body || (me.shieldActive() && d.kind != Danger::Kind::Pull))) continue;  // 2.84: it goes through (above)
+            if ((crossing || pushing) && (d.body || (me.shieldActive() && d.kind != Danger::Kind::Pull && !d.unblockable))) continue;  // 2.84: it goes through (above)
             float need = 0.0f;
             if (d.kind == Danger::Kind::Area || d.kind == Danger::Kind::Pull) {
                 if (!d.area.intersects(mine)) continue;
@@ -2002,15 +2031,29 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                             const Vec2 at{feet.x + static_cast<float>(sgn) * dx, feet.y};
                             if (w.physics().raycast(me.center(), {at.x, me.center().y}).has_value()) break;  // a wall
                             if (!w.physics().raycast({at.x, at.y - 4.0f}, {at.x, at.y + 24.0f}, true).has_value()) break;  // the edge
-                            if (!safeSpot(w, seat, at, hit->in + 40)) continue;
+                            if (!safeSpot(w, seat, at, hit->in + 40) || gulpAt(bodyAt(at).expanded(4.0f))) continue;
                             if (nav && nav->locate(at, 12.0f) < 0) continue;  // a lasting danger there (lava, spikes): no place
                             dist[sgn > 0 ? 1 : 0] = dx + 12.0f;  // a little beyond its edge
                             break;
                         }
                     if (dist[0] < 1e29f || dist[1] < 1e29f) side = dist[0] <= dist[1] ? -1 : 1;
+                    // 2.89: in what swallows (Voidworm's maw: its ring 150 px high over the place it locked on) on a ledge one
+                    // drops through, with no way out along it in time (two rings side by side, the ledge's edges): down through
+                    // the ledge (Down + Jump), under the ring in a fifth of a second — never into a liquid below.
+                    if (hit->unblockable && me.grounded() && !(b.prevHeld & (1u << kJump)) &&
+                        std::min(dist[0], dist[1]) > me.config().maxRunSpeed * static_cast<float>(hit->in) / static_cast<float>(kSimHz) - 12.0f)
+                        if (const Collider* g = w.physics().groundBelow(me.box); g && g->kind == ColliderKind::OneWay) {
+                            bool wet = false;
+                            for (const Danger& d : dangers_)
+                                wet = wet || (d.kind == Danger::Kind::Flood && d.area.contains({feet.x, feet.y + 40.0f}));
+                            if (!wet) {
+                                dropThrough = true;
+                                side = 0;
+                            }
+                        }
                     // The way it already took, while it still leads out not much further than the other (no dithering);
                     // never a way that leads nowhere (a wall, an edge, more blows).
-                    if (b.escapeSteps > 0 && b.escapeDir != 0 && dist[b.escapeDir > 0 ? 1 : 0] <= std::min(dist[0], dist[1]) * 1.5f + 16.0f)
+                    if (!dropThrough && b.escapeSteps > 0 && b.escapeDir != 0 && dist[b.escapeDir > 0 ? 1 : 0] <= std::min(dist[0], dist[1]) * 1.5f + 16.0f)
                         side = b.escapeDir;
                     react = hit->body && tactic_ ? "s'écarte du corps de " + std::string(tactic_->name()) : std::string("esquive");
                 }
@@ -2024,6 +2067,11 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 const float out = side < 0 ? me.center().x - hit->area.x : hit->area.right() - me.center().x;
                 if (hit->kind == Danger::Kind::Area && out / 150.0f * static_cast<float>(kSimHz) > static_cast<float>(hit->in) + 4.0f && hit->in <= 18)
                     raiseShield = true;
+                // 2.89 (fight plan): too far out of it for a walk in time (Pyroclast's meteor fist: 440 px, its shadow locked 1 s
+                // before it lands): out dashing, as a player does.
+                if (view_.plan.dashOut && side != 0 && hit->kind == Danger::Kind::Area && !hit->body &&
+                    (out + 6.0f) / me.config().maxRunSpeed * static_cast<float>(kSimHz) > static_cast<float>(hit->in) - 4.0f)
+                    dashOut = true;
             } else if (hit->in <= 10) {
                 raiseShield = true;
             }
@@ -2145,7 +2193,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         dir = forced;
         b.moveText = "s'écarte";
         // 2.87: out of a sector about to turn over (or turned over) too far for a walk in time: dashing (its 800 px sectors).
-        if (sectorRun > 0.7f)
+        if (sectorRun > 0.7f || dashOut)
             if (const Power* dp = powerOf(me, "dash"); dp && keyBit(dp) >= 0 && dp->ready(me) && me.energy >= 10.0f && !(b.prevHeld & (1u << keyBit(dp))))
                 held |= 1u << keyBit(dp);
     } else {
@@ -2461,6 +2509,11 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         b.lost = 0;
     } else {
         ++b.lost;
+    }
+    if (dropThrough) {
+        held |= (1u << kDown) | (1u << kJump);
+        f.moveY = 127;
+        dir = 0;
     }
     if (dir > 0) held |= 1u << kRight;
     if (dir < 0) held |= 1u << kLeft;

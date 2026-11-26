@@ -162,6 +162,15 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
             const Vec2 sh = b.shadow();
             d.area = {sh.x - box.w * 0.5f - r, sh.y - box.h - 6.0f, box.w + r * 2.0f, box.h + 10.0f};
             d.in = kSimHz / 2;
+            if (v.skyfallRead) {
+                // 2.89 (fight plan): when it lands, as a player sees it: its shadow following its target (a second at least), held
+                // still (half a second to a second: GolemAttacks' lock, then its fall), its fall (its speed, the floor under it).
+                if (b.outOfSight()) d.in = b.shadowLocked() ? kSimHz / 2 : kSimHz;
+                else if (b.skyborne() && b.vel.y > 0.0f) {
+                    const float dy = std::max(0.0f, sh.y - b.box.bottom()), v0 = b.vel.y, acc = 2800.0f;
+                    d.in = static_cast<int>((-v0 + std::sqrt(v0 * v0 + 2.0f * acc * dy)) / acc * static_cast<float>(kSimHz));
+                } else if (b.skyborne()) d.in = 2 * kSimHz;
+            }
             v.dangers.push_back(d);
             break;
         }

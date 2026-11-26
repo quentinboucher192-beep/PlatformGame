@@ -3251,6 +3251,60 @@ raccourcissent (Titanus 217 s au lieu de 258, Graviton 314 au lieu de 344). Ce q
 quatre — reprendre la sortie d'un coup elle-même (le chemin jusqu'à un endroit sûr à l'instant du coup, y compris
 quitter une plateforme, au lieu du bord de la zone), pas un réglage de plus.
 
+2.90 : **Pyroclast tombe, Voidworm 27 / 32, le Cœur à 73 % — ce qui touchait vraiment**. Les sondes (`COSMIC_GOAT_DEATHS`,
+`COSMIC_GOAT_TRACE=1` pour les coups reçus, `COSMIC_GOAT_SEAT`, et des sondes jetées : chaque bouclier levé et ce qu'il
+visait, chaque avalé de Voidworm, chaque esquive d'un siège) : contre Pyroclast et le Cœur, **le contact de leur corps**
+était la première cause de coups (Pyroclast : 159 coups sur 4 départs, devant ses poings, 65) — le bras de Pyroclast passe
+d'un côté à l'autre quand il se tourne vers sa cible, et la navigation, qui ne voyait pas le corps du boss, faisait sauter
+ses joueurs au travers (un frappeur du Cœur en route vers un ventricule sautait dans son corps et y mourait) ; contre
+Voidworm, **sa gueule** avalait les joueurs qui montaient au-dessus de son acide (l'esquive s'arrêtait pendant la fuite),
+ceux qui traversaient sous leur bouclier (rien ne s'arrêtait), et ceux qui s'en écartaient dans l'anneau voisin (deux
+gueules côte à côte) ; un joueur digéré dans sa poche restait à terre pour toujours, son réanimateur debout au-dessus de lui
+jusqu'à la fin (un départ restait 560 s à un seul joueur en jeu). Maintenant (tout par le plan de combat ; les autres
+Gigaboss inchangés départ par départ) :
+
+* **le corps du boss parmi ce que la navigation évite** (`Plan::bodyInNav` : le Cœur, Pyroclast, Voidworm) : aucun saut ne
+  le traverse plus ;
+* **Pyroclast** : son corps lu des deux côtés de sa boîte, 16 px plus large (`Plan::bodyBothSides`) ; son Poing météore lu
+  comme il vient (`BossView::skyfallRead` : son ombre qui suit sa cible, immobile une demi-seconde à une seconde avant la
+  chute, sa chute elle-même — avant, toujours « dans une demi-seconde », le bouclier ne se levait jamais) et quitté en
+  ruée quand il est trop large pour la marche (`Plan::dashOut`, 440 px) ;
+* **le Cœur** : ses artères tenues de nouveau dès que ses ventricules se recouvrent — leurs joueurs les attendent au lieu de
+  traverser l'arène jusqu'à ses ventricules et retour ; chaque artère à son joueur pour toute son armure (`fixedHolders`) ;
+  pas d'appât (sa couronne le traîne vers son joueur le plus proche) ;
+* **Voidworm** : sa gueule (ce qu'aucun bouclier n'arrête) quittée même en montant au-dessus de l'acide et en traversant
+  sous le bouclier, jamais pour rentrer dans une autre ; sans sortie à temps sur une corniche, le joueur passe dessous (Bas +
+  Saut) ; une âme dans sa poche n'est plus la tâche de personne (`BossView::noRevive`) ; pas d'appât (il ne bouge pas : son
+  appât y mourait, ses réanimateurs ensuite) ; avec la règle de la 2.90 (une ruée garde des coups 0,31 s), quitté en ruée
+  ce qui est trop large pour la marche (`Plan::dashOut`, comme Pyroclast).
+
+Mesuré sur la règle de la 2.90 (simulation 18), difficulté 3 / 5, 32 départs :
+
+| Combat (départs 1 à 8 · 9 à 16 · 17 à 24 · 25 à 32) | avant (2.90.0) | après |
+|---|---|---|
+| Voidworm | 5/8 · 3/8 · 3/8 · 2/8 — 13 / 32 (79 %) | 7/8 · 7/8 · 7/8 · 6/8 — **27 / 32** (95 %) |
+| Pyroclast | 54 · 46 · 48 · 48 % — 0 / 32 | 75 · 80 · 72 · 80 % — **4 / 32** (départs 5, 16, 20, 32) |
+| Cœur d'Asterion | 53 · 52 · 59 · 55 % — 0 / 32 | **77 · 70 · 71 · 74 %** — 0 / 32 (sur la règle de la 2.89 : 5 / 32, en 759 à 799 s) |
+| Skullmaw, Dreadfang, Titanus, Graviton, Heartbreaker | | mêmes résultats départ par départ (mesuré sur la 2.89) |
+
+Mesuré étape par étape sur la règle de la 2.89 (départs 1 à 16) : Voidworm, la gueule quittée en fuyant et en
+traversant, les âmes de sa poche 7 / 16 → avec le passage sous la corniche 8 / 16 → sans appât 10 / 16 (mais 6 / 16 sur
+les départs 17 à 32, avant 9 / 16) → son corps évité par la navigation 13 / 16 (17 à 32 : 11 / 16) ; le Cœur, ses artères tenues pendant ses ventricules
+57 % → 60 %, son corps évité par la navigation 71 % (les groupes tiennent : beaucoup de départs vont aux 15 min), chaque
+artère à son joueur 74 % (1 / 16), sans appât 71 % mais **3 / 16** (17 à 32 : 70 %, 2 / 16 ; avec appât 65 %, 0 / 16) ;
+Pyroclast, son poing météore lu et quitté en ruée 46 % → 49 %, son corps des deux côtés 61 %, évité par la navigation
+67 %. Essayés et retirés : contre le Cœur, son bouclier gardé pour son rayon, ses anneaux et ses
+comètes, ses orbes esquivées (51 %) ; un appât qui ramène le Cœur à sa place de départ (sa couronne le traîne vers son
+joueur le plus proche : 49 %) ; seules ses artères du sol tenues pendant ses ventricules (55 %) ; son corps lu 30 px plus
+grand (59 % au lieu de 60 %) ; ses ancres de supernova gardées entre deux supernovas (74 % → 71 %, la victoire perdue) ;
+contre Pyroclast, un appât qui le garde à l'est de l'arène (47 %, sans gain) ; la bande de son Coup de poing au sol retirée
+(lue comme un liquide à fuir : 59 % au lieu de 61 %) ; son corps 40 px plus large (53 %) ; ses réanimateurs sans bouclier
+qui esquivent (52 %) ; une âme au bord d'une fosse réanimée depuis le sol voisin (53 %). Sur la règle de la 2.90 : Voidworm
+quitte en ruée 11 / 16 → 14 / 16 (gardé) ; Pyroclast sans appât 75 %, 1 / 32 (gardé avec : 77 %, 4 / 32 ; sur la 2.89 sans
+appât 76 % au lieu de 67 %) ; le Cœur qui quitte en ruée 73 % (pareil). Ce qui bloque encore : le Cœur
+tient maintenant ses 15 min mais sa phase 3 traîne (ses artères du sol sous sa marée de plasma toutes les 24 s, les deux de
+l'est loin quand il dérive vers l'ouest) ; Pyroclast, les fissures de sa Secousse et ses réanimateurs près de son corps.
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`

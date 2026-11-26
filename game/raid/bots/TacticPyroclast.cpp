@@ -20,6 +20,13 @@ class PyroclastTactic final : public BossTactic {
 public:
     const char* name() const override { return "Pyroclast"; }
     void read(const RaidRun& run, BossView& v) const override {
+        // 2.89 (fight plan): its meteor fist read as it comes (its shadow locked, its fall), left dashing when too wide for a
+        // walk; its body read on both sides of it (it turns toward its target and its arm swings over at once), 16 px wider
+        // (it walks), and kept out of by the navigation's jumps (its body contacts were half of what hit the group).
+        v.skyfallRead = true;
+        v.plan.dashOut = true;
+        v.plan.bodyBothSides = 16.0f;
+        v.plan.bodyInNav = true;
         readCommon(run, v);
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
