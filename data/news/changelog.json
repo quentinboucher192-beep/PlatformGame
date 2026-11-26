@@ -1,4 +1,9 @@
 {
+  "2.92.0": [
+    "Les animations du niveau démarrent au même moment pour tout le monde : un niveau qui s'ouvre sur son intro attend le chronomètre (ennemis, plateformes, événements, dangers), que l'intro soit regardée ou passée. Simulation 19 ; les replays d'avant se rejouent avec leurs règles, records et classements gardés.",
+    "Titanus allégé, un peu : 15 % de vie en moins, son écrasement, ses ondes de choc et ses rochers espacés d'une seconde, 18 s à genou au lieu de 15 (environ 10 min pour un bon groupe de 8 à 3 / 5).",
+    "Pause : « Mode concentré » et « Invincible (admin) » affichent ACTIVÉ / DÉSACTIVÉ avec le même interrupteur ; la flèche « › » de « Mode concentré » (ou →) ouvre l'éditeur du HUD sur son onglet « Mode concentré » ; Entrée / A refonctionnent sur la pause et les écrans posés par-dessus le jeu."
+  ],
   "2.91.0": [
     "Une seule somme des meilleurs (SOB) par version de niveau : parties, entraînements, enchaînements, startpos et vos courses vérifiées en ligne comptent ensemble ; chaque meilleur segment garde sa source et son replay. Vos anciens segments d'or et temps d'entraînement sont repris.",
     "Entraînement › Segments et enchaînements : la grille des records de toutes les combinaisons de segments qui se suivent, l'enchaînement choisi (meilleur, somme des meilleurs, à gagner), Lancer, Regarder, Fantôme ; en course, temps de passage comparés à la SOB, segment d'or annoncé aussitôt, meilleur possible à l'arrivée.",
