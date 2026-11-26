@@ -215,7 +215,7 @@ TEST_CASE("statistics (2.84): every level of the campaign and every boss with st
         rig.app.pushScene(makeStatistics(g, tab));
         rig.app.runFrames(4);
         CHECK(rig.app.sceneCount() == 1);
-        CHECK(g.ui.navigable(tab == 2 ? "stats/pb0" : tab == 3 ? "stats/runsplanet0" : "stats/slicesplanet0"));
+        CHECK(g.ui.navigable(tab == 2 ? "stats/boss0" : tab == 3 ? "stats/runsplanet0" : "stats/slicesplanet0"));  // 2.91: the bosses on their banners
         rig.app.popScene();
         rig.app.runFrames(1);
     }

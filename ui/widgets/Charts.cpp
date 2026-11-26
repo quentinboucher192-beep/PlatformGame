@@ -58,6 +58,26 @@ void polyline(UIContext& ui, const std::vector<Vec2>& p, Color c) {
     for (size_t i = 1; i < p.size(); ++i) ui.r().drawLine(p[i - 1], p[i], c, th);
 }
 
+/// A dashed line through `p` (thinner: a reference line).
+void dashedPolyline(UIContext& ui, const std::vector<Vec2>& p, Color c) {
+    const float th = std::max(1.0f, ui.s(1.5f)), dash = ui.s(5), gap = ui.s(5);
+    float phase = 0.0f;  // along the whole line: the dashes go on across its corners
+    for (size_t i = 1; i < p.size(); ++i) {
+        const Vec2 d = p[i] - p[i - 1];
+        const float len = std::sqrt(d.x * d.x + d.y * d.y);
+        if (len <= 0.0f) continue;
+        const Vec2 u{d.x / len, d.y / len};
+        float t = 0.0f;
+        while (t < len) {
+            const float cyc = std::fmod(phase, dash + gap);
+            const float step = cyc < dash ? std::min(dash - cyc, len - t) : std::min(dash + gap - cyc, len - t);
+            if (cyc < dash) ui.r().drawLine(p[i - 1] + u * t, p[i - 1] + u * (t + step), c, th);
+            t += step;
+            phase += step;
+        }
+    }
+}
+
 }  // namespace
 
 float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1.0f)); }
@@ -188,11 +208,13 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
         yl.push_back(s.yLabel ? s.yLabel(v) : std::to_string(static_cast<int>(std::lround(v))));
         lw = std::max(lw, textW(ui, yl.back(), FontFace::Body, af));
     }
+    auto endText = [](const Series& se) -> const std::string& { return se.endLabel.empty() ? se.name : se.endLabel; };
     float rightPad = ui.s(10);
     if (s.endLabels)
         for (const auto& se : s.series)
-            if (se.kind != Series::Kind::Dots && !se.pts.empty()) rightPad = std::max(rightPad, textW(ui, se.name, FontFace::Bold, lf) + ui.s(22));
-    Rect plot{r.x + lw + ui.s(10), top, 0.0f, bottom - top};
+            if (se.kind != Series::Kind::Dots && !se.pts.empty()) rightPad = std::max(rightPad, textW(ui, endText(se), FontFace::Bold, lf) + ui.s(22));
+    const float markRoom = s.marks.empty() ? 0.0f : ui.s(22);  // 2.91: the marks above their point
+    Rect plot{r.x + lw + ui.s(10), top + markRoom, 0.0f, bottom - top - markRoom};
     plot.w = std::max(ui.s(40), r.right() - rightPad - plot.x);
     const float xMin = xs.front(), xMax = xs.back();
     auto X = [&](float v) { return plot.x + (xMax == xMin ? 0.5f : (v - xMin) / (xMax - xMin)) * plot.w; };
@@ -235,6 +257,36 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
     // The series.
     ui.r().pushClip(plot.expanded(ui.s(6)));
     const float baseY = plot.bottom();
+    // 2.91: the bands between two step curves (each x where either changes: the area between them).
+    for (const auto& b : s.bands) {
+        if (b.upper >= s.series.size() || b.lower >= s.series.size()) continue;
+        const auto& up = s.series[b.upper].pts;
+        const auto& lo = s.series[b.lower].pts;
+        if (up.empty() || lo.empty()) continue;
+        std::vector<float> bx;
+        for (const auto& p : up) bx.push_back(p.x);
+        for (const auto& p : lo) bx.push_back(p.x);
+        std::sort(bx.begin(), bx.end());
+        bx.erase(std::unique(bx.begin(), bx.end()), bx.end());
+        auto valueAt = [](const std::vector<Vec2>& pts, float x, float& out) {
+            bool any = false;
+            for (const auto& p : pts) {
+                if (p.x > x + 1e-4f) break;
+                out = p.y;
+                any = true;
+            }
+            return any;
+        };
+        const float endX = std::min(up.back().x, lo.back().x);
+        for (size_t i = 0; i + 1 < bx.size(); ++i) {
+            if (bx[i] >= endX) break;
+            float yu = 0.0f, yl = 0.0f;
+            if (!valueAt(up, bx[i], yu) || !valueAt(lo, bx[i], yl)) continue;
+            const float x0 = X(bx[i]), x1 = X(std::min(bx[i + 1], endX));
+            const float y0 = std::min(Y(yu), Y(yl)), y1 = std::max(Y(yu), Y(yl));
+            if (x1 > x0 && y1 > y0) ui.r().fillRect({x0, y0, x1 - x0, y1 - y0}, b.fill);
+        }
+    }
     for (const auto& se : s.series) {
         if (se.pts.empty()) continue;
         std::vector<Vec2> pts;
@@ -268,9 +320,16 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
             ui.r().drawGeometry(nullptr, v, idx);
         }
         if (path.size() == 1) ui.r().fillCircle(path[0], ui.s(3), se.color);
-        polyline(ui, path, se.color);
+        if (se.dashed) dashedPolyline(ui, path, se.color);
+        else polyline(ui, path, se.color);
     }
     ui.r().popClip();
+    // 2.91: the marks over their points.
+    for (const auto& mk : s.marks) {
+        if (!mk.draw) continue;
+        const float sz = ui.s(20);
+        mk.draw(Rect::fromCenter({X(mk.at.x), Y(mk.at.y) - ui.s(8) - sz * 0.5f}, {sz, sz}));
+    }
     // Direct labels at the end of the curves (their names, in the text colour, never overlapping).
     if (s.endLabels) {
         struct L {
@@ -283,7 +342,7 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
         for (const auto& se : s.series) {
             if (se.kind == Series::Kind::Dots || se.pts.empty()) continue;
             Vec2 e{X(se.pts.back().x), Y(se.pts.back().y)};
-            float w = textW(ui, se.name, FontFace::Bold, lf);
+            float w = textW(ui, endText(se), FontFace::Bold, lf);
             float x = e.x + ui.s(9);
             if (x + w > r.right()) x = e.x - ui.s(9) - w;
             ls.push_back({&se, e, {x, e.y - h - ui.s(2), w, h}});
@@ -300,7 +359,7 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
         for (const auto& l : ls) {
             ui.r().fillCircle(l.end, ui.s(4.5f), kSurface);
             ui.r().fillCircle(l.end, ui.s(3.2f), l.se->color);
-            ui.label(l.se->name, {l.box.x, l.box.y}, lf, kText2, Align::Left, FontFace::Bold, VAlign::Top);
+            ui.label(endText(*l.se), {l.box.x, l.box.y}, lf, kText2, Align::Left, FontFace::Bold, VAlign::Top);
         }
     }
     // The cursor: the mouse, or ← → when the chart has the focus.
@@ -402,9 +461,16 @@ void vBars(UIContext& ui, const std::string& id, const Rect& r, const std::vecto
     if (bars.empty()) return;
     const float af = fz(ui, 13), lh = lineH(ui, FontFace::Body, af);
     float vmax = 0.0f;
-    for (const auto& b : bars) vmax = std::max(vmax, b.value);
+    bool tops = false, subs = false;  // 2.91: texts above the bars, second lines under their labels
+    for (const auto& b : bars) {
+        vmax = std::max(vmax, b.value);
+        tops = tops || !b.topText.empty();
+        subs = subs || !b.subLabel.empty();
+    }
     vmax = std::max(vmax, 4.0f);
-    const float top = r.y + lh * 0.5f + ui.s(2), bottom = r.bottom() - lh * 1.5f - ui.s(8);
+    const float tf = fz(ui, 14), th = lineH(ui, FontFace::Bold, tf);
+    const float top = r.y + lh * 0.5f + ui.s(2) + (tops ? th + ui.s(8) : 0.0f);
+    const float bottom = r.bottom() - lh * 1.5f - ui.s(8) - (subs ? lh + ui.s(2) : 0.0f);
     std::vector<float> yt = niceTicks(0.0f, vmax, std::clamp(static_cast<int>((bottom - top) / (lh * 2.2f)), 2, 5));
     const float yMax = std::max(vmax, yt.empty() ? vmax : yt.back());
     float lw = 0.0f;
@@ -417,7 +483,7 @@ void vBars(UIContext& ui, const std::string& id, const Rect& r, const std::vecto
                  FontFace::Body, VAlign::Middle);
     }
     const float slot = plot.w / static_cast<float>(bars.size());
-    const float bw = std::max(ui.s(4), std::min(ui.s(46), slot - ui.s(6)));
+    const float bw = std::max(ui.s(4), tops ? std::min(ui.s(150), slot * 0.7f) : std::min(ui.s(46), slot - ui.s(6)));
     // One label every `step` bars, so that they never touch.
     float widest = 0.0f;
     for (const auto& b : bars) widest = std::max(widest, textW(ui, b.label, FontFace::Body, af));
@@ -432,8 +498,19 @@ void vBars(UIContext& ui, const std::string& id, const Rect& r, const std::vecto
             ui.r().fillRoundedRect({x, y, bw, h}, std::min(ui.s(4), h * 0.5f), b.color);
             if (h > ui.s(8)) ui.r().fillRect({x, y + ui.s(4), bw, h - ui.s(4)}, b.color);
         }
-        if (i % static_cast<size_t>(step) == 0)
-            ui.label(b.label, {x + bw * 0.5f, plot.bottom() + lh * 0.5f + ui.s(4)}, af, ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Top);
+        const float room = static_cast<float>(step) * slot - ui.s(8);
+        if (i % static_cast<size_t>(step) == 0) {
+            ui.label(ui.elide(b.label, FontFace::Body, af, room), {x + bw * 0.5f, plot.bottom() + lh * 0.5f + ui.s(4)}, af,
+                     tops ? ui.theme().text : ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Top);
+            if (!b.subLabel.empty())
+                ui.label(ui.elide(b.subLabel, FontFace::Body, af, room), {x + bw * 0.5f, plot.bottom() + lh * 1.5f + ui.s(6)}, af, ui.theme().textDim,
+                         Align::Center, FontFace::Body, VAlign::Top);
+        }
+        if (!b.topText.empty()) {
+            const float f = ui.fitFont(b.topText, FontFace::Bold, tf, slot - ui.s(6), 0.75f);
+            ui.label(ui.elide(b.topText, FontFace::Bold, f, slot - ui.s(6)), {x + bw * 0.5f, y - ui.s(6)}, f, ui.theme().text, Align::Center,
+                     FontFace::Bold, VAlign::Bottom);
+        }
     }
     ui.r().drawLine({plot.x, plot.bottom()}, {plot.right(), plot.bottom()}, kAxis, 1.0f);
     if (focused) {
@@ -596,6 +673,171 @@ void table(UIContext& ui, const std::string& id, const Rect& r, const std::vecto
         float wf = ui.fitFont(where, FontFace::Body, f, room, 0.8f);
         ui.label(ui.elide(where, FontFace::Body, wf, room), bar.center(), wf, ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Middle);
     }
+}
+
+// ------------------------------------------------------------------ 2.91
+
+void sparkline(UIContext& ui, const Rect& r, const std::vector<float>& v, Color color) {
+    if (v.empty() || r.w <= 2.0f || r.h <= 2.0f) return;
+    auto [lo, hi] = std::minmax_element(v.begin(), v.end());
+    const float span = *hi - *lo;
+    const float pad = ui.s(5);
+    const Rect in{r.x + ui.s(2), r.y + pad, r.w - ui.s(2) - pad * 1.6f, r.h - 2 * pad};
+    std::vector<Vec2> pts;
+    for (size_t i = 0; i < v.size(); ++i) {
+        const float x = in.x + (v.size() > 1 ? in.w * static_cast<float>(i) / static_cast<float>(v.size() - 1) : in.w);
+        const float y = span > 1e-6f ? in.bottom() - (v[i] - *lo) / span * in.h : in.center().y;
+        pts.push_back({x, y});
+    }
+    polyline(ui, pts, color);
+    const Vec2 e = pts.back();
+    ui.r().drawRing(e, ui.s(7), std::max(1.0f, ui.s(1.6f)), color.withAlpha(100));
+    ui.r().fillCircle(e, ui.s(4.2f), kSurface);
+    ui.r().fillCircle(e, ui.s(3.2f), color);
+}
+
+Color heatOver(float t) {
+    t = std::clamp(t, 0.0f, 1.0f);
+    const float a = std::clamp(1.1f * t - 0.18f, 0.0f, 0.92f);
+    return {255, static_cast<uint8_t>(200.0f - 150.0f * t), static_cast<uint8_t>(90.0f - 30.0f * t), static_cast<uint8_t>(a * 255.0f)};
+}
+
+Color heatSolid(float t) {
+    // heatOver laid over the card's dark surface.
+    const Color o = heatOver(t), base{26, 30, 46, 255};
+    return Color::lerp(base, o.withAlpha(255), std::max(0.12f, o.a / 255.0f));
+}
+
+float iconBarsHeight(const UIContext& ui, size_t n, const IconBarsStyle& st) { return ui.s(st.rowH) * static_cast<float>(n); }
+
+void iconBars(UIContext& ui, const std::string& id, const Rect& r, const std::vector<IconBar>& bars, float maxValue, int& cursor, Tip& tip,
+              const IconBarsStyle& st) {
+    bool hovered = false;
+    ui.hotspot(id, r, &hovered);
+    const bool focused = ui.focused(id);
+    if (bars.empty()) return;
+    const float rowH = ui.s(st.rowH), iw = ui.s(st.iconW), ih = std::min(ui.s(st.iconH), rowH - ui.s(4));
+    const float nf = fz(ui, 15), vf = fz(ui, 17), cf = fz(ui, 13);
+    float vw = 0.0f, cw = 0.0f;
+    for (const auto& b : bars) {
+        vw = std::max(vw, textW(ui, b.valueText, FontFace::Bold, vf));
+        cw = std::max(cw, textW(ui, b.countText, FontFace::Body, cf));
+    }
+    // Columns from the right: the count, the value; the name and its bar in what is left.
+    const float countX = r.right();
+    const float valueX = countX - (cw > 0.0f ? cw + ui.s(14) : 0.0f);
+    const float barL = r.x + (st.iconW > 0.0f ? iw + ui.s(12) : 0.0f);
+    const float barR = valueX - vw - ui.s(14);
+    const float max = maxValue > 0.0f ? maxValue : 1.0f;
+    const float nh = lineH(ui, FontFace::Body, nf);
+    int at = -1;
+    if (focused) moveCursor(ui, cursor, static_cast<int>(bars.size()));
+    const Vec2 m = ui.input().mousePos();
+    if (hovered) at = std::clamp(static_cast<int>((m.y - r.y) / rowH), 0, static_cast<int>(bars.size()) - 1), cursor = at;
+    else if (focused) at = std::clamp(cursor, 0, static_cast<int>(bars.size()) - 1);
+    for (size_t i = 0; i < bars.size(); ++i) {
+        const IconBar& b = bars[i];
+        const Rect row{r.x, r.y + rowH * static_cast<float>(i), r.w, rowH};
+        if (static_cast<int>(i) == at) {
+            ui.r().fillRoundedRect(row.expanded(ui.s(3)), ui.s(8), ui.theme().accent.withAlpha(18));
+            ui.r().drawRoundedRect(row.expanded(ui.s(3)), ui.s(8), ui.theme().accent.withAlpha(100), std::max(1.0f, ui.s(1.0f)));
+        }
+        if (st.iconW > 0.0f) {
+            const Rect box{row.x, row.center().y - ih * 0.5f, iw, ih};
+            if (st.iconFrame) {
+                ui.r().fillRoundedRect(box, ui.s(7), Color{5, 8, 18, 180});
+                ui.r().drawRoundedRect(box, ui.s(7), Color{38, 53, 90, 255}, std::max(1.0f, ui.s(1.0f)));
+            }
+            if (b.icon) {
+                ui.r().pushClip(box);
+                b.icon(st.iconFrame ? box.expanded(-ui.s(3)) : box);
+                ui.r().popClip();
+            }
+        }
+        const float room = std::max(ui.s(20), barR - barL);
+        const float ny = row.y + (rowH - nh - ui.s(16)) * 0.5f;
+        ui.label(ui.elide(b.label, FontFace::Body, nf, room), {barL, ny}, nf, ui.theme().text);
+        const Rect track{barL, ny + nh + ui.s(5), room, ui.s(9)};
+        ui.r().fillRoundedRect(track, ui.s(4), Color{26, 36, 66, 255});
+        if (b.value > 0.0f)
+            ui.r().fillRoundedRect({track.x, track.y, std::max(ui.s(6), track.w * std::clamp(b.value / max, 0.0f, 1.0f)), track.h}, ui.s(4), b.color);
+        ui.label(b.valueText, {valueX, row.center().y}, vf, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
+        if (!b.countText.empty()) ui.label(b.countText, {countX, row.center().y}, cf, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+    }
+    if (focused) focusFrame(ui, r);
+    if (at < 0) return;
+    const IconBar& b = bars[static_cast<size_t>(at)];
+    tip = Tip{};
+    tip.show = true;
+    tip.anchor = {hovered ? m.x : barL + (barR - barL) * std::clamp(b.value / max, 0.0f, 1.0f), r.y + rowH * static_cast<float>(at)};
+    tip.title = b.tipTitle.empty() ? b.label : b.tipTitle;
+    tip.rows = b.tipRows;
+}
+
+void stackedBar(UIContext& ui, const std::string& id, const Rect& r, const std::vector<Part>& parts, int& cursor, Tip& tip) {
+    bool hovered = false;
+    ui.hotspot(id, r, &hovered);
+    const bool focused = ui.focused(id);
+    float total = 0.0f;
+    for (const auto& p : parts) total += std::max(0.0f, p.value);
+    if (parts.empty() || total <= 0.0f) {
+        ui.r().fillRoundedRect(r, ui.s(6), kTrack);
+        return;
+    }
+    const float f = fz(ui, 14);
+    std::vector<Rect> cells;
+    float x = r.x;
+    for (size_t i = 0; i < parts.size(); ++i) {
+        const float w = r.w * std::max(0.0f, parts[i].value) / total;
+        cells.push_back({x, r.y, w, r.h});
+        x += w;
+    }
+    ui.r().pushClip(r);
+    // The whole in the last part's colour (its rounded right end), the first part rounded at the left,
+    // the others square; a thin seam between two parts.
+    const float rad = ui.s(6);
+    ui.r().fillRoundedRect(r, rad, parts.back().color);
+    for (size_t i = 0; i + 1 < parts.size(); ++i) {
+        const Rect& c = cells[i];
+        if (c.w <= 0.0f) continue;
+        if (i == 0) ui.r().fillRoundedRect({c.x, c.y, c.w + std::min(rad, cells[1].w), c.h}, rad, parts[i].color);
+        else ui.r().fillRect(c, parts[i].color);
+    }
+    for (size_t i = 1; i < parts.size(); ++i)
+        if (cells[i].w > 0.0f) ui.r().fillRect({cells[i].x, cells[i].y, std::max(1.0f, ui.s(1.5f)), cells[i].h}, Color{8, 11, 24, 255});
+    for (size_t i = 0; i < parts.size(); ++i) {
+        const Rect& c = cells[i];
+        if (c.w <= 0.0f) continue;
+        // Its text inside when it fits (white on the colour).
+        const float room = c.w - ui.s(12);
+        if (!parts[i].text.empty() && room > ui.s(24)) {
+            const float tf = ui.fitFont(parts[i].text, FontFace::Bold, f, room, 0.8f);
+            if (textW(ui, parts[i].text, FontFace::Bold, tf) <= room)
+                ui.label(parts[i].text, c.center(), tf, Color::white(), Align::Center, FontFace::Bold, VAlign::Middle);
+        }
+    }
+    ui.r().popClip();
+    if (focused) {
+        moveCursor(ui, cursor, static_cast<int>(parts.size()));
+        focusFrame(ui, r);
+    }
+    int at = -1;
+    const Vec2 m = ui.input().mousePos();
+    if (hovered) {
+        for (size_t i = 0; i < cells.size(); ++i)
+            if (m.x >= cells[i].x && m.x < cells[i].right() + 0.5f) at = static_cast<int>(i);
+        if (at >= 0) cursor = at;
+    } else if (focused) {
+        at = std::clamp(cursor, 0, static_cast<int>(parts.size()) - 1);
+    }
+    if (at < 0) return;
+    const Rect& c = cells[static_cast<size_t>(at)];
+    ui.r().drawRoundedRect(c.expanded(ui.s(2)), ui.s(5), ui.theme().text, std::max(1.0f, ui.s(1.5f)));
+    tip = Tip{};
+    tip.show = true;
+    tip.anchor = {c.center().x, c.y};
+    tip.title = parts[static_cast<size_t>(at)].tipTitle;
+    tip.rows = parts[static_cast<size_t>(at)].tipRows;
 }
 
 }  // namespace cosmic::charts
