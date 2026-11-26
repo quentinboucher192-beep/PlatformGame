@@ -373,7 +373,7 @@ void Player::chooseAnimation() {
                 clip = "interact";
             } else if (castTimer_ > 0.0f && grounded_ && std::abs(vel.x) < 40.0f) {
                 clip = "cast";
-            } else if (grounded_) {
+            } else if (grounded_ || heldStill_) {  // 2.92: held at the level's start, standing as she appeared
                 float s = std::abs(vel.x);
                 if (landTimer_ > 0.0f && s < 40.0f)
                     clip = "land";

@@ -183,6 +183,14 @@ Types d'étapes : `camera`, `focus`, `cut`, `zoom`, `fade`, `flash`, `shake`, `t
 `playerWalk`, `playerAnim`, `action` (exécute une action d'événement), `wait`.
 `wait: false` lance l'étape suivante sans attendre la fin de celle-ci.
 
+Depuis la 2.92 (simulation 19), un niveau qui s'ouvre sur son `intro` attend son chronomètre : pendant
+l'intro, puis la matérialisation de Nova, rien du niveau ne bouge (ennemis, plateformes, événements,
+dangers) ; seuls la cinématique, la caméra et l'affichage (décor, liquides, lumières, animations des
+ennemis sur place) continuent. Le niveau démarre au pas où Nova peut bouger, dans le même état pour
+tous, que l'intro soit regardée ou passée. Une `action` d'intro s'applique (au passage, d'un coup) mais
+ce qu'elle met en mouvement attend aussi le chronomètre, et `playerWalk` ne déplace pas Nova dans une
+intro (elle ne bouge qu'à partir du chronomètre, comme quand l'intro est passée).
+
 ## Compatibilité
 
 `formatVersion` est vérifié au chargement ; un niveau d'une version future est refusé avec

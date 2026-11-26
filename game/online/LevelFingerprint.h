@@ -22,7 +22,7 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...), with the reference digests of
 /// tests/test_determinism.cpp.
-constexpr int kSimulationVersion = 18;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+constexpr int kSimulationVersion = 19;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
                                        // 7: crouch in place (Down on the ground)
                                        // 8: energy costs by strength (charge shot = reference),
@@ -85,6 +85,13 @@ constexpr int kSimulationVersion = 18;  // 6: energy 150, time slow, magnet, air
                                        //    longer, the spikes keep 0.05 s): a general nerf of the
                                        //    bosses, as the player asked. A replay of before plays with
                                        //    its rules (same digests). The rankings are kept.
+                                       // 19: (2.92) a level that opens on its intro holds its start
+                                       //    until its clock starts (GameWorld::startHeld,
+                                       //    kHeldStartSimulation): events, scenery, enemies, dangers
+                                       //    and shots wait, the players only appear; the level starts
+                                       //    at the same step for everybody, the intro watched or
+                                       //    skipped. A replay of before plays with its rules (same
+                                       //    digests). The rankings are kept, as the player asked.
 /// 2.62: version of the rules of cooperation (docs/COOP.md): a team of 2 or 3 players in one
 /// world. It changes nothing for a solo run (kSimulationVersion and its digests are the same);
 /// a team's attempts carry it, and any change of the team rules (solid players, revivals,
@@ -120,7 +127,10 @@ constexpr int kCoopSimulationVersion = 4;  // 2 (2.75): the players pass through
 ///        Pyrrhax by its hit parts, the flight of the weakened enemies bounded; the records stay, as
 ///        the player asked, and the replays recorded before play with their own rules), 17 and
 ///        18 (2.90: the blows miss a little longer after a dash; the records stay, as the player asked,
-///        and the replays recorded before play with their own rules).
+///        and the replays recorded before play with their own rules) and 19 (2.92: the level waits for
+///        the clock at its start, the intro watched or skipped; the clock already started at the same
+///        moment: the records stay, as the player asked, and the replays recorded before play with
+///        their own rules).
 constexpr int kRankingGeneration = 8;
 
 struct LevelFingerprint {

@@ -72,10 +72,11 @@ struct Svc {
 struct Team {
     std::unique_ptr<GameWorld> w;
     std::vector<InputFrame> prev;
-    Team(Svc& s, const LevelData& level, int n, bool raid = false, int rules = kCoopSimulationVersion) {
+    Team(Svc& s, const LevelData& level, int n, bool raid = false, int rules = kCoopSimulationVersion, int sim = kSimulationVersion) {
         w = std::make_unique<GameWorld>(s.ws(), WorldMode::Play);
         w->setTeamSize(n);
         w->setCoopVersion(rules);
+        w->setSimulationVersion(sim);  // 2.92: 18 = the level went on during the intro (the replays of before)
         if (raid) w->setRaidMode(true);
         w->setKeysPerSlot(true);
         w->load(level);
@@ -436,8 +437,8 @@ TEST_CASE("2.80 the same inputs give the same digests on two computers; rules 3 
     Svc s;
     const LevelData l = level(s, "noyau_01");
     const Arena a = arenasOf(l).front();
-    auto run = [&](int n, int rules) {
-        Team t(s, l, n, false, rules);
+    auto run = [&](int n, int rules, int sim) {
+        Team t(s, l, n, false, rules, sim);
         std::vector<uint64_t> digests;
         t.idle(150);
         const Rect db = door(*t.w, a.doors.front())->box;
@@ -453,24 +454,32 @@ TEST_CASE("2.80 the same inputs give the same digests on two computers; rules 3 
         return digests;
     };
     // The reference digests (noyau_01, its first arena: the first player in, the others walking in later).
+    // 2.92 (simulation 19): the level waits for the clock at its start (the team's materialisation after the
+    // skipped intro, GameWorld::startHeld): its own digests; with the rules of 18 (the replays of before)
+    // the digests of 2.80.
     struct Golden {
         int players, rules;
         const char* digest;
+        int sim;
     };
-    const Golden golden[] = {{2, 3, "e8a3a534b94445b3"}, {2, 4, "cbe132da7d60e543"}, {3, 3, "7b1cab268fc62ade"}, {3, 4, "2887c97997d446e2"}};
+    const Golden golden[] = {{2, 3, "e8a3a534b94445b3", 18}, {2, 4, "cbe132da7d60e543", 18}, {3, 3, "7b1cab268fc62ade", 18},
+                             {3, 4, "2887c97997d446e2", 18}, {2, 3, "2a598c9b7ad17ee9", 19}, {2, 4, "2c248682b6c53c96", 19},
+                             {3, 3, "cb00600dc7e6242c", 19}, {3, 4, "7c2b0c59e67efc39", 19}};
     int mismatches = 0;
-    for (const int n : {2, 3}) {
-        const auto a4 = run(n, 4), b4 = run(n, 4), a3 = run(n, 3);
-        CHECK(a4 == b4);
-        CHECK(!a4.empty() && a4 != a3);
-        for (const Golden& g : golden) {
-            if (g.players != n) continue;
-            const auto& got = g.rules == 4 ? a4 : a3;
-            char hex[17];
-            std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(got.empty() ? 0 : got.back()));
-            if (std::string(hex) != g.digest) {
-                std::printf("  noyau_01, équipe de %d, coop %d : %s (attendu %s)\n", n, g.rules, hex, g.digest);
-                ++mismatches;
+    for (const int sim : {18, kSimulationVersion}) {
+        for (const int n : {2, 3}) {
+            const auto a4 = run(n, 4, sim), b4 = run(n, 4, sim), a3 = run(n, 3, sim);
+            CHECK(a4 == b4);
+            CHECK(!a4.empty() && a4 != a3);
+            for (const Golden& g : golden) {
+                if (g.players != n || g.sim != sim) continue;
+                const auto& got = g.rules == 4 ? a4 : a3;
+                char hex[17];
+                std::snprintf(hex, sizeof hex, "%016llx", static_cast<unsigned long long>(got.empty() ? 0 : got.back()));
+                if (std::string(hex) != g.digest) {
+                    std::printf("  noyau_01, équipe de %d, coop %d, règles %d : %s (attendu %s)\n", n, g.rules, sim, hex, g.digest);
+                    ++mismatches;
+                }
             }
         }
     }
