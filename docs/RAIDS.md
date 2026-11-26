@@ -3226,6 +3226,31 @@ places d'une volée de poings espacées d'une colonne (ses poings : 114 coups au
 (Dreadfang : 48 %, et pour ses seuls points faibles à nu : 53 %) ; Dreadfang tout entier devant lui à nu (`frontOnly` :
 57 %, 4 victoires sur 48 au lieu de 3), chaque chaîne à son joueur (`fixedHolders` : 57 %, 3), les deux (54 %, 2).
 
+Suite : **la survie près d'un boss**, mesurée en morts par minute et en durée des combats sur les départs 1 à 16 (la vie
+ôtée dépend trop de la chance des entraves). Départ : Titanus 4,37 morts/min, 258 s ; Graviton 2,33, 344 s. Sondes
+nouvelles : `COSMIC_GOAT_AGGRO` (qui le boss vise — le joueur le plus proche de son centre, `GameWorld::targetIndex` — par
+rôle et par étape) ; avec `COSMIC_GOAT_TRACE`, les boucliers levés et les coups qu'ils arrêtent. Constats :
+
+* l'appât n'attire le boss qu'en phase 1 (Titanus : 53 à 63 % du temps) ; blindé, 14 à 18 % — il est pris comme frappeur
+  des entraves (8 places demandées), et il vit à 1 ou 2 cœurs, entre orbes, réanimations et attentes au bord des coups ;
+* un joueur lève son bouclier une fois toutes les 11 s environ (sa recharge : 5 s), le plus souvent en esquivant
+  (« esquive », 339 sur 4 départs) ou juste avant un coup (277) ;
+* les coups qui touchent sont presque tous vus (« esquive · s'écarte ») : c'est la sortie qui échoue — poursuivi au bout
+  d'une plateforme de 160 px par les vagues successives de son séisme (une toutes les 0,85 s, sous la cible), renvoyé dans
+  une fissure par le danger de son corps, hésitant entre les colonnes de poings de ses voisins ;
+* un réanimé revient à la moitié de sa vie (5 cœurs), 2,75 s invulnérable ; le niveau Expert n'a déjà presque aucun
+  défaut (réaction 6 pas, précision 1, bouclier 1, saut sans erreur).
+
+Essayés et retirés : les autres derrière le boss par rapport à l'appât et plus loin que lui, l'appât jamais pris pour une
+entrave (Titanus : 3,99 morts/min, 318 s — le meilleur, mais au bruit près, et la vie ôtée n'avance pas) ; l'appât sur la
+place la plus proche du boss sans toucher son corps (4,26) ; aucun bouclier sur un coup dont il sort à temps
+(Titanus 4,17 ; Graviton 2,27 et 398 s) ; les deux ensemble (4,22) ; l'esquive de la navigation (`nav::Pilot`, « Esquive du
+coup annoncé ») remplacée en combat de boss par celle de la tactique — deux esquives se contredisent parfois (la
+navigation fonce en dash dans la fissure au bord de laquelle la tactique attendait), mais sans la sienne les combats
+raccourcissent (Titanus 217 s au lieu de 258, Graviton 314 au lieu de 344). Ce qu'il faudrait : diviser les morts par trois ou
+quatre — reprendre la sortie d'un coup elle-même (le chemin jusqu'à un endroit sûr à l'instant du coup, y compris
+quitter une plateforme, au lieu du bord de la zone), pas un réglage de plus.
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`

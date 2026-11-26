@@ -126,6 +126,7 @@ struct HurtLog : WorldListener {
             last[k] = std::string(kOrigin[std::min<int>(static_cast<int>(src.origin), 6)]) + " · " + (src.attack.empty() ? "?" : src.attack);
         if (next) next->playerKilled(w, src);
     }
+    int blocked = 0;  // 2.89: blows stopped by a shield
     std::map<std::string, int> attacks;  // COSMIC_GOAT_HIST: the players' attacks by power, the damage dealt
     double dealt = 0.0;
     void attackStarted(const GameWorld& w, uint32_t tag, const std::string& power) override {
@@ -140,6 +141,7 @@ struct HurtLog : WorldListener {
         if (next) next->enemyDamaged(w, e, tag, amount);
     }
     void blowBlocked(const GameWorld& w, float amount) override {
+        ++blocked;
         if (next) next->blowBlocked(w, amount);
     }
 };
@@ -204,6 +206,7 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     std::map<std::string, int> deaths;
     const bool hist = std::getenv("COSMIC_GOAT_HIST") != nullptr;
     std::map<std::string, int> intents;
+    std::map<std::string, int> aggro;  // 2.89: COSMIC_GOAT_AGGRO
     for (; steps < limit; ++steps) {
         if (session.run().world().listener != &hurts) {
             hurts.next = session.run().world().listener;
@@ -283,6 +286,15 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 for (const auto& d : session.bots().view().dangers)
                     if (d.kind == raid::bots::Danger::Kind::FloorWave && std::fabs(d.floorY - p.feet().y) < 30.0f && std::fabs(d.area.center().x - p.center().x) < 400.0f)
                         std::printf("          onde %.0f..%.0f v %.0f dans %d haut %.0f\n", d.area.x, d.area.right(), d.speed, d.in, d.height);
+            }
+        }
+        if (std::getenv("COSMIC_GOAT_AGGRO") && steps % 12 == 0) {
+            // 2.89 (tuning runs): who the boss aims at (the player nearest it), by role and stage, every tenth of a second.
+            const GameWorld& w = session.run().world();
+            if (const Enemy* bb = gb.boss(w); bb && w.teamSize() > 0) {
+                const int k = w.targetIndex(bb->center());
+                if (w.member(k).presence == GameWorld::Presence::Playing)
+                    ++aggro[std::to_string(static_cast<int>(gb.stage())) + " · " + raid::bots::roleName(session.bots().thought(k).role)];
             }
         }
         if (std::getenv("COSMIC_GOAT_FOES") && steps % 120 == 0) {
@@ -386,6 +398,8 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
         for (const auto& [k, n] : hurts.blows) sorted.push_back({n, k});
         std::sort(sorted.rbegin(), sorted.rend());
         for (const auto& [n, k] : sorted) std::printf("      coups reçus %4d × %s\n", n, k.c_str());
+        std::printf("      boucliers %d · coups arrêtés %d\n", hurts.attacks.count("shield") ? hurts.attacks["shield"] : 0, hurts.blocked);
+        for (const auto& [k, n] : aggro) std::printf("      visé · étape %s : %d\n", k.c_str(), n);
     }
     if (hist) {
         std::vector<std::pair<int, std::string>> sorted;
