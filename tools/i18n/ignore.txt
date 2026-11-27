@@ -366,3 +366,7 @@ seg{0}
 |strip|{0}|{1}
 |s|{0}|{1}|{2}|{3}
 bests
+no
+same
+tas
+tab{0}

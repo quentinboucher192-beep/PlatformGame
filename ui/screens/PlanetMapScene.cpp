@@ -13,6 +13,7 @@
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/TasUi.h"
 #include "ui/widgets/CosmicStyle2.h"
 #include "ui/widgets/ExtremeFrame.h"
 #include "ui/widgets/Glyphs.h"
@@ -623,17 +624,24 @@ public:
         float rx = x + colW + ui.s(36), ry = y;
         ui.label("Records personnels", {rx, ry}, 22, ui.theme().textDim, Align::Left, FontFace::Bold);
         ry += ui.s(36);
-        auto line = [&](const std::string& k, const std::string& v) {
+        auto line = [&](const std::string& k, const std::string& v, Color keyColor = {}, Color valueColor = {}) {
             if (ry + ui.s(30) > bottom) return;
-            Vec2 ks = ui.label(k, {rx, ry}, 20, ui.theme().textDim);
+            Vec2 ks = ui.label(k, {rx, ry}, 20, keyColor.a ? keyColor : ui.theme().textDim);
             const float room = colW - ks.x - ui.s(14);  // the value never over its name
             const float vf = ui.fitFont(v, FontFace::Bold, 21, room, 0.7f);
-            ui.label(ui.elide(v, FontFace::Bold, vf, room), {rx + colW, ry}, vf, ui.theme().text, Align::Right, FontFace::Bold);
+            ui.label(ui.elide(v, FontFace::Bold, vf, room), {rx + colW, ry}, vf, valueColor.a ? valueColor : ui.theme().text, Align::Right, FontFace::Bold);
             ry += ui.s(31);
         };
+        // The machine's run of this version (« meilleur temps trouvé par la machine », never ranked).
+        const tas::TasRun* machine = tas::catalog().tasFor(g_, l.id, RunCategory::AnyPercent);
+        auto tasLine = [&] {
+            if (machine) line("TAS · machine (ANY%)", formatGhostTime(machine->seconds()), tasui::kTas, tasui::kTas);
+        };
         line("Temps joué", playTimeText(g_.progression.levelPlayTime(l.id)));
+        if (!(rec && rec->completions > 0)) tasLine();
         if (rec && rec->completions > 0) {
             line("Meilleur temps", LevelTimer::format(rec->bestTime));
+            tasLine();
             line("Meilleur score", std::to_string(rec->bestScore));
             line("Moins de morts", std::to_string(std::max(0, rec->fewestDeaths)));
             line("Objets collectés", std::to_string(rec->mostCollectibles) + " / " + std::to_string(rec->totalCollectibles));

@@ -9,6 +9,7 @@
 #include "game/ghost/GhostStore.h"
 #include "game/ghost/ReplayCompare.h"
 #include "game/ghost/TrainingSegments.h"
+#include "ui/screens/TasCatalog.h"
 
 namespace cosmic::replaygap {
 
@@ -179,6 +180,21 @@ RefRequest prepareSumOfBest(GameServices& g, const std::string& levelId, const s
     return req;
 }
 
+RefRequest prepareTas(GameServices& g, const std::string& levelId, const std::string& levelHash, const std::string& category) {
+    RefRequest req;
+    req.kind = RefKind::Tas;
+    RunCategory c = RunCategory::AnyPercent;
+    if (!categoryFromId(category, c)) c = RunCategory::AnyPercent;
+    (void)g;
+    if (const tas::TasRun* t = tas::catalog().tasFor(levelId, c, levelHash)) {
+        req.file = t->replayFile;
+        req.meta = t->ghost().meta;
+    } else {
+        req.missing = "Pas de TAS pour cette version du niveau.";
+    }
+    return req;
+}
+
 LoadedRef loadReference(RefRequest req) {
     LoadedRef out;
     if (!req.run) {
@@ -208,6 +224,17 @@ LoadedRef loadReference(RefRequest req) {
             return wholeRun(req, req.memory, req.meta.label.empty() ? req.meta.sourceLabel() : req.meta.label);
         }
         case RefKind::SumOfBest: return sumOfBest(req);
+        case RefKind::Tas: {
+            std::string err;
+            auto rep = GhostStore::loadReplay(req.file, &err);
+            if (!rep) {
+                out.why = "TAS illisible : " + err;
+                return out;
+            }
+            RunCategory c = RunCategory::AnyPercent;
+            categoryFromId(req.meta.category, c);
+            return wholeRun(req, std::make_shared<const ReplayData>(std::move(*rep)), "TAS " + std::string(categoryLabel(c)));
+        }
     }
     return out;
 }

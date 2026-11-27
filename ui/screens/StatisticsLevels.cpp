@@ -24,6 +24,7 @@
 #include "game/powers/PowerDefinition.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/StatisticsScene.h"
+#include "ui/screens/TasUi.h"
 
 namespace cosmic {
 
@@ -260,6 +261,12 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
         for (auto& row : segRows)
             if (pbRun) row.inPb = playstats::segmentInRun(pbRun->splits, pbRun->checkpoints.empty() ? route : pbRun->checkpoints, pbRun->time, row.from, row.to);
     }
+    // The machine's run of this version (ANY% only: the statistics count the full runs, every death
+    // included): « meilleur temps trouvé par la machine », never ranked. None: nothing of it here.
+    const tas::TasRun* machine = nullptr;
+    if (!r.version.empty() && g_.content.level(levelId))
+        if (const tas::TasRun* t = tas::catalog().tasFor(g_, levelId, RunCategory::AnyPercent); t && t->levelHash == r.version) machine = t;
+    const float tasTime = machine ? machine->seconds() : -1.0f;
     const Regularity reg = regularity(r, today_);
     const float gap = ui.s(16);
     auto checkpointName = [&](const std::string& id, bool end) { return li ? li->checkpointName(id, end) : (id.empty() ? std::string(end ? "Arrivée" : "Départ") : std::string("Point de passage")); };
@@ -377,17 +384,97 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             y += wide ? hh + gap : 2 * hh + 2 * gap;
         }
     }
+    // ----- The machine's reference (the TAS ANY%): its time, the record's and the Sum of Best's gaps to it.
+    if (machine) {
+        tasui::Pieces& P = tasui::pieces("stats");
+        P.clear({x, y, w, 0.0f});
+        const float pad = ui.s(20), g2 = ui.s(30);
+        // Measured from the right: the two buttons, then from the left the time, the two gaps, what it is.
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = fz(16);
+        const std::string bWatch = "▶ Regarder le TAS", bSheet = "Fiche du TAS…";
+        const float ww = ui.text().measure(bWatch, FontFace::Bold, ui.s(st.fontSize)).x + ui.s(36), sw = ui.text().measure(bSheet, FontFace::Bold, ui.s(st.fontSize)).x + ui.s(36);
+        const std::string k1 = "TAS ANY% · MEILLEUR TEMPS TROUVÉ PAR LA MACHINE", v1 = clockLong(tasTime);
+        const std::string k2 = "RECORD (PB) − TAS", v2 = pbTime > 0.0f ? "+" + frNum(std::max(0.0f, pbTime - tasTime), 3) + " s" : std::string("—");
+        const std::string k3 = "SOB − TAS", v3 = sob > 0.0f ? "+" + frNum(std::max(0.0f, sob - tasTime), 3) + " s" : std::string("—");
+        const std::string day = tas::dateText(machine->computedAt);
+        const std::string when = day.empty() ? "Calculé hors ligne · simulation " + std::to_string(machine->simVersion) + " · hors classement"
+                                             : "Calculé hors ligne le " + day + " · simulation " + std::to_string(machine->simVersion) + " · hors classement";
+        const std::string what = "Le meilleur trouvé par la machine, pas un optimum prouvé.";
+        const float kf = fz(12), lw14 = fz(14);
+        auto kw = [&](const std::string& k) { return ui.text().measure(k, FontFace::Bold, ui.s(kf)).x; };
+        const float aW = std::max(std::min(kw(k1), ui.s(430)), ui.text().measure(v1, FontFace::Title, ui.s(30)).x);
+        const float bW = std::max(kw(k2), ui.text().measure(v2, FontFace::Bold, ui.s(fz(22))).x);
+        const float cW = std::max(kw(k3), ui.text().measure(v3, FontFace::Bold, ui.s(fz(22))).x);
+        const float dNeed = std::max(ui.text().measure(when, FontFace::Body, ui.s(lw14)).x, ui.text().measure(what, FontFace::Body, ui.s(lw14)).x);
+        const float lead = ui.s(58);  // the diamond
+        const float buttons = ww + ui.s(12) + sw;
+        const float base = lead + aW + g2 + bW + g2 + cW + pad;
+        const bool oneRow = base + g2 + ui.s(200) + g2 + buttons + pad <= w || base + g2 + buttons + pad <= w;
+        const float dRoom = oneRow ? w - base - g2 - g2 - buttons - pad : w - base - g2;
+        const bool showWhat = dRoom >= ui.s(200);
+        // The first row measured (small windows: the fonts never go under 11.5 px, the row grows).
+        const float kh = lineHeight(ui, FontFace::Bold, ui.s(kf)) + ui.s(2);
+        const float bodyH = std::max({lineHeight(ui, FontFace::Title, ui.s(30)) - ui.s(2), lineHeight(ui, FontFace::Bold, ui.s(fz(22))),
+                                      2.0f * lineHeight(ui, FontFace::Body, ui.s(lw14))});
+        const float rowH = std::max(ui.s(74), ui.s(12) + kh + bodyH + ui.s(10));
+        const float h = oneRow ? rowH : rowH + ui.s(52);
+        const Rect strip{x, y, w, h};
+        ui.r().fillGradientH(strip, tasui::kTasCard, Color{14, 20, 40, 235});
+        ui.r().drawRoundedRect(strip, ui.s(12), tasui::kTasLine, std::max(1.0f, ui.s(1.2f)));
+        tasui::diamond(ui.r(), {x + ui.s(31), y + rowH * 0.5f}, ui.s(24), std::max(1.5f, ui.s(2.5f)));
+        float cx = x + lead;
+        const float ky = y + ui.s(12), vy = y + ui.s(12) + lineHeight(ui, FontFace::Bold, ui.s(kf)) + ui.s(2);
+        kicker(k1, {cx, ky}, tasui::kTas, 12, aW);
+        bigValue(v1, {cx, vy - ui.s(2)}, 30, aW, tasui::kTas);
+        P.add("strip/time", {cx, ky, aW, kh + bodyH});
+        cx += aW + g2;
+        kicker(k2, {cx, ky}, ui.theme().textDim, 12, bW);
+        ui.label(v2, {cx, vy}, fz(22), pbTime > 0.0f ? tasui::kBehind : ui.theme().textDim, Align::Left, FontFace::Bold);
+        P.add("strip/pb", {cx, ky, bW, kh + lineHeight(ui, FontFace::Bold, ui.s(fz(22)))});
+        cx += bW + g2;
+        kicker(k3, {cx, ky}, ui.theme().textDim, 12, cW);
+        ui.label(v3, {cx, vy}, fz(22), sob > 0.0f ? tasui::kBehind : ui.theme().textDim, Align::Left, FontFace::Bold);
+        P.add("strip/sob", {cx, ky, cW, kh + lineHeight(ui, FontFace::Bold, ui.s(fz(22)))});
+        cx += cW + g2;
+        if (showWhat) {
+            const float dw = std::min(dNeed, dRoom);
+            kicker("CE QUE C'EST", {cx, ky}, ui.theme().textDim, 12, dw);
+            const float f1 = ui.fitFont(when, FontFace::Body, lw14, dw, 0.8f), f2 = ui.fitFont(what, FontFace::Body, lw14, dw, 0.8f);
+            ui.label(ui.elide(when, FontFace::Body, f1, dw), {cx, vy}, f1, kText2);
+            ui.label(ui.elide(what, FontFace::Body, f2, dw), {cx, vy + lineHeight(ui, FontFace::Body, ui.s(f1))}, f2, ui.theme().textDim);
+            P.add("strip/what", {cx, ky, dw, vy + lineHeight(ui, FontFace::Body, ui.s(f1)) + lineHeight(ui, FontFace::Body, ui.s(f2)) - ky});
+        }
+        const float by = oneRow ? y + (rowH - ui.s(38)) * 0.5f : y + rowH + ui.s(4);
+        const float bx = x + w - pad - buttons;
+        st.primary = true;
+        const Rect rw{bx, by, ww, ui.s(38)}, rs{bx + ww + ui.s(12), by, sw, ui.s(38)};
+        if (cframe::button(ui, "tas/watch", rw, bWatch, st)) tasui::watch(g_, *machine);
+        ui.r().drawRoundedRect(rw, ui.s(8), tasui::kTas, std::max(1.0f, ui.s(1.5f)));
+        st.primary = false;
+        if (cframe::button(ui, "tas/sheet", rs, bSheet, st)) tasui::openSheet(g_, levelId, RunCategory::AnyPercent);
+        P.add("strip/watch", rw);
+        P.add("strip/sheet", rs);
+        P.frame.h = h;
+        y += h + gap;
+    }
     // ----- A row per segment of the record's route.
     {
-        const float cols[7] = {0.17f, 0.245f, 0.15f, 0.09f, 0.12f, 0.105f, 0.12f};  // picture, passage, best, in the PB, lost, consistency, actions
-        float colX[8];
+        // picture, passage, best, in the PB, (the TAS,) lost, consistency, actions
+        const float plain[7] = {0.17f, 0.245f, 0.15f, 0.09f, 0.12f, 0.105f, 0.12f};
+        const float withTas[8] = {0.15f, 0.19f, 0.135f, 0.085f, 0.10f, 0.135f, 0.09f, 0.115f};
+        const int nCols = machine ? 8 : 7;
+        const int cTas = 4, cLost = machine ? 5 : 4, cCons = cLost + 1, cAct = cLost + 2;
+        float colX[9];
         colX[0] = x;
-        for (int i = 0; i < 7; ++i) colX[i + 1] = colX[i] + w * cols[i];
-        const char* heads[6] = {"SEGMENT (APERÇU DU NIVEAU)", "PASSAGE · CE QU'ON Y TROUVE", "MEILLEUR (DANS LA SOB)", "DANS LE PB", "TEMPS PERDU", "CONSTANCE"};
+        for (int i = 0; i < nCols; ++i) colX[i + 1] = colX[i] + w * (machine ? withTas[i] : plain[i]);
+        std::vector<std::string> heads = {"SEGMENT (APERÇU DU NIVEAU)", "PASSAGE · CE QU'ON Y TROUVE", "MEILLEUR (DANS LA SOB)", "DANS LE PB", "TEMPS PERDU", "CONSTANCE"};
+        if (machine) heads.insert(heads.begin() + cTas, "TAS");
         const float hf = fz(12);
-        for (int i = 0; i < 6; ++i) {
+        for (int i = 0; i < static_cast<int>(heads.size()); ++i) {
             const float room = colX[i + 1] - colX[i] - ui.s(12);
-            kicker(heads[i], {colX[i] + (i == 0 ? ui.s(14) : ui.s(6)), y}, ui.theme().textDim, 12, room);
+            kicker(heads[static_cast<size_t>(i)], {colX[i] + (i == 0 ? ui.s(14) : ui.s(6)), y}, machine && i == cTas ? tasui::kTas : ui.theme().textDim, 12, room);
         }
         y += lineHeight(ui, FontFace::Bold, ui.s(hf)) + ui.s(10);
         auto repOf = [&](const SegRow& row) -> const SegmentReport* {
@@ -405,7 +492,7 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             const SegmentReport* rep = repOf(p);
             const Rect row{x, y, w, rowH};
             const std::string wid = "seg" + std::to_string(i);
-            const bool lit = ui.focused(wid + "/watch") || ui.focused(wid + "/train") || ui.mouseOver(row);
+            const bool lit = ui.focused(wid + "/watch") || ui.focused(wid + "/train") || ui.focused(wid + "/tas") || ui.mouseOver(row);
             ui.r().fillRoundedRect(row, ui.s(12), kCard);
             ui.r().drawRoundedRect(row, ui.s(12), lit ? ui.theme().accent : kCardLine, std::max(1.0f, ui.s(lit ? 1.5f : 1.0f)));
             const float a = atOf(p.from, false), b = atOf(p.to, true);
@@ -452,9 +539,28 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             // In the record: the segment's time in the record run.
             ui.label(p.inPb > 0.0f ? clockLong(p.inPb) : std::string("—"), {colX[3] + ui.s(6), row.center().y}, 22,
                      p.inPb > 0.0f ? ui.theme().text : ui.theme().textDim, Align::Left, FontFace::Title, VAlign::Middle);
-            // Time lost: its time in the record − its best.
+            // The machine's time on the segment (its part of the TAS), ▶ Voir: that segment of its replay.
+            const int64_t tasSeg = machine ? machine->segment(p.from, p.to) : -1;
+            if (machine) {
+                const float tx = colX[cTas] + ui.s(6), room = colX[cTas + 1] - tx - ui.s(8);
+                if (tasSeg > 0) {
+                    bigValue(clockLong(static_cast<float>(tasSeg) / 1000.0f), {tx, cy}, 22, room, tasui::kTas);
+                    UIContext::ButtonStyle st;
+                    st.small = true;
+                    st.fontSize = fz(15);
+                    const float vb = lineHeight(ui, FontFace::Title, ui.s(22)) + ui.s(10);
+                    const Rect br{tx, cy + vb, std::min(room, ui.s(120)), std::min(ui.s(34), row.bottom() - ui.s(8) - (cy + vb))};
+                    if (cframe::button(ui, wid + "/tas", br, ui.elide("▶ Voir", FontFace::Bold, fz(15), br.w - ui.s(12)), st))
+                        tasui::watchSegment(g_, *machine, p.from, p.to, nm);
+                    ui.r().drawRoundedRect(br, ui.s(6), tasui::kTasLine, std::max(1.0f, ui.s(1.0f)));
+                } else {
+                    // The machine's route does not cross these two checkpoints in this order.
+                    ui.label("—", {tx, row.center().y}, fz(18), ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+                }
+            }
+            // Time lost: its time in the record − its best (and, under it, − the machine's).
             {
-                const float lx = colX[4] + ui.s(6), room = colX[5] - lx - ui.s(12);
+                const float lx = colX[cLost] + ui.s(6), room = colX[cLost + 1] - lx - ui.s(12);
                 if (p.inPb > 0.0f && p.best > 0.0f) {
                     const float lost = std::max(0.0f, p.inPb - p.best);
                     const bool worst = lost > 0.0f && lost >= worstLost - 1e-4f;
@@ -464,14 +570,27 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                     const float k = worstLost > 0.0f ? std::clamp(lost / worstLost, 0.0f, 1.0f) : 0.0f;
                     if (lost > 0.0f) ui.r().fillRoundedRect({tr.x, tr.y, std::max(ui.s(6), tr.w * k), tr.h}, ui.s(4), worst ? ui.theme().danger : ui.theme().warm);
                     const float mf = fz(12);
-                    ui.label(ui.elide("dans le PB − meilleur", FontFace::Body, mf, room), {lx, tr.bottom() + ui.s(6)}, mf, ui.theme().textDim);
+                    const float capY = tr.bottom() + ui.s(6), capH = lineHeight(ui, FontFace::Body, ui.s(mf));
+                    const float vsY = capY + capH + ui.s(2), vsF = fz(14), vsH = lineHeight(ui, FontFace::Bold, ui.s(vsF));
+                    const bool vsTas = tasSeg > 0;
+                    // « face au TAS » under the caption when both fit in the row, else in its place.
+                    const bool caption = !vsTas || vsY + vsH <= row.bottom() - ui.s(4);
+                    if (caption) ui.label(ui.elide("dans le PB − meilleur", FontFace::Body, mf, room), {lx, capY}, mf, ui.theme().textDim);
+                    if (vsTas) {
+                        const float d = p.inPb - static_cast<float>(tasSeg) / 1000.0f;
+                        const std::string v = (d >= 0.0f ? "+" : "-") + frNum(std::abs(d), 3) + " s";
+                        const float ty = caption ? vsY : capY;
+                        const Vec2 vs = ui.label(v, {lx, ty}, vsF, d > 0.0f ? tasui::kBehind : ui.theme().success, Align::Left, FontFace::Bold);
+                        const float rest = room - vs.x - ui.s(5);
+                        if (rest > ui.s(30)) ui.label(ui.elide("face au TAS", FontFace::Body, vsF, rest), {lx + vs.x + ui.s(5), ty}, vsF, kText2);
+                    }
                 } else {
                     ui.label("—", {lx, row.center().y}, fz(18), ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
                 }
             }
             // Consistency (the full runs' times).
             {
-                const float kx = colX[5] + ui.s(6), room = colX[6] - kx - ui.s(8);
+                const float kx = colX[cCons] + ui.s(6), room = colX[cCons + 1] - kx - ui.s(8);
                 if (rep && rep->count > 0) {
                     ui.label(frNum(rep->spread * 100.0, 1) + " %", {kx, cy}, fz(18), ui.theme().text, Align::Left, FontFace::Bold);
                     const std::string d = "dispersion · " + std::to_string(rep->count) + (rep->count > 1 ? " passages" : " passage");
@@ -486,7 +605,7 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                 UIContext::ButtonStyle st;
                 st.small = true;
                 st.fontSize = fz(16);
-                const float bw = x + w - ui.s(14) - colX[6] - ui.s(4), bx = colX[6] + ui.s(4);
+                const float bw = x + w - ui.s(14) - colX[cAct] - ui.s(4), bx = colX[cAct] + ui.s(4);
                 const bool canWatch = p.rec && p.rec->replay.has() && !key.empty();
                 const float bh = ui.s(38), bg = ui.s(10);
                 float by = row.center().y - (canWatch ? bh + bg * 0.5f : bh * 0.5f);
@@ -551,9 +670,22 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             if (!so.pts.empty() && so.pts.back().x < static_cast<float>(today_)) so.pts.push_back({static_cast<float>(today_), so.pts.back().y});
             if (!pb.pts.empty()) pb.endLabel = clockTime(pb.pts.back().y);
             if (!so.pts.empty()) so.endLabel = clockTime(so.pts.back().y);
+            // The machine's time, the same over the whole period (computed for this version).
+            Series ma{"TAS (machine)", tasui::kTas, Series::Kind::Step, false, {}};
+            if (machine && !so.pts.empty()) {
+                ma.pts = {{so.pts.front().x, tasTime}, {so.pts.back().x, tasTime}};
+                ma.endLabel = "TAS " + clockTime(tasTime);
+                lo = std::min(lo, tasTime);
+            }
             LineSpec spec;
             spec.series = {pb, so};
             spec.bands.push_back({0, 1, ui.theme().warm.withAlpha(40)});
+            if (!ma.pts.empty()) {
+                spec.series.push_back(ma);
+                LineSpec::Band band{1, 2, tasui::kTas.withAlpha(150)};
+                band.hatched = true;
+                spec.bands.push_back(band);
+            }
             spec.endLabels = true;
             const float pad = hi > lo ? std::max(1.0f, (hi - lo) * 0.2f) : 5.0f;
             spec.yMin = hi > 0.0f ? std::max(0.0f, std::floor((lo - pad) / 5.0f) * 5.0f) : 0.0f;
@@ -562,7 +694,8 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
             spec.xLabel = [](float v) { return dayShort(static_cast<int>(v)); };
             auto hist = history;
             const Color pbc = ui.theme().accent, sbc = kSeries[0], gapc = ui.theme().warm;
-            spec.tip = [hist, pbc, sbc, gapc](float xv, Tip& t) {
+            const float tasT = ma.pts.empty() ? -1.0f : tasTime;
+            spec.tip = [hist, pbc, sbc, gapc, tasT](float xv, Tip& t) {
                 t.title = dayNamed(static_cast<int>(xv));
                 const SobPoint* p = nullptr;
                 for (const auto& h : hist)
@@ -570,21 +703,32 @@ float StatisticsScene::drawLevels(float x, float y0, float w) {
                 if (!p) return;
                 t.rows.push_back({pbc, "Record (PB)", clockTime(p->pb)});
                 t.rows.push_back({sbc, "Somme des meilleurs", clockTime(p->sob)});
+                if (tasT > 0.0f) t.rows.push_back({tasui::kTas, "TAS (machine)", clockTime(tasT)});
                 if (p->pb > 0.0f && p->sob > 0.0f) t.rows.push_back({gapc, "Temps gagnable", clockTime(std::max(0.0f, p->pb - p->sob))});
+                if (tasT > 0.0f && p->sob > 0.0f) t.rows.push_back({tasui::kTas.withAlpha(150), "Écart à la machine", clockTime(std::max(0.0f, p->sob - tasT))});
             };
             std::vector<std::vector<std::string>> rows;
-            for (auto it = history.rbegin(); it != history.rend(); ++it)
+            for (auto it = history.rbegin(); it != history.rend(); ++it) {
                 rows.push_back({dayLong(it->day), clockTime(it->pb), clockTime(it->sob),
                                 it->pb > 0.0f && it->sob > 0.0f ? clockTime(std::max(0.0f, it->pb - it->sob)) : std::string("—")});
-            const std::vector<LegendItem> leg = {{ui.theme().accent, "Record (PB)", 0, {}}, {kSeries[0], "Somme des meilleurs", 0, {}},
-                                                 {ui.theme().warm.withAlpha(140), "Temps gagnable", 2, {}}};
+                if (tasT > 0.0f) rows.back().push_back(it->sob > 0.0f ? clockTime(std::max(0.0f, it->sob - tasT)) : std::string("—"));
+            }
+            std::vector<LegendItem> leg = {{ui.theme().accent, "Record (PB)", 0, {}}, {kSeries[0], "Somme des meilleurs", 0, {}},
+                                           {ui.theme().warm.withAlpha(140), "Temps gagnable", 2, {}}};
+            if (tasT > 0.0f) {
+                leg.insert(leg.begin() + 2, {tasui::kTas, "TAS (machine)", 0, {}});
+                leg.push_back({tasui::kTas.withAlpha(150), "Écart à la machine", 5, {}});
+            }
             CardHead h;
             h.title = "ÉVOLUTION DU RECORD ET DE LA SOMME DES MEILLEURS";
-            h.sub = "Un point à chaque date où l'un des deux a changé · la bande = temps gagnable (PB − SOB)";
+            h.sub = tasT > 0.0f ? "Un point à chaque date où l'un d'eux a changé · bandes : temps gagnable (PB − SOB) et écart à la machine (SOB − TAS)"
+                                : "Un point à chaque date où l'un des deux a changé · la bande = temps gagnable (PB − SOB)";
             h.table = "sob";
             h.legend = leg;
             Rect in = card({x, y, lw, ch}, h);
-            if (tables_["sob"]) tableIn("sob", in, {"Jour", "Record (PB)", "Somme des meilleurs", "Temps gagnable"}, rows);
+            std::vector<std::string> head = {"Jour", "Record (PB)", "Somme des meilleurs", "Temps gagnable"};
+            if (tasT > 0.0f) head.push_back("Écart à la machine");
+            if (tables_["sob"]) tableIn("sob", in, head, rows);
             else if (pb.pts.empty() && so.pts.empty()) emptyIn("sob", in, "Finissez le niveau depuis son début pour voir votre record et votre somme des meilleurs.");
             else charts::lineChart(ui, "c/sob", in, spec, cursorOf("sob"), tip_);
         }

@@ -70,6 +70,8 @@ struct LineSpec {
     struct Band {
         size_t upper = 0, lower = 1;
         Color fill;
+        /// Hatched: `fill` faint, crossed by lines of its colour (the gap to the machine's run, the TAS).
+        bool hatched = false;
     };
     std::vector<Band> bands;
     /// 2.91: a mark over a point (a star: the first victory), drawn by `draw` centred above it.
@@ -79,6 +81,8 @@ struct LineSpec {
     };
     std::vector<Mark> marks;
 };
+/// Diagonal hatching of `c` over `r` (its lines `step` apart): a hatched band, its legend's swatch.
+void hatch(UIContext& ui, const Rect& r, Color c, float step);
 /// A curve chart in `r`. `cursor`: the point the keyboard cursor is on (index in the x values
 /// of every series), kept by the caller.
 void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSpec& s, int& cursor, Tip& tip);

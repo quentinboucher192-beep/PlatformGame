@@ -53,6 +53,7 @@
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/ReplayGapSources.h"
 #include "ui/screens/ReplayGapView.h"
+#include "ui/screens/TasUi.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -96,6 +97,15 @@ public:
         levelId_ = r->levelId;
         playerName_ = a_.meta.label;
         timeMs_ = r->durationMs;
+    }
+    /// The TAS's own replay (« meilleur temps trouvé par la machine »): its category, never ranked;
+    /// the playback starts at `at` seconds (the sheet's route clicked there).
+    void watchTas(const tas::TasRun& t, double at) {
+        watchingTas_ = true;
+        a_.meta.source = "tas";
+        a_.meta.category = categoryId(t.category);
+        a_.meta.levelVersion = t.levelVersion;
+        startAt_ = at > 0.0 ? at : -1.0;
     }
     /// Two replays compared on `levelId`.
     ReplayScene(GameServices& g, std::string levelId, ReplayChoice a, ReplayChoice b)
@@ -208,10 +218,18 @@ public:
         r.setView(view);
         if ((comparing_ && showPaths_) || !playback_) drawPaths(r, view);
         if (!playback_) drawGhost(r, view, animA_, poseA(), kColorA, 0.95f);
-        if (comparing_) drawGhost(r, view, animB_, poseB(), kColorB, ghostAlpha());
+        if (comparing_ && b_.meta.source == "tas") drawTasGhost(r, view, animB_, poseB(), ghostAlpha());  // the TAS keeps its look as B
+        else if (comparing_) drawGhost(r, view, animB_, poseB(), kColorB, ghostAlpha());
         GhostTrack::Pose refPose;
         const bool refShown = !comparing_ && refGhostPose(refPose);
-        if (refShown) drawGhost(r, view, animRef_, refPose, kColorB, 0.7f);
+        const bool refTas = gapKind_ == replaygap::RefKind::Tas;
+        if (refShown && refTas) drawTasGhost(r, view, animRef_, refPose, 0.85f);
+        else if (refShown) drawGhost(r, view, animRef_, refPose, kColorB, 0.7f);
+        refOffscreen_ = false;
+        if (refShown && refTas) {
+            const Vec2 sp = view.toScreen({refPose.feet.x, refPose.feet.y - 14.0f});
+            refOffscreen_ = !layout_.worldArea.contains(sp);
+        }
         drawGates(r);
         r.setView(WorldView{});
         hudRects_.clear();
@@ -348,6 +366,10 @@ private:
         playing_ = true;
         g_.ui.setFocus("replay/play");
         applyAutomation();
+        if (startAt_ >= 0.0) {
+            seekTo(std::min(startAt_, endTime()));
+            startAt_ = -1.0;
+        }
     }
 
     /// Automated screenshots (--replay-view): "at=<s>,offset=<ms>,align=<row>,cam=<n>,pause",
@@ -534,6 +556,7 @@ private:
         switch (kind) {
             case replaygap::RefKind::Record: req = replaygap::prepareRecord(g_, levelId_, a_.replay->levelHash); break;
             case replaygap::RefKind::SumOfBest: req = replaygap::prepareSumOfBest(g_, levelId_, a_.replay->levelHash); break;
+            case replaygap::RefKind::Tas: req = replaygap::prepareTas(g_, levelId_, a_.replay->levelHash, tasCategory()); break;
             case replaygap::RefKind::Other:
                 if (!otherRef_) return;
                 req.kind = replaygap::RefKind::Other;
@@ -547,6 +570,39 @@ private:
         req.bounds = level_.bounds;
         slot.started = true;
         slot.job = std::async(std::launch::async, [r = std::move(req)]() mutable { return replaygap::loadReference(std::move(r)); });
+    }
+
+    /// The category of the replay watched (« ANY_PERCENT » for a run of the campaign without one).
+    std::string tasCategory() const {
+        RunCategory c = RunCategory::AnyPercent;
+        return categoryFromId(a_.meta.category, c) ? a_.meta.category : std::string(categoryId(RunCategory::AnyPercent));
+    }
+    /// The machine's run of this version in the replay's category: the viewer's « TAS » reference
+    /// (nullptr: the level has none for this version, or the replay watched is the TAS itself).
+    const tas::TasRun* viewerTas() const {
+        if (comparing_ || watchingTas_ || !a_.replay || levelId_.empty()) return nullptr;
+        RunCategory c = RunCategory::AnyPercent;
+        categoryFromId(tasCategory(), c);
+        return tas::catalog().tasFor(levelId_, c, a_.replay->levelHash);
+    }
+    /// R: Record (PB) → Somme des meilleurs → TAS (when there is one) → Record (PB).
+    void cycleGapRef() {
+        using K = replaygap::RefKind;
+        K next = gapKind_ == K::Record ? K::SumOfBest : gapKind_ == K::SumOfBest ? (viewerTas() ? K::Tas : K::Record) : K::Record;
+        selectGapRef(next);
+        g_.uiSound("ui_move", 0.6f);
+    }
+    /// « Comparer avec le TAS »: the existing comparison, A this replay, B the TAS of its category.
+    void compareWithTas() {
+        const tas::TasRun* t = viewerTas();
+        if (!t) return;
+        auto rep = loadTasReplay(*t, tas::catalog().root());
+        if (!rep) return;
+        ReplayChoice b;
+        b.replay = std::make_shared<const ReplayData>(std::move(*rep));
+        b.meta = t->ghost().meta;
+        ReplayChoice a = a_;
+        applyChoice(std::move(a), std::move(b));
     }
 
     const replaygap::LoadedRef* viewerRef() const {
@@ -1111,6 +1167,13 @@ private:
         }
     }
 
+    /// The machine's ghost (the TAS as the reference, or as B): its own look (tasui::drawGhost).
+    void drawTasGhost(Renderer& r, const WorldView& view, Animator& anim, const GhostTrack::Pose& p, float alpha) {
+        if (!p.visible || static_cast<PlayerState>(p.state) == PlayerState::Hidden || !anim.set() || !anim.set()->texture) return;
+        const bool flip = (p.flags & ReplayFrame::FacingLeft) != 0;
+        tasui::drawGhost(r, *anim.set()->texture, anim.sourceRect(), anim.destRect(p.feet, flip), flip, alpha, view.scale, g_.ui.time());
+    }
+
     void drawGhost(Renderer& r, const WorldView& view, Animator& anim, const GhostTrack::Pose& p, Color c, float alpha) {
         if (!p.visible || static_cast<PlayerState>(p.state) == PlayerState::Hidden || !anim.set() || !anim.set()->texture) return;
         bool flip = (p.flags & ReplayFrame::FacingLeft) != 0;
@@ -1287,11 +1350,14 @@ private:
         if (liveRect_.w > 0.0f) hudRects_.push_back(liveRect_.expanded(ui.s(4)));
         if (!comparing_) {
             const replaygap::LoadedRef* ref = viewerRef();
-            if (refPose && ref) tag(ref->name, refPose->feet, kColorB);
+            if (refPose && ref) {
+                if (gapKind_ == replaygap::RefKind::Tas) tag("TAS", refPose->feet, tasui::kTas);
+                else tag(ref->name, refPose->feet, kColorB);
+            }
             return;
         }
         tag("A · " + displayName(a_.meta), feetA(), kColorA);
-        tag("B · " + displayName(b_.meta), poseB().feet, kColorB);
+        tag("B · " + displayName(b_.meta), poseB().feet, b_.meta.source == "tas" ? tasui::kTas : kColorB);
     }
 
     /// 2.75: « Vu en tant qu'admin (profil masqué) » at the top of the view, all along the playback (measured).
@@ -1345,6 +1411,10 @@ private:
                 if (sign > 0) return "en retard sur la somme des meilleurs à cet instant";
                 if (sign < 0) return "en avance sur la somme des meilleurs à cet instant";
                 return "à égalité avec la somme des meilleurs à cet instant";
+            case replaygap::RefKind::Tas:
+                if (sign > 0) return refOffscreen_ ? "en retard sur le TAS à cet instant · son fantôme est hors de l'image" : "en retard sur le TAS à cet instant";
+                if (sign < 0) return refOffscreen_ ? "en avance sur le TAS à cet instant · son fantôme est hors de l'image" : "en avance sur le TAS à cet instant";
+                return "à égalité avec le TAS à cet instant";
             case replaygap::RefKind::Other: break;
         }
         if (sign > 0) return "en retard sur l'autre replay à cet instant";
@@ -1374,6 +1444,7 @@ private:
             case replaygap::RefKind::Record: return "ÉCART AU RECORD (PB), EN DIRECT";
             case replaygap::RefKind::SumOfBest:
                 return curveReady_ && !curve_.continuous ? "ÉCART À LA SOMME DES MEILLEURS, AUX POINTS DE PASSAGE" : "ÉCART À LA SOMME DES MEILLEURS, EN DIRECT";
+            case replaygap::RefKind::Tas: return "ÉCART AU TAS, EN DIRECT";
             case replaygap::RefKind::Other: break;
         }
         return "ÉCART À L'AUTRE REPLAY, EN DIRECT";
@@ -1593,6 +1664,7 @@ private:
         std::string head = "TEMPS DE PASSAGE";
         if (gapKind_ == replaygap::RefKind::Record) head += " · ÉCART AU PB";
         else if (gapKind_ == replaygap::RefKind::SumOfBest) head += " · ÉCART À LA SOMME DES MEILLEURS";
+        else if (gapKind_ == replaygap::RefKind::Tas) head += " · ÉCART AU TAS";
         else head += " · ÉCART À L'AUTRE REPLAY";
         const float hf = ui.fitFont(head, FontFace::Bold, fz(ui, 15), inner, 0.8f);
         ui.label(ui.elide(head, FontFace::Bold, hf, inner), {x, y}, hf, th.textDim, Align::Left, FontFace::Bold);
@@ -1614,7 +1686,12 @@ private:
         size_t n = splitsA_.size() + 1;
         float mh = measureBoxH();  // 2.91: the measure A → B under the list (when the list keeps two rows)
         if (area.bottom() - pad - y - mh - ui.s(8) < 2.0f * std::max(ui.s(30), lineH(15) + ui.s(6))) mh = 0.0f;
-        Rect list{area.x + ui.s(4), y, area.w - ui.s(8), area.bottom() - pad - y - (mh > 0.0f ? mh + ui.s(8) : 0.0f)};
+        // The TAS as the reference: what it is, in a box under the list (when the list keeps two rows).
+        const tas::TasRun* machine = gapKind_ == replaygap::RefKind::Tas ? viewerTas() : nullptr;
+        float tasH = machine ? tasBoxH(inner) : 0.0f;
+        if (tasH > 0.0f && area.bottom() - pad - y - mh - (mh > 0.0f ? ui.s(8) : 0.0f) - tasH - ui.s(8) < 2.0f * std::max(ui.s(30), lineH(15) + ui.s(6))) tasH = 0.0f;
+        Rect list{area.x + ui.s(4), y, area.w - ui.s(8),
+                  area.bottom() - pad - y - (mh > 0.0f ? mh + ui.s(8) : 0.0f) - (tasH > 0.0f ? tasH + ui.s(8) : 0.0f)};
         ui.beginScroll("rows", list, static_cast<float>(n) * rh);
         float ry = list.y - ui.scrollOffset();
         int64_t t = clockMs();
@@ -1650,8 +1727,49 @@ private:
             }
         }
         ui.endScroll();
+        if (tasH > 0.0f) drawTasBox(*machine, {x, list.bottom() + ui.s(8), inner, tasH});
         if (mh > 0.0f) drawMeasureBox({x, area.bottom() - pad - mh, inner, mh});
         ui.popId();
+    }
+
+    /// « RÉFÉRENCE : TAS ANY% »: the time, what it is (the machine, the versions, the date), never
+    /// ranked, and its sheet (F, or a click on the box).
+    std::vector<std::pair<std::string, float>> tasBoxLines(const tas::TasRun& t) const {
+        std::vector<std::pair<std::string, float>> l;
+        l.push_back({"RÉFÉRENCE : TAS " + std::string(categoryLabel(t.category)), 13.0f});
+        l.push_back({tas::timeText(t.timeMs) + " · meilleur trouvé par la machine", 15.0f});
+        std::string v = "Niveau v" + std::to_string(t.levelVersion) + " · simulation " + std::to_string(t.simVersion);
+        if (const std::string d = tas::dateText(t.computedAt); !d.empty()) v += " · calculé le " + d;
+        l.push_back({v, 14.0f});
+        l.push_back({"Hors classement · Fiche du TAS… (F)", 14.0f});
+        return l;
+    }
+    float tasBoxH(float w) {
+        const tas::TasRun* t = viewerTas();
+        if (!t) return 0.0f;
+        float h = g_.ui.s(12) * 2.0f;
+        for (const auto& line : tasBoxLines(*t)) h += lineH(line.second);
+        (void)w;
+        return h;
+    }
+    void drawTasBox(const tas::TasRun& t, const Rect& box) {
+        UIContext& ui = g_.ui;
+        bool hovered = false;
+        const bool open = ui.hotspot("tasbox", box, &hovered);
+        ui.r().fillRoundedRect(box, ui.s(10), tasui::kTasCard.withAlpha(150));
+        ui.r().drawRoundedRect(box, ui.s(10), hovered || ui.focused("tasbox") ? tasui::kTas : tasui::kTasLine, std::max(1.0f, ui.s(1.5f)));
+        const float pad = ui.s(14), inner = box.w - 2 * pad;
+        float y = box.y + ui.s(12);
+        const auto lines = tasBoxLines(t);
+        for (size_t i = 0; i < lines.size(); ++i) {
+            const auto& [text, size] = lines[i];
+            const FontFace f = i == 0 || i == 3 ? FontFace::Bold : FontFace::Body;
+            const float fs = ui.fitFont(text, f, fz(ui, size), inner, 0.75f);
+            const Color c = i == 0 || i == 3 ? tasui::kTas : i == 1 ? Color{200, 211, 226, 255} : ui.theme().textDim;
+            ui.label(ui.elide(text, f, fs, inner), {box.x + pad, y}, fs, c, Align::Left, f);
+            y += lineH(size);
+        }
+        if (open) tasui::openSheet(g_, t.levelId, t.category);
     }
 
     // -------------------------------------------------------- comparison
@@ -1695,7 +1813,7 @@ private:
             y += bs + ui.s(2);
             std::string info = how;
             if (c.meta.levelVersion > 0) info += " · v" + std::to_string(c.meta.levelVersion);
-            info += c.meta.validated ? " · vérifié en ligne" : " · local";
+            info += c.meta.source == "tas" ? " · machine, hors classement" : c.meta.validated ? " · vérifié en ligne" : " · local";
             if (!run.splitsExact && !run.splitsMs.empty()) info += " · passages à 1/30 s près";
             ui.label(ui.elide(info, FontFace::Body, fz(ui, 13), right - nx), {nx, y}, fz(ui, 13), th.textDim);
             y += lineH(13) + ui.s(4);
@@ -2164,6 +2282,9 @@ private:
                 n = std::to_string(s.res.withReplay) + " segments sur " + std::to_string(s.res.segments) + " ont leur replay : comparé aux points de passage seulement";
         } else if (gapKind_ == replaygap::RefKind::Record && s.res.sameRun) {
             n = "ce replay est votre record : écart nul";
+        } else if (gapKind_ == replaygap::RefKind::Tas) {
+            if (const tas::TasRun* t = viewerTas()) n = s.res.name + " · v" + std::to_string(t->levelVersion) + " · lu sur son replay, en continu";
+            else n = s.res.name;
         } else if (gapKind_ == replaygap::RefKind::Other) {
             n = "référence : " + s.res.name;
         } else if (curveReady_ && !curve_.continuous) {
@@ -2186,9 +2307,12 @@ private:
         };
         std::vector<Seg> refs, units;
         if (!comparing_)
+        {
             refs = {{"pb", "Record (PB)", gapKind_ == replaygap::RefKind::Record},
-                    {"sob", "Somme des meilleurs", gapKind_ == replaygap::RefKind::SumOfBest},
-                    {"other", "Autre replay…", gapKind_ == replaygap::RefKind::Other}};
+                    {"sob", "Somme des meilleurs", gapKind_ == replaygap::RefKind::SumOfBest}};
+            if (viewerTas()) refs.push_back({"tas", "TAS", gapKind_ == replaygap::RefKind::Tas});
+            refs.push_back({"other", "Autre replay…", gapKind_ == replaygap::RefKind::Other});
+        }
         units = {{"time", "En temps", !gapDistance_}, {"dist", "En distance", gapDistance_}};
         const std::string kicker = comparing_ ? "ÉCART A − B" : "ÉCART À LA RÉFÉRENCE";
         const float kf = fz(ui, 14), pad = ui.s(22), segGap = ui.s(3), groupGap = ui.s(14);
@@ -2224,6 +2348,8 @@ private:
                 const float bw = segW(s);
                 st.selected = s.on;
                 if (ui.button(s.id, {x, row.y, bw, row.h}, s.label, st)) pressed = s.id;
+                if (std::string(s.id) == "tas")
+                    ui.r().drawRoundedRect({x, row.y, bw, row.h}, ui.s(6), s.on ? tasui::kTas : tasui::kTasLine, std::max(1.0f, ui.s(s.on ? 2.0f : 1.2f)));
                 x += bw + segGap;
             }
             x += groupGap - segGap;
@@ -2259,6 +2385,7 @@ private:
         }
         if (pressed == "pb") selectGapRef(replaygap::RefKind::Record);
         else if (pressed == "sob") selectGapRef(replaygap::RefKind::SumOfBest);
+        else if (pressed == "tas") selectGapRef(replaygap::RefKind::Tas);
         else if (pressed == "other") {
             if (gapKind_ != replaygap::RefKind::Other && otherRef_) selectGapRef(replaygap::RefKind::Other);
             else openOtherReference();
@@ -2280,6 +2407,7 @@ private:
                                  {"speed", std::string("Vitesse ") + kSpeedLabels[static_cast<size_t>(speedIdx_)], 2}};
         std::vector<Btn> right;
         if (playback_ && playback_->desynced()) right.push_back({"trace", "Voir la trajectoire", 8});
+        if (viewerTas()) right.push_back({"comparetas", "Comparer avec le TAS", 7});
         right.push_back({"info", showInfo_ ? "Masquer les infos" : "Afficher les infos", 6});
         right.push_back({"compare", comparing_ ? "Changer A / B…" : "Comparer…", 5});
         right.push_back({"close", "Retour", 9});
@@ -2314,6 +2442,7 @@ private:
             float bw = natural(*it);
             rx -= bw;
             if (ui.button(it->id, {rx, y, bw, h}, it->label, st)) pressed = it->id;
+            if (std::string(it->id) == "comparetas") ui.r().drawRoundedRect({rx, y, bw, h}, ui.s(8), tasui::kTas, std::max(1.0f, ui.s(1.5f)));
             if (std::string(it->id) == "info") ui.newBadge(it->id, {rx, y, bw, h}, "replay.info_toggle");  // « NOUVEAU » (2.30.1)
             rx -= gap;
         }
@@ -2328,6 +2457,7 @@ private:
         else if (pressed == "fwd5") seekRelative(5.0);
         else if (pressed == "speed") speedIdx_ = (speedIdx_ + 1) % static_cast<int>(kSpeeds.size());
         else if (pressed == "trace") switchToTrace();
+        else if (pressed == "comparetas") compareWithTas();
         else if (pressed == "compare") openCompare();
         else if (pressed == "info") toggleInfo();
         else if (pressed == "close") closeRequested_ = true;
@@ -2402,6 +2532,7 @@ private:
                      {{{"", B::axisPos(SDL_GAMEPAD_AXIS_RIGHTX)}}, "±5 s"}};
             if (comparing_) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_NORTH)}}, "caméra"});
             hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_BACK)}}, "infos"});
+            if (viewerTas()) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_NORTH)}}, "comparer avec le TAS"});
             if (g_.measures.inReplays) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_BACK)}, {"", B::button(SDL_GAMEPAD_BUTTON_DPAD_UP)}}, "point de mesure"});
         } else {
             hints = {{{{"K", {}}}, "lecture"}, {{{",", {}}, {".", {}}}, "image"}, {{{"J", {}}, {"L", {}}}, "±5 s"},
@@ -2410,7 +2541,9 @@ private:
                 hints.push_back({{{"C", {}}}, "caméra"});
                 hints.push_back({{{"R", {}}}, "recaler"});
             }
+            if (!comparing_) hints.push_back({{{"R", {}}}, viewerTas() ? "référence (PB, SOB, TAS)" : "référence (PB, SOB)"});
             hints.push_back({{{"I", {}}}, "infos"});
+            if (viewerTas()) hints.push_back({{{"T", {}}}, "comparer avec le TAS"});
             if (g_.measures.inReplays) hints.push_back({{{"F8", {}}}, "point de mesure"});
         }
         const float h = std::max(ui.s(22), px(13) * 1.5f);
@@ -2494,6 +2627,18 @@ private:
             if (key(SDLK_C)) cycleCamera();
             if (key(SDLK_T)) showPaths_ = !showPaths_;
             if (key(SDLK_R)) alignOn(alignRow_);
+        } else {
+            if (key(SDLK_R)) cycleGapRef();
+            if (const tas::TasRun* t = viewerTas()) {
+                if (key(SDLK_T)) {
+                    compareWithTas();
+                    return;
+                }
+                if (key(SDLK_F)) {
+                    tasui::openSheet(g_, t->levelId, t->category);
+                    return;
+                }
+            }
         }
         // Gamepad: X play / pause, triggers step by step (held: repeated), right stick ±5 s,
         // Y the camera.
@@ -2504,7 +2649,10 @@ private:
             return e;
         };
         if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST), padX_)) togglePlay();
-        if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), padY_) && comparing_) cycleCamera();
+        if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), padY_)) {
+            if (comparing_) cycleCamera();
+            else if (viewerTas()) compareWithTas();
+        }
         // Vue alone shows / hides the infos (when let go); held with ↑, a measure point (2.91, as
         // in training; ↑ then moves nothing between the buttons).
         {
@@ -2620,7 +2768,11 @@ private:
     replaygap::RefKind gapKind_ = replaygap::RefKind::Record;
     bool gapKindChosen_ = false;
     bool gapDistance_ = false;  // the curve in metres
-    std::array<GapRefSlot, 3> gapRefs_;
+    std::array<GapRefSlot, replaygap::kRefKinds> gapRefs_;
+    bool watchingTas_ = false;    // the replay watched is the TAS itself (makeTasReplayViewer)
+    double startAt_ = -1.0;       // where the playback starts (the sheet's route clicked)
+    bool refOffscreen_ = false;   // the reference's ghost is out of the view (the live counter says so)
+    bool padNorthTas_ = false;    // Y held (« Comparer avec le TAS » once per press)
     std::shared_ptr<const ReplayData> otherRef_;  // « Autre replay… »
     GhostMeta otherMeta_;
     std::future<RouteRun> runAJob_, runBJob_;
@@ -2692,6 +2844,12 @@ std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& reco
 
 std::unique_ptr<Scene> makeLocalReplayViewer(GameServices& g, ReplayData replay, const std::string& title, const std::string& adminNote) {
     return std::make_unique<ReplayScene>(g, std::move(replay), title, adminNote);
+}
+
+std::unique_ptr<Scene> makeTasReplayViewer(GameServices& g, ReplayData replay, const tas::TasRun& t, double at) {
+    auto s = std::make_unique<ReplayScene>(g, std::move(replay), "TAS · " + std::string(categoryLabel(t.category)) + " · meilleur temps trouvé par la machine");
+    s->watchTas(t, at);
+    return s;
 }
 
 std::unique_ptr<Scene> makeReplayCompare(GameServices& g, const std::string& levelId, ReplayChoice a, ReplayChoice b) {

@@ -428,6 +428,12 @@
    ]
   },
   {
+   "fr": "-{0} s",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "0 (vous seul)",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -902,6 +908,12 @@
    "fr": ": vérification manuelle.",
    "where": [
     "server/src/records.ts"
+   ]
+  },
+  {
+   "fr": "= ANY%",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -3508,7 +3520,8 @@
    "where": [
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -4068,6 +4081,7 @@
     "ui/screens/SegmentsScene.cpp",
     "ui/screens/StatisticsArt.cpp",
     "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TasSheetScene.cpp",
     "ui/screens/TrainingSession.cpp",
     "ui/widgets/Charts.cpp"
    ]
@@ -5643,6 +5657,7 @@
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PlanetMapScene.cpp",
+    "ui/screens/TasSheetScene.cpp",
     "ui/studio/StudioCanvas.cpp",
     "ui/widgets/HitPartsView.cpp"
    ]
@@ -7358,6 +7373,12 @@
    "fr": "Autre replay…",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "autre version",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -10517,6 +10538,36 @@
    ]
   },
   {
+   "fr": "Calculé hors ligne le {0} · simulation {1} · hors classement",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Calculé hors ligne · simulation {0} · hors classement",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "calculé hors ligne, relu à l'identique par le moteur · hors classement",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Calculé le",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "calculé le {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "calculée d'après ses PV, ses phases et ses attaques",
    "where": [
     "ui/widgets/BossSheetWidgets.h"
@@ -11030,10 +11081,29 @@
    ]
   },
   {
+   "fr": "CATÉGORIE",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Catégorie",
    "where": [
     "ui/screens/OnlineThreadScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "Catégorie du TAS",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "catégorie inconnue",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -11740,6 +11810,12 @@
    ]
   },
   {
+   "fr": "CE QUE C'EST",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "CE QUE LE CLAN A ACCOMPLI",
    "where": [
     "ui/widgets/HeartSheetView.cpp"
@@ -12049,6 +12125,12 @@
    "fr": "ce tag est réservé",
    "where": [
     "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "Ce TAS n'est plus valable pour la version installée du niveau : il reviendra une fois recalculé.",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -13468,6 +13550,7 @@
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/tas/TasFile.cpp",
     "packaging/DependencyCollector.cpp",
     "ui/online/RaidHud.cpp"
    ]
@@ -14381,6 +14464,7 @@
    "where": [
     "game/online/OnlineService.cpp",
     "ui/screens/OnlineThreadScene.cpp",
+    "ui/screens/TasSheetScene.cpp",
     "ui/studio/StudioFrise.cpp"
    ]
   },
@@ -14804,6 +14888,12 @@
    "fr": "Clic ou validation : simuler sa chute (ou la relever)",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clic sur le trajet : la visionneuse s'ouvre à cet instant",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -15623,6 +15713,12 @@
    ]
   },
   {
+   "fr": "COMMENT IL EST FAIT",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Comment l'éviter",
    "where": [
     "ui/widgets/BossSheetWidgets.cpp"
@@ -15879,6 +15975,24 @@
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Comparer avec le TAS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "comparer avec le TAS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Comparer avec mon record",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -18081,6 +18195,18 @@
    ]
   },
   {
+   "fr": "Course contre le fantôme TAS",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course contre le TAS",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Course contre les fantômes : courez contre vos fantômes (meilleur temps, record précédent, dernière course), le record mondial, les records de vos amis ou un replay importé, jusqu'à 8 à la fois.",
    "where": [
     "data/news/changelog.json"
@@ -18983,6 +19109,12 @@
    ]
   },
   {
+   "fr": "CUMUL",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Curaçao",
    "where": [
     "data/online/countries.json",
@@ -19608,6 +19740,12 @@
    "fr": "dans le PB − meilleur",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Dans le TAS",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -20951,6 +21089,12 @@
    "fr": "Description de vos modifications (facultatif)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dessin du niveau…",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -23758,6 +23902,7 @@
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/StatisticsArt.cpp",
     "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TasSheetScene.cpp",
     "ui/screens/TrainingSession.cpp",
     "ui/widgets/Charts.cpp"
    ]
@@ -23988,6 +24133,12 @@
    "fr": "Désynchronisé",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "désynchronisé au pas {0}",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -24309,6 +24460,12 @@
    ]
   },
   {
+   "fr": "Effort de recherche",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "El Salvador",
    "where": [
     "data/online/countries.json",
@@ -24579,6 +24736,12 @@
    ]
   },
   {
+   "fr": "empreinte du niveau invalide",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "empreinte incorrecte pour « {0} »",
    "where": [
     "server/src/backups.ts"
@@ -24739,6 +24902,18 @@
   },
   {
    "fr": "en avance sur le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur le TAS à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en avance sur le TAS à cet instant · son fantôme est hors de l'image",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -25171,6 +25346,18 @@
   },
   {
    "fr": "en retard sur le record à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur le TAS à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "en retard sur le TAS à cet instant · son fantôme est hors de l'image",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -27225,6 +27412,12 @@
    ]
   },
   {
+   "fr": "face au TAS",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Facile",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -27846,6 +28039,26 @@
    ]
   },
   {
+   "fr": "FICHE DU TAS",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche du TAS",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche du TAS…",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Fiche provisoire : en attente de validation",
    "where": [
     "game/online/RaidRecap.cpp"
@@ -27928,6 +28141,12 @@
    "fr": "Fichier .cplanet",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "fichier absent",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -28412,6 +28631,12 @@
     "server/src/coopRace.ts",
     "server/src/race.ts",
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "Fin du segment du TAS",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -28929,6 +29154,7 @@
     "game/progression/NewsCenter.cpp",
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidCatalog.cpp",
+    "game/tas/TasFile.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
@@ -28937,6 +29163,12 @@
     "ui/screens/GameScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "format inconnu",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -32148,6 +32380,18 @@
    ]
   },
   {
+   "fr": "Hors classement · Fiche du TAS… (F)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "hors classement, jamais compté",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "hors combat",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
@@ -33431,6 +33675,12 @@
    "fr": "Importé",
    "where": [
     "game/content/ContentDatabase.cpp"
+   ]
+  },
+  {
+   "fr": "impossible : {0}",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -35293,6 +35543,7 @@
    "fr": "JSON invalide",
    "where": [
     "game/online/LevelFingerprint.cpp",
+    "game/tas/TasFile.cpp",
     "server/src/campaignRevisions.ts",
     "server/src/enemyRevisions.ts",
     "server/src/live.ts",
@@ -39765,6 +40016,24 @@
    ]
   },
   {
+   "fr": "Le meilleur temps que notre recherche automatique a trouvé sur le moteur du jeu. Ce n'est pas un optimum prouvé : un joueur, ou une meilleure recherche, peut le battre.",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le meilleur temps trouvé par notre recherche hors ligne, pas un optimum prouvé : il peut être battu.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le meilleur trouvé par la machine, pas un optimum prouvé.",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Le message auquel vous répondez n'existe plus.",
    "where": [
     "server/src/projects.ts"
@@ -39914,6 +40183,18 @@
    "fr": "Le métal en fusion referme la fonderie !",
    "where": [
     "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "Le même parcours que l'ANY% : sans mort ni dégât, il vaut aussi pour cette catégorie. C'est le meilleur temps que notre recherche automatique a trouvé : un joueur, ou une meilleure recherche, peut le battre.",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le même parcours que l'ANY% : sans mort, il vaut aussi pour cette catégorie. C'est le meilleur temps que notre recherche automatique a trouvé : un joueur, ou une meilleure recherche, peut le battre.",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -40581,6 +40862,12 @@
    ]
   },
   {
+   "fr": "le replay s'arrête avant l'arrivée",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Le revoir : depuis la fiche de l'événement (« Après Asterion », à côté de « Revoir la victoire »), la fiche récapitulative du raid du clan et Collection › Galerie › Films, avec les films d'Asterion et la bande-annonce. Il est débloqué pour ceux qui ont pris part à un événement où le Cœur est tombé, puis pour tous dès que l'issue « Asterion est tombé » est officielle. Sans connexion, le plan des clans dit « les clans de la galaxie ».",
    "where": [
     "data/news/changelog.json"
@@ -40869,6 +41156,12 @@
    "fr": "Le talon de Titanus, au bout de la jambe droite : un colosse de forge qui écrase tout. Trois phases : ses ondes de choc, son talon sur chacun, puis la forge à nu ; ses deux entraves se brisent ensemble pour le mettre à genou.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Le TAS n'est pas classé",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -41268,6 +41561,12 @@
    "fr": "Lecture du replay impossible.",
    "where": [
     "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
+   "fr": "lecture du replay…",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -43840,6 +44139,12 @@
    ]
   },
   {
+   "fr": "lus pendant la vérification…",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Luxembourg",
    "where": [
     "data/online/countries.json",
@@ -43931,6 +44236,26 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "MACHINE",
+   "where": [
+    "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "MACHINE · HORS CLASSEMENT",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "machine, hors classement",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -44858,6 +45183,24 @@
    ]
   },
   {
+   "fr": "Meilleur temps trouvé par la machine",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
+   "fr": "meilleur temps trouvé par la machine",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur temps trouvé par la machine, hors classement",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur {0}",
    "where": [
     "ui/screens/TrainingSession.cpp"
@@ -44867,6 +45210,12 @@
    "fr": "meilleur − somme",
    "where": [
     "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "MEILLEUR − TAS",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -46218,6 +46567,12 @@
    ]
   },
   {
+   "fr": "MON MEILLEUR",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Mon meilleur",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -46286,10 +46641,23 @@
    ]
   },
   {
+   "fr": "MON RECORD",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Mon record",
    "where": [
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/SegmentsScene.cpp",
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mon record ({0})",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -46711,6 +47079,12 @@
    "fr": "MORTS PAR HEURE DE JEU",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Morts · dégâts subis",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -47380,6 +47754,12 @@
    ]
   },
   {
+   "fr": "ni dégât",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Nicaragua",
    "where": [
     "data/online/countries.json",
@@ -47450,6 +47830,12 @@
    "fr": "Niveau : {0}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau absent",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -47927,6 +48313,12 @@
    ]
   },
   {
+   "fr": "Niveau v{0} · simulation {1}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau vérifié !",
    "where": [
     "game/online/OnlineService.cpp"
@@ -48335,6 +48727,12 @@
    "fr": "Nom du projet ou du propriétaire",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "nom du replay invalide",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -52212,6 +52610,12 @@
    ]
   },
   {
+   "fr": "Pas de TAS pour cette version du niveau.",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
+   ]
+  },
+  {
    "fr": "Pas de tirage prévu : choisissez-le ici.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -52514,6 +52918,12 @@
    "fr": "Pas un frisson",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "pas un objet JSON",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -55479,13 +55889,15 @@
     "ui/screens/PauseScene.cpp",
     "ui/screens/StatisticsArt.cpp",
     "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TasSheetScene.cpp",
     "ui/screens/TrainingSession.cpp"
    ]
   },
   {
    "fr": "Point de passage {0}",
    "where": [
-    "ui/screens/StatisticsArt.cpp"
+    "ui/screens/StatisticsArt.cpp",
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -55661,6 +56073,12 @@
    "fr": "points de passage espacés",
    "where": [
     "game/levels/DifficultyRating.cpp"
+   ]
+  },
+  {
+   "fr": "points de passage, numérotés comme le tableau",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -56545,6 +56963,12 @@
    "fr": "Pouvoirs portés au maximum",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Pouvoirs utilisés",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -59998,6 +60422,12 @@
    ]
   },
   {
+   "fr": "RECORD (PB) − TAS",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Record : {0}",
    "where": [
     "ui/screens/SobMontageScene.cpp"
@@ -60083,6 +60513,18 @@
    "fr": "Record mondial battu de plus de 20 %",
    "where": [
     "server/src/records.ts"
+   ]
+  },
+  {
+   "fr": "record mondial à {0} du TAS",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Record mondial − TAS",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -60673,6 +61115,12 @@
    ]
   },
   {
+   "fr": "REGARDER",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Regarder",
    "where": [
     "ui/screens/AdminScene.cpp",
@@ -60867,9 +61315,21 @@
    ]
   },
   {
+   "fr": "rejoué par le moteur… {0} %",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "rejoué à l'identique",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "rejoué à l'identique · {0} contrôles",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -61361,6 +61821,7 @@
     "game/ghost/GhostStore.cpp",
     "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
+    "game/tas/TasFile.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CommunityPublishScene.cpp"
    ]
@@ -61369,6 +61830,12 @@
    "fr": "REPLAY - {0}",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "replay absent",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -61388,6 +61855,12 @@
    "fr": "replay d'un autre niveau.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "replay d'une autre version du niveau",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -61425,6 +61898,12 @@
    "fr": "Replay favori",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "replay illisible",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -61584,6 +62063,12 @@
    "fr": "Replay refusé.",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "replay sans entrées",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -62174,6 +62659,7 @@
     "ui/screens/SobMontageScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TasSheetScene.cpp",
     "ui/studio/StudioDoc.cpp",
     "ui/widgets/CosmicFrame.h"
    ]
@@ -62895,6 +63381,7 @@
    "where": [
     "game/race/Race.cpp",
     "game/records/PlayStats.cpp",
+    "game/tas/TasFile.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -63725,9 +64212,27 @@
    ]
   },
   {
+   "fr": "référence (PB, SOB)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "référence (PB, SOB, TAS)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Référence : le tir chargé coûte 20 ; une attaque moins forte coûte moins.",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "RÉFÉRENCE : TAS {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -65963,6 +66468,12 @@
    ]
   },
   {
+   "fr": "SEGMENT",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Segment",
    "where": [
     "ui/screens/GhostRun.cpp",
@@ -66006,6 +66517,18 @@
    "fr": "SEGMENT D'OR · {0}",
    "where": [
     "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "SEGMENT DU TAS · MACHINE",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Segment du TAS · machine · {0}",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -67334,6 +67857,12 @@
    "fr": "SOB {0}",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "SOB − TAS",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -70177,7 +70706,9 @@
   {
    "fr": "T",
    "where": [
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -70534,6 +71065,12 @@
    ]
   },
   {
+   "fr": "Taille du replay",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "taille décompressée invalide",
    "where": [
     "game/online/Replay.cpp",
@@ -70615,6 +71152,88 @@
    "where": [
     "data/enemies/titan.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "TAS",
+   "where": [
+    "ui/screens/GhostRun.cpp",
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TasCatalog.cpp",
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS (machine)",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS : meilleur trouvé par la machine, hors classement",
+   "where": [
+    "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "TAS ANY% · MEILLEUR TEMPS TROUVÉ PAR LA MACHINE",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "TAS de ce niveau",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS illisible : {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp"
+   ]
+  },
+  {
+   "fr": "TAS {0}",
+   "where": [
+    "ui/screens/ReplayGapSources.cpp",
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "TAS · machine",
+   "where": [
+    "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "TAS · machine (ANY%)",
+   "where": [
+    "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS · machine, hors classement",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS · {0}",
+   "where": [
+    "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "TAS · {0} · meilleur temps trouvé par la machine",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -70717,6 +71336,12 @@
    ]
   },
   {
+   "fr": "temps absent",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "Temps classé",
    "where": [
     "game/online/OnlineService.cpp"
@@ -70784,6 +71409,12 @@
    ]
   },
   {
+   "fr": "Temps de la machine : {0}",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Temps de participation",
    "where": [
     "game/online/Raids.cpp"
@@ -70799,6 +71430,12 @@
    "fr": "TEMPS DE PASSAGE",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEMPS DE PASSAGE DU TAS",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -71445,6 +72082,12 @@
    ]
   },
   {
+   "fr": "terminer le plus vite possible",
+   "where": [
+    "ui/screens/TasUi.cpp"
+   ]
+  },
+  {
    "fr": "Terminer le test (pour tous les joueurs)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -71499,9 +72142,21 @@
    ]
   },
   {
+   "fr": "terminer sans mourir",
+   "where": [
+    "ui/screens/TasUi.cpp"
+   ]
+  },
+  {
    "fr": "Terminer sans mourir.",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "terminer sans subir de dégât",
+   "where": [
+    "ui/screens/TasUi.cpp"
    ]
   },
   {
@@ -72808,7 +73463,8 @@
   {
    "fr": "Total",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -73173,6 +73829,12 @@
    "fr": "Tous les pouvoirs du niveau",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "tous les éclats et reliques",
+   "where": [
+    "ui/screens/TasUi.cpp"
    ]
   },
   {
@@ -73744,6 +74406,12 @@
    "fr": "Trajet sous le sol",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Trajet sur le niveau",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -75456,6 +76124,12 @@
    ]
   },
   {
+   "fr": "Un point à chaque date où l'un d'eux a changé · bandes : temps gagnable (PB − SOB) et écart à la machine (SOB − TAS)",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
    "fr": "Un point à chaque date où l'un des deux a changé · la bande = temps gagnable (PB − SOB)",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
@@ -76399,6 +77073,12 @@
    "fr": "Une seule progression sur cet ordinateur",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Une seule recherche générique, lancée chez nous et jamais sur votre ordinateur, joue la simulation déterministe (120 images par seconde) et garde la course la plus rapide qu'elle trouve. Le résultat est un replay ordinaire : le jeu le rejoue à l'identique, c'est la preuve qu'il est faisable. Il est livré avec les niveaux et recalculé quand le niveau ou la simulation change.",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -78099,6 +78779,18 @@
    ]
   },
   {
+   "fr": "Version de la simulation",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "version de la simulation absente",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "version de manifeste {0} inconnue",
    "where": [
     "server/src/backups.ts"
@@ -78193,6 +78885,12 @@
    ]
   },
   {
+   "fr": "Version du niveau",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Version du niveau différente de celle du serveur",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -78221,6 +78919,12 @@
    "where": [
     "server/src/projects.ts",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "version installée",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -80642,6 +81346,12 @@
    ]
   },
   {
+   "fr": "Vérification",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "Vérification d'un niveau EXTRÊME que j'ai tenté",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -81428,6 +82138,18 @@
    ]
   },
   {
+   "fr": "{0}  ·  version installée",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}  ·  version {1} (classée)",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}  ·  {1}  ·  non lue",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -81569,6 +82291,12 @@
    "fr": "{0} (choisie avec le sélecteur ou la palette)",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (classée)",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -83009,6 +83737,12 @@
    ]
   },
   {
+   "fr": "{0} d'essais explorés",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} d'énergie",
    "where": [
     "ui/widgets/PowerLabels.cpp"
@@ -83371,6 +84105,12 @@
    "fr": "{0} essais cette séance",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} essais explorés",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -84081,6 +84821,7 @@
     "ui/screens/AdminBackups.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/StatisticsScene.cpp",
+    "ui/screens/TasSheetScene.cpp",
     "ui/studio/StudioImport.cpp"
    ]
   },
@@ -85691,6 +86432,12 @@
    ]
   },
   {
+   "fr": "{0} · le TAS n'est pas classé",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · masquée",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -85700,6 +86447,18 @@
    "fr": "{0} · masquée · profil masqué",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · MEILLEUR TEMPS TROUVÉ PAR LA MACHINE",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · meilleur trouvé par la machine",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -85935,6 +86694,12 @@
    "fr": "{0} · votre instance",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · v{1} · lu sur son replay, en continu",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -86523,6 +87288,12 @@
    "fr": "« Mode concentré » : nom raccourci dans la pause et les touches.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Mon meilleur » : chaque meilleur segment, d'où qu'il vienne ; leur total est la somme des meilleurs (SOB).",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -87254,6 +88025,12 @@
    ]
   },
   {
+   "fr": "à égalité avec le TAS à cet instant",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "À équiper",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -87347,6 +88124,12 @@
    ]
   },
   {
+   "fr": "ÉCART",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "Écart",
    "where": [
     "ui/screens/GhostRun.cpp",
@@ -87379,6 +88162,18 @@
   },
   {
    "fr": "ÉCART AU RECORD (PB), EN DIRECT",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART AU TAS",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART AU TAS, EN DIRECT",
    "where": [
     "ui/screens/ReplayScene.cpp"
    ]
@@ -87477,6 +88272,12 @@
    "fr": "ÉCART À L'AUTRE REPLAY, EN DIRECT",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Écart à la machine",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
    ]
   },
   {
@@ -88094,7 +88895,8 @@
   {
    "fr": "Éclats et reliques",
    "where": [
-    "saves/HudLayout.cpp"
+    "saves/HudLayout.cpp",
+    "ui/screens/TasSheetScene.cpp"
    ]
   },
   {
@@ -89722,6 +90524,26 @@
   },
   {
    "fr": "▶ Regarder",
+   "where": [
+    "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "▶ Regarder le TAS",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/StatisticsLevels.cpp",
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "▶ TAS",
+   "where": [
+    "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "▶ Voir",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
    ]

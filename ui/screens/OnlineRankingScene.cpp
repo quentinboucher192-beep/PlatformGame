@@ -23,6 +23,7 @@
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/OnlineNav.h"
 #include "ui/screens/ReplayDownloadUi.h"
+#include "ui/screens/TasUi.h"
 #include "ui/screens/Thumbnail.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -152,6 +153,13 @@ public:
         drawLevelZone();
         drawRankAnimation();
         ReplayDownloadUi::drawTip(g_);  // the download icons' tooltip, over the rest
+        if (top && ui.acceptsInput() && !ui.editingText())
+            if (const tas::TasRun* t = boardTas()) {
+                InputManager& in = g_.app.input();
+                if (in.shortcutPressed(SDLK_T) || (in.hasGamepad() && in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH) && !padNorth_))
+                    tasui::openSheet(g_, t->levelId, t->category);
+            }
+        padNorth_ = g_.app.input().hasGamepad() && g_.app.input().rawPadButton(SDL_GAMEPAD_BUTTON_NORTH);
         if (top && ui.backPressed()) g_.app.switchScene(makeMainMenu(g_));
         ui.inputEnabled = true;
         if (top) ui.end();
@@ -678,6 +686,7 @@ private:
     void drawBoardZone() {
         UIContext& ui = g_.ui;
         ui.panel(zoneC_, false, 14);
+        tasui::pieces("ranking").clear(zoneC_);
         ui.pushId("online/board");
         int tab = tab_;
         std::vector<std::string> labels(std::begin(kTabs), std::end(kTabs));
@@ -1301,9 +1310,96 @@ private:
             ui.r().fillRoundedRect({list.x, list.y + i * (rowH + gap), list.w, rowH}, ui.s(6), Color{20, 30, 56, static_cast<uint8_t>(80 + 60 * a)});
     }
 
-    void drawEntries(const Rect& list) {
+    /// The machine's run of the level in the category chosen: NIVEAU tab only (never GLOBAL, AMIS,
+    /// PAYS nor PLANÈTE: no points, no rank, no total); nullptr when the level has none for its version.
+    const tas::TasRun* boardTas() {
+        const RankedLevel* l = level();
+        if (tab_ != TabLevel || !l || !l->entry || showRace()) return nullptr;
+        return tas::catalog().tasFor(g_, l->id, category());
+    }
+
+    /// « +17.367 s » (the rankings' own format: a point, the milliseconds).
+    static std::string boardGap(int64_t ms) {
+        const int64_t a = ms < 0 ? -ms : ms;
+        char buf[40];
+        if (a >= 60000) std::snprintf(buf, sizeof buf, "%c%lld:%02lld.%03lld", ms < 0 ? '-' : '+', static_cast<long long>(a / 60000),
+                                      static_cast<long long>((a / 1000) % 60), static_cast<long long>(a % 1000));
+        else std::snprintf(buf, sizeof buf, "%c%lld.%03lld s", ms < 0 ? '-' : '+', static_cast<long long>(a / 1000), static_cast<long long>(a % 1000));
+        return buf;
+    }
+
+    /// The world record of the board shown (its time in ms, 0 unknown).
+    int64_t worldRecordMs() const {
+        if (!levelBoard() || !board_.error.empty()) return 0;
+        for (const auto& e : board_.entries)
+            if (jget<int>(e, "world_rank", jget<int>(e, "rank", 0)) == 1) return jget<int64_t>(e, "time_ms", 0);
+        return 0;
+    }
+
+    /// The TAS's row, pinned above n°1: no rank, no flag, no comments; the gap of the world record to it,
+    /// ▶ to watch it; a click (or T / Y) opens its sheet.
+    void drawTasEntry(const tas::TasRun& t, const Rect& row) {
+        UIContext& ui = g_.ui;
+        tasui::Pieces& P = tasui::pieces("ranking");
+        if (ui.listItem("tasrow", row, "", false, "", tasui::kTas)) tasui::openSheet(g_, t.levelId, t.category);
+        ui.r().fillGradientH({row.x + ui.s(2), row.y + ui.s(2), row.w * 0.6f, row.h - ui.s(4)}, tasui::kTasDeep.withAlpha(170), tasui::kTasDeep.withAlpha(0));
+        ui.r().drawRoundedRect(row, ui.s(6), tasui::kTasLine, std::max(1.0f, ui.s(1.2f)));
+        tasui::diamond(ui.r(), {row.x + ui.s(26), row.center().y}, ui.s(19), std::max(1.5f, ui.s(2.5f)));
+        const float nx = row.x + ui.s(50);
+        const std::string value = formatRunTime(t.timeMs);
+        const float rx = row.right() - ui.s(10);
+        const float vw = ui.text().measure(value, FontFace::Bold, ui.s(18)).x;
+        ui.label(value, {rx, row.center().y}, 18, tasui::kTas, Align::Right, FontFace::Bold, VAlign::Middle);
+        P.add("tas/time", {rx - vw, row.center().y - ui.s(11), vw, ui.s(22)});
+        float right = rx - vw - ui.s(12);
+        // ▶: its replay, in the viewer.
+        if (right - nx > ui.s(120)) {
+            const Rect vb{right - ui.s(40), row.center().y - ui.s(14), ui.s(40), ui.s(28)};
+            UIContext::ButtonStyle vst;
+            vst.small = true;
+            if (ui.button("taswatch", vb, "", vst)) tasui::watch(g_, t);
+            const Vec2 c = vb.center();
+            ui.r().fillTriangle({c.x - ui.s(5), c.y - ui.s(7)}, {c.x - ui.s(5), c.y + ui.s(7)}, {c.x + ui.s(7), c.y}, tasui::kTas);
+            P.add("tas/watch", vb);
+            right = vb.x - ui.s(10);
+        }
+        const float room = std::max(ui.s(40), right - nx);
+        // Two lines measured: « TAS » and its pill, then the world record's gap to it (or what it is).
+        const std::string pill = "MACHINE · HORS CLASSEMENT";
+        const float pf = std::max(10.5f, 11.5f / ui.s(1.0f));
+        const Vec2 nsz = ui.text().measure("TAS", FontFace::Bold, ui.s(18));
+        const float pw = tasui::pill(ui, pill, {0.0f, 0.0f}, pf, false);
+        const float ph = ui.text().measure(pill, FontFace::Bold, ui.s(pf)).y + ui.s(pf * 0.5f);
+        const int64_t wr = worldRecordMs();
+        const std::string line = wr > 0 ? "record mondial à " + boardGap(wr - t.timeMs) + " du TAS" : std::string("meilleur temps trouvé par la machine");
+        const float lf = ui.fitFont(line, FontFace::Body, std::max(13.5f, 11.5f / ui.s(1.0f)), room, 0.8f);
+        const float lh = ui.s(lf) * 1.2f;
+        const bool pillShown = nsz.x + ui.s(10) + pw <= room && std::max(nsz.y, ph) + lh <= row.h - ui.s(2);
+        const float h1 = pillShown ? std::max(nsz.y, ph) : nsz.y;
+        const float spare = std::max(0.0f, row.h - h1 - lh) / 3.0f;
+        const float y1 = row.y + spare + h1 * 0.5f, y2 = row.bottom() - spare - lh * 0.5f;
+        ui.label("TAS", {nx, y1}, 18, tasui::kTas, Align::Left, FontFace::Bold, VAlign::Middle);
+        P.add("tas/name", {nx, y1 - nsz.y * 0.5f, nsz.x, nsz.y});
+        if (pillShown) {
+            tasui::pill(ui, pill, {nx + nsz.x + ui.s(10), y1}, pf);
+            P.add("tas/pill", {nx + nsz.x + ui.s(10), y1 - ph * 0.5f, pw, ph});
+        }
+        const std::string ls = ui.elide(line, FontFace::Body, lf, room);
+        ui.label(ls, {nx, y2}, lf, Color{200, 211, 226, 255}, Align::Left, FontFace::Body, VAlign::Middle);
+        P.add("tas/line", {nx, y2 - lh * 0.5f, ui.text().measure(ls, FontFace::Body, ui.s(lf)).x, lh});
+    }
+
+    void drawEntries(const Rect& listIn) {
         UIContext& ui = g_.ui;
         float rowH = ui.s(46), gap = ui.s(5);
+        Rect list = listIn;
+        // The machine's run, pinned above n°1 (it comes with the game: offline and without account too).
+        if (const tas::TasRun* t = boardTas()) {
+            const Rect row{list.x, list.y, list.w - ui.s(10), ui.s(58)};
+            drawTasEntry(*t, row);
+            list.y += row.h + ui.s(8);
+            list.h -= row.h + ui.s(8);
+        }
         if (drawUnusable(list)) return;
         if (board_.loading && board_.entries.empty()) {
             drawSkeleton(list);
@@ -1371,8 +1467,25 @@ private:
             info = std::to_string(board_.total) + " joueur" + (board_.total > 1 ? "s" : "") + " classé" + (board_.total > 1 ? "s" : "") +
                    " · records vérifiés uniquement";
         }
-        ui.label(info, {f.x + ui.s(14), f.y + ui.s(26)}, 15, c, Align::Left, FontFace::Body, VAlign::Middle);
-        if (board_.me.is_object() && board_.me.contains("pending") && board_.me["pending"].is_object()) {
+        const tas::TasRun* machine = boardTas();
+        if (machine && !board_.fromCache) {
+            // The machine's run is above the board, never in it: said once.
+            const std::string with = info.empty() ? std::string("Le TAS n'est pas classé") : info + " · le TAS n'est pas classé";
+            if (ui.text().measure(with, FontFace::Body, ui.s(15)).x <= f.w - ui.s(28)) info = with;
+        }
+        const float infoF = ui.fitFont(info, FontFace::Body, 15, f.w - ui.s(28), 0.8f);
+        ui.label(ui.elide(info, FontFace::Body, infoF, f.w - ui.s(28)), {f.x + ui.s(14), f.y + ui.s(26)}, infoF, c, Align::Left, FontFace::Body, VAlign::Middle);
+        const bool pending = board_.me.is_object() && board_.me.contains("pending") && board_.me["pending"].is_object();
+        if (machine && !pending) {
+            // T / Y: its sheet (the line under the count, left of « Actualiser »).
+            const float hh = ui.s(24);
+            const float w = tasui::keyHint(ui, "T", SDL_GAMEPAD_BUTTON_NORTH, "Fiche du TAS", {0.0f, 0.0f}, hh, 15, false);
+            if (f.x + ui.s(14) + w <= f.right() - ui.s(132) - ui.s(10)) {
+                tasui::keyHint(ui, "T", SDL_GAMEPAD_BUTTON_NORTH, "Fiche du TAS", {f.x + ui.s(14), f.y + ui.s(56)}, hh, 15);
+                tasui::pieces("ranking").add("hint/sheet", {f.x + ui.s(14), f.y + ui.s(56) - hh * 0.5f, w, hh});
+            }
+        }
+        if (pending) {
             const Json& pd = board_.me["pending"];
             ui.label("Votre temps " + formatRunTime(jget<int64_t>(pd, "time_ms", 0)), {f.x + ui.s(14), f.y + ui.s(56)}, 15, ui.theme().text,
                      Align::Left, FontFace::Body, VAlign::Middle);
@@ -1460,11 +1573,19 @@ private:
         float nf = ui.fitFont(l->name, FontFace::Title, 26, textRight - x, 0.7f);
         ui.label(ui.elide(l->name, FontFace::Title, nf, textRight - x), {x, zoneD_.y + ui.s(54)}, nf, ui.theme().text, Align::Left, FontFace::Title,
                  VAlign::Middle);
-        float col2 = x + std::min(ui.s(330), (zoneD_.right() - x) * 0.5f);
+        // The machine's run of the level (any category: the one chosen, else none): a third column.
+        const tas::TasRun* machine = l->entry ? tas::catalog().tasFor(g_, l->id, category()) : nullptr;
+        const bool levelTas = l->entry && tas::catalog().any(g_, l->id);
+        const float colW = machine ? (textRight - x) / 3.0f : std::min(ui.s(330), (zoneD_.right() - x) * 0.5f);
+        float col2 = x + colW;
+        const float col3 = x + 2.0f * colW;
         float y = zoneD_.y + ui.s(88);
-        auto info = [&](float cx, float& yy, const std::string& k, const std::string& v, Color c) {
-            ui.label(k, {cx, yy}, 14, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-            ui.label(v, {cx, yy + ui.s(19)}, 18, c, Align::Left, FontFace::Bold, VAlign::Middle);
+        auto info = [&](float cx, float& yy, const std::string& k, const std::string& v, Color c, Color kc = {}) {
+            // Measured: the label and the value each in their column (smaller, then shortened).
+            const float room = (machine ? colW : textRight - cx) - ui.s(12);
+            const float kf = ui.fitFont(k, FontFace::Body, 14, room, 0.8f), vf = ui.fitFont(v, FontFace::Bold, 18, room, 0.7f);
+            ui.label(ui.elide(k, FontFace::Body, kf, room), {cx, yy}, kf, kc.a ? kc : ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            ui.label(ui.elide(v, FontFace::Bold, vf, room), {cx, yy + ui.s(19)}, vf, c, Align::Left, FontFace::Bold, VAlign::Middle);
             yy += ui.s(46);
         };
         float y1 = y, y2 = y;
@@ -1487,6 +1608,12 @@ private:
         }
         info(col2, y2, "Position mondiale", pos, ui.theme().accent);
         info(col2, y2, "Meilleur temps mondial", best, GlobeRenderer::tierColor(MarkerTier::Gold));
+        if (machine) {
+            float y3 = y;
+            info(col3, y3, "TAS · machine, hors classement", formatRunTime(machine->timeMs), tasui::kTas, tasui::kTas);
+            const int64_t wr = worldRecordMs();
+            info(col3, y3, "Record mondial − TAS", wr > 0 ? boardGap(wr - machine->timeMs) : std::string("—"), wr > 0 ? tasui::kBehind : ui.theme().textDim);
+        }
         // Local performance status (LOCAL / PENDING / VERIFIED / REJECTED).
         const OnlineAttempt* latest = nullptr;
         for (const auto& a : g_.online.attempts().all())
@@ -1500,7 +1627,7 @@ private:
         const float ah = ui.s(30);
         auto actionY = [&](int i) { return zoneD_.y + ui.s(12) + ui.s(36) * static_cast<float>(i); };
         // One font and one size for the five: the largest at which every label fits whole.
-        static const char* const kActions[] = {"Voir le replay", "Comparer…", "Défier ce temps", "Envoyer le record", "Jouer ce niveau"};
+        static const char* const kActions[] = {"Voir le replay", "Comparer…", "Défier ce temps", "Envoyer le record", "Jouer ce niveau", "Fiche du TAS…"};
         // « Voir le replay » shares its line with the download icon (2.45).
         const float dlW = ah + ui.s(6), gapW = ui.s(6);
         st.fontSize = 18.0f;
@@ -1553,8 +1680,17 @@ private:
             po.fromOnline = true;
             g_.app.switchScene(makeGameScene(g_, l->id, po));
         }
+        int lastAction = 4;
+        if (levelTas) {
+            // Its sheet (the category chosen when it has one there, else its first).
+            st.primary = false;
+            st.enabled = true;
+            if (ui.button("tassheet", {bx, actionY(5), bw, ah}, "Fiche du TAS…", st)) tasui::openSheet(g_, l->id, category());
+            ui.r().drawRoundedRect({bx, actionY(5), bw, ah}, ui.s(6), tasui::kTasLine, std::max(1.0f, ui.s(1.2f)));
+            lastAction = 5;
+        }
         if (unsent > 0)
-            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, actionY(4) + ah + ui.s(10)}, 13, ui.theme().warm, Align::Center,
+            ui.label(std::to_string(unsent) + " performance(s) à envoyer", {bx + bw * 0.5f, actionY(lastAction) + ah + ui.s(10)}, 13, ui.theme().warm, Align::Center,
                      FontFace::Body, VAlign::Middle);
         drawLevelSocial({x, zoneD_.y + ui.s(186), bx - ui.s(14) - x, ui.s(38)}, *l);
         // Different revision locally and on the server: warn (records are never mixed).
@@ -1710,6 +1846,7 @@ private:
     bool accountAsked_ = false;
     int levelIdx_ = 0;
     int category_ = 0;
+    bool padNorth_ = false;  // Y held (its sheet opens once per press)
     int period_ = 0;
     int tab_ = TabLevel;
     std::string country_;
