@@ -34,6 +34,8 @@ public:
     int avatarCount() const { return 16; }
     std::string avatarName(int i) const;
     void drawStatusChip(RecordStatus s, Vec2 pos, float height) const;
+    /// 2.95: its width at that height (placed after a measured text, never over another).
+    float statusChipWidth(RecordStatus s, float height) const;
     /// The connection's dot (centred on `pos`) and its status (2.72: « En ligne - 25ms », the
     /// round trip measured on the network thread), the text measured into `room` pixels from
     /// `pos.x` (0: the 240-pixel slot the screens keep at the right of their header): smaller,

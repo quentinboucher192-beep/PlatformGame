@@ -1,4 +1,9 @@
 {
+  "2.95.0": [
+    "SOB : un segment se chronomètre depuis sa première entrée — une réapparition ne le fait plus jamais partir (fini le segment de boss en 22 s des Ruines Suspendues) — et ne compte qu'après le segment d'avant joué en entier ; l'entraînement d'un segment part du précédent (élan non compté) ; les startpos se posent sur le tracé de la SOB et partent de l'état réel de ce meilleur replay ; F5 à F8 répondent dans tout entraînement ; SOB remises à zéro, records gardés.",
+    "ADMINISTRATION › TAS : les administrateurs améliorent les courses de la machine sur leur propre ordinateur (plusieurs niveaux à la fois, un verrou par niveau, catégorie et version), les publient, et chaque jeu les rejoue avant de les montrer.",
+    "Classements : la pastille d'état du record (VÉRIFIÉ, EN ATTENTE…) se place juste après le record personnel, sans plus chevaucher la colonne voisine."
+  ],
   "2.94.1": [
     "Raids : quand l'IA joue votre place (pilote automatique), elle choisit elle-même sur une tablette de pouvoir, sans ouvrir la fenêtre de choix qui bloquait le jeu ; une fenêtre déjà ouverte se ferme, et vos touches reprennent la main.",
     "Raids : sur la carte du titan (Contributions), la partie où vous êtes porte « Vous »."

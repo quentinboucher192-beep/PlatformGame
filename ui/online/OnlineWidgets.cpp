@@ -90,10 +90,14 @@ Color OnlineUi::statusColor(RecordStatus s) {
     return {140, 160, 185, 255};
 }
 
+float OnlineUi::statusChipWidth(RecordStatus s, float height) const {
+    return g_.ui.text().measure(recordStatusLabel(s), FontFace::Bold, height * 0.62f).x + height;
+}
+
 void OnlineUi::drawStatusChip(RecordStatus s, Vec2 pos, float height) const {
     UIContext& ui = g_.ui;
     std::string text = recordStatusLabel(s);
-    float w = ui.text().measure(text, FontFace::Bold, height * 0.62f).x + height;
+    float w = statusChipWidth(s, height);
     Rect r{pos.x, pos.y, w, height};
     Color c = statusColor(s);
     ui.r().fillRoundedRect(r, height * 0.5f, c.withAlphaF(0.18f));

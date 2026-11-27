@@ -1487,9 +1487,10 @@ private:
         }
         if (pending) {
             const Json& pd = board_.me["pending"];
-            ui.label("Votre temps " + formatRunTime(jget<int64_t>(pd, "time_ms", 0)), {f.x + ui.s(14), f.y + ui.s(56)}, 15, ui.theme().text,
-                     Align::Left, FontFace::Body, VAlign::Middle);
-            ui_.drawStatusChip(RecordStatus::Pending, {f.x + ui.s(190), f.y + ui.s(45)}, ui.s(22));
+            const Vec2 ts = ui.label("Votre temps " + formatRunTime(jget<int64_t>(pd, "time_ms", 0)), {f.x + ui.s(14), f.y + ui.s(56)}, 15,
+                                     ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+            // 2.95: after the measured text, never over it.
+            ui_.drawStatusChip(RecordStatus::Pending, {f.x + ui.s(14) + ts.x + ui.s(10), f.y + ui.s(56) - ui.s(11)}, ui.s(22));
         }
         UIContext::ButtonStyle st;
         st.small = true;
@@ -1580,20 +1581,32 @@ private:
         float col2 = x + colW;
         const float col3 = x + 2.0f * colW;
         float y = zoneD_.y + ui.s(88);
-        auto info = [&](float cx, float& yy, const std::string& k, const std::string& v, Color c, Color kc = {}) {
+        // Returns the right end of the value drawn; `reserve`: room kept after the value (2.95: the status chip).
+        auto info = [&](float cx, float& yy, const std::string& k, const std::string& v, Color c, Color kc = {}, float reserve = 0.0f) {
             // Measured: the label and the value each in their column (smaller, then shortened).
-            const float room = (machine ? colW : textRight - cx) - ui.s(12);
-            const float kf = ui.fitFont(k, FontFace::Body, 14, room, 0.8f), vf = ui.fitFont(v, FontFace::Bold, 18, room, 0.7f);
+            // Each column ends where the next begins (2.95: never over the next column).
+            const float room = (machine ? colW : (cx < col2 ? col2 - cx : textRight - cx)) - ui.s(12);
+            const float vroom = std::max(ui.s(40), room - reserve);
+            const float kf = ui.fitFont(k, FontFace::Body, 14, room, 0.8f), vf = ui.fitFont(v, FontFace::Bold, 18, vroom, 0.7f);
             ui.label(ui.elide(k, FontFace::Body, kf, room), {cx, yy}, kf, kc.a ? kc : ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-            ui.label(ui.elide(v, FontFace::Bold, vf, room), {cx, yy + ui.s(19)}, vf, c, Align::Left, FontFace::Bold, VAlign::Middle);
+            const Vec2 vs = ui.label(ui.elide(v, FontFace::Bold, vf, vroom), {cx, yy + ui.s(19)}, vf, c, Align::Left, FontFace::Bold, VAlign::Middle);
             yy += ui.s(46);
+            return cx + vs.x;
         };
         float y1 = y, y2 = y;
         std::string route = std::string(categoryLabel(category())) + (period_ == 1 ? " · semaine" : " · historique");
         info(x, y1, "Type de parcours", route, ui.theme().text);
         const LevelRecord* rec = g_.records.get(l->id);
         std::string pb = rec && rec->bestTime > 0 ? formatRunTime(static_cast<int64_t>(std::llround(rec->bestTime * 1000.0))) + " (local)" : "—";
-        info(x, y1, "Record personnel", pb, ui.theme().text);
+        // Local performance status (LOCAL / PENDING / VERIFIED / REJECTED): right after the personal best, in its column.
+        const OnlineAttempt* latest = nullptr;
+        for (const auto& a : g_.online.attempts().all())
+            if (a.levelId == l->id && a.submission(category())) latest = &a;
+        const float chipH = ui.s(22), chipGap = ui.s(8);
+        const float chipW = latest ? ui_.statusChipWidth(latest->submission(category())->status, chipH) : 0.0f;
+        const float pbRowY = y1;
+        const float pbEnd = info(x, y1, "Record personnel", pb, ui.theme().text, {}, latest ? chipW + chipGap : 0.0f);
+        if (latest) ui_.drawStatusChip(latest->submission(category())->status, {pbEnd + chipGap, pbRowY + ui.s(19) - chipH * 0.5f}, chipH);
         // World position and best time come from the level board when it is displayed.
         std::string pos = "—", best = "—";
         if (levelBoard() && board_.error.empty()) {
@@ -1613,14 +1626,6 @@ private:
             info(col3, y3, "TAS · machine, hors classement", formatRunTime(machine->timeMs), tasui::kTas, tasui::kTas);
             const int64_t wr = worldRecordMs();
             info(col3, y3, "Record mondial − TAS", wr > 0 ? boardGap(wr - machine->timeMs) : std::string("—"), wr > 0 ? tasui::kBehind : ui.theme().textDim);
-        }
-        // Local performance status (LOCAL / PENDING / VERIFIED / REJECTED).
-        const OnlineAttempt* latest = nullptr;
-        for (const auto& a : g_.online.attempts().all())
-            if (a.levelId == l->id && a.submission(category())) latest = &a;
-        if (latest) {
-            const OnlineSubmission* s = latest->submission(category());
-            ui_.drawStatusChip(s->status, {x + ui.s(190), zoneD_.y + ui.s(126)}, ui.s(22));
         }
         // Actions
         // Five actions, one under the other (36 px apart).

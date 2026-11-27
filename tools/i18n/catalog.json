@@ -2311,6 +2311,12 @@
    ]
   },
   {
+   "fr": "ADMINISTRATION › TAS : les administrateurs améliorent les courses de la machine sur leur propre ordinateur (plusieurs niveaux à la fois, un verrou par niveau, catégorie et version), les publient, et chaque jeu les rejoue avant de les montrer.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Admins",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -14917,6 +14923,12 @@
   },
   {
    "fr": "Classements : la catégorie SPEEDRUN est retirée. Elle reprenait les mêmes courses qu'ANY% et doublait les notifications de rang ; ses classements, meilleurs temps et notifications disparaissent (les replays restent rattachés aux autres catégories).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Classements : la pastille d'état du record (VÉRIFIÉ, EN ATTENTE…) se place juste après le record personnel, sans plus chevaucher la colonne voisine.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -69003,6 +69015,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "SOB : un segment se chronomètre depuis sa première entrée — une réapparition ne le fait plus jamais partir (fini le segment de boss en 22 s des Ruines Suspendues) — et ne compte qu'après le segment d'avant joué en entier ; l'entraînement d'un segment part du précédent (élan non compté) ; les startpos se posent sur le tracé de la SOB et partent de l'état réel de ce meilleur replay ; F5 à F8 répondent dans tout entraînement ; SOB remises à zéro, records gardés.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
