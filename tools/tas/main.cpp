@@ -5,7 +5,7 @@
 //   cosmic_tas <levelId> <category> [--budget minutes] [--seed-replay file] [--threads n]
 //              [--beam n] [--seed n] [--out folder] [--keep-seed-sections n] [--save-partial file]
 //              [--until-stopped] [--round minutes] [--progress file] [--stop-file file]
-//              [--stop-on-stdin] [--user-dir folder] [--server url]
+//              [--stop-on-stdin] [--user-dir folder] [--server url] [--guide replay [--guide-name player]]...
 //              [--portfolio] [--arms beam,explore,timing,refine] [--slice seconds] [--no-bnb] [--bound-slack s]
 //
 // <category>: ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE (or ANY%, 100%...). The run found
@@ -19,6 +19,11 @@
 // (game/tas/TasProgress.h) about every half second; it stops cleanly when --stop-file appears or,
 // with --stop-on-stdin, when its standard input reads « stop » or closes (the game closed, even
 // by a crash): the search ends with the best run it has, verified and written before it exits.
+//
+// Every faster whole run the search holds is verified AT ONCE, on a thread of its own, while the
+// search goes on (docs/TAS.md « Vérification au fil de l'eau »): written as soon as it passes,
+// never before. --guide (several): players' runs of this very version of the level that guide
+// the search (docs/TAS.md « Les guides »); the run written says which (guidedBy).
 
 #include <SDL3/SDL.h>
 
@@ -31,7 +36,9 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <functional>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <thread>
 #include <tuple>
@@ -74,6 +81,7 @@ int usage() {
     std::fprintf(stderr,
                  "Usage : cosmic_tas <niveau> <catégorie> [--budget minutes] [--seed-replay fichier] [--threads n] [--beam n] [--seed n] [--out dossier] [--no-planner]\n"
                  "        [--until-stopped] [--round minutes] [--progress fichier] [--stop-file fichier] [--stop-on-stdin] [--user-dir dossier] [--server url]\n"
+                 "        [--guide replay.cprz [--guide-name joueur]]...\n"
                  "  catégorie : ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE\n");
     return 2;
 }
@@ -215,6 +223,73 @@ struct Training {
     }
 };
 
+/// The runs to verify (docs/TAS.md « Vérification au fil de l'eau »): the search hands each faster
+/// whole run over (SearchOptions::onRun) and goes on; a thread verifies the fastest one waiting
+/// (a slower one waiting is dropped) with `check`, which writes it when it passes.
+struct Verifier {
+    struct Job {
+        std::vector<InputFrame> run;
+        int64_t clockMs = 0;
+        std::string source;
+    };
+    std::function<void(const Job&)> check;
+    std::mutex m;
+    std::condition_variable cv;
+    std::optional<Job> pending;
+    bool busy = false, quit = false;
+    std::thread thread;
+
+    void submit(const std::vector<InputFrame>& run, int64_t clockMs, const std::string& source) {
+        {
+            std::lock_guard<std::mutex> l(m);
+            if (pending && pending->clockMs <= clockMs) return;
+            pending = Job{run, clockMs, source};
+        }
+        cv.notify_all();
+    }
+    /// Until nothing waits and nothing is being verified.
+    void drain() {
+        std::unique_lock<std::mutex> l(m);
+        cv.wait(l, [this] { return !pending && !busy; });
+    }
+    void start() {
+        thread = std::thread([this] {
+            std::unique_lock<std::mutex> l(m);
+            while (true) {
+                cv.wait(l, [this] { return quit || pending; });
+                if (!pending) break;
+                Job j = std::move(*pending);
+                pending.reset();
+                busy = true;
+                l.unlock();
+                check(j);
+                l.lock();
+                busy = false;
+                cv.notify_all();
+            }
+        });
+    }
+    void stop() {
+        drain();
+        {
+            std::lock_guard<std::mutex> l(m);
+            quit = true;
+        }
+        cv.notify_all();
+        if (thread.joinable()) thread.join();
+    }
+};
+
+/// The splits of a verified run at the level's checkpoints (CP1 first: `cps`, their object ids),
+/// 0 where it did not reach one (the first time it reached each).
+std::vector<int64_t> splitsAt(const std::vector<TasSplit>& splits, const std::vector<std::string>& cps) {
+    std::vector<int64_t> out(cps.size(), 0);
+    for (const TasSplit& s : splits)
+        for (size_t k = 0; k < cps.size(); ++k)
+            if (cps[k] == s.checkpoint && out[k] == 0) out[k] = s.timeMs;
+    return out;
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
@@ -349,6 +424,55 @@ int main(int argc, char** argv) {
         if (!tas::readSeedReplay(seed, levelId, opt.seedRun, why)) return finish(TasPhase::Failed, "Course de départ refusée : " + why, 2);
     }
     opt.keepSeedSections = std::max(0, std::atoi(value("--keep-seed-sections", "0").c_str()));
+    // --guide <replay> [--guide-name <player>], several: players' runs that guide the search, each an
+    // exact replay of this very version of the level and of the simulation (refused otherwise).
+    struct GuideArg {
+        std::string file, player;
+    };
+    std::vector<GuideArg> guideArgs;
+    for (size_t i = 2; i + 1 < args.size(); ++i) {
+        if (args[i] == "--guide") guideArgs.push_back({args[i + 1], ""});
+        else if (args[i] == "--guide-name" && !guideArgs.empty()) guideArgs.back().player = args[i + 1];
+    }
+    if (guideArgs.size() > TasGuide::kMax) return finish(TasPhase::Failed, "Trop de guides (" + std::to_string(TasGuide::kMax) + " au plus)", 2);
+    std::vector<std::vector<InputFrame>> guideRuns;
+    std::vector<std::string> guideIds;
+    std::vector<GuideArg> exactArgs;
+    std::vector<std::vector<int64_t>> exactSplits;  // their checkpoint times as recorded (when they no longer replay to the end)
+    // A run of an older version of the level (its inputs no longer play the same): its ROUTE only,
+    // never its inputs (docs/TAS.md « Le tracé d'une ancienne version »).
+    struct RouteArg {
+        std::string player, id;
+        std::vector<int64_t> splits;
+    };
+    std::vector<RouteArg> routeArgs;
+    for (const GuideArg& g : guideArgs) {
+        std::vector<InputFrame> in;
+        std::string id, why;
+        if (!tas::readGuideReplay(g.file, levelId, fp->hash, in, id, why)) {
+            std::vector<tas::RouteHint> route;
+            std::vector<int64_t> splits;
+            std::string whyRoute;
+            if (!tas::readRouteReplay(g.file, levelId, route, splits, whyRoute)) return finish(TasPhase::Failed, "Guide refusé (" + g.file + ") : " + why, 2);
+            say("Guide " + (g.player.empty() ? g.file : g.player) + " : " + why + " ; son tracé seulement guide la recherche (" + std::to_string(route.size()) +
+                " positions)");
+            opt.routeHints.insert(opt.routeHints.end(), route.begin(), route.end());
+            routeArgs.push_back({g.player.empty() ? std::string("?") : g.player, Paths::toUtf8(Paths::fromUtf8(g.file).stem()), std::move(splits)});
+            continue;
+        }
+        // Its recorded route too: where its inputs stop playing the same (a run recorded before a
+        // change of the simulation's details that the fingerprint does not see), it still says the way.
+        {
+            std::vector<tas::RouteHint> route;
+            std::vector<int64_t> splits;
+            std::string whyRoute;
+            if (tas::readRouteReplay(g.file, levelId, route, splits, whyRoute)) opt.routeHints.insert(opt.routeHints.end(), route.begin(), route.end());
+            exactSplits.push_back(std::move(splits));
+        }
+        guideRuns.push_back(std::move(in));
+        guideIds.push_back(id.empty() ? Paths::toUtf8(Paths::fromUtf8(g.file).stem()) : id);
+        exactArgs.push_back(g);
+    }
     // --save-partial <file>: the run so far after each section, as a replay of its inputs (to start
     // a later search from it with --seed-replay; never a run of the machine by itself).
     if (std::string partial = value("--save-partial", ""); !partial.empty()) {
@@ -407,6 +531,12 @@ int main(int argc, char** argv) {
     // The level's sections (the windows of a training's rounds) and checkpoints (the attempts that
     // reach each one: the clouds of the training curve), CP1 first, named as the level names them.
     tas::WindowPlanner planner;
+    std::vector<std::string> cpIds;  // the level's checkpoints (CP1 first), for the splits
+    {
+        tas::Course course(*level, content, category);
+        for (const tas::Waypoint& w : course.waypoints())
+            if (w.kind == tas::Waypoint::Kind::Checkpoint && cpIds.size() < static_cast<size_t>(TasAttemptWindow::kMaxSections)) cpIds.push_back(w.objectId);
+    }
     if (untilStopped || !training.progressFile.empty()) {
         tas::Course course(*level, content, category);
         planner = tas::WindowPlanner(static_cast<int>(course.sectionEnds().size()));
@@ -426,15 +556,62 @@ int main(int argc, char** argv) {
         training.edit([&](TasProgress& p) { p.checkpoints = std::move(cps); });
     }
 
+    // The guides measured: their time when they finish the category (verified as a run would be)
+    // and their splits — the references of the curve's checkpoints — and said on the run written.
+    std::vector<TasGuide> guidedBy;
+    {
+        std::vector<TasProgress::Reference> refs;
+        for (size_t k = 0; k < guideRuns.size(); ++k) {
+            const tas::Verified gv = tas::recordAndVerify(content, *level, *fp, category, guideRuns[k], 0);
+            TasProgress::Reference r;
+            r.player = exactArgs[k].player.empty() ? std::string("?") : exactArgs[k].player;
+            if (gv.ok) {
+                r.timeMs = gv.record.timeMs;
+                r.splits = splitsAt(gv.record.splits, cpIds);
+                say("Guide " + std::to_string(k + 1) + " (" + r.player + ") : " + formatRunTime(r.timeMs));
+            } else {
+                // It no longer plays to the end today: its times as recorded, said as another version's.
+                say("Guide " + std::to_string(k + 1) + " (" + r.player + ") : ne termine pas la catégorie aujourd'hui (" + gv.why +
+                    "), ses entrées utilisées jusqu'où elles vont, son tracé au-delà");
+                r.oldVersion = true;
+                r.splits.assign(cpIds.size(), 0);
+                for (size_t c = 0; c < exactSplits[k].size() && c < cpIds.size(); ++c) r.splits[c] = exactSplits[k][c];
+                for (size_t c = 1; c < r.splits.size(); ++c)
+                    if (r.splits[c] > 0 && r.splits[c] < r.splits[c - 1]) r.splits[c] = 0;
+            }
+            guidedBy.push_back({r.player, r.timeMs, guideIds[k]});
+            refs.push_back(std::move(r));
+        }
+        // The routes of older versions: their checkpoint times as they were (said: another version).
+        for (RouteArg& a : routeArgs) {
+            TasProgress::Reference r;
+            r.player = a.player;
+            r.oldVersion = true;
+            r.splits.assign(cpIds.size(), 0);
+            for (size_t k = 0; k < a.splits.size() && k < cpIds.size(); ++k) r.splits[k] = a.splits[k];
+            for (size_t k = 1; k < r.splits.size(); ++k)
+                if (r.splits[k] > 0 && r.splits[k] < r.splits[k - 1]) r.splits[k] = 0;
+            TasGuide g{a.player, 0, a.id};
+            g.routeOnly = true;
+            guidedBy.push_back(g);
+            refs.push_back(std::move(r));
+        }
+        training.edit([&](TasProgress& p) { p.guides = std::move(refs); });
+    }
+    opt.guides = guideRuns;
+
     // The run to beat: the seed run, verified as a run of the machine (its exact time), when it is one.
     std::vector<InputFrame> best;
     int64_t bestMs = 0;
+    std::mutex keepMutex;  // best, bestMs, improvements: the verifier's thread writes them
     if (!opt.seedRun.empty()) {
         training.edit([](TasProgress& p) { p.phase = TasPhase::Verifying; });
         const tas::Verified sv = tas::recordAndVerify(content, *level, *fp, category, opt.seedRun, 0);
+        std::vector<int64_t> splits;
         if (sv.ok) {
             best = opt.seedRun;
             bestMs = sv.record.timeMs;
+            splits = splitsAt(sv.record.splits, cpIds);
             say("Course de départ vérifiée : " + formatRunTime(bestMs));
             if (portfolio) say(splitsLine(best));
         } else {
@@ -443,6 +620,7 @@ int main(int argc, char** argv) {
         training.edit([&](TasProgress& p) {
             p.seedMs = bestMs;
             p.bestMs = bestMs;
+            p.bestSplits = splits;
             p.bestElapsedMs = training.elapsed();
             p.bestExplored = training.explored.load();
         });
@@ -453,6 +631,69 @@ int main(int argc, char** argv) {
     const int64_t seedMs = bestMs;
     int round = 0, improvements = 0;
     std::string lastWhy;
+    std::atomic<int64_t> bestAtomic{bestMs};  // read by the search's threads (onRun)
+    bool writeFailed = false;
+    // A run verified (by the normal replay playback) and, when faster than the best, written —
+    // never before its verification. On the verifier's thread (or after it has drained).
+    auto keep = [&](const Verifier::Job& job) {
+        training.edit([](TasProgress& p) { p.verifying = true; });
+        const tas::Verified v = tas::recordAndVerify(content, *level, *fp, category, job.run, training.explored.load());
+        std::lock_guard<std::mutex> l(keepMutex);
+        auto done = [&] {
+            // The candidate dealt with: shown no more unless a faster one waits.
+            int64_t c = job.clockMs;
+            training.candidateMs.compare_exchange_strong(c, 0);
+            training.edit([](TasProgress& p) { p.verifying = false; });
+        };
+        if (!v.ok) {
+            lastWhy = v.why;
+            say("Course refusée à la vérification : " + v.why + ". Rien n'est écrit.");
+            return done();
+        }
+        if (bestMs > 0 && v.record.timeMs >= bestMs) return done();
+        char line[300];
+        std::snprintf(line, sizeof line, "Vérifiée par la lecture normale des replays : %s (%lld ms), morts %d, dégâts %d, collectibles %d/%d, %lld essais simulés.",
+                      formatRunTime(v.record.timeMs).c_str(), static_cast<long long>(v.record.timeMs), v.record.deaths, v.record.damageTaken,
+                      v.record.collectibles, v.record.totalCollectibles, static_cast<long long>(v.record.explored));
+        say(line);
+        best = job.run;
+        bestMs = v.record.timeMs;
+        bestAtomic = bestMs;
+        if (seedMs > 0) ++improvements;  // faster than the run it started from
+        // A faster run of the same level and simulation already in the file is kept.
+        if (auto old = readTasFile(file); old && old->levelHash == fp->hash && old->simVersion == kSimulationVersion && old->timeMs <= v.record.timeMs) {
+            say("Le fichier garde sa course, plus rapide ou égale (" + formatRunTime(old->timeMs) + ").");
+        } else {
+            TasRecord r = v.record;
+            r.guidedBy = guidedBy;
+            if (!FileUtil::writeBinary(tasReplayPath(r, root), v.bytes) || !writeTasFile(file, r)) {
+                writeFailed = true;
+                training.stop = true;
+                say("Écriture impossible dans " + Paths::toUtf8(file.parent_path()));
+                return done();
+            }
+            say("Écrit : " + Paths::toUtf8(file));
+        }
+        const std::vector<int64_t> splits = splitsAt(v.record.splits, cpIds);
+        training.edit([&](TasProgress& p) {
+            p.bestMs = bestMs;
+            p.bestSplits = splits;
+            p.bestSource = job.source;
+            p.improvements = improvements;
+            p.bestElapsedMs = training.elapsed();
+            p.bestExplored = training.explored.load();
+        });
+        done();
+    };
+    Verifier verifier;
+    verifier.check = keep;
+    verifier.start();
+    opt.onRun = [&](const std::vector<InputFrame>& run, float clock, const std::string& source) {
+        const int64_t c = clockMs(clock), b = bestAtomic.load();
+        if (b > 0 && c >= b) return;
+        verifier.submit(run, c, source);
+    };
+    int64_t splicedFrom = -1;  // the best time the last splice of the guides started from
     // The window of the round (docs/TAS.md « Les tours »): the first round searches the whole
     // level; with a best run, the next ones a window of one or two sections (the rest follows the
     // best run), rotating over the level, sooner again where a round gained.
@@ -464,8 +705,13 @@ int main(int argc, char** argv) {
             planner.done(round - 1, focusFirst, focusLast, roundFrom > 0 && bestMs > 0 ? std::max<int64_t>(0, roundFrom - bestMs) : 0);
             opt.seed = baseSeed + static_cast<uint64_t>(round - 1) * 7919u;
         }
+        verifier.drain();  // the last round's runs verified: the round starts from the best one
+        std::unique_lock<std::mutex> kl(keepMutex);
         roundFrom = bestMs;
         focusFirst = focusLast = 0;
+        // The guides spliced again when the best run changed (the splice is deterministic).
+        opt.splice = !opt.guides.empty() && splicedFrom != bestMs;
+        splicedFrom = bestMs;
         if (!best.empty()) {
             opt.seedRun = best;
             opt.keepSeedSections = 0;
@@ -478,6 +724,7 @@ int main(int argc, char** argv) {
             opt.budgetSeconds = std::min(opt.budgetSeconds * 2.0, 60.0 * 60.0);
             say("Pas encore de course : le tour " + std::to_string(round) + " repart de la section " + std::to_string(partialSections + 1));
         }
+        kl.unlock();
         partialRun.clear();
         partialSections = 0;
         training.candidateMs = 0;
@@ -515,40 +762,16 @@ int main(int argc, char** argv) {
             say("Aucune course trouvée (" + found.why + ") après " + std::to_string(training.explored.load()) + " essais.");
             continue;
         }
-        if (bestMs > 0 && clockMs(found.clock) >= bestMs) continue;  // nothing faster this round
-        training.edit([](TasProgress& p) { p.phase = TasPhase::Verifying; });
-        const tas::Verified v = tas::recordAndVerify(content, *level, *fp, category, found.inputs, training.explored.load());
-        if (!v.ok) {
-            lastWhy = v.why;
-            say("Course refusée à la vérification : " + v.why + ". Rien n'est écrit.");
-            continue;
+        // The run kept at the round's end (verified like the others; usually already done).
+        if (bestAtomic.load() == 0 || clockMs(found.clock) < bestAtomic.load()) {
+            training.edit([](TasProgress& p) { p.phase = TasPhase::Verifying; });
+            verifier.submit(found.inputs, clockMs(found.clock), found.bestSource);
         }
-        if (bestMs > 0 && v.record.timeMs >= bestMs) continue;
-        char line[300];
-        std::snprintf(line, sizeof line, "Vérifiée par la lecture normale des replays : %s (%lld ms), morts %d, dégâts %d, collectibles %d/%d, %lld essais simulés.",
-                      formatRunTime(v.record.timeMs).c_str(), static_cast<long long>(v.record.timeMs), v.record.deaths, v.record.damageTaken,
-                      v.record.collectibles, v.record.totalCollectibles, static_cast<long long>(v.record.explored));
-        say(line);
-        if (portfolio) say(splitsLine(found.inputs));
-        best = found.inputs;
-        bestMs = v.record.timeMs;
-        if (seedMs > 0) ++improvements;  // faster than the run it started from
-        // A faster run of the same level and simulation already in the file is kept.
-        if (auto old = readTasFile(file); old && old->levelHash == fp->hash && old->simVersion == kSimulationVersion && old->timeMs <= v.record.timeMs) {
-            say("Le fichier garde sa course, plus rapide ou égale (" + formatRunTime(old->timeMs) + ").");
-        } else {
-            TasRecord r = v.record;
-            if (!FileUtil::writeBinary(tasReplayPath(r, root), v.bytes) || !writeTasFile(file, r))
-                return finish(TasPhase::Failed, "Écriture impossible dans " + Paths::toUtf8(file.parent_path()), 1);
-            say("Écrit : " + Paths::toUtf8(file));
-        }
-        training.edit([&](TasProgress& p) {
-            p.bestMs = bestMs;
-            p.improvements = improvements;
-            p.bestElapsedMs = training.elapsed();
-            p.bestExplored = training.explored.load();
-        });
+        verifier.drain();
+        if (writeFailed) break;
     } while (untilStopped && !training.stop.load());
+    verifier.stop();
+    if (writeFailed) return finish(TasPhase::Failed, "Écriture impossible dans " + Paths::toUtf8(file.parent_path()), 1);
 
     if (bestMs == 0)
         return finish(untilStopped ? TasPhase::Stopped : TasPhase::Failed, "Aucune course vérifiée" + (lastWhy.empty() ? std::string() : " (" + lastWhy + ")"),

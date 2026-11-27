@@ -599,6 +599,50 @@ describe("TAS: the training curve (best times and attempts sent with the lease)"
         expect(thin.some((p) => p[1] === 85_000)).toBe(true);
     });
 
+    it("where the gain is (2.99): each point's splits and source, checked, kept and given back", async () => {
+        const [a, b] = await admins();
+        const id = (await lease(a)).body.data.lease_id;
+        await age(60_000);
+        const bad = async (extra: Record<string, unknown>) => {
+            const r = await beatWith(a, id, 10, extra);
+            expect(r.status).toBe(400);
+            expect(r.body.error.code).toBe("VALIDATION_ERROR");
+        };
+        await bad({ curve: [{ ...point(41_000), splits: [9_000, 8_000] }] }); // going back
+        await bad({ curve: [{ ...point(41_000), splits: [9_000, 42_000] }] }); // beyond the run's time
+        await bad({ curve: [{ ...point(41_000), splits: Array.from({ length: 33 }, (_, i) => i + 1) }] });
+        await bad({ curve: [{ ...point(41_000), splits: [-1] }] });
+        await bad({ curve: [{ ...point(41_000), source: "Beam!" }] });
+        await bad({ curve: [{ ...point(41_000), source: "x".repeat(17) }] });
+        const r = await beatWith(a, id, 30_000, {
+            curve: [
+                { ...point(41_250, 20_000, 5_000, "start"), splits: [9_000, 0, 30_000] },
+                { ...point(41_234, 10_000, 20_000), splits: [9_000, 20_000, 29_984], source: "splice" },
+            ],
+        });
+        expect(r.status).toBe(200);
+        expect(r.body.data.curve.points[1].splits).toEqual([9_000, 20_000, 29_984]);
+        expect(r.body.data.curve.points[1].source).toBe("splice");
+        const curve = await curveOf(b);
+        expect(curve.points[0].splits).toEqual([9_000, 0, 30_000]);
+        expect(curve.points[0].source).toBeUndefined();
+        expect(curve.points[1].source).toBe("splice");
+        // A point without them (a game before 2.99) is still taken, with none.
+        const old = await beatWith(a, id, 31_000, { curve: [point(41_200)] });
+        expect(old.status).toBe(200);
+        expect(old.body.data.curve.points[0].splits).toBeUndefined();
+    });
+
+    it("a run guided by players' runs says so (guidedBy, 2.99), checked like the rest of the record", async () => {
+        const [a] = await admins();
+        const bad = await publish(a, { record: record({ guidedBy: [{ player: "x".repeat(65), timeMs: 1, replayId: "r" }] }), replay: await replay(41_250) });
+        expect(bad.status).toBe(422);
+        const many = await publish(a, { record: record({ guidedBy: Array.from({ length: 9 }, () => ({ player: "p", timeMs: 1, replayId: "r" })) }), replay: await replay(41_250) });
+        expect(many.status).toBe(422);
+        const ok = await publish(a, { record: record({ guidedBy: [{ player: "NovaRider", timeMs: 78_442, replayId: "abc" }] }), replay: await replay(41_250) });
+        expect(ok.status).toBe(201);
+    });
+
     it("windows beyond the cap are added to the last one of the session", async () => {
         const [a] = await admins();
         const id = (await lease(a)).body.data.lease_id;

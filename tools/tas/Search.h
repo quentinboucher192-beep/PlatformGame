@@ -41,6 +41,7 @@
 #include <utility>
 #include <vector>
 
+#include "engine/core/Math.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/online/OnlineTypes.h"
 #include "tools/tas/Planner.h"
@@ -71,6 +72,10 @@ struct Crossing {
     float clock = 0.0f;
 };
 
+// RouteHint (tools/tas/RouteHint.h): a point of a player's ROUTE (docs/TAS.md « Les guides », « Le tracé
+// d'une ancienne version »): where Nova's feet were, at `clock` s, in a run of an older version of the
+// level — its inputs no longer play the same, its path still says where a player went.
+
 struct SearchOptions {
     RunCategory category = RunCategory::AnyPercent;
     double budgetSeconds = 30.0 * 60.0;
@@ -90,8 +95,6 @@ struct SearchOptions {
     bool planner = true;
     int plannerEvery = 8;
     PlanBudget plannerBudget;
-    /// A human path (a ghost's trajectory) the planner may aim along (optional; empty: none).
-    std::vector<RouteHint> routeHints;
     /// The whole level only: the run's first frames taken as they are (it goes on from the section
     /// they end in) — a run that has already left the seed run (the tests of the guidance).
     std::vector<InputFrame> startRun;
@@ -114,6 +117,26 @@ struct SearchOptions {
     /// the timing polish, the refinement or an arm registered; branch-and-bound in the beam. None:
     /// the search as before. Lives as long as the process (like WindowPlanner).
     Portfolio* portfolio = nullptr;
+    /// Each faster whole run the search holds (played from the load, before its verification), from
+    /// the search's threads: cosmic_tas verifies it at once on a thread of its own (docs/TAS.md
+    /// « Vérification au fil de l'eau »). Keep it short: copy and return.
+    /// `source`: where the gain came from ("beam", "guide", "splice", "polish": the refinement).
+    std::function<void(const std::vector<InputFrame>& run, float clock, const std::string& source)> onRun;
+    /// Other runs of this level that GUIDE the search (docs/TAS.md « Les guides »): a player's
+    /// runs (the PB of this computer, records of Cosmic Online), exact replays of this version of
+    /// the level, their inputs from the load. Like the best run, each one's frames are offered to
+    /// every section (by the section's index and realigned on Nova's position), every arrival is
+    /// re-joined into each of them, and — `splice` — a run is first assembled section by section
+    /// from the fastest way among the best run and the guides (a « somme des meilleurs segments »
+    /// that really plays), kept when it finishes faster.
+    std::vector<std::vector<InputFrame>> guides;
+    bool splice = true;
+    /// Routes of players' runs of older versions of the level (never their inputs): at every
+    /// generation of a section, besides its own selection, the beam keeps the states that follow
+    /// one of them the furthest (within kRouteRadius px of a point of it), so that today's inputs
+    /// that take the player's way are searched under today's rules. The planner aims along them too.
+    std::vector<RouteHint> routeHints;
+    static constexpr float kRouteRadius = 24.0f;
 };
 
 struct SearchOutcome {
@@ -129,6 +152,12 @@ struct SearchOutcome {
     int guidedSections = 0;               // sections searched with the seed run's frames offered while the run differed from it
     int guideArrivals = 0;                // ... and where they reached the section's end
     int rejoins = 0;                      // arrivals played on with the rest of the seed run that finished the category
+    int guideSources = 0;                 // the guides studied (besides the best run)
+    int splicedSections = 0;              // the splice: its sections taken from a guide (not the best run)
+    int spliceWays = 0, spliceArrivals = 0, spliceJoined = 0;  // the splice: ways played, those that reached their section's end, those re-joined (measured)
+    float spliceClock = -1.0f;            // the splice's run at the exit (negative: it did not finish)
+    int64_t routeKept = 0;                // states kept in the beam because they follow a route hint
+    std::string bestSource;               // where the best run kept came from ("beam", "guide", "splice", "polish"; empty: the seed run)
     /// Before the refinement, the run kept ended with the seed run's rest: inputs[rejoinAt..] are
     /// seedRun[rejoinSeedAt..] (the first one's presses and releases recomputed).
     bool rejoined = false;
