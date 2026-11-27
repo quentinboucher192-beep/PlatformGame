@@ -31,6 +31,7 @@ namespace cosmic {
 class GameServices;
 class GameScene;
 class PlayStatsRecorder;
+class SobPreroll;
 
 /// Boss training: the end of a training run (Recommencer, Changer les réglages, Retour).
 std::unique_ptr<Scene> makeBossTrainingEnd(GameServices& g, GameScene& game, const BossTrainingResult& result);
@@ -283,9 +284,24 @@ private:
     std::vector<uint8_t> attemptReplay() const;
     /// The attempt ends (once): its passage joins the personal bests.
     PersonalBests::Added commitBests(float exitTime, const std::vector<uint8_t>* replay);
+    /// 2.95: the run's segments resolved by the session go to the statistics (their times).
+    void noteRunSegments();
+    // 2.95: an attempt from a StartPos on the SOB path (game/ghost/SobPath.h): the replay that holds
+    // its segment's best, played quietly up to it (a few milliseconds per frame, « Préparation… »),
+    // then Nova is the player's — the real state of that run there.
+    std::unique_ptr<SobPreroll> preroll_;
+    SectionTrainingStart sobSetup_;  // how that replay started: the attempt's own start
+    bool sobStart_ = false;
+    float attemptStart_ = 0.0f;      // the chronometer when the player took Nova (0: at the start)
+    bool endLitBefore_ = false;      // the training's end lit by that replay already (never its end then)
+    void startFromStartPos();
+    void stepPreroll();
+    void finishPreroll();
+    void drawPreroll();
     float segmentBanner_ = 0.0f;
     float segmentTime_ = 0.0f;
     float segmentBest_ = -1.0f;
+    bool entryMissed_ = false;  // 2.95: the range's entry (after its run-up) was not seen: not counted
     int64_t runJumps_ = 0;
     bool wasGliding_ = false;  // the glider opens without a « powerUsed » event: counted here
     std::map<std::string, int64_t> runPowers_;

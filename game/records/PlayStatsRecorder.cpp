@@ -122,11 +122,7 @@ void PlayStatsRecorder::step(const GameWorld& w) {
     }
     if (w.state() == WorldState::Completed || w.state() == WorldState::Failed) {
         ended_ = true;
-        if (classic_ && w.state() == WorldState::Completed) {
-            const float t = w.timer().elapsed();
-            segTimes_.push_back({{lastCp_, std::string()}, t - lastSplit_});
-            finishTime_ = t;
-        }
+        if (classic_ && w.state() == WorldState::Completed) finishTime_ = w.timer().elapsed();
         if (fight_) {
             const Enemy* fe = w.findEnemy(fight_->uid);
             endFight(fe && !fe->alive(), false);
@@ -322,16 +318,19 @@ void PlayStatsRecorder::endFight(bool won, bool defeat) {
 }
 
 void PlayStatsRecorder::trackSplits(const GameWorld& w) {
+    // The route of the run (its checkpoints in the order lit). 2.95: its segments' times come
+    // from noteSegment (the rules of the personal Sum of Best: a split taken after a respawn,
+    // of a checkpoint passed before, never starts one).
     const auto& sp = w.timer().splits();
     while (splitCount_ < sp.size()) {
-        const float t = sp[splitCount_];
-        const std::string cp = w.checkpointId();
-        segTimes_.push_back({{lastCp_, cp}, t - lastSplit_});
-        cps_.push_back(cp);
-        lastCp_ = cp;
-        lastSplit_ = t;
+        cps_.push_back(w.checkpointId());
         ++splitCount_;
     }
+}
+
+void PlayStatsRecorder::noteSegment(const std::string& from, const std::string& to, float seconds) {
+    if (!active_ || ended_ || !classic_ || kind_ != Kind::Counted || !(seconds > 0.0f) || !std::isfinite(seconds)) return;
+    segTimes_.push_back({{from, to}, seconds});
 }
 
 void PlayStatsRecorder::commit() {
@@ -390,6 +389,17 @@ void PlayStatsRecorder::finish() {
 
 namespace {
 SaveFile statsFile() { return SaveFile("stats", PlayStatsStore::kVersion); }
+
+/// 2.95: a level's segment bests timed by the rules before (a respawn could start a segment)
+/// go when its first segments of now come; its times stay (regularity).
+void dropOldRules(LevelRuns& r) {
+    if (r.sobRules >= kSegmentRules) return;
+    for (SegmentRec& s : r.segments) {
+        s.best = -1.0f;
+        s.trainBest = -1.0f;
+    }
+    r.sobRules = kSegmentRules;
+}
 }  // namespace
 
 PlayStatsStore::~PlayStatsStore() {
@@ -518,6 +528,7 @@ void PlayStatsStore::merge(const Delta& d) {
         }
         if (!d.levelName.empty()) r.name = d.levelName;
         r.lastDay = day;
+        dropOldRules(r);
         const float pbBefore = r.pb, sobBefore = r.sob();
         if (d.attempt) r.attempts++;
         for (const auto& [ends, t] : d.segments) {
@@ -551,6 +562,7 @@ void PlayStatsStore::merge(const Delta& d) {
         }
         if (!d.levelName.empty()) r.name = d.levelName;
         r.lastDay = day;
+        dropOldRules(r);
         const float sobBefore = r.sob();
         for (const auto& [ends, t] : d.training) {
             if (t <= 0.0f || !std::isfinite(t)) continue;

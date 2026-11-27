@@ -57,7 +57,10 @@ public:
         c.art = &art_;
         c.levelBounds = game_.level().bounds;
         for (const LevelObject& o : game_.level().objects)
-            if (o.type == "checkpoint") c.checkpoints.push_back({o.rect.bottomCenter().x, o.propStr("label")});
+            if (o.type == "checkpoint") {
+                c.checkpoints.push_back({o.rect.bottomCenter().x, o.propStr("label")});
+                c.names.push_back({o.id, o.propStr("label")});
+            }
         TrainingSession& session = game_.trainingSession();
         c.where = [&session](Vec2 feet) { return session.whereOnRoute(feet); };
         c.startFrom = [this](int id) { startFrom_ = id, start_ = true; };

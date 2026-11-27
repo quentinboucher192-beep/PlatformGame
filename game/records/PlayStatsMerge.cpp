@@ -269,6 +269,9 @@ LevelRuns mergeRuns(const LevelRuns& a, const LevelRuns& b) {
     LevelRuns m = a;
     m.name = a.name.empty() ? b.name : a.name;
     m.lastDay = std::max(a.lastDay, b.lastDay);
+    // 2.95: the bests of a side timed by older rules are not taken (its times are).
+    m.sobRules = std::max(a.sobRules, b.sobRules);
+    const bool olderBests = older.sobRules >= m.sobRules, newerBests = newer.sobRules >= m.sobRules;
     // Segments: the times united, the best the better one.
     m.segments.clear();
     auto add = [&](const SegmentRec& s) {
@@ -280,10 +283,11 @@ LevelRuns mergeRuns(const LevelRuns& a, const LevelRuns& b) {
         r.from = s.from;
         r.to = s.to;
         r.times = uniteTimes(o ? o->times : std::vector<float>{}, n ? n->times : std::vector<float>{});
-        for (const SegmentRec* x : {o, n})
+        const SegmentRec* withBests[2] = {olderBests ? o : nullptr, newerBests ? n : nullptr};
+        for (const SegmentRec* x : withBests)
             if (x && x->best > 0.0f && (r.best <= 0.0f || x->best < r.best)) r.best = x->best;
         // 2.60.3: the best section-training time, the better one (the Sum of Best only).
-        for (const SegmentRec* x : {o, n})
+        for (const SegmentRec* x : withBests)
             if (x && x->trainBest > 0.0f && (r.trainBest <= 0.0f || x->trainBest < r.trainBest)) r.trainBest = x->trainBest;
         m.segments.push_back(std::move(r));
     };

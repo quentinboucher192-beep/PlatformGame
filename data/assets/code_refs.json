@@ -929,8 +929,6 @@
    "ui/screens/PowerGuideScene.cpp": 2,
    "ui/screens/StatisticsLevels.cpp": 1,
    "ui/screens/StatisticsScene.cpp": 1,
-   "ui/screens/TrainingMarksPanel.cpp": 2,
-   "ui/screens/TrainingSession.cpp": 1,
    "ui/widgets/PowerLabels.cpp": 1
   },
   "ui/menu_icons.png": {

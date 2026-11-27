@@ -102,6 +102,7 @@ public:
                      FontFace::Body, VAlign::Middle);
         y += ui.s(66);
         if (tab_ == 0) {
+            path_.update(g_.bests, key_);  // 2.95: the SOB path over the strip
             drawStrip({x, y, w, ui.s(116)});
             y += ui.s(130);
             const float hintH = ui.s(30);
@@ -118,9 +119,10 @@ public:
             c.art = &art_;
             c.levelBounds = req_.levelBounds;
             for (const auto& cp : req_.checkpoints) c.checkpoints.push_back({cp.feet.x, cp.label});
+            for (int k = 1; k <= n_; ++k) c.names.push_back({boundaryId(k), boundaryName(k)});
             c.where = [this](Vec2 feet) { return whereByX(feet); };
             c.startFrom = [this](int id) { launch(id); };
-            c.placedState = [this](Vec2 feet) { return placedStartPos(feet); };
+            c.edit = true;  // added, moved along the SOB path and deleted here
             marks_.draw(g_, {x, y, w, panel.bottom() - y - ui.s(20)}, c);
         }
         ui.popId();
@@ -194,6 +196,22 @@ private:
         }
         ui.r().drawRoundedRect(lit, ui.s(picture ? 3 : 6), th.accent, std::max(1.5f, ui.s(2.0f)));
         strip_.note(lit);
+        // 2.95: the SOB path (the trace of the replays that hold the segments' bests), golden.
+        if (const SobPath* path = path_.path()) {
+            auto inStrip = [&](Vec2 wp) {
+                const Vec2 s = strip_.toScreen(wp);
+                return Vec2{std::clamp(s.x, r.x + 1.0f, r.right() - 1.0f), std::clamp(s.y, r.y + 1.0f, r.bottom() - 1.0f)};
+            };
+            for (const SobPathSegment& s : path->segments) {
+                const size_t step = std::max<size_t>(1, s.points.size() / 300);
+                Vec2 prev = inStrip(s.points.front());
+                for (size_t i = step; i < s.points.size(); i += step) {
+                    const Vec2 cur = inStrip(s.points[i]);
+                    ui.r().drawLine(prev, cur, Color{255, 214, 90, 190}, std::max(1.5f, ui.s(2.0f)));
+                    prev = cur;
+                }
+            }
+        }
         // The separators: a light line on a dark one, seen on any ground.
         const float lw = std::max(1.0f, ui.s(1.5f));
         for (int k = 1; k <= n_; ++k) {
@@ -239,25 +257,6 @@ private:
             const bool in = k >= from_ && k < to_;
             pill(label, FontFace::Body, in ? th.accent : th.textDim, in, (a + b) * 0.5f, r.bottom() - ui.s(4) - ph, Align::Center);
         }
-    }
-
-    /// The state a StartPos placed here from the menu starts with: a section training of the
-    /// segment it lies in (game/gameplay/StartPos.h: segmentStartPos), as « Lancer » gives it.
-    StartPosState placedStartPos(Vec2 feet) {
-        float at = (feet.x - req_.levelBounds.x) / std::max(1.0f, req_.levelBounds.w);
-        if (const statsart::LevelInfo* info = art_.info(req_.levelId); info && info->track.valid()) at = info->track.fractionAt(feet);
-        int k = 0;  // the boundary it follows
-        for (int i = 1; i <= n_; ++i)
-            if (boundaryAt(i) <= at) k = i;
-        std::vector<std::string> reached;
-        for (int i = 1; i <= k; ++i) reached.push_back(boundaryId(i));
-        std::vector<std::string> tablets;
-        for (const auto& [t, power] : req_.tablets)
-            if (k > 0 && t <= boundaryAt(k)) tablets.push_back(power);
-        const PersonalBests::Range range{boundaryId(k), boundaryId(k + 1)};
-        const PlayerConfig cfg = PlayerConfig::fromJson(g_.content.playerConfig());
-        return segmentStartPos(feet, std::move(reached), req_.startPowers, tablets, req_.powerSlots, g_.bests.powers(key_, range), cfg.maxHealth,
-                               cfg.maxEnergy);
     }
 
     void drawGrid(const Rect& area) {
@@ -454,10 +453,14 @@ private:
         float hy = area.bottom() - pad - ui.s(54) - ui.s(16) - ui.s(4 * 22 + 40);
         ui.label("COMMENT DÉMARRE UN ENCHAÎNEMENT", {x, hy + ui.s(10)}, fz(ui, 13), th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
         hy += ui.s(30);
-        const std::string steps[4] = {"Nova apparaît au point " + boundaryName(from_) + ", comme l'entraînement par segment.",
-                                      "Pouvoirs : ceux du départ et des tablettes d'avant (ou ceux choisis pour ce passage).",
-                                      "Chrono à l'apparition ; chaque point traversé donne un temps de passage.",
-                                      "Fin à " + boundaryName(to_) + ", puis l'essai recommence seul (R ou Vue)."};
+        // 2.95: from the segment before (its run-up, never counted), timed from the entry.
+        const std::string steps[4] = {
+            from_ > 0 ? "Nova apparaît au point " + boundaryName(from_ - 1) + " : le segment d'avant sert d'élan (non compté)."
+                      : std::string("Nova part du départ du niveau, comme une course."),
+            "Pouvoirs : ceux du départ et des tablettes d'avant (ou ceux choisis pour ce passage).",
+            from_ > 0 ? "Chrono à l'entrée dans " + boundaryName(from_) + " ; chaque point traversé donne un temps de passage."
+                      : std::string("Chrono au départ ; chaque point traversé donne un temps de passage."),
+            "Fin à " + boundaryName(to_) + ", puis l'essai recommence seul (R ou Vue)."};
         for (int k = 0; k < 4; ++k) {
             ui.label(std::to_string(k + 1), {x, hy + ui.s(11)}, fz(ui, 13), th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
             ui.label(ui.elide(steps[k], FontFace::Body, fz(ui, 13), w - ui.s(22)), {x + ui.s(20), hy + ui.s(11)}, fz(ui, 13), th.textDim, Align::Left,
@@ -514,21 +517,25 @@ private:
         o.trainingBestGhost = ghost_;
         o.trainingCheckpoint = boundaryId(from_);
         o.trainingEnd = boundaryId(to_);
-        if (from_ > 0) o.spawn = req_.checkpoints[static_cast<size_t>(from_ - 1)].feet;
-        // The powers: those chosen for this range, else the route's (the tablets before its start).
+        // 2.95: from the start of the segment before (its run-up, « élan », never counted): the
+        // enchaînement is entered as in a run, its time from that entry.
+        const int start = from_ > 0 ? from_ - 1 : 0;
+        if (from_ > 0) o.trainingRunUp = boundaryId(start);
+        if (start > 0) o.spawn = req_.checkpoints[static_cast<size_t>(start - 1)].feet;
+        // The powers: those chosen for this range, else the route's (the tablets before the start).
         const PersonalBests::Range range{o.trainingCheckpoint, o.trainingEnd};
         if (const std::vector<std::string>* chosen = g_.bests.powers(key_, range)) {
             o.trainingPowers = *chosen;
             o.trainingPowersChosen = true;
         } else {
-            const float at = boundaryAt(from_);
+            const float at = boundaryAt(start);
             for (const auto& [t, power] : req_.tablets)
-                if (from_ > 0 && t <= at) o.trainingPowers.push_back(power);
+                if (start > 0 && t <= at) o.trainingPowers.push_back(power);
         }
         if (const PersonalBests::Record* r = g_.bests.record(key_, range)) o.trainingBest = r->best;
         if (startPos > 0)
-            if (const StartPosEntry* e = g_.startPositions.find(key_, startPos)) {
-                o.trainingStartPos = e->state;
+            if (const StartPosEntry* e = g_.startPositions.find(key_, startPos); e && TrainingMarksPanel::usable(g_, key_, *e)) {
+                o.trainingStartPos = e->state;  // 2.95: its place; the run plays its segment's best replay up to it
                 o.trainingStartPosId = e->id;
                 g_.startPositions.setActive(key_, e->id);
                 g_.startPositions.noteAttempt(key_, e->id);
@@ -557,6 +564,7 @@ private:
     statsart::LevelArt art_;  // 2.92: the level's pictures (both strips, the preview)
     TrainingStrip strip_{"segments"};
     TrainingMarksPanel marks_;
+    SobPathCache path_;  // 2.95: the SOB path drawn over the segments' strip
 };
 
 }  // namespace

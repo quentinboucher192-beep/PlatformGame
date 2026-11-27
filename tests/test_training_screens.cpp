@@ -3,6 +3,9 @@
 // StartPos and F8 the measure points (through the inputs), and Pause › « Startpos et mesures ».
 // 2.92: the strips draw the level itself (what is drawn over them inside), and « Startpos et
 // mesures » adds, moves by the pixel and deletes the StartPos and the measure points.
+// 2.95: a StartPos lies on the SOB path (placed, moved along it, refused off it or twice in one
+// place); F5 to F8 act in every training; a checkpoint lit only after a fall beyond it never starts
+// a segment (TrainingSession).
 
 #include <SDL3/SDL.h>
 
@@ -10,6 +13,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <functional>
 #include <memory>
 #include <thread>
 
@@ -18,8 +22,18 @@
 #include "engine/core/Paths.h"
 #include "game/GameServices.h"
 #include "game/gameplay/StartPos.h"
+#include "engine/core/FileUtil.h"
+#include "game/gameplay/GameWorld.h"
+#include "game/ghost/Ghost.h"
+#include "game/ghost/GhostStore.h"
 #include "game/ghost/MeasurePoints.h"
+#include "game/ghost/PersonalBests.h"
+#include "game/ghost/SobPath.h"
 #include "game/ghost/StartPosStore.h"
+#include "game/ghost/TrainingSegments.h"
+#include "game/online/LevelFingerprint.h"
+#include "game/player/Player.h"
+#include "ui/screens/TrainingSession.h"
 #include "game/levels/LevelData.h"
 #include "game/player/PlayerConfig.h"
 #include "tests/TestFramework.h"
@@ -103,6 +117,28 @@ void checkAudit() {
     i18n::stopAudit();
 }
 
+/// 2.95: the machine's run of Les Ruines Suspendues (data/tas) as a full run of mine with its exact
+/// replay: every segment's best holds a replay — the whole SOB path.
+bool addTasRun(GameServices& g, const std::string& key) {
+    auto bytes = FileUtil::readBinary("data/tas/sylvanox_01/ANY_PERCENT.cprz");
+    if (!bytes) return false;
+    auto rd = ReplayData::decode(*bytes);
+    auto level = g.content.loadLevel("sylvanox_01");
+    if (!rd || !level) return false;
+    GhostTrack track;
+    track.load(*rd);
+    std::vector<std::pair<std::string, Vec2>> cps;
+    for (const LevelObject& o : level->objects)
+        if (o.type == "checkpoint") cps.push_back({o.id, o.rect.bottomCenter()});
+    BestAttempt a;
+    a.passage = BestPassage::ofSplits(track.splits(), checkpointsOfTrack(track, cps), static_cast<float>(rd->durationMs) / 1000.0f);
+    a.source = BestSource::Run;
+    a.date = "2026-11-27 09:00";
+    a.replay = &*bytes;
+    g.bests.add(key, a);
+    return g.bests.sob(key) > 0.0f;
+}
+
 /// The request the ghost setup builds for a level (its checkpoints left to right).
 ChainTrainingRequest requestFor(GameServices& g, const std::string& levelId, const std::string& hash) {
     ChainTrainingRequest r;
@@ -172,9 +208,29 @@ TEST_CASE("training screens: F5 places a StartPos and F8 the measure points thro
     const std::string key = game->levelKey();
     CHECK(!key.empty());
     for (int i = 0; i < 120 && game->world() && game->world()->state() != WorldState::Playing; ++i) rig.app.runFrames(1);
+    g.startPositions.clear(key);
+    // 2.95: no SOB path yet: F5 is refused (said), nothing placed.
+    CHECK(waitFor(rig, [&] { return game->trainingSession().sobPath() != nullptr; }));
+    rig.press(SDL_SCANCODE_F5, SDLK_F5, 6);
+    CHECK(g.startPositions.list(key).empty());
+    // The machine's run as a full run of mine: the path along the whole level.
+    CHECK(addTasRun(g, key));
+    CHECK(waitFor(rig, [&] { return game->trainingSession().sobPath() && !game->trainingSession().sobPath()->empty(); }));
     rig.press(SDL_SCANCODE_F5, SDLK_F5, 6);
     CHECK(g.startPositions.list(key).size() == 1);
-    CHECK(g.startPositions.activeId(key) == g.startPositions.list(key).front().id);
+    if (g.startPositions.list(key).empty()) return;
+    const StartPosEntry sp = g.startPositions.list(key).front();
+    CHECK(sp.onPath && sp.from.empty() && !sp.to.empty());  // on the first segment's best
+    CHECK(game->trainingSession().sobPath()->nearest(sp.state.feet, 0.5f).has_value());  // on a point of the path
+    CHECK(g.startPositions.activeId(key) == sp.id);
+    CHECK(game->trainingSession().startPosUsable(sp));
+    // Again at the same place: refused (one StartPos per place).
+    rig.press(SDL_SCANCODE_F5, SDLK_F5, 6);
+    CHECK(g.startPositions.list(key).size() == 1);
+    // F6 / F7: the previous / next one (the only one, active).
+    rig.press(SDL_SCANCODE_F7, SDLK_F7, 6);
+    rig.press(SDL_SCANCODE_F6, SDLK_F6, 6);
+    CHECK(g.startPositions.activeId(key) == sp.id);
     rig.press(SDL_SCANCODE_F8, SDLK_F8, 6);
     rig.press(SDL_SCANCODE_F8, SDLK_F8, 6);
     const auto pairs = g.measures.list(key);
@@ -188,6 +244,27 @@ TEST_CASE("training screens: F5 places a StartPos and F8 the measure points thro
     CHECK(rig.app.sceneCount() == 3);
     rig.press(SDL_SCANCODE_ESCAPE, SDLK_ESCAPE);
     CHECK(rig.app.sceneCount() == 2);
+    // 2.95: an attempt from a StartPos further on the path (Canopée brisée's segment): the replay that
+    // holds that segment's best played up to it (« Préparation… », a little per frame), then Nova is
+    // there, where that run was, the player's.
+    rig.app.popScene();
+    rig.app.runFrames(2);
+    const SobPath* path = game->trainingSession().sobPath();
+    CHECK(path && path->segments.size() >= 2);
+    if (!path || path->segments.size() < 2) return;
+    const SobPathSegment& seg = path->segments[1];
+    const Vec2 at = seg.points[seg.points.size() / 2];
+    const int far = g.startPositions.addOnPath(key, at, seg.range.first, seg.range.second, -1.0f, "2026-11-27 10:00", false, kSobPathSame);
+    CHECK(far > 0);
+    game->restartFrom(far);
+    int frames = 0;
+    CHECK(waitFor(rig, [&] {
+        ++frames;
+        auto* next = dynamic_cast<GameScene*>(rig.app.topScene());
+        return next && next->world() && (next->world()->player().feet() - at).length() < 0.5f;
+    }));
+    CHECK(frames > 3);  // never the whole replay in one frame
+    CHECK(g.startPositions.find(key, far)->attempts == 1);
 }
 
 TEST_CASE("training screens: both strips draw the level itself, what is drawn over them inside, 1280 x 720 and 1920 x 1080, French and English") {
@@ -255,67 +332,69 @@ TEST_CASE("training screens: StartPos and measure points added, moved by the pix
     g.measures.clear(key);
     auto level = g.content.loadLevel("sylvanox_01");
     CHECK(level.has_value());
-    const PlayerConfig cfg = PlayerConfig::fromJson(g.content.playerConfig());
     i18n::startAudit();
     rig.app.pushScene(makeChainTraining(g, req));
     rig.app.runFrames(1);  // its own strip drawn (the report of the last one replaced)
     CHECK(waitFor(rig, [] { return TrainingStrip::last("marks").picture; }));
     rig.app.runFrames(2);
-    // « Ajouter une startpos », then its place on the strip: the cursor with the arrows, Entrée.
+    // « Ajouter une startpos » before any best: refused (no SOB path), said, nothing kept.
+    g.ui.setFocus("chains/spadd");
+    rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN);
+    CHECK(g.ui.focused("chains/strip"));
+    rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN);
+    CHECK(g.startPositions.list(key).empty());
+    rig.press(SDL_SCANCODE_ESCAPE, SDLK_ESCAPE);
+    // The machine's run as a full run of mine: the SOB path along the level.
+    CHECK(addTasRun(g, key));
+    rig.app.runFrames(2);
+    // Then its place on the strip: the cursor with the arrows, Entrée: on the path.
     g.ui.setFocus("chains/spadd");
     rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN);
     CHECK(g.ui.focused("chains/strip"));
     for (int i = 0; i < 4; ++i) rig.press(SDL_SCANCODE_RIGHT, SDLK_RIGHT);
     CHECK(g.ui.focused("chains/strip"));  // the arrows move its cursor, not the focus
-    rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN);
+    // The path is read off the main thread: placed once it is there (until then refused, said so).
+    for (int tries = 0; tries < 600 && g.startPositions.list(key).empty(); ++tries) {
+        rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN, 1);
+        if (!g.startPositions.list(key).empty()) break;
+        if (!g.ui.focused("chains/strip")) {
+            rig.press(SDL_SCANCODE_ESCAPE, SDLK_ESCAPE, 1);
+            g.ui.setFocus("chains/spadd");
+            rig.press(SDL_SCANCODE_RETURN, SDLK_RETURN, 1);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+    }
+    rig.app.runFrames(2);  // the preview takes the focus at the next frame
     auto list = g.startPositions.list(key);
     CHECK(list.size() == 1);
     if (list.empty()) return;
     const StartPosEntry placed = list.front();
-    // Where the cursor was (half the strip and 4 steps), standing, as its segment's training.
-    CHECK(placed.menu);
-    CHECK(std::abs((placed.state.feet.x - level->bounds.x) / level->bounds.w - 0.52f) < 0.02f);
-    CHECK(startPosProblem(*level, cfg.size, placed.state.feet) == StartPosProblem::None);
-    CHECK(placed.state.health == cfg.maxHealth && placed.state.energy == cfg.maxEnergy);
-    if (req.checkpoints.front().feet.x < placed.state.feet.x - 400.0f) CHECK(!placed.state.reached.empty());  // past the first checkpoint: lit
-    // The preview has the focus: an arrow moves it by one pixel, with Maj by eight.
+    // Near where the cursor was (half the strip and 4 steps), on the path, from the menu.
+    CHECK(placed.menu && placed.onPath);
+    CHECK(std::abs((placed.state.feet.x - level->bounds.x) / level->bounds.w - 0.52f) < 0.05f);
+    const SobPath path = buildSobPath(sobPathRequest(g.bests, key));
+    CHECK(path.nearest(placed.state.feet, 0.5f).has_value());
+    // The preview has the focus: an arrow moves it along the path (the next point), with Maj by eight.
     CHECK(g.ui.focused("chains/preview"));
     auto feet = [&] { return g.startPositions.find(key, placed.id)->state.feet; };
-    const Vec2 f0 = feet();
+    auto index = [&](Vec2 f) {
+        const auto pt = path.nearest(f, 0.5f);
+        return pt ? std::pair<int, int>{pt->segment, pt->index} : std::pair<int, int>{-1, -1};
+    };
+    const auto i0 = index(feet());
     rig.press(SDL_SCANCODE_RIGHT, SDLK_RIGHT);
-    CHECK(feet().x == f0.x + 1.0f && feet().y == f0.y);
+    const auto i1 = index(feet());
+    CHECK(i1 == (path.step({i0.first, i0.second, {}}, 1) ? std::pair<int, int>{path.step({i0.first, i0.second, {}}, 1)->segment,
+                                                                                 path.step({i0.first, i0.second, {}}, 1)->index}
+                                                         : i0));
     rig.press(SDL_SCANCODE_UP, SDLK_UP);
-    CHECK(feet().x == f0.x + 1.0f && feet().y == f0.y - 1.0f);
+    CHECK(index(feet()) == i0);  // up: the point before
     SDL_SetModState(SDL_KMOD_LSHIFT);
-    rig.press(SDL_SCANCODE_LEFT, SDLK_LEFT);
+    rig.press(SDL_SCANCODE_RIGHT, SDLK_RIGHT);
     SDL_SetModState(SDL_KMOD_NONE);
-    CHECK(feet().x == f0.x + 1.0f - 8.0f);
+    const auto i8 = index(feet());
+    CHECK((i8.first > i0.first || (i8.first == i0.first && i8.second == i0.second + 8)));
     CHECK(g.ui.focused("chains/preview"));  // the arrows never took the focus away
-    // Pushed into the terrain: refused (shown in red), it stays at its last valid place.
-    Vec2 ground;
-    bool found = false;
-    for (const LevelObject& o : level->objects) {
-        if (o.type != "solid" || o.rect.w < 96.0f || o.rect.y < level->bounds.y + 96.0f) continue;
-        const Vec2 f{std::round(o.rect.center().x), o.rect.y};
-        if (startPosProblem(*level, cfg.size, f) == StartPosProblem::None && startPosProblem(*level, cfg.size, f + Vec2{0.0f, 1.0f}) == StartPosProblem::InSolid) {
-            ground = f;
-            found = true;
-            break;
-        }
-    }
-    CHECK(found);
-    StartPosState st = g.startPositions.find(key, placed.id)->state;
-    st.feet = ground;
-    g.startPositions.update(key, placed.id, st, -1.0f);
-    rig.press(SDL_SCANCODE_DOWN, SDLK_DOWN);
-    CHECK(feet().x == ground.x && feet().y == ground.y);
-    rig.press(SDL_SCANCODE_DOWN, SDLK_DOWN);
-    CHECK(feet().y == ground.y);
-    rig.press(SDL_SCANCODE_UP, SDLK_UP);
-    rig.press(SDL_SCANCODE_UP, SDLK_UP);  // out of the ground again: on it
-    CHECK(feet().y == ground.y);
-    rig.press(SDL_SCANCODE_UP, SDLK_UP);
-    CHECK(feet().y == ground.y - 1.0f);
     const Vec2 kept = feet();
     // « Ajouter A → B »: A, then B on the strip; the preview then moves B by the pixel.
     g.ui.setFocus("chains/madd");
@@ -348,7 +427,7 @@ TEST_CASE("training screens: StartPos and measure points added, moved by the pix
         StartPosStore disk(Paths::savesDir() / "startpos.json");
         disk.load();
         const StartPosEntry* e = disk.find(key, placed.id);
-        CHECK(e && e->menu && e->state.feet.x == kept.x && e->state.feet.y == kept.y);
+        CHECK(e && e->menu && e->onPath && e->state.feet.x == kept.x && e->state.feet.y == kept.y);
         MeasureStore m(Paths::savesDir() / "measures.json");
         m.load();
         const MeasurePair* p = m.find(key, pairId);
@@ -377,4 +456,100 @@ TEST_CASE("training screens: StartPos and measure points added, moved by the pix
     }
     rig.app.popScene();
     rig.app.runFrames(1);
+}
+
+TEST_CASE("training screens: training a segment starts at the one before, its run-up (« élan »), never counted") {
+    Rig rig(1280, 720, Language::French);
+    GameServices& g = *rig.g;
+    auto level = g.content.loadLevel("sylvanox_01");
+    CHECK(level.has_value());
+    if (!level) return;
+    Vec2 seuil;
+    for (const LevelObject& o : level->objects)
+        if (o.id == "o63") seuil = o.rect.bottomCenter();
+    // « Répéter un segment » on Canopée brisée → Jardins gardés (segment 3): from Seuil des Anciens.
+    PlayOptions o;
+    o.training = true;
+    o.trainingCheckpoint = "o140";
+    o.trainingEnd = "o206";
+    o.trainingRunUp = std::string("o63");
+    o.spawn = seuil;
+    std::unique_ptr<Scene> scene = makeGameScene(g, "sylvanox_01", o);
+    GameScene* game = static_cast<GameScene*>(scene.get());
+    rig.app.pushScene(std::move(scene));
+    rig.app.runFrames(10);
+    CHECK(game->world() && game->world()->checkpointId() == "o63");  // set up at the run-up's start
+    CHECK((game->world()->player().feet() - seuil).length() < 48.0f);
+    const TrainingSession& s = game->trainingSession();
+    CHECK(s.hasRunUp() && s.inRunUp());
+    CHECK(s.runUpFrom() == "o63");
+    CHECK(s.entryTime() < 0.0f);  // not entered yet
+    CHECK(!s.chain());
+    CHECK(s.source() == BestSource::Training);
+    rig.app.popScene();
+    rig.app.runFrames(1);
+}
+
+TEST_CASE("training session: a fall inside a segment is part of it; a checkpoint lit only after a fall beyond it never starts a segment") {
+    Rig rig(1280, 720, Language::French);
+    GameServices& g = *rig.g;
+    auto level = g.content.loadLevel("sylvanox_01");
+    CHECK(level.has_value());
+    if (!level) return;
+    // Les Ruines Suspendues: Seuil des Anciens (o63), Canopée brisée (o140), Jardins gardés (o206),
+    // Ponts suspendus (o252), Sanctuaire (o311), the boss's arena, Dernière ascension (o359).
+    const std::string key = GhostStore::levelKey("sylvanox_01", std::string(64, 'r'));
+    auto attempt = [&](const std::function<void(GameWorld&, TrainingSession&)>& play) {
+        GameWorld w(WorldServices{g.app.resources(), g.app.audio(), g.content, nullptr, 0.0f, 0.7f}, WorldMode::Play);
+        w.setKeysPerSlot(true);
+        w.load(*level);
+        w.seedGameplay(levelSeed("sylvanox_01"));
+        w.silent = true;
+        TrainingSession s;
+        TrainingSession::Setup ss;
+        ss.levelKey = key;
+        ss.counts = true;  // a run from the level's start
+        s.begin(g, *level, ss);
+        // The route along the level (computed off the main thread), Nova at the start.
+        CHECK(waitFor(rig, [&] {
+            s.afterStep(w);
+            return s.route().size() == 6;
+        }));
+        play(w, s);
+        s.commit(-1.0f, nullptr);
+        return s.takeSegments();
+    };
+    auto fallAt = [](GameWorld& w, TrainingSession& s, Vec2 feet) {
+        w.player().teleportTo(feet);
+        w.player().kill(w);
+        s.afterStep(w);  // the place of the fall noted (then Nova comes back from the checkpoint before)
+    };
+    // A fall between Seuil des Anciens and Canopée brisée: that segment's time is all of it, from
+    // its first entry (10 s) to Canopée brisée (41 s), the fall included.
+    auto out = attempt([&](GameWorld& w, TrainingSession& s) {
+        s.onCheckpoint("o63", 10.0f);
+        fallAt(w, s, {2600.0f, 760.0f});
+        s.onCheckpoint("o140", 41.0f);
+    });
+    CHECK(g.bests.record(key, "o63", "o140") != nullptr);
+    if (const auto* r = g.bests.record(key, "o63", "o140")) CHECK_NEAR(r->best, 31.0f, 1e-4);
+    CHECK(out.size() == 2);  // start → o63, o63 → o140 for the statistics
+    // The bug of 2.94: Sanctuaire passed without lighting it (over its crystal), a fall in the
+    // boss's arena, back from Ponts suspendus: Sanctuaire is lit only then (80 s). Before, the boss's
+    // segment ran from that respawn (Sanctuaire → Dernière ascension in 22 s); now it is no boundary.
+    out = attempt([&](GameWorld& w, TrainingSession& s) {
+        s.onCheckpoint("o63", 10.0f);
+        s.onCheckpoint("o140", 20.0f);
+        s.onCheckpoint("o206", 35.0f);
+        s.onCheckpoint("o252", 50.0f);
+        fallAt(w, s, {9200.0f, 760.0f});  // in the arena, past Sanctuaire
+        s.onCheckpoint("o311", 80.0f);    // lit on the way back
+        s.onCheckpoint("o359", 102.0f);
+    });
+    CHECK(g.bests.record(key, "o206", "o252") != nullptr);
+    if (const auto* r = g.bests.record(key, "o206", "o252")) CHECK_NEAR(r->best, 15.0f, 1e-4);
+    CHECK(g.bests.record(key, "o311", "o359") == nullptr);  // never 22 s from a respawn
+    CHECK(g.bests.record(key, "o252", "o311") == nullptr);
+    CHECK(g.bests.record(key, "o252", "o359") == nullptr);
+    for (const auto& [range, secs] : out) CHECK(!(range.first == "o311" && range.second == "o359"));
 }

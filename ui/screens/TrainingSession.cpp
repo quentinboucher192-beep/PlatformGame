@@ -10,6 +10,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/ghost/GhostRace.h"
+#include "game/ghost/StartPosStore.h"
 #include "game/levels/LevelData.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/widgets/UIContext.h"
@@ -25,6 +26,10 @@ float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1
 
 const Color kGold{255, 214, 90, 255};
 const Color kGate{255, 200, 80, 255};
+
+/// 2.95: Nova was beyond a checkpoint when she was further than this along the route (pixels):
+/// a fall right next to it, before lighting it, does not make it « passed ».
+constexpr float kBeyond = 48.0f;
 
 /// The name of an action's key (keyboard) or « Vue + croix » (gamepad), for the hints.
 std::string keyOf(InputManager& in, Action a) {
@@ -42,6 +47,13 @@ void TrainingSession::begin(GameServices& g, const LevelData& level, Setup s) {
     level_ = &level;
     s_ = std::move(s);
     crossed_.clear();
+    pending_.clear();
+    seen_.clear();
+    beyond_.clear();
+    started_ = false;
+    deaths_ = 0;
+    exitAt_ = -1.0f;
+    segmentsOut_.clear();
     committed_ = false;
     goldGain_ = 0.0f;
     for (const LevelObject& o : level.objects)
@@ -76,12 +88,12 @@ void TrainingSession::collectTrack() {
 
 BestSource TrainingSession::source() const {
     if (!s_.training) return BestSource::Run;
-    if (s_.startPosId > 0 || s_.start.startPos) return BestSource::StartPos;
+    if (fromStartPos()) return BestSource::StartPos;
     return chain() ? BestSource::Chain : BestSource::Training;
 }
 
 bool TrainingSession::chain() const {
-    if (!s_.training || s_.start.startPos) return false;
+    if (!s_.training || fromStartPos()) return false;
     const int n = static_cast<int>(route_.size());
     auto pos = [&](const std::string& id, bool from) -> int {
         if (id.empty()) return from ? 0 : n + 1;
@@ -93,32 +105,91 @@ bool TrainingSession::chain() const {
 }
 
 void TrainingSession::onCheckpoint(const std::string& id, float t) {
-    if (committed_ || id.empty()) return;
-    // Where the segment that ends here started: the previous checkpoint, the training's start
-    // checkpoint, the level's start (none after a StartPos).
-    std::string from;
-    float t0 = 0.0f;
-    bool known = true;
-    if (!crossed_.empty()) {
-        from = crossed_.back().first;
-        t0 = crossed_.back().second;
-    } else if (s_.start.startPos) {
-        known = false;
-    } else if (s_.training) {
-        from = s_.from;
+    // Its first crossing only (a checkpoint lights once; the start's, lit before, is not one).
+    if (committed_ || id.empty() || !seen_.insert(id).second) return;
+    pending_.push_back({id, t, beyond_.size()});
+    resolve(false);
+}
+
+void TrainingSession::resolve(bool wait) {
+    if (pending_.empty()) return;
+    if (!track_.valid() && trackFuture_.valid()) {
+        if (!wait) return;  // checked once the route is known
+        trackFuture_.wait();
+        collectTrack();
     }
-    crossed_.push_back({id, t});
-    if (!known || !s_.training || s_.levelKey.empty() || !g_) return;
-    const float seg = t - t0;
-    const PersonalBests::Record* rec = g_->bests.record(s_.levelKey, from, id);
-    if (!rec || rec->best <= 0.0f || msOf(seg) >= msOf(rec->best)) return;
+    for (const Lit& c : pending_) {
+        // Nova was further than it on the route before it was lit (a fall beyond it, then back from
+        // the checkpoint before it; or the attempt started beyond it): she passed it unseen, its
+        // first crossing is unknown. Not a boundary: a respawn never starts a segment.
+        bool passed = false;
+        if (auto at = cpAt_.find(c.id); track_.valid() && at != cpAt_.end()) {
+            const float margin = kBeyond / std::max(1.0f, track_.length);
+            for (size_t k = 0; k < c.before && k < beyond_.size() && !passed; ++k) passed = track_.fractionAt(beyond_[k]) > at->second + margin;
+        }
+        if (passed) continue;
+        crossed_.push_back({c.id, c.t});
+        onCrossed(c.id, c.t, false);
+    }
+    pending_.clear();
+}
+
+BestPassage TrainingSession::passage(float exitTime) const {
+    BestPassage p;
+    // Where it started: a StartPos, a training's run-up or range start, the level's start.
+    const std::string start = s_.runUp ? *s_.runUp : s_.training ? s_.from : std::string{};
+    if (fromStartPos()) {
+        p.from = BestPassage::From::Elsewhere;
+    } else if (!start.empty()) {
+        p.from = BestPassage::From::Checkpoint;
+        p.startCheckpoint = start;
+    } else {
+        p.from = BestPassage::From::LevelStart;
+    }
+    if (hasRunUp()) p.countFrom = s_.from;  // the run-up never counts
+    p.checkpoints = crossed_;
+    p.exitTime = exitTime > 0.0f ? exitTime : -1.0f;
+    return p;
+}
+
+void TrainingSession::onCrossed(const std::string& id, float t, bool exit) {
+    if (!g_ || s_.levelKey.empty() || !s_.counts) return;
+    // The segment that ends here, when the rules count it (entered by playing the one before it
+    // whole, never in a run-up): the shortest range that ends here.
+    const std::vector<PersonalBests::Span> spans = g_->bests.counted(s_.levelKey, passage(exit ? t : -1.0f));
+    const PersonalBests::Span* seg = nullptr;
+    for (const PersonalBests::Span& sp : spans)
+        if (sp.range.second == (exit ? std::string{} : id) && std::abs(sp.end - t) < 1e-4f && (!seg || sp.start > seg->start)) seg = &sp;
+    if (!seg) return;
+    const float secs = seg->end - seg->start;
+    if (segmentsOut_.size() < 256) segmentsOut_.push_back({seg->range, secs});
+    if (!s_.training) return;
+    const PersonalBests::Record* rec = g_->bests.record(s_.levelKey, seg->range);
+    if (!rec || rec->best <= 0.0f || msOf(secs) >= msOf(rec->best)) return;
     // A gold segment: counted at once in the Sum of Best shown (the store takes it at the end).
-    const float gain = rec->best - seg;
+    const float gain = rec->best - secs;
     goldGain_ += gain;
-    std::string line = pointName(from, true) + " → " + pointName(id, false) + " : " + formatGhostTime(seg);
+    std::string line = pointName(seg->range.first, true) + " → " + pointName(seg->range.second, false) + " : " + formatGhostTime(secs);
     if (sobNow() > 0.0f) line += " · SOB : " + formatGhostTime(sobNow());
     toast("SEGMENT D'OR · " + formatGhostDelta(-gain), line, true);
-    if (g_) g_->uiSound("medal", 0.5f);
+    g_->uiSound("medal", 0.5f);
+}
+
+std::vector<std::pair<PersonalBests::Range, float>> TrainingSession::takeSegments() { return std::exchange(segmentsOut_, {}); }
+
+bool TrainingSession::inRunUp() const { return hasRunUp() && !seen_.count(s_.from) && exitAt_ < 0.0f; }
+
+float TrainingSession::entryTime() const {
+    if (!hasRunUp()) return 0.0f;
+    for (const auto& [id, t] : crossed_)
+        if (id == s_.from) return t;
+    return -1.0f;
+}
+
+float TrainingSession::rangeTime(float endT) {
+    resolve(true);
+    const float entry = entryTime();
+    return entry < 0.0f || endT < entry ? -1.0f : endT - entry;
 }
 
 float TrainingSession::sobNow() const { return sobAtStart_ > 0.0f ? sobAtStart_ - goldGain_ : -1.0f; }
@@ -132,20 +203,13 @@ float TrainingSession::bestAtStart(const std::string& from, const std::string& t
 PersonalBests::Added TrainingSession::commit(float exitTime, const std::vector<uint8_t>* replay) {
     PersonalBests::Added out;
     if (committed_ || !g_) return out;
+    resolve(true);  // every checkpoint lit is checked first (the route computed)
     committed_ = true;
     if (measuresDirty_) g_->measures.save();
     measuresDirty_ = false;
     if (!s_.counts || s_.levelKey.empty()) return out;
     BestAttempt a;
-    if (s_.start.startPos) a.passage.from = BestPassage::From::Elsewhere;
-    else if (s_.training && !s_.from.empty()) {
-        a.passage.from = BestPassage::From::Checkpoint;
-        a.passage.startCheckpoint = s_.from;
-    } else {
-        a.passage.from = BestPassage::From::LevelStart;
-    }
-    a.passage.checkpoints = crossed_;
-    a.passage.exitTime = exitTime > 0.0f ? exitTime : -1.0f;
+    a.passage = passage(exitTime);
     a.source = source();
     a.date = FileUtil::nowString();
     a.replay = replay;
@@ -161,6 +225,12 @@ bool TrainingSession::update(InputManager& in, float dt) {
     for (Toast& t : toasts_) t.t += dt;
     toasts_.erase(std::remove_if(toasts_.begin(), toasts_.end(), [](const Toast& t) { return t.t > 3.2f; }), toasts_.end());
     if (!s_.training) return false;
+    // 2.95: the SOB path (where a StartPos may lie), read off the main thread; the StartPos of
+    // before placed on it when they lie near it.
+    if (g_ && !s_.levelKey.empty()) {
+        path_.update(g_->bests, s_.levelKey);
+        if (path_.changed() && path_.path() && reanchorStartPos(g_->startPositions, s_.levelKey, *path_.path()) > 0) g_->startPositions.save();
+    }
     if (in.menuPressed(Action::StartPosPlace)) flags_ |= InputFrame::PlaceStartPos;
     if (in.menuPressed(Action::StartPosPrev)) flags_ |= InputFrame::PrevStartPos;
     if (in.menuPressed(Action::StartPosNext)) flags_ |= InputFrame::NextStartPos;
@@ -200,22 +270,58 @@ void TrainingSession::afterStep(GameWorld& w) {
     if (!g_) return;
     collectTrack();
     chrono_ = w.timer().elapsed();
+    // 2.95: where Nova appeared without crossing what lies behind her (the attempt's start, the
+    // place of each fall: she comes back from a checkpoint before it), then the checkpoints lit
+    // meanwhile checked against it, the exit noted.
+    if (!started_ || w.stats().deaths > deaths_) {
+        if (beyond_.size() < 4096) beyond_.push_back(w.player().feet());
+        started_ = true;
+        deaths_ = w.stats().deaths;
+    }
+    resolve(false);
+    if (exitAt_ < 0.0f && !committed_ && (w.state() == WorldState::Outro || w.state() == WorldState::Completed)) {
+        exitAt_ = chrono_;  // the chronometer stops at the exit
+        resolve(true);
+        onCrossed({}, exitAt_, true);
+    }
     const std::string& key = s_.levelKey;
     for (const TrainingMark& m : w.takeMarks()) {
-        if (!s_.training || key.empty()) continue;
+        if (!s_.training) continue;
+        if (key.empty()) {  // 2.95: said, never silently dropped
+            toast("Startpos et mesures indisponibles", "Ce niveau n'a pas de version enregistrée (un test de l'éditeur).");
+            continue;
+        }
         const std::string now = FileUtil::nowString();
         if (m.flag == InputFrame::PlaceStartPos) {
             if (!m.valid) {
                 toast("Startpos impossible ici", "Nova doit être en jeu, visible et seule.");
                 continue;
             }
-            const int id = g_->startPositions.add(key, m.state, fractionAt(m.state.feet), now);
+            // 2.95: on the SOB path only, at its point nearest to Nova (an attempt from it plays the
+            // replay that holds that segment's best up to there): never where it was never crossed.
+            const SobPath* path = path_.path();
+            if (!path) {
+                toast("Tracé de la SOB en préparation", "Réessayez dans un instant.");
+                continue;
+            }
+            const auto pt = path->nearest(m.state.feet, kSobPathSnap);
+            if (!pt) {
+                toast("Pas de startpos ici", path->empty() ? "Aucun tracé de la SOB : terminez le niveau ou entraînez ses segments d'abord."
+                                                           : "Elle se pose sur le tracé de la SOB : ce passage n'a jamais été parcouru, ou Nova en est trop loin.");
+                continue;
+            }
+            if (const int other = g_->startPositions.occupied(key, pt->at, kSobPathSame)) {
+                toast("Une startpos est déjà là", "SP " + std::to_string(g_->startPositions.rank(key, other) + 1) + " : une seule startpos par endroit.");
+                continue;
+            }
+            const SobPathSegment& seg = path->segments[static_cast<size_t>(pt->segment)];
+            const int id = g_->startPositions.addOnPath(key, pt->at, seg.range.first, seg.range.second, fractionAt(pt->at), now, false, kSobPathSame);
             if (id == 0) {
                 toast("Trop de startpos", "32 au plus par version du niveau : effacez-en dans Pause › Startpos et mesures.");
                 continue;
             }
             g_->startPositions.save();
-            const std::string where = whereOnRoute(m.state.feet);
+            const std::string where = whereOnRoute(pt->at);
             toast("Startpos posée : SP " + std::to_string(g_->startPositions.rank(key, id) + 1),
                   (where.empty() ? std::string() : where + " · ") + "Recommencer repart d'ici");
         } else if (m.flag == InputFrame::PrevStartPos || m.flag == InputFrame::NextStartPos) {
@@ -225,7 +331,10 @@ void TrainingSession::afterStep(GameWorld& w) {
                 continue;
             }
             g_->startPositions.save();
-            toast("SP " + std::to_string(g_->startPositions.rank(key, id) + 1) + " active", "Le prochain essai part d'elle.");
+            const StartPosEntry* e = g_->startPositions.find(key, id);
+            toast("SP " + std::to_string(g_->startPositions.rank(key, id) + 1) + " active",
+                  e && startPosUsable(*e) ? std::string("Le prochain essai part d'elle.")
+                                          : std::string("À replacer sur le tracé de la SOB : le prochain essai part du départ de l'entraînement."));
         } else if (m.flag == InputFrame::PlaceMeasure) {
             if (!m.valid) {
                 toast("Point de mesure impossible ici", "Nova doit être en jeu, visible et seule.");
@@ -277,6 +386,12 @@ void TrainingSession::afterStep(GameWorld& w) {
 }
 
 float TrainingSession::fractionAt(Vec2 feet) const { return track_.valid() ? track_.fractionAt(feet) : -1.0f; }
+
+bool TrainingSession::startPosUsable(const StartPosEntry& e) const {
+    if (!g_ || !e.onPath) return false;
+    const PersonalBests::Record* r = g_->bests.record(s_.levelKey, e.from, e.to);
+    return r && r->replay.has();
+}
 
 std::string TrainingSession::pointName(const std::string& id, bool start) const {
     if (id.empty()) return start ? "Départ" : "Arrivée";
@@ -341,6 +456,20 @@ void TrainingSession::drawWorld(Renderer& r, const WorldView& view, const Animat
             if (p.b) gate(*p.b);
         }
     }
+    // 2.95: the SOB path (where a StartPos lies: F5 places one on its point nearest to Nova), a
+    // faint golden line along it, what is on screen only.
+    if (g_->startPositions.show)
+        if (const SobPath* path = path_.path()) {
+            const float W = static_cast<float>(view.screenW), H = static_cast<float>(view.screenH);
+            auto seen = [&](Vec2 p) {
+                const Vec2 s = view.toScreen(p);
+                return s.x > -40.0f && s.x < W + 40.0f && s.y > -40.0f && s.y < H + 40.0f;
+            };
+            const float th = std::max(1.5f, 2.0f * view.scale);
+            for (const SobPathSegment& s : path->segments)
+                for (size_t i = 2; i < s.points.size(); i += 2)
+                    if (seen(s.points[i - 2]) || seen(s.points[i])) r.drawLine(view.toScreen(s.points[i - 2]), view.toScreen(s.points[i]), kGold.withAlpha(90), th);
+        }
     // The StartPos: a pennant and Nova's translucent silhouette (the one in use brighter).
     if (g_->startPositions.show && set && set->texture) {
         const int active = g_->startPositions.activeId(key);
@@ -464,21 +593,11 @@ void TrainingSession::drawStartPosPanel(UIContext& ui, std::vector<Rect>& keep) 
     if (where.empty()) where = "Calcul du parcours…";
     ui.label(ui.elide(where, FontFace::Bold, fs + 2.0f, room), {x, y}, fs + 2.0f, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
     y += lineH;
-    // What it took: the powers, the hearts and the energy.
+    // 2.95: how it starts: the replay that holds its segment's best, played up to it; or « à replacer ».
     if (e) {
-        const std::string lead = "Pris à la pose :";
-        float cx = x + ui.label(lead, {x, y}, small, th.textDim, Align::Left, FontFace::Body, VAlign::Middle).x + ui.s(8);
-        const float ic = ui.s(small + 8.0f);
-        for (const std::string& id : e->state.powers) {
-            const PowerDefinition* d = g_->content.power(id);
-            if (!d || cx + ic > at.right() - pad) break;
-            ui.icon("ui/icons_powers.png", d->icon, 32, {cx, y - ic * 0.5f, ic, ic});
-            cx += ic + ui.s(4);
-        }
-        const std::string rest = std::to_string(e->state.health) + (e->state.health > 1 ? " cœurs" : " cœur") + " · énergie " +
-                                 std::to_string(static_cast<int>(std::lround(e->state.energy))) + " %";
-        const float rroom = at.right() - pad - (cx + ui.s(6));
-        if (rroom > ui.s(40)) ui.label(ui.elide(rest, FontFace::Body, small, rroom), {cx + ui.s(6), y}, small, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        const bool usable = startPosUsable(*e);
+        const std::string how = usable ? "Départ : le meilleur de ce segment rejoué jusqu'ici" : "À replacer sur le tracé de la SOB : inutilisable";
+        ui.label(ui.elide(how, FontFace::Body, small, room), {x, y}, small, usable ? th.textDim : th.danger, Align::Left, FontFace::Body, VAlign::Middle);
     } else {
         ui.label(ui.elide("Le prochain essai part du départ de l'entraînement.", FontFace::Body, small, room), {x, y}, small, th.textDim, Align::Left,
                  FontFace::Body, VAlign::Middle);
@@ -576,43 +695,61 @@ void TrainingSession::drawChainPanel(UIContext& ui, const GameWorld& w, std::vec
     const int a = pos(s_.from, true), b = pos(s_.to, false);
     if (a < 0 || b <= a + 1) return;
     auto boundary = [&](int k) { return k <= 0 || k > n ? std::string{} : route_[static_cast<size_t>(k - 1)]; };
-    // The rows: the segments of the enchaînement (the last six when there are more).
+    // The rows: 2.95, the run-up first (« élan », never counted), then the segments of the
+    // enchaînement (the last six when there are more).
     struct Row {
         int index;
         std::string from, to;
         float time = -1.0f, gap = 0.0f;
-        bool current = false, gold = false, has = false;
+        bool current = false, gold = false, has = false, runUp = false, counts = false;
     };
+    const int a0 = hasRunUp() ? std::max(0, a - 1) : a;
+    // What this attempt counts so far (the rules): only those rows compare with their best.
+    const std::vector<PersonalBests::Span> spans = g_->bests.counted(s_.levelKey, passage(-1.0f));
+    auto counted = [&](const std::string& f, const std::string& t) {
+        return std::any_of(spans.begin(), spans.end(), [&](const PersonalBests::Span& sp) { return sp.range.first == f && sp.range.second == t; });
+    };
+    const float entry = entryTime();
     std::vector<Row> rows;
     float t0 = 0.0f, cumGap = 0.0f;
-    bool cumKnown = true;
-    size_t ci = 0;
+    bool t0Known = true, cumKnown = true;
     float lastPoint = 0.0f;
-    int lastIndex = a;
-    for (int k = a; k < b; ++k) {
+    int lastIndex = a0;
+    for (int k = a0; k < b; ++k) {
         Row r;
         r.index = k + 1;
         r.from = boundary(k);
         r.to = boundary(k + 1);
+        r.runUp = k < a;
         const std::string endId = k + 1 > n ? std::string{} : r.to;
-        if (!endId.empty() && ci < crossed_.size() && crossed_[ci].first == endId) {
-            r.time = crossed_[ci].second - t0;
-            t0 = crossed_[ci].second;
-            ++ci;
+        float at = -1.0f;  // its end's first crossing (a boundary of this attempt)
+        for (const auto& [id, t] : crossed_)
+            if (!endId.empty() && id == endId) at = t;
+        if (at >= 0.0f) {
             r.has = true;
-            lastPoint = t0;
+            r.time = t0Known ? at - t0 : -1.0f;
+            t0 = at;
+            t0Known = true;
+            lastPoint = at;
             lastIndex = k + 1;
             const float best = bestAtStart(r.from, r.to);
-            if (best > 0.0f) {
+            r.counts = !r.runUp && r.time >= 0.0f && counted(r.from, r.to);
+            if (r.counts && best > 0.0f) {
                 r.gap = r.time - best;
                 r.gold = msOf(r.time) < msOf(best);
                 cumGap += r.gap;
-            } else {
+            } else if (!r.runUp) {
                 cumKnown = false;
             }
+        } else if (!endId.empty() && seen_.count(endId)) {
+            // Lit, but passed unseen before (a fall beyond it): no time from or to it.
+            r.has = true;
+            t0Known = false;
+            lastIndex = k + 1;
+            if (!r.runUp) cumKnown = false;
         } else if (rows.empty() || rows.back().has) {
             r.current = true;
-            r.time = std::max(0.0f, w.timer().elapsed() - t0);
+            r.time = t0Known ? std::max(0.0f, w.timer().elapsed() - t0) : -1.0f;
         }
         rows.push_back(r);
         if (!r.has) break;
@@ -636,25 +773,38 @@ void TrainingSession::drawChainPanel(UIContext& ui, const GameWorld& w, std::vec
     ui.label(ui.elide(head, FontFace::Bold, fs, room - sw - ui.s(10)), {x, y}, fs, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
     ui.label(ui.elide(sub, FontFace::Body, fs, sw), {right, y}, fs, th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
     y += lineH;
-    const float gapW = ui.text().measure("+00,000", FontFace::Bold, ui.s(fs)).x + ui.s(10);
+    // The right column: a gap, « en cours », « élan » (each measured: none goes under the time).
+    float gapW = ui.text().measure("+00,000", FontFace::Bold, ui.s(fs)).x;
+    for (const char* word : {"en cours", "élan"}) gapW = std::max(gapW, ui.text().measure(word, FontFace::Body, ui.s(fs)).x);
+    gapW += ui.s(10);
     const float timeW = ui.text().measure("0:00,00", FontFace::Bold, ui.s(fs)).x + ui.s(14);
     const float nameRoom = room - gapW - timeW;
     for (const Row& r : rows) {
         if (r.current) ui.r().fillRect({at.x + ui.s(4), y - lineH * 0.5f, at.w - ui.s(8), lineH}, Color{255, 255, 255, 14});
         const std::string name = std::to_string(r.index) + " · " + pointName(r.from, true) + " → " + pointName(r.to, false);
-        ui.label(ui.elide(name, FontFace::Body, fs, nameRoom), {x, y}, fs, th.text, Align::Left, FontFace::Body, VAlign::Middle);
+        ui.label(ui.elide(name, FontFace::Body, fs, nameRoom), {x, y}, fs, r.runUp ? th.textDim : th.text, Align::Left, FontFace::Body, VAlign::Middle);
         if (r.time >= 0.0f)
-            ui.label(formatGhostTime(r.time), {right - gapW, y}, fs, r.gold ? kGold : th.text, Align::Right, FontFace::Bold, VAlign::Middle);
-        if (r.current) ui.label("en cours", {right, y}, fs, th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
-        else if (r.has && bestAtStart(r.from, r.to) > 0.0f)
+            ui.label(formatGhostTime(r.time), {right - gapW, y}, fs, r.gold ? kGold : r.runUp ? th.textDim : th.text, Align::Right, FontFace::Bold,
+                     VAlign::Middle);
+        else if (r.has)
+            ui.label("—", {right - gapW, y}, fs, th.textDim, Align::Right, FontFace::Bold, VAlign::Middle);
+        if (r.runUp) ui.label("élan", {right, y}, fs, th.warm, Align::Right, FontFace::Body, VAlign::Middle);
+        else if (r.current) ui.label("en cours", {right, y}, fs, th.textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        else if (r.counts && bestAtStart(r.from, r.to) > 0.0f)
             ui.label(formatGhostDelta(r.gap, false), {right, y}, fs, r.gold ? kGold : (r.gap > 0.0005f ? th.danger : th.textDim), Align::Right, FontFace::Bold,
                      VAlign::Middle);
         y += lineH;
     }
     y += ui.s(8);
-    // The cumulative gap, the best possible at the end, the enchaînement's record.
-    const float sumRest = lastIndex < b ? g_->bests.sumOfBests(s_.levelKey, lastIndex, b) : 0.0f;
-    const float possible = sumRest >= 0.0f ? lastPoint + sumRest : -1.0f;
+    // The cumulative gap, the best possible at the end (from the entry: the run-up never counts),
+    // the enchaînement's record.
+    float possible = -1.0f;
+    if (entry < 0.0f && inRunUp()) {
+        possible = g_->bests.sumOfBests(s_.levelKey, a, b);
+    } else if (entry >= 0.0f && t0Known) {
+        const float sumRest = lastIndex < b ? g_->bests.sumOfBests(s_.levelKey, std::max(lastIndex, a), b) : 0.0f;
+        if (sumRest >= 0.0f) possible = std::max(0.0f, lastPoint - entry) + sumRest;
+    }
     const float record = bestAtStart(s_.from, s_.to);
     const std::pair<std::string, std::string> foot[3] = {
         {"Écart cumulé à la SOB du début de l'essai", lastIndex > a && cumKnown ? formatGhostDelta(cumGap) : std::string("—")},

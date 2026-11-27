@@ -2,6 +2,8 @@
 // merged (full runs, section trainings, enchaînements, StartPos, verified online runs), the
 // records of every range of segments (the enchaînements' grid), the file and its replays, and
 // the merge of the old files (segments.json, training.json) and of the statistics.
+// 2.95: the rules of a segment (tests/test_sob_rules.cpp): a training counts its range only (its
+// run-up never), after a StartPos from the first segment entered; the old files give their runs.
 
 #include <cmath>
 #include <system_error>
@@ -111,11 +113,11 @@ TEST_CASE("personal bests: trainings, enchaînements, StartPos and online runs j
     PersonalBests b;
     b.setRoute(kKey, kRoute);
     b.add(kKey, fullRun({10.0f, 18.0f, 25.0f}, 30.0f));
-    // A section training of a → b (from its checkpoint, chronometer 0 there).
+    // A section training of a → b (2.95: from the level's start, segment 1 its run-up).
     BestAttempt t;
-    t.passage.from = BestPassage::From::Checkpoint;
-    t.passage.startCheckpoint = "a";
-    t.passage.checkpoints = {{"a", 0.0f}, {"b", 7.5f}};  // the start checkpoint itself is ignored
+    t.passage.from = BestPassage::From::LevelStart;
+    t.passage.checkpoints = {{"a", 11.0f}, {"b", 18.5f}};
+    t.passage.countFrom = std::string("a");
     t.source = BestSource::Training;
     t.date = "2026-11-21 09:00";
     auto added = b.add(kKey, t);
@@ -124,23 +126,28 @@ TEST_CASE("personal bests: trainings, enchaînements, StartPos and online runs j
     CHECK(b.record(kKey, "a", "b")->passages == 2);
     CHECK_NEAR(b.sob(kKey), 29.5f, 1e-4);
     CHECK(!added.newPb);
-    // An enchaînement a → exit: each segment crossed is a segment time, each range a record.
+    // An enchaînement b → exit (2.95: from a, its run-up): each segment entered is a segment time,
+    // each range a record.
     BestAttempt c;
     c.passage.from = BestPassage::From::Checkpoint;
     c.passage.startCheckpoint = "a";
-    c.passage.checkpoints = {{"b", 7.8f}, {"c", 14.0f}};
+    c.passage.checkpoints = {{"a", 0.0f}, {"b", 7.8f}, {"c", 14.0f}};  // the start checkpoint itself is ignored
     c.passage.exitTime = 18.5f;
+    c.passage.countFrom = std::string("b");
     c.source = BestSource::Chain;
     c.date = "2026-11-22 09:00";
     added = b.add(kKey, c);
     CHECK_NEAR(b.record(kKey, "b", "c")->best, 6.2f, 1e-4);
     CHECK(b.record(kKey, "b", "c")->source == BestSource::Chain);
     CHECK_NEAR(b.record(kKey, "c", "")->best, 4.5f, 1e-4);
-    CHECK_NEAR(b.record(kKey, "a", "")->best, 18.5f, 1e-4);
-    CHECK(b.record(kKey, "a", "")->source == BestSource::Chain);
+    CHECK_NEAR(b.record(kKey, "b", "")->best, 10.7f, 1e-4);
+    CHECK(b.record(kKey, "b", "")->source == BestSource::Chain);
+    CHECK(b.record(kKey, "a", "")->source == BestSource::Run);  // through the run-up: not counted
+    CHECK(b.record(kKey, "a", "b")->passages == 2);
     CHECK(b.runs(kKey)->size() == 1);  // never a full run
     CHECK_NEAR(b.pb(kKey)->time, 30.0f, 1e-4);
-    // A StartPos between a and b: only what lies between two checkpoints crossed after it.
+    // A StartPos between a and b (2.95: on the SOB path, the real state there): a → b, where it
+    // lies, never; b → c, entered after it, does.
     BestAttempt s;
     s.passage.from = BestPassage::From::Elsewhere;
     s.passage.checkpoints = {{"b", 2.0f}, {"c", 7.9f}};
@@ -151,7 +158,7 @@ TEST_CASE("personal bests: trainings, enchaînements, StartPos and online runs j
     CHECK(b.record(kKey, "b", "c")->best < 6.0f);
     CHECK(b.record(kKey, "b", "c")->source == BestSource::StartPos);
     CHECK_NEAR(b.record(kKey, "c", "")->best, 4.1f, 1e-4);
-    CHECK(b.record(kKey, "a", "b")->passages == 3);  // a → b not crossed whole: no passage
+    CHECK(b.record(kKey, "a", "b")->passages == 2);  // a → b not crossed whole: no passage
     // The player's run verified online: a full run, counted once however often it is read.
     BestAttempt o = fullRun({9.5f, 17.0f, 23.0f}, 27.0f, "2026-11-24 09:00", BestSource::Online);
     o.onlineId = "rec-1";
@@ -180,7 +187,7 @@ TEST_CASE("personal bests: only segments that follow each other on the route mak
     CHECK(b.record(kKey, "", "a") != nullptr);
     CHECK(b.record(kKey, "a", "c") == nullptr);  // b skipped: not the grid's a → c
     CHECK(b.record(kKey, "", "") == nullptr);
-    CHECK(b.record(kKey, "c", "") != nullptr);
+    CHECK(b.record(kKey, "c", "") == nullptr);  // 2.95: b → c not played whole (b's crossing unknown)
     CHECK(b.pb(kKey) != nullptr);  // still a full run
     // Checkpoints unknown (an old run): only the whole run.
     BestAttempt u;
@@ -221,11 +228,12 @@ TEST_CASE("personal bests: the file, the replays of the bests and a damaged file
         CHECK_NEAR(r->replay.start, 10.0f, 1e-4);
         CHECK_NEAR(r->replay.end, 18.0f, 1e-4);
         CHECK(fs::exists(b.replayPath(kKey, r->replay.file)));
-        // A training attempt that beats a → b: its own replay, with its start.
+        // A training attempt that beats b → c (2.95: from a, its run-up): its own replay, with its start.
         BestAttempt tr;
         tr.passage.from = BestPassage::From::Checkpoint;
         tr.passage.startCheckpoint = "a";
-        tr.passage.checkpoints = {{"b", 7.0f}};
+        tr.passage.checkpoints = {{"b", 7.5f}, {"c", 14.45f}};
+        tr.passage.countFrom = std::string("b");
         tr.source = BestSource::Training;
         tr.date = "2026-11-21 10:00";
         tr.setup.checkpointId = "a";
@@ -242,11 +250,12 @@ TEST_CASE("personal bests: the file, the replays of the bests and a damaged file
         PersonalBests b(file, replays);
         b.load();
         CHECK(!b.recovered());
-        CHECK_NEAR(b.sob(kKey), 29.0f, 1e-4);
-        const auto* r = b.record(kKey, "a", "b");
+        CHECK_NEAR(b.sob(kKey), 29.95f, 1e-4);
+        const auto* r = b.record(kKey, "b", "c");
         CHECK(r && r->source == BestSource::Training && r->replay.has() && !r->replay.fromLevelStart);
         CHECK(r->replay.setup.checkpointId == "a" && r->replay.setup.powers == std::vector<std::string>{"dash"});
-        CHECK_NEAR(r->replay.end - r->replay.start, 7.0f, 1e-4);
+        CHECK_NEAR(r->replay.start, 7.5f, 1e-4);  // the range on its chronometer: from its entry, after the run-up
+        CHECK_NEAR(r->replay.end - r->replay.start, 6.95f, 1e-4);
         CHECK(b.record(kKey, "", "")->replay.has());
         CHECK(b.pb(kKey) && b.runs(kKey)->size() == 1);
         CHECK(b.powers(kKey, {"a", "b"}) && b.powers(kKey, {"a", "b"})->size() == 2);
@@ -320,38 +329,35 @@ TEST_CASE("personal bests: the old segment and training files are merged once, w
     {
         PersonalBests b(file, replays, {segs, golds, train, trainReplays});
         b.load();
-        // Every gold, the runs, the training's best: one SOB = 9 + 8 + 6.5 + 5.
-        CHECK_NEAR(b.sob(kKey), 28.5f, 1e-4);
-        CHECK(b.record(kKey, "b", "c")->source == BestSource::Training);
-        CHECK(b.record(kKey, "b", "c")->passages >= 12);
+        // 2.95: their full runs only (from the level's start, they follow the rules of now): 9 + 8
+        // + 7 + 5 from the two runs; the golds and the training's best (the rules before) not read.
+        CHECK_NEAR(b.sob(kKey), 29.0f, 1e-4);
+        CHECK(b.record(kKey, "b", "c")->source == BestSource::Run);
+        CHECK_NEAR(b.record(kKey, "b", "c")->best, 7.0f, 1e-4);
         CHECK(b.record(kKey, "", "a")->source == BestSource::Run);
         CHECK_NEAR(b.record(kKey, "", "a")->best, 9.0f, 1e-4);
         CHECK(b.runs(kKey) && b.runs(kKey)->size() == 2 && b.runs(kKey)->front().time == 30.0f);
         CHECK_NEAR(b.pb(kKey)->time, 30.0f, 1e-4);
         CHECK(b.powers(kKey, {"a", "b"}) && *b.powers(kKey, {"a", "b"}) == std::vector<std::string>{"glide"});
-        // Their replays copied here (the run's gold a → b, the training's b → c).
-        const auto* ab = b.record(kKey, "a", "b");
-        CHECK(ab->replay.has() && fs::exists(b.replayPath(kKey, ab->replay.file)));
-        const auto* bc = b.record(kKey, "b", "c");
-        CHECK(bc->replay.has() && !bc->replay.fromLevelStart && bc->replay.setup.checkpointId == "b");
-        CHECK(fs::exists(b.replayPath(kKey, bc->replay.file)));
-        // The old replay folders are gone once the new file names the copies; the old files stay.
+        CHECK(!b.record(kKey, "a", "b")->replay.has());
+        // The old replay folders are gone once the new file is written; the old files stay.
         CHECK(!fs::exists(golds) && !fs::exists(trainReplays));
         CHECK(fs::exists(segs) && fs::exists(train));
-        // A gold route whose checkpoints are unknown: no SOB until the route tells.
+        // A gold route whose checkpoints are unknown: nothing of it (the rules before).
         CHECK(b.sob("other-1") < 0.0f);
         b.setRoute("other-1", {"m"});
-        CHECK_NEAR(b.sob("other-1"), 7.0f, 1e-4);
+        CHECK(b.sob("other-1") < 0.0f);
         b.save();
     }
     {
         // Read once: changing the old files changes nothing any more.
         segJ["levels"][kKey]["best"] = {1.0f, 1.0f, 1.0f, 1.0f};
+        segJ["levels"][kKey]["runs"] = Json::array();
         FileUtil::writeTextAtomic(segs, segJ.dump());
         PersonalBests b(file, replays, {segs, golds, train, trainReplays});
         b.load();
-        CHECK_NEAR(b.sob(kKey), 28.5f, 1e-4);
-        CHECK_NEAR(b.sob("other-1"), 7.0f, 1e-4);
+        CHECK_NEAR(b.sob(kKey), 29.0f, 1e-4);
+        CHECK(!b.rulesReset());
     }
 }
 
@@ -365,6 +371,7 @@ TEST_CASE("personal bests: the statistics' segment bests (stats.json, the copy o
     SegmentRec s2{"p", "q", {16.0f}, 16.0f, -1.0f};
     SegmentRec s3{"q", "", {14.0f}, 14.0f, -1.0f};
     r.segments = {s1, s2, s3};
+    CHECK(r.sobRules == kSegmentRules);  // 2.95: statistics of these rules (those of before: tests/test_sob_rules.cpp)
     PersonalBests b;
     CHECK(!b.statsImported());
     b.importStats(d);

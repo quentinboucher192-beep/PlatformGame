@@ -132,16 +132,16 @@ TEST_CASE("sum of best montage: the montage follows the ONE Sum of Best and says
     const auto run1 = bytesOf(1);
     h.add(key, runOf({10.0f, 21.0f}, {"a", "b"}, 32.0f, "2026-11-10 09:00", &run1));
     h.add(key, runOf({12.0f, 22.0f}, {"a", "b"}, 32.0f, "2026-11-11 09:00"));
-    // A section training of a → b did better (7.5): its attempt, from its start, with its setup.
+    // A section training of a → b did better (7.5): its attempt (2.95: from the level's start with
+    // its chosen powers, segment 1 its run-up), with its setup.
     SectionTrainingStart start;
-    start.checkpointId = "a";
-    start.hasSpawn = true;
-    start.spawn = {816.0f, 800.0f};
+    start.powers = {"dash"};
+    start.powersChosen = true;
     const auto tr = bytesOf(2);
     BestAttempt train;
-    train.passage.from = BestPassage::From::Checkpoint;
-    train.passage.startCheckpoint = "a";
-    train.passage.checkpoints = {{"b", 7.5f}};
+    train.passage.from = BestPassage::From::LevelStart;
+    train.passage.checkpoints = {{"a", 10.5f}, {"b", 18.0f}};
+    train.passage.countFrom = std::string("a");
     train.source = BestSource::Training;
     train.date = "2026-11-17 20:00";
     train.replay = &tr;
@@ -159,9 +159,9 @@ TEST_CASE("sum of best montage: the montage follows the ONE Sum of Best and says
     // Segment 2: the training's attempt, from its start, with its setup.
     const MontageSegment& s1 = p.segments[1];
     CHECK(s1.training && s1.source == BestSource::Training && s1.date == "2026-11-17 20:00");
-    CHECK_NEAR(s1.start, 0.0f, 1e-6);
-    CHECK_NEAR(s1.end, 7.5f, 1e-6);
-    CHECK(s1.trainingStart.checkpointId == "a" && s1.trainingStart.hasSpawn);
+    CHECK_NEAR(s1.start, 10.5f, 1e-6);  // from its entry into a → b (after its run-up)
+    CHECK_NEAR(s1.end, 18.0f, 1e-6);
+    CHECK(s1.trainingStart.powersChosen && s1.trainingStart.powers == std::vector<std::string>{"dash"});
     CHECK(s1.from == "a" && s1.to == "b");
     // Segment 3: a best without a replay the last run did in exactly that time (to be adopted).
     const MontageSegment& s2 = p.segments[2];
