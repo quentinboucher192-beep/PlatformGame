@@ -31,6 +31,7 @@
 #include "engine/core/Math.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/raid/nav/BodySim.h"
+#include "tools/tas/RouteHint.h"
 
 namespace cosmic {
 class ContentDatabase;
@@ -52,11 +53,6 @@ class Course;
 /// the planner always plans toward the waypoint, and also toward the point of that path about a
 /// second ahead of where Nova is (an intermediate target) — less and less often once Nova is
 /// there as early as the human or earlier (every 2nd, 4th, ... 16th plan).
-struct RouteHint {
-    Vec2 feet;
-    float clock = 0.0f;
-};
-
 struct PlanBudget {
     int beam = 48;      // states kept per generation
     int horizon = 1440; // steps planned at most (12 s)

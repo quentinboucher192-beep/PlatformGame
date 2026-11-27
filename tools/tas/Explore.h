@@ -35,6 +35,7 @@
 #include "engine/core/Math.h"
 #include "game/gameplay/InputFrame.h"
 #include "tools/tas/Strategy.h"
+#include "tools/tas/RouteHint.h"
 
 namespace cosmic {
 class GameWorld;
@@ -45,11 +46,6 @@ namespace cosmic::tas {
 class Sim;
 
 /// A place of a route from elsewhere and the level's clock there (a ghost's trajectory).
-struct RouteHint {
-    Vec2 feet;
-    float clock = 0.0f;
-};
-
 struct ExploreStats {
     int64_t visits = 0, moves = 0;
     int64_t cellsNew = 0, cellsFaster = 0, pruned = 0;
