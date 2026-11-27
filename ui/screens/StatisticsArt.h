@@ -68,6 +68,20 @@ struct LevelInfo {
 /// `w` × `h`, inside the level.
 Rect stretchWindow(const LevelInfo& info, float a, float b, float w, float h);
 
+/// 2.92 — the whole level in a `w` × `h` band (the strips of the training screens): its width
+/// from side to side at one scale, each column showing the height where the route passes there
+/// (smoothed), or the whole height when it fits.
+struct LevelBand {
+    Rect bounds;              // the level
+    float scale = 1.0f;       // picture pixels per world pixel
+    float columnW = 1.0f;     // picture pixels per column
+    std::vector<float> tops;  // the world height at the top of each column
+    int column(float pictureX) const;
+    Vec2 toPicture(Vec2 world) const;
+    Vec2 toWorld(Vec2 picture) const;
+};
+LevelBand levelBand(const LevelInfo& info, int w, int h);
+
 struct ReadLevel;
 
 /// The levels' pictures of one screen: read, drawn and kept while the screen is open.
@@ -85,6 +99,13 @@ public:
     const Texture* stretch(const std::string& levelId, float a, float b, int w, int h);
     /// The 40 slices of the route side by side, each in a cell `cellW` × `h`: nullptr until drawn.
     const Texture* sliceStrip(const std::string& levelId, int cellW, int h);
+    /// 2.92: the whole level in a `w` × `h` band (levelBand): nullptr until drawn.
+    const Texture* band(const std::string& levelId, int w, int h);
+    /// 2.92: the world box `window` (whole world pixels) at one picture pixel per world pixel,
+    /// kept sharp to be enlarged (a preview): nullptr until drawn.
+    const Texture* view(const std::string& levelId, const Rect& window);
+    /// 2.92: the level as read (its objects), nullptr until read.
+    std::shared_ptr<const LevelData> level(const std::string& levelId);
     /// The level could not be drawn (not found, unreadable).
     bool failed(const std::string& levelId) const;
     /// Main thread, before the frame is drawn: one level loaded at most, a few milliseconds of
@@ -100,11 +121,14 @@ private:
         TexturePtr tex;
         bool ready = false;
         uint64_t used = 0;
+        int extra = 0;  // 2.92: 1 the band of the whole level, 2 a view of `window`
+        Rect window;
     };
     struct Loaded;
     Picture* ask(const std::string& key, const std::string& level, bool strip, float a, float b, int w, int h);
     void drawSome(Picture& p);
     void drawView(Picture& p, const Rect& window, const Rect& dst);
+    void drawExtra(Picture& p);
     const ReadLevel* readyRead(const std::string& levelId) const;
     GameServices& g_;
     std::map<std::string, std::shared_future<std::shared_ptr<const ReadLevel>>> reads_;

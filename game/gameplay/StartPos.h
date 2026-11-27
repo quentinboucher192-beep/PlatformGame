@@ -22,6 +22,7 @@
 namespace cosmic {
 
 class GameWorld;
+struct LevelData;
 
 struct StartPosState {
     Vec2 feet;                          // Nova's feet
@@ -58,5 +59,28 @@ std::optional<StartPosState> captureStartPos(const GameWorld& w);
 /// way (her respawn point too), its checkpoints lit silently, her powers (at most the level's
 /// slots), hearts and energy.
 void applyStartPos(GameWorld& w, const StartPosState& s);
+
+// 2.92 — a StartPos placed from the menu (ENTRAÎNEMENT › « Startpos et mesures »), read from the
+// level alone (never from a world): its static terrain (the « solid » objects, one-way platforms)
+// and its borders.
+
+/// What keeps Nova's body from starting at a place.
+enum class StartPosProblem {
+    None,        // her body is free there
+    InSolid,     // her body would be in the terrain (a floor, a wall, a ceiling)
+    OutOfLevel,  // past a side of the level, under its bottom or over its ceiling
+};
+/// Nova's body (`body`: its size, her feet at the middle of its bottom) at `feet`.
+StartPosProblem startPosProblem(const LevelData& level, Vec2 body, Vec2 feet);
+/// The nearest place under `near` (else above it, in the same column) where Nova stands on the
+/// terrain (a solid or a one-way platform under her feet) with her body free; nullopt: none.
+std::optional<Vec2> standingSpot(const LevelData& level, Vec2 body, Vec2 near);
+/// A StartPos placed from the menu takes no state from a run: it starts as a section training
+/// of the segment it lies in (« Répéter un segment ») — the checkpoints before it lit
+/// (`reached`), the powers chosen for that segment (`chosen`), else the level's start powers and
+/// the tablets placed before the segment (the last `slots` of them), full hearts and energy.
+StartPosState segmentStartPos(Vec2 feet, std::vector<std::string> reached, const std::vector<std::string>& startPowers,
+                              const std::vector<std::string>& tabletsBefore, int slots, const std::vector<std::string>* chosen, int maxHealth,
+                              float maxEnergy);
 
 }  // namespace cosmic

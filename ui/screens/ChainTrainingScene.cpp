@@ -11,7 +11,11 @@
 // other, « Fantôme » races its record's replay. Every cell is a focusable widget: arrows / d-pad /
 // mouse choose it, Entrée / A launches it.
 //
-// « Startpos et mesures »: TrainingMarksPanel (start an attempt of the chosen range from a StartPos).
+// « Startpos et mesures »: TrainingMarksPanel (start an attempt of the chosen range from a StartPos;
+// 2.92: add, move and delete the StartPos and the measure points there).
+//
+// 2.92: both strips show the level itself (TrainingStrip: its picture made off the frame's path by
+// the pictures of the « Statistiques » screen, the schematic bar until it is ready).
 
 #include <algorithm>
 #include <cmath>
@@ -21,8 +25,11 @@
 #include "game/GameServices.h"
 #include "game/ghost/GhostRace.h"
 #include "game/ghost/SobMontage.h"
+#include "game/player/PlayerConfig.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/StatisticsArt.h"
 #include "ui/screens/TrainingMarksPanel.h"
+#include "ui/screens/TrainingStrip.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -39,9 +46,11 @@ std::string dayMonth(const std::string& date) { return date.size() >= 10 ? date.
 
 class ChainTrainingScene : public Scene {
 public:
-    ChainTrainingScene(GameServices& g, ChainTrainingRequest req) : g_(g), req_(std::move(req)) {}
+    ChainTrainingScene(GameServices& g, ChainTrainingRequest req) : g_(g), req_(std::move(req)), art_(g) {}
     // The whole screen (never over another interactive screen: its UI frame and focus stay this one's).
     bool isOverlay() const override { return false; }
+    // The level's pictures: a few milliseconds per frame, before the frame is drawn.
+    void update(float) override { art_.update(); }
 
     void onEnter() override {
         key_ = GhostStore::levelKey(req_.levelId, req_.levelHash);
@@ -86,15 +95,15 @@ public:
         const float tabsW = std::min(ui.s(640), panel.right() - ui.s(28) - bw - ui.s(20) - tabsX);
         int tab = tab_;
         ui.tabs("tabs", {tabsX, y, tabsW * 0.72f, ui.s(46)}, {"Segments et enchaînements", "Startpos et mesures"}, tab);
-        tab_ = tab;
+        if (!(tab_ == 1 && marks_.holdsShoulders(ui))) tab_ = tab;  // LB / RB held over the preview: its 8-pixel step
         const float nameX = tabsX + tabsW * 0.72f + ui.s(16), nameRoom = panel.right() - ui.s(28) - bw - ui.s(16) - nameX;
         if (nameRoom > ui.s(60))
             ui.label(ui.elide(req_.levelName, FontFace::Body, fz(ui, 17), nameRoom), {nameX, y + ui.s(23)}, fz(ui, 17), th.textDim, Align::Left,
                      FontFace::Body, VAlign::Middle);
         y += ui.s(66);
         if (tab_ == 0) {
-            drawStrip({x, y, w, ui.s(96)});
-            y += ui.s(110);
+            drawStrip({x, y, w, ui.s(116)});
+            y += ui.s(130);
             const float hintH = ui.s(30);
             const float leftW = w * 0.58f, gap = ui.s(22);
             drawGrid({x, y, leftW, panel.bottom() - y - hintH - ui.s(16)});
@@ -105,14 +114,17 @@ public:
         } else {
             TrainingMarksPanel::Context c;
             c.levelKey = key_;
+            c.levelId = req_.levelId;
+            c.art = &art_;
             c.levelBounds = req_.levelBounds;
             for (const auto& cp : req_.checkpoints) c.checkpoints.push_back({cp.feet.x, cp.label});
             c.where = [this](Vec2 feet) { return whereByX(feet); };
             c.startFrom = [this](int id) { launch(id); };
+            c.placedState = [this](Vec2 feet) { return placedStartPos(feet); };
             marks_.draw(g_, {x, y, w, panel.bottom() - y - ui.s(20)}, c);
         }
         ui.popId();
-        if (back || (ui.backPressed() && !marks_.editing())) g_.app.popScene();
+        if (back || (ui.backPressed() && !(tab_ == 1 && marks_.editing()))) g_.app.popScene();
         ui.end();
     }
 
@@ -154,40 +166,98 @@ private:
 
     // ------------------------------------------------------------ drawing
 
-    /// The level as a strip: its segments (the chosen range lit), the names of the boundaries.
+    /// The level as a strip (TrainingStrip: its picture once made, the schematic bar until then): its
+    /// segments between the checkpoints where they stand in the level (the chosen range lit), the
+    /// names of the boundaries along its top, the segments' numbers along its bottom, each on its
+    /// measured background and only where it holds between its neighbours.
     void drawStrip(const Rect& r) {
         UIContext& ui = g_.ui;
         const UITheme& th = ui.theme();
         const float fs = fz(ui, 14);
-        const Rect bar{r.x, r.y + ui.s(26), r.w, r.h - ui.s(52)};
-        auto xOf = [&](int k) { return bar.x + bar.w * std::clamp(boundaryAt(k), 0.0f, 1.0f); };
-        ui.r().fillRoundedRect(bar, ui.s(8), Color{20, 28, 54, 230});
-        const Rect lit{xOf(from_), bar.y, std::max(2.0f, xOf(to_) - xOf(from_)), bar.h};
-        ui.r().fillRoundedRect(lit, ui.s(6), th.accent.withAlpha(60));
-        ui.r().drawRoundedRect(lit, ui.s(6), th.accent, std::max(1.5f, ui.s(2.0f)));
-        // The boundaries' names above, the segments' numbers below; each name within the room
-        // between its neighbours (never one over another), dropped when there is none.
+        const bool picture = strip_.draw(g_, &art_, req_.levelId, req_.levelBounds, r);
+        // The boundaries, left to right: the level's sides, its checkpoints where they stand.
+        std::vector<float> xs(static_cast<size_t>(n_) + 2);
+        xs[0] = r.x;
+        for (int k = 1; k <= n_; ++k)
+            xs[static_cast<size_t>(k)] = std::clamp(strip_.xOf(req_.checkpoints[static_cast<size_t>(k - 1)].feet.x), xs[static_cast<size_t>(k - 1)], r.right());
+        xs[static_cast<size_t>(n_) + 1] = r.right();
+        auto xOf = [&](int k) { return xs[static_cast<size_t>(std::clamp(k, 0, n_ + 1))]; };
+        const Rect lit{xOf(from_), r.y, std::max(2.0f, xOf(to_) - xOf(from_)), r.h};
+        if (picture) {
+            // Out of the range: darker; the range itself: barely tinted, its edges lit.
+            const Color dim{4, 6, 14, 150};
+            if (lit.x > r.x) ui.r().fillRect({r.x, r.y, lit.x - r.x, r.h}, dim);
+            if (lit.right() < r.right()) ui.r().fillRect({lit.right(), r.y, r.right() - lit.right(), r.h}, dim);
+            ui.r().fillRect(lit, th.accent.withAlpha(22));
+        } else {
+            ui.r().fillRoundedRect(lit, ui.s(6), th.accent.withAlpha(60));
+        }
+        ui.r().drawRoundedRect(lit, ui.s(picture ? 3 : 6), th.accent, std::max(1.5f, ui.s(2.0f)));
+        strip_.note(lit);
+        // The separators: a light line on a dark one, seen on any ground.
+        const float lw = std::max(1.0f, ui.s(1.5f));
+        for (int k = 1; k <= n_; ++k) {
+            const Rect line{xOf(k) - lw * 0.5f, r.y, lw, r.h};
+            if (picture) ui.r().fillRect({line.x - lw, r.y, lw * 3.0f, r.h}, Color{4, 6, 14, 170});
+            ui.r().fillRect(line, th.textDim.withAlpha(picture ? 230 : 140));
+            strip_.note(line);
+        }
+        // A name on its background, measured: `x` its left (Left), its right (Right) or its middle.
+        const float pad = ui.s(6), ph = ui.s(fs + 8.0f);
+        auto pill = [&](const std::string& text, FontFace face, Color color, bool on, float x, float y, Align al) {
+            const float tw = ui.text().measure(text, face, ui.s(fs)).x;
+            const float pw = tw + pad * 2.0f;
+            float px = al == Align::Left ? x : al == Align::Right ? x - pw : x - pw * 0.5f;
+            px = std::clamp(px, r.x + ui.s(2), std::max(r.x + ui.s(2), r.right() - ui.s(2) - pw));
+            const Rect box{px, y, pw, ph};
+            ui.r().fillRoundedRect(box, ui.s(4), Color{8, 12, 26, 225});
+            ui.r().drawRoundedRect(box, ui.s(4), on ? th.accent : th.textDim.withAlpha(90), 1.0f);
+            ui.label(text, box.center(), fs, color, Align::Center, face, VAlign::Middle);
+            strip_.note(box);
+        };
+        // The boundaries' names along the top: the start's runs right from it, the exit's left,
+        // the others are centred, each within the room between its neighbours (dropped without).
         for (int k = 0; k <= n_ + 1; ++k) {
             const float px = xOf(k);
-            if (k > 0 && k <= n_) ui.r().fillRect({px - 1.0f, bar.y, 2.0f, bar.h}, th.textDim.withAlpha(140));
-            // The start's name runs right from it, the exit's left, the others are centred.
             float room = 0.0f;
-            if (k == 0) room = (n_ >= 0 ? xOf(1) - px : r.w) * 0.5f - ui.s(6);
+            if (k == 0) room = (xOf(1) - px) * 0.5f - ui.s(6);
             else if (k == n_ + 1) room = (px - xOf(n_)) * 0.5f - ui.s(6);
             else room = std::min(px - xOf(k - 1), xOf(k + 1) - px) - ui.s(6);
+            room -= pad * 2.0f + ui.s(4);
             if (room < ui.s(30)) continue;
             const bool on = k == from_ || k == to_;
+            const FontFace face = on ? FontFace::Bold : FontFace::Body;
             const Align al = k == 0 ? Align::Left : k == n_ + 1 ? Align::Right : Align::Center;
-            ui.label(ui.elide(boundaryName(k), on ? FontFace::Bold : FontFace::Body, fs, room), {px, r.y + ui.s(12)}, fs, on ? th.accent : th.text, al,
-                     on ? FontFace::Bold : FontFace::Body, VAlign::Middle);
+            const float ax = k == 0 ? px + ui.s(4) : k == n_ + 1 ? px - ui.s(4) : px;
+            pill(ui.elide(boundaryName(k), face, fs, room), face, on ? th.accent : th.text, on, ax, r.y + ui.s(4), al);
         }
+        // The segments' numbers along the bottom, where they hold.
         for (int k = 0; k <= n_; ++k) {
             const float a = xOf(k), b = xOf(k + 1);
             const std::string label = "Segment " + std::to_string(k + 1);
-            if (b - a < ui.text().measure(label, FontFace::Body, ui.s(fs)).x + ui.s(8)) continue;
+            if (b - a < ui.text().measure(label, FontFace::Body, ui.s(fs)).x + pad * 2.0f + ui.s(10)) continue;
             const bool in = k >= from_ && k < to_;
-            ui.label(label, {(a + b) * 0.5f, bar.bottom() + ui.s(14)}, fs, in ? th.accent : th.textDim, Align::Center, FontFace::Body, VAlign::Middle);
+            pill(label, FontFace::Body, in ? th.accent : th.textDim, in, (a + b) * 0.5f, r.bottom() - ui.s(4) - ph, Align::Center);
         }
+    }
+
+    /// The state a StartPos placed here from the menu starts with: a section training of the
+    /// segment it lies in (game/gameplay/StartPos.h: segmentStartPos), as « Lancer » gives it.
+    StartPosState placedStartPos(Vec2 feet) {
+        float at = (feet.x - req_.levelBounds.x) / std::max(1.0f, req_.levelBounds.w);
+        if (const statsart::LevelInfo* info = art_.info(req_.levelId); info && info->track.valid()) at = info->track.fractionAt(feet);
+        int k = 0;  // the boundary it follows
+        for (int i = 1; i <= n_; ++i)
+            if (boundaryAt(i) <= at) k = i;
+        std::vector<std::string> reached;
+        for (int i = 1; i <= k; ++i) reached.push_back(boundaryId(i));
+        std::vector<std::string> tablets;
+        for (const auto& [t, power] : req_.tablets)
+            if (k > 0 && t <= boundaryAt(k)) tablets.push_back(power);
+        const PersonalBests::Range range{boundaryId(k), boundaryId(k + 1)};
+        const PlayerConfig cfg = PlayerConfig::fromJson(g_.content.playerConfig());
+        return segmentStartPos(feet, std::move(reached), req_.startPowers, tablets, req_.powerSlots, g_.bests.powers(key_, range), cfg.maxHealth,
+                               cfg.maxEnergy);
     }
 
     void drawGrid(const Rect& area) {
@@ -484,6 +554,8 @@ private:
     int from_ = 0, to_ = 1;
     int tab_ = 0;
     bool ghost_ = true;
+    statsart::LevelArt art_;  // 2.92: the level's pictures (both strips, the preview)
+    TrainingStrip strip_{"segments"};
     TrainingMarksPanel marks_;
 };
 

@@ -196,6 +196,19 @@ ne fait pas partir un segment du mauvais côté).
   (`StartPosStore`, `saves/startpos.json`, 32 par version), rangées dans l'ordre de la route
   (« SP 1 », « SP 2 »…, Précédente / Suivante en boucle). Une autre version du niveau a sa
   propre liste.
+* **Posée depuis le menu (2.92)** : ENTRAÎNEMENT › *Startpos et mesures* pose une startpos
+  sans course. Elle n'a pas d'état pris en jeu : elle part comme l'entraînement du segment où
+  elle se trouve (`segmentStartPos`, `game/gameplay/StartPos.h`) — les pouvoirs choisis pour ce
+  segment, sinon ceux du départ du niveau et des tablettes d'avant, cœurs et énergie pleins,
+  les points de passage d'avant allumés. Elle est marquée « depuis ce menu » (`StartPosEntry::menu`,
+  `"from_menu"` dans le fichier) ; déplacée, elle reprend l'état de son nouveau segment. Une
+  startpos posée en jeu (F5) garde l'état qu'elle a pris. Dans les deux cas l'essai part de
+  `SectionTrainingStart::startPos`, gardé avec son replay : le replay se rejoue à l'identique
+  (test `startpos placed from the menu…`).
+* **Jamais dans le décor** : le corps de Nova (`data/player.json`, `size`) ne doit toucher
+  aucun solide du niveau ni sortir de ses bords (`startPosProblem`, lu dans le niveau seul) ;
+  posée sur la bande, elle tombe sur le sol le plus proche sous l'endroit choisi
+  (`standingSpot`).
 
 ### Points de mesure
 
@@ -219,9 +232,13 @@ en jeu qu'à 30 Hz sur la trace d'un replay). Repasser A relance le chrono ; un 
 Depuis l'écran d'avant la course (*Segments et enchaînements…*, à côté de « Répéter un
 segment »), `ui/screens/ChainTrainingScene.cpp` :
 
-* **La bande du niveau** : ses segments entre le départ, les points de passage et
-  l'arrivée (noms placés seulement s'ils tiennent entre leurs voisins), la plage choisie en
-  surbrillance.
+* **La bande du niveau** (2.92 : le niveau lui-même) : son vrai décor sur toute sa largeur —
+  terrain, tuiles et décors dessinés par le moteur du jeu, chaque colonne à la hauteur où passe
+  la route —, fait hors du chemin de l'image par les images de l'écran *Statistiques*
+  (`statsart::LevelArt::band`, `ui/screens/TrainingStrip.cpp`) ; tant qu'il n'est pas prêt, la
+  barre schématique. Par-dessus, à leur vraie place : les séparations des segments aux points
+  de passage, leurs noms en haut et les numéros des segments en bas sur un fond mesuré (placés
+  seulement s'ils tiennent entre leurs voisins), la plage choisie éclairée, le reste assombri.
 * **La grille de toutes les combinaisons** (segments qui se suivent) : lignes = où elle part,
   colonnes = où elle finit. La diagonale = chaque segment seul (sa part de la SOB) ; au-dessus,
   le record de chaque enchaînement, son écart à la somme des meilleurs de ses segments
@@ -237,7 +254,22 @@ segment »), `ui/screens/ChainTrainingScene.cpp` :
   depuis le replay exact qui le tient, `buildMontagePlan` sur la plage) et **Fantôme** (le
   replay du record de la plage court avec l'essai).
 * L'onglet **Startpos et mesures** montre les mêmes listes que la pause (ci-dessous) ;
-  « Partir de SP n » y lance la plage choisie depuis cette startpos.
+  « Partir de SP n » y lance la plage choisie depuis cette startpos. Depuis 2.92, sa bande
+  montre aussi le niveau, les fanions des startpos et les portes A / B à leur vraie place, et
+  l'on y **ajoute, déplace et supprime** startpos et points de mesure :
+  * *Ajouter une startpos* / *Ajouter A → B* (*Poser B n* pour une paire qui attend son B) :
+    un clic sur la bande, ou son curseur avec les flèches (la croix) puis Entrée (A) ; Échap (B)
+    annule. La startpos tombe sur le sol sous l'endroit choisi ; une paire se pose A puis B.
+  * **Réglage fin** : l'aperçu montre le niveau autour du repère choisi, agrandi (×2 ou ×4),
+    avec le fanion, la silhouette et le corps de Nova, ou la porte, à leur pixel exact ; sa
+    position en pixels et en mètres (1 m = 1 tuile = 16 px). Les flèches ← → ↑ ↓ sous l'aperçu,
+    les touches fléchées et la croix quand l'aperçu a le focus le déplacent d'un pixel, de
+    8 avec Maj ou LB / RB maintenu ; un clic dans l'aperçu y amène le repère ; Échap (B) en sort.
+  * Une startpos dont le corps de Nova serait dans le décor ou hors du niveau s'affiche en
+    rouge, avec la raison, et n'est jamais gardée là (elle reste à sa dernière place valide).
+    Déplacer une porte efface ses temps (ils ne se comparent plus).
+  * *Supprimer* demande une confirmation (*Confirmer : supprimer*), pour une startpos comme
+    pour une paire. Tout est gardé par version du niveau (`StartPosStore`, `MeasureStore`).
 * Quitter un essai lancé d'ici ramène à cet écran, sur la même plage.
 
 ### En course
@@ -263,11 +295,12 @@ segment »), `ui/screens/ChainTrainingScene.cpp` :
 * **Points de mesure** : portes A et B en pointillés dorés ; un panneau « MESURE A → B »
   (chrono en cours ou dernier temps, meilleur, dernier, nombre d'essais, les 8 derniers en
   barres) ; chaque temps est gardé.
-* Pause › **Startpos et mesures** (`TrainingMarksPanel`) : la bande du niveau avec ses
-  repères, les startpos (où, quand posée, essais depuis, pouvoirs, cœurs) — *Partir de SP n*,
-  *Départ de l'entraînement*, *Supprimer*, *Tout effacer* (confirmé) — et les paires de
-  mesure (nom, meilleur, dernier, barres) — *Renommer*, *Déplacer A / B* (les deux prochaines
-  poses les replacent ; leurs anciens temps sont oubliés), *Supprimer* —, puis les options
+* Pause › **Startpos et mesures** (`TrainingMarksPanel`) : la bande du niveau (2.92 : le
+  niveau dessiné, ses repères à leur place) avec ses repères, les startpos (où, quand et
+  comment posée — en jeu ou depuis le menu —, essais depuis, pouvoirs, cœurs) — *Partir de
+  SP n*, *Départ de l'entraînement*, *Supprimer* et *Tout effacer* (confirmés) — et les paires
+  de mesure (nom, meilleur, dernier, barres) — *Renommer*, *Déplacer A / B* (les deux prochaines
+  poses les replacent ; leurs anciens temps sont oubliés), *Supprimer* (confirmé) —, puis les options
   « Montrer les startpos dans le niveau (rémanence) », « Montrer les portes de mesure »,
   « Mesurer aussi dans les replays ».
 

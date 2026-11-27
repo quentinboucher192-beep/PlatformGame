@@ -1,10 +1,12 @@
 // 2.91 — Pause › « Startpos et mesures » (a section training): the StartPos and the measure points
 // of this level version over the paused run (TrainingMarksPanel): start the next attempt from a
 // StartPos (or from the training's own start), delete them, rename and move the measure points,
-// the display options. « Reprendre » goes back to the run.
+// the display options. « Reprendre » goes back to the run. 2.92: its strip shows the level itself
+// (TrainingStrip), the StartPos pennants and the measure gates at their places.
 
 #include "game/GameServices.h"
 #include "ui/screens/GameScene.h"
+#include "ui/screens/StatisticsArt.h"
 #include "ui/screens/TrainingMarksPanel.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -16,10 +18,12 @@ float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1
 
 class TrainingMarksScene : public Scene {
 public:
-    TrainingMarksScene(GameServices& g, GameScene& game) : g_(g), game_(game) {}
+    TrainingMarksScene(GameServices& g, GameScene& game) : g_(g), game_(game), art_(g) {}
     // The whole screen (never over another interactive screen: its UI frame and focus stay this one's).
     bool isOverlay() const override { return false; }
     void onEnter() override { g_.ui.setFocus("marks/resume"); }
+    // The level's picture (the strip): a few milliseconds per frame, before the frame is drawn.
+    void update(float) override { art_.update(); }
 
     void render(float) override {
         UIContext& ui = g_.ui;
@@ -49,6 +53,8 @@ public:
         // The panel itself.
         TrainingMarksPanel::Context c;
         c.levelKey = game_.levelKey();
+        c.levelId = game_.levelId();
+        c.art = &art_;
         c.levelBounds = game_.level().bounds;
         for (const LevelObject& o : game_.level().objects)
             if (o.type == "checkpoint") c.checkpoints.push_back({o.rect.bottomCenter().x, o.propStr("label")});
@@ -86,6 +92,7 @@ public:
 private:
     GameServices& g_;
     GameScene& game_;
+    statsart::LevelArt art_;
     TrainingMarksPanel panel_;
     int startFrom_ = 0;
     bool start_ = false, move_ = false;

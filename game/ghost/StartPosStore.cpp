@@ -63,6 +63,7 @@ void StartPosStore::load() {
             if (!std::isfinite(e.at) || e.at < 0.0f || e.at > 1.0f) e.at = -1.0f;
             e.date = jstr(ej, "date").substr(0, 32);
             e.attempts = std::clamp(jget<int>(ej, "attempts", 0), 0, 10000000);
+            e.menu = jget<bool>(ej, "from_menu", false);
             l.nextId = std::max(l.nextId, id + 1);
             l.entries.push_back(std::move(e));
         }
@@ -78,8 +79,8 @@ bool StartPosStore::save() {
     Json levels = Json::object();
     for (const auto& [key, l] : levels_) {
         Json list = Json::array();
-        for (const StartPosEntry& e : l.entries)
-            list.push_back(Json{{"id", e.id}, {"state", e.state.toJson()}, {"at", e.at}, {"date", e.date}, {"attempts", e.attempts}});
+        for (const StartPosEntry& e : l.entries)  // 2.92, its menu flag: an older game reads it as one taken in a run
+            list.push_back(Json{{"id", e.id}, {"state", e.state.toJson()}, {"at", e.at}, {"date", e.date}, {"attempts", e.attempts}, {"from_menu", e.menu}});
         levels[key] = Json{{"touched", l.touched}, {"active", l.active}, {"next", l.nextId}, {"list", list}};
     }
     std::error_code ec;
@@ -116,7 +117,7 @@ const StartPosEntry* StartPosStore::find(const std::string& levelKey, int id) co
     return nullptr;
 }
 
-int StartPosStore::add(const std::string& levelKey, const StartPosState& s, float at, const std::string& date) {
+int StartPosStore::add(const std::string& levelKey, const StartPosState& s, float at, const std::string& date, bool menu) {
     if (!validKey(levelKey)) return 0;
     auto it = levels_.find(levelKey);
     if (it == levels_.end()) {
@@ -133,10 +134,23 @@ int StartPosStore::add(const std::string& levelKey, const StartPosState& s, floa
     e.state = s;
     e.at = std::isfinite(at) && at >= 0.0f && at <= 1.0f ? at : -1.0f;
     e.date = date.substr(0, 32);
+    e.menu = menu;
     l.entries.push_back(e);
     l.active = e.id;
     l.touched = e.date;
     return e.id;
+}
+
+bool StartPosStore::update(const std::string& levelKey, int id, const StartPosState& s, float at) {
+    auto it = levels_.find(levelKey);
+    if (it == levels_.end()) return false;
+    for (StartPosEntry& e : it->second.entries)
+        if (e.id == id) {
+            e.state = s;
+            e.at = std::isfinite(at) && at >= 0.0f && at <= 1.0f ? at : -1.0f;
+            return true;
+        }
+    return false;
 }
 
 void StartPosStore::setActive(const std::string& levelKey, int id) {

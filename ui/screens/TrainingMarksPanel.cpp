@@ -1,12 +1,22 @@
 #include "ui/screens/TrainingMarksPanel.h"
 
+#include <SDL3/SDL_gamepad.h>
+#include <SDL3/SDL_mouse.h>
+
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 
+#include "engine/animation/Animation.h"
+#include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
+#include "engine/input/InputManager.h"
+#include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/ghost/GhostRace.h"
+#include "game/levels/LevelData.h"
+#include "game/player/PlayerConfig.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/widgets/UIContext.h"
 
@@ -22,84 +32,638 @@ const Color kGate{255, 200, 80, 255};
 /// « 21/11 » from a date « 2026-11-21 10:00 » ("" when it is not one).
 std::string dayMonth(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : std::string{}; }
 
+/// « 77,1 »: one decimal, written the French way (the English text shows « 77.1 »).
+std::string decimal1(float v) {
+    char b[32];
+    std::snprintf(b, sizeof b, "%.1f", static_cast<double>(v));
+    std::string s = b;
+    std::replace(s.begin(), s.end(), '.', ',');
+    return s;
+}
+
+/// Nova's body (data/player.json): what must be free where a StartPos starts.
+Vec2 bodySize(GameServices& g) { return PlayerConfig::fromJson(g.content.playerConfig()).size; }
+
+/// The gamepad's 8-pixel step: LB or RB held.
+bool shoulderHeld(InputManager& in) {
+    return in.rawPadButton(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER) || in.rawPadButton(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER);
+}
+
+/// A StartPos pennant: its pole from `foot` up `h` pixels, its flag at the top.
+void pennant(Renderer& r, Vec2 foot, float h, Color c, float thick) {
+    const Vec2 tip = foot - Vec2{0.0f, h};
+    const float f = h * 0.35f;
+    r.drawLine(foot, tip, c, thick);
+    r.fillTriangle(tip, tip + Vec2{f, f * 0.32f}, tip + Vec2{0.0f, f * 0.64f}, c);
+}
+
+/// A measure gate: a dashed vertical line.
+void dashed(Renderer& r, float x, float y0, float y1, float dash, Color c, float thick) {
+    for (float y = y0; y < y1; y += dash * 2.0f) r.drawLine({x, y}, {x, std::min(y1, y + dash)}, c, thick);
+}
+
+/// An arrow (a triangle) pointing `d` in the middle of `box`.
+void arrow(Renderer& r, const Rect& box, Vec2 d, Color c) {
+    const Vec2 m = box.center();
+    const float k = std::min(box.w, box.h) * 0.22f;
+    const Vec2 side{-d.y, d.x};
+    r.fillTriangle(m + d * k, m - d * k + side * k, m - d * k - side * k, c);
+}
+
 }  // namespace
+
+TrainingMarksPanel::~TrainingMarksPanel() {
+    if (!g_) return;
+    if (dirtySp_) g_->startPositions.save();
+    if (dirtyMeasures_) g_->measures.save();
+}
+
+bool TrainingMarksPanel::holdsShoulders(UIContext& ui) const { return nudgeFocus_ && shoulderHeld(ui.input()); }
 
 void TrainingMarksPanel::draw(GameServices& g, const Rect& area, const Context& c) {
     UIContext& ui = g.ui;
-    const float stripH = ui.s(72);
+    g_ = &g;
+    backUsed_ = false;
+    if (!wantFocus_.empty()) {
+        ui.setFocus(wantFocus_);
+        wantFocus_.clear();
+    }
+    const bool edit = static_cast<bool>(c.placedState);
+    // A placement is given up with Échap (B) (a gate A placed stays: its B comes later, as in a run).
+    if (placing_ != Place::None && ui.backPressed()) {
+        wantFocus_ = placing_ == Place::StartPos ? "spadd" : "madd";
+        placing_ = Place::None;
+        backUsed_ = true;
+    }
+    // The one chosen is gone (deleted, cleared): nothing chosen.
+    if (pick_ != Pick::None && !draft_ && !pickedAt(g, c)) choose(Pick::None, 0);
+    const float stripH = ui.s(116);
     drawStrip(g, {area.x, area.y, area.w, stripH}, c);
-    const float top = area.y + stripH + ui.s(18);
+    float top = area.y + stripH + ui.s(14);
+    if (edit) {
+        const float eh = ui.s(260);
+        drawEditor(g, {area.x, top, area.w, eh}, c);
+        top += eh + ui.s(14);
+    }
     const float gap = ui.s(24);
     const float colW = (area.w - gap) * 0.5f;
     drawStartPos(g, {area.x, top, colW, area.bottom() - top}, c);
     drawMeasures(g, {area.x + colW + gap, top, colW, area.bottom() - top}, c);
+    // What was moved goes to the saves once it rests (a held arrow writes once).
+    if ((dirtySp_ || dirtyMeasures_) && ui.time() - editedAt_ > 0.6f) {
+        if (dirtySp_) g.startPositions.save();
+        if (dirtyMeasures_) g.measures.save();
+        dirtySp_ = dirtyMeasures_ = false;
+    }
 }
+
+// ------------------------------------------------------------------ the one chosen
+
+std::optional<Vec2> TrainingMarksPanel::pickedAt(GameServices& g, const Context& c) const {
+    if (pick_ == Pick::None) return std::nullopt;
+    if (work_) return work_;
+    if (pick_ == Pick::StartPos) {
+        if (const StartPosEntry* e = g.startPositions.find(c.levelKey, pickId_)) return e->state.feet;
+        return std::nullopt;
+    }
+    if (const MeasurePair* p = g.measures.find(c.levelKey, pickId_)) {
+        if (pick_ == Pick::GateA) return p->a.at;
+        if (p->b) return p->b->at;
+    }
+    return std::nullopt;
+}
+
+void TrainingMarksPanel::choose(Pick p, int id) {
+    pick_ = p;
+    pickId_ = id;
+    work_.reset();
+    refused_.reset();
+    draft_ = false;
+}
+
+float TrainingMarksPanel::routeAt(Vec2 feet) const {
+    const statsart::LevelInfo* info = strip_.info();
+    return info && info->track.valid() ? info->track.fractionAt(feet) : -1.0f;
+}
+
+void TrainingMarksPanel::placeAt(GameServices& g, const Context& c, Vec2 world) {
+    std::shared_ptr<const LevelData> level = c.art ? c.art->level(c.levelId) : nullptr;
+    if (!level || !c.placedState) return;
+    world = {std::round(world.x), std::round(world.y)};
+    const Vec2 body = bodySize(g);
+    // Standing on the ground under the place chosen (else above it), when there is one.
+    const Vec2 at = standingSpot(*level, body, world).value_or(world);
+    const std::string date = FileUtil::nowString();
+    if (placing_ == Place::StartPos) {
+        placing_ = Place::None;
+        const StartPosProblem why = startPosProblem(*level, body, at);
+        if (why == StartPosProblem::None) {
+            const int id = g.startPositions.add(c.levelKey, c.placedState(at), routeAt(at), date, true);
+            if (id > 0) {
+                g.startPositions.save();
+                selectedSp_ = id;
+                choose(Pick::StartPos, id);
+            }
+        } else {
+            // Kept aside, in red, until it is moved where Nova's body is free.
+            choose(Pick::StartPos, 0);
+            draft_ = true;
+            work_ = at;
+            refused_ = why;
+        }
+        wantFocus_ = "preview";
+    } else if (placing_ == Place::Gate) {
+        const int id = g.measures.place(c.levelKey, at, date);
+        if (id <= 0) {
+            placing_ = Place::None;
+            return;
+        }
+        g.measures.save();
+        selectedPair_ = id;
+        const MeasurePair* p = g.measures.find(c.levelKey, id);
+        if (p && p->complete()) {
+            placing_ = Place::None;
+            choose(Pick::GateB, id);
+            wantFocus_ = "preview";
+        } else {
+            choose(Pick::GateA, id);  // B next, on the strip again
+        }
+    }
+}
+
+void TrainingMarksPanel::moveTo(GameServices& g, const Context& c, Vec2 to) {
+    if (pick_ == Pick::StartPos) {
+        std::shared_ptr<const LevelData> level = c.art ? c.art->level(c.levelId) : nullptr;
+        if (!level) return;  // read in a moment
+        const StartPosProblem why = startPosProblem(*level, bodySize(g), to);
+        work_ = to;
+        refused_.reset();
+        if (why != StartPosProblem::None) {
+            refused_ = why;  // shown in red, never kept there
+            return;
+        }
+        if (draft_) {
+            if (!c.placedState) return;
+            const int id = g.startPositions.add(c.levelKey, c.placedState(to), routeAt(to), FileUtil::nowString(), true);
+            if (id > 0) {
+                g.startPositions.save();
+                selectedSp_ = id;
+                choose(Pick::StartPos, id);
+            }
+            return;
+        }
+        const StartPosEntry* e = g.startPositions.find(c.levelKey, pickId_);
+        if (!e) return;
+        // One placed here starts as the training of its segment (that may change); one taken in a
+        // run keeps what it took.
+        StartPosState s = e->menu && c.placedState ? c.placedState(to) : e->state;
+        s.feet = to;
+        g.startPositions.update(c.levelKey, pickId_, s, routeAt(to));
+        work_.reset();
+        dirtySp_ = true;
+        editedAt_ = g.ui.time();
+    } else if (pick_ == Pick::GateA || pick_ == Pick::GateB) {
+        g.measures.move(c.levelKey, pickId_, pick_ == Pick::GateB, to);
+        dirtyMeasures_ = true;
+        editedAt_ = g.ui.time();
+    }
+}
+
+// ------------------------------------------------------------------ the strip
 
 void TrainingMarksPanel::drawStrip(GameServices& g, const Rect& r, const Context& c) {
     UIContext& ui = g.ui;
     const UITheme& th = ui.theme();
-    const Rect bar{r.x, r.y + ui.s(6), r.w, r.h - ui.s(30)};
-    ui.r().fillRoundedRect(bar, ui.s(8), Color{20, 28, 54, 230});
-    ui.r().drawRoundedRect(bar, ui.s(8), th.accent.withAlpha(60), std::max(1.0f, ui.s(1.0f)));
-    const Rect& lb = c.levelBounds;
-    auto xOf = [&](float worldX) {
-        const float f = lb.w > 1.0f ? std::clamp((worldX - lb.x) / lb.w, 0.0f, 1.0f) : 0.5f;
-        return bar.x + ui.s(10) + (bar.w - ui.s(20)) * f;
-    };
+    InputManager& in = ui.input();
     const float fs = fz(ui, 12);
-    // The checkpoints: thin ticks.
-    for (const auto& [x, name] : c.checkpoints) {
-        const float px = xOf(x);
-        ui.r().fillRect({px - 1.0f, bar.y + ui.s(8), 2.0f, bar.h - ui.s(16)}, th.textDim.withAlpha(110));
+    const float rowH = ui.s(fs + 6.0f);
+    const Rect pic{r.x, r.y, r.w, r.h - ui.s(4) - rowH * 2.0f};
+    const bool picture = strip_.draw(g, c.art, c.levelId, c.levelBounds, pic, r);
+    const bool edit = static_cast<bool>(c.placedState);
+    // The strip takes clicks: the place of what is being added (its cursor with the arrows); else
+    // a click chooses the mark nearest to it.
+    if (edit && placing_ != Place::None) {
+        bool hovered = false;
+        const bool hit = ui.hotspot("strip", pic, &hovered);
+        if (hovered && in.mouseMovedThisFrame()) cursor_ = std::clamp((in.mousePos().x - pic.x) / std::max(1.0f, pic.w), 0.0f, 1.0f);
+        if (ui.focused("strip") && ui.acceptsInput()) {
+            const float step = in.shift() || shoulderHeld(in) ? 0.04f : 0.005f;
+            if (in.menuPressed(Action::MenuLeft)) cursor_ = std::max(0.0f, cursor_ - step);
+            if (in.menuPressed(Action::MenuRight)) cursor_ = std::min(1.0f, cursor_ + step);
+            ui.consumeNavigation(true, false);
+        }
+        if (hit) {
+            // The mouse: where it clicked; the keys: the cursor, at the height of the route there.
+            const bool mouse = hovered && in.mouseReleased(SDL_BUTTON_LEFT);
+            placeAt(g, c, strip_.toWorld(mouse ? in.mousePos() : Vec2{pic.x + pic.w * cursor_, pic.y + pic.h * 0.62f}));
+        }
+    } else if (edit) {
+        bool hovered = false;
+        if (ui.mouseClick("strippick", pic, &hovered)) {
+            const Vec2 m = in.mousePos();
+            float best = ui.s(28);
+            for (const StartPosEntry& e : g.startPositions.list(c.levelKey))
+                if (const float d = std::abs(strip_.xOf(e.state.feet.x) - m.x); d < best) {
+                    best = d;
+                    selectedSp_ = e.id;
+                    choose(Pick::StartPos, e.id);
+                }
+            for (const MeasurePair& p : g.measures.list(c.levelKey)) {
+                if (const float d = std::abs(strip_.xOf(p.a.at.x) - m.x); d < best) {
+                    best = d;
+                    selectedPair_ = p.id;
+                    choose(Pick::GateA, p.id);
+                }
+                if (p.b)
+                    if (const float d = std::abs(strip_.xOf(p.b->at.x) - m.x); d < best) {
+                        best = d;
+                        selectedPair_ = p.id;
+                        choose(Pick::GateB, p.id);
+                    }
+            }
+        }
     }
-    // The StartPos (above) and the measure gates (below), their names under the strip, never one
-    // over another: a name that would cover the previous one goes down a row.
+    // The checkpoints: thin lines.
+    for (const auto& [x, name] : c.checkpoints) {
+        const Rect t{strip_.xOf(x) - 1.0f, pic.y + ui.s(3), 2.0f, pic.h - ui.s(6)};
+        ui.r().fillRect(t, th.textDim.withAlpha(picture ? 170 : 110));
+        strip_.note(t);
+    }
+    // The gates and the pennants where they are in the level (kept inside the strip), a dark
+    // outline under each (seen on any ground); the one chosen thicker.
+    const float thin = std::max(1.5f, ui.s(2.0f)), thick = std::max(2.5f, ui.s(3.5f));
+    for (const MeasurePair& p : g.measures.list(c.levelKey)) {
+        auto gate = [&](const MeasureGate& gt, bool isB) {
+            const bool on = pick_ == (isB ? Pick::GateB : Pick::GateA) && pickId_ == p.id;
+            const float t = on ? thick : thin;
+            const float x = std::clamp(strip_.xOf(gt.at.x), pic.x + t, pic.right() - t);
+            float y0 = std::clamp(strip_.toScreen({gt.at.x, gt.top()}).y, pic.y + ui.s(2), pic.bottom() - ui.s(12));
+            float y1 = std::clamp(strip_.toScreen({gt.at.x, gt.bottom()}).y, y0 + ui.s(10), pic.bottom() - ui.s(2));
+            if (picture) ui.r().fillRect({x - t, y0, t * 2.0f, y1 - y0}, Color{4, 6, 14, 150});
+            dashed(ui.r(), x, y0, y1, ui.s(4), kGate, t);
+            strip_.note({x - t, y0, t * 2.0f, y1 - y0});
+        };
+        gate(p.a, false);
+        if (p.b) gate(*p.b, true);
+    }
+    const std::vector<StartPosEntry> sps = g.startPositions.list(c.levelKey);
+    const float poleH = ui.s(18);
+    for (const StartPosEntry& e : sps) {
+        const bool on = pick_ == Pick::StartPos && pickId_ == e.id;
+        const float t = on ? thick : thin;
+        Vec2 f = strip_.toScreen(e.state.feet);
+        f.x = std::clamp(f.x, pic.x + t, pic.right() - poleH * 0.35f - t);
+        f.y = std::clamp(f.y, pic.y + poleH + ui.s(2), pic.bottom() - ui.s(2));
+        if (picture) pennant(ui.r(), f + Vec2{1.0f, 1.0f}, poleH, Color{4, 6, 14, 190}, t + 1.0f);
+        pennant(ui.r(), f, poleH, on ? Color::white() : th.accent, t);
+        strip_.note({f.x - t, f.y - poleH, poleH * 0.35f + t * 2.0f, poleH});
+    }
+    // The cursor of a placement.
+    if (edit && placing_ != Place::None) {
+        const float x = pic.x + pic.w * cursor_;
+        const Rect line{x - thin * 0.5f, pic.y, thin, pic.h};
+        ui.r().fillRect(line, Color::white());
+        strip_.note(line);
+    }
+    // Their names under the strip, never one over another: a name that would cover the previous
+    // one goes down a row (a third one in the same place is left out; its mark stays).
     struct Tag {
         float x;
         std::string text;
         Color color;
+        bool on;
     };
     std::vector<Tag> tags;
-    const std::vector<StartPosEntry> sps = g.startPositions.list(c.levelKey);
-    for (size_t i = 0; i < sps.size(); ++i) tags.push_back({xOf(sps[i].state.feet.x), "SP " + std::to_string(i + 1), th.accent});
+    for (size_t i = 0; i < sps.size(); ++i)
+        tags.push_back({strip_.xOf(sps[i].state.feet.x), "SP " + std::to_string(i + 1), th.accent, pick_ == Pick::StartPos && pickId_ == sps[i].id});
     for (const MeasurePair& p : g.measures.list(c.levelKey)) {
-        tags.push_back({xOf(p.a.at.x), "A" + std::to_string(p.id), kGate});
-        if (p.b) tags.push_back({xOf(p.b->at.x), "B" + std::to_string(p.id), kGate});
+        tags.push_back({strip_.xOf(p.a.at.x), "A" + std::to_string(p.id), kGate, pick_ == Pick::GateA && pickId_ == p.id});
+        if (p.b) tags.push_back({strip_.xOf(p.b->at.x), "B" + std::to_string(p.id), kGate, pick_ == Pick::GateB && pickId_ == p.id});
     }
-    std::sort(tags.begin(), tags.end(), [](const Tag& a, const Tag& b) { return a.x < b.x; });
+    std::stable_sort(tags.begin(), tags.end(), [](const Tag& a, const Tag& b) { return a.x < b.x; });
     float rowEnd[2] = {-1e9f, -1e9f};
     for (const Tag& t : tags) {
-        ui.r().fillRect({t.x - 1.0f, bar.y + ui.s(3), 2.0f, bar.h - ui.s(6)}, t.color.withAlpha(220));
         const float w = ui.text().measure(t.text, FontFace::Bold, ui.s(fs)).x + ui.s(10);
-        int row = rowEnd[0] <= t.x - w * 0.5f ? 0 : rowEnd[1] <= t.x - w * 0.5f ? 1 : -1;
-        if (row < 0) continue;  // three names in one place: the strip's ticks stay, the third name goes
-        const float y = bar.bottom() + ui.s(4) + static_cast<float>(row) * ui.s(fs + 6.0f);
-        const Rect pill{std::clamp(t.x - w * 0.5f, r.x, r.right() - w), y, w, ui.s(fs + 5.0f)};
-        ui.r().fillRoundedRect(pill, ui.s(4), Color{8, 12, 26, 235});
+        const float left = std::clamp(t.x - w * 0.5f, r.x, r.right() - w);
+        const int row = rowEnd[0] <= left ? 0 : rowEnd[1] <= left ? 1 : -1;
+        if (row < 0) continue;
+        const Rect pill{left, pic.bottom() + ui.s(4) + static_cast<float>(row) * rowH, w, rowH - ui.s(1)};
+        ui.r().fillRoundedRect(pill, ui.s(4), t.on ? t.color : Color{8, 12, 26, 235});
         ui.r().drawRoundedRect(pill, ui.s(4), t.color.withAlpha(200), 1.0f);
-        ui.label(t.text, pill.center(), fs, t.color, Align::Center, FontFace::Bold, VAlign::Middle);
+        ui.label(t.text, pill.center(), fs, t.on ? Color{8, 12, 26, 255} : t.color, Align::Center, FontFace::Bold, VAlign::Middle);
+        strip_.note(pill);
         rowEnd[row] = pill.right() + ui.s(4);
     }
 }
 
+// ------------------------------------------------------------------ « Réglage fin »
+
+void TrainingMarksPanel::drawPreview(GameServices& g, const Rect& pr, const Context& c, Vec2 at) {
+    UIContext& ui = g.ui;
+    const UITheme& th = ui.theme();
+    Renderer& r = ui.r();
+    // What is shown: the level around it, `zoom_` design pixels per world pixel, the place a
+    // little under the middle (room above for the pennant and the jumps).
+    const float z = static_cast<float>(zoom_) * ui.s(1.0f);
+    const Rect vw{at.x - pr.w / z * 0.5f, at.y - pr.h / z * 0.72f, pr.w / z, pr.h / z};
+    // The picture: a little more than what is shown, its place on a 64-pixel grid (a step of a
+    // few pixels draws nothing again); its neighbours made ahead once it is there.
+    const float grid = 64.0f;
+    auto windowAt = [&](float cx, float cy) {
+        return Rect{cx - std::ceil(vw.w * 0.5f + grid), cy - std::ceil(vw.h * 0.72f + grid), std::ceil(vw.w + grid * 2.0f), std::ceil(vw.h + grid * 2.0f)};
+    };
+    const Vec2 c0{std::round(at.x / grid) * grid, std::round(at.y / grid) * grid};
+    const Rect pw = windowAt(c0.x, c0.y);
+    const Texture* t = c.art && !c.levelId.empty() ? c.art->view(c.levelId, pw) : nullptr;
+    r.fillRect(pr, Color{8, 11, 24, 255});
+    // Until it is made: what the last one shown has of it (a long move between two pictures).
+    const Texture* last = !t && c.art && lastView_.w > 0.0f && lastView_.intersects(vw) ? c.art->view(c.levelId, lastView_) : nullptr;
+    if (t) {
+        const Rect src{vw.x - pw.x, vw.y - pw.y, vw.w, vw.h};
+        g.app.renderer().drawTexture(*t, &src, pr);
+        lastView_ = pw;
+        for (Vec2 d : {Vec2{grid, 0.0f}, Vec2{-grid, 0.0f}, Vec2{0.0f, grid}, Vec2{0.0f, -grid}}) c.art->view(c.levelId, windowAt(c0.x + d.x, c0.y + d.y));
+    } else if (last) {
+        const Rect in = lastView_.intersection(vw);
+        const Rect src{in.x - lastView_.x, in.y - lastView_.y, in.w, in.h};
+        g.app.renderer().drawTexture(*last, &src, {pr.x + (in.x - vw.x) * z, pr.y + (in.y - vw.y) * z, in.w * z, in.h * z});
+    } else {
+        const std::string wait = "Image du niveau en préparation…";
+        ui.label(ui.elide(wait, FontFace::Body, fz(ui, 13), pr.w - ui.s(20)), {pr.center().x, pr.y + ui.s(16)}, fz(ui, 13), th.textDim, Align::Center,
+                 FontFace::Body, VAlign::Middle);
+    }
+    // Over it, at its exact place: the pennant, Nova's silhouette and her body; or the gate.
+    WorldView v;
+    v.scale = z;
+    v.screenW = static_cast<int>(pr.w);
+    v.screenH = static_cast<int>(pr.h);
+    v.topLeft = {vw.x - pr.x / z, vw.y - pr.y / z};
+    v.origin = pr.pos();
+    r.pushClip(pr);
+    const Vec2 foot = v.toScreen(at);
+    if (pick_ == Pick::StartPos) {
+        const bool bad = refused_.has_value();
+        const Color col = bad ? th.danger : th.accent;
+        bool faceLeft = false;
+        if (const StartPosEntry* e = g.startPositions.find(c.levelKey, pickId_)) faceLeft = e->state.faceLeft;
+        AnimationSetPtr set = g.app.resources().animation("animations/nova.json");
+        if (set && set->texture) {
+            Animator a;
+            a.setSet(set);
+            a.play("idle");
+            const Rect src = a.sourceRect(), dst = a.destRect(at, faceLeft);
+            r.setView(v);
+            r.drawWorldTexture(*set->texture, &src, dst, bad ? Color{255, 120, 140, 170} : Color{170, 240, 255, 150}, BlendMode::Alpha, faceLeft);
+            r.setView(WorldView{});
+        }
+        const Rect body = v.toScreen(Rect::fromBottomCenter(at, bodySize(g)));
+        r.drawRect(body, col, std::max(1.0f, ui.s(1.5f)));
+        pennant(r, foot, 46.0f * z, col, std::max(2.0f, z));
+    } else {
+        const float x = foot.x;
+        const float y0 = v.toScreen({at.x, at.y - MeasureGate::kAbove}).y, y1 = v.toScreen({at.x, at.y + MeasureGate::kBelow}).y;
+        dashed(r, x, y0, y1, 6.0f * z, kGate, std::max(2.0f, z));
+    }
+    // The exact pixel: a small cross.
+    const float cr = std::max(ui.s(6), z * 3.0f);
+    r.drawLine(foot - Vec2{cr, 0.0f}, foot + Vec2{cr, 0.0f}, Color::white(), std::max(1.0f, ui.s(1.0f)));
+    r.drawLine(foot - Vec2{0.0f, cr}, foot + Vec2{0.0f, cr}, Color::white(), std::max(1.0f, ui.s(1.0f)));
+    r.popClip();
+}
+
+void TrainingMarksPanel::drawEditor(GameServices& g, const Rect& R, const Context& c) {
+    UIContext& ui = g.ui;
+    const UITheme& th = ui.theme();
+    InputManager& in = ui.input();
+    ui.r().fillRoundedRect(R, ui.s(12), Color{10, 14, 30, 200});
+    ui.r().drawRoundedRect(R, ui.s(12), th.accent.withAlpha(50), 1.0f);
+    const float pad = ui.s(14), bh = ui.s(44);
+    const float pw = std::min((R.w - pad * 2.0f) * 0.46f, ui.s(640));
+    const Rect pr{R.x + pad, R.y + pad, pw, R.h - pad * 2.0f - bh - ui.s(10)};
+    const std::optional<Vec2> at = pickedAt(g, c);
+    const bool fast = in.shift() || shoulderHeld(in);
+    const float step = fast ? 8.0f : 1.0f;
+    // The preview: its arrows move the one chosen while it has the focus, a click brings it there.
+    bool hovered = false;
+    const bool hit = ui.hotspot("preview", pr, &hovered);
+    previewFocused_ = ui.focused("preview");
+    if (at) {
+        drawPreview(g, pr, c, *at);
+    } else {
+        ui.r().fillRect(pr, Color{8, 11, 24, 255});
+        const std::string none = placing_ != Place::None ? "Choisissez l'endroit sur la bande du niveau, au-dessus."
+                                                         : "Rien de choisi : une startpos ou une paire de mesure des listes, ou une nouvelle.";
+        const float f = fz(ui, 13);
+        const Vec2 sz = ui.text().measureWrapped(none, FontFace::Body, ui.s(f), pr.w - ui.s(30));
+        if (sz.y <= pr.h - ui.s(10)) ui.labelWrapped(none, {pr.x + ui.s(15), pr.center().y - sz.y * 0.5f}, pr.w - ui.s(30), f, th.textDim);
+    }
+    ui.r().drawRoundedRect(pr, ui.s(4), previewFocused_ ? th.accent : th.accent.withAlpha(70), previewFocused_ ? std::max(1.5f, ui.s(2.0f)) : 1.0f);
+    if (at && hit && hovered && in.mouseReleased(SDL_BUTTON_LEFT)) {
+        const float z = static_cast<float>(zoom_) * ui.s(1.0f);
+        const Vec2 m = in.mousePos();
+        const Vec2 world{at->x + (m.x - pr.center().x) / z, at->y + (m.y - (pr.y + pr.h * 0.72f)) / z};
+        moveTo(g, c, {std::round(world.x), std::round(world.y)});
+    }
+    if (previewFocused_ && ui.acceptsInput()) {
+        if (at) {
+            Vec2 d;
+            if (in.menuPressed(Action::MenuLeft)) d.x -= step;
+            if (in.menuPressed(Action::MenuRight)) d.x += step;
+            if (in.menuPressed(Action::MenuUp)) d.y -= step;
+            if (in.menuPressed(Action::MenuDown)) d.y += step;
+            ui.consumeNavigation(true, true);
+            if (d.x != 0.0f || d.y != 0.0f) moveTo(g, c, *at + d);
+        }
+        if (ui.backPressed() && !backUsed_) {
+            // Out of the preview: back to the one chosen in its list.
+            backUsed_ = true;
+            wantFocus_ = pick_ == Pick::StartPos && pickId_ > 0 ? "sp" + std::to_string(pickId_)
+                         : pick_ == Pick::GateA || pick_ == Pick::GateB ? "m" + std::to_string(pickId_)
+                                                                         : std::string("spadd");
+        }
+    }
+    // Under it: the arrows (1 pixel, 8 with Maj or LB / RB held), the zoom, the gate A or B.
+    float bx = pr.x;
+    const float by = pr.bottom() + ui.s(10), aw = ui.s(52), gap = ui.s(6);
+    nudgeFocus_ = previewFocused_;
+    const std::pair<const char*, Vec2> arrows[] = {{"nudge_left", {-1.0f, 0.0f}}, {"nudge_right", {1.0f, 0.0f}}, {"nudge_up", {0.0f, -1.0f}}, {"nudge_down", {0.0f, 1.0f}}};
+    for (const auto& [name, d] : arrows) {
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.enabled = at.has_value();
+        const Rect b{bx, by, aw, bh};
+        if (ui.button(name, b, "", st) && at) moveTo(g, c, *at + d * step);
+        arrow(ui.r(), b, d, at ? th.text : th.textDim.withAlpha(120));
+        nudgeFocus_ = nudgeFocus_ || ui.focused(name);
+        bx += aw + gap;
+    }
+    bx += gap;
+    {
+        UIContext::ButtonStyle st;
+        st.small = true;
+        const std::string z = "Zoom ×" + std::to_string(zoom_);
+        const float zw = std::min(ui.text().measure(z, FontFace::Bold, ui.s(15)).x + ui.s(28), pr.right() - bx);
+        st.fontSize = ui.fitFont(z, FontFace::Bold, 15, zw - ui.s(16), 0.6f);
+        if (zw > ui.s(40) && ui.button("zoom", {bx, by, zw, bh}, z, st)) zoom_ = zoom_ == 2 ? 4 : 2;
+        bx += zw + gap * 2.0f;
+    }
+    if (pick_ == Pick::GateA || pick_ == Pick::GateB) {
+        const MeasurePair* p = g.measures.find(c.levelKey, pickId_);
+        for (int k = 0; k < 2 && p; ++k) {
+            const std::string n = (k == 0 ? "A" : "B") + std::to_string(p->id);
+            const float gw = ui.text().measure(n, FontFace::Bold, ui.s(15)).x + ui.s(28);
+            if (bx + gw > pr.right()) break;
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.selected = (k == 0) == (pick_ == Pick::GateA);
+            st.enabled = k == 0 || p->complete();
+            if (ui.button(k == 0 ? "ga" : "gb", {bx, by, gw, bh}, n, st) && st.enabled) {
+                choose(k == 0 ? Pick::GateA : Pick::GateB, p->id);
+                break;
+            }
+            bx += gw + gap;
+        }
+    }
+    // At the right: what it is, where (pixels and metres), whether it holds there, how it starts,
+    // the keys. Each line measured; what does not fit is left out (the keys first kept).
+    const float ix = pr.right() + ui.s(24), iw = R.right() - pad - ix;
+    float y = R.y + pad;
+    const float bottom = R.bottom() - pad;
+    const float sf = fz(ui, 13), f = fz(ui, 15);
+    const float lh = ui.s(sf + 9.0f);
+    const bool padShown = Glyphs::showsPad(ui);
+    const std::string keys = padShown ? "Aperçu choisi : croix 1 px · LB / RB maintenu + croix 8 px · B : en sortir"
+                                      : "Aperçu choisi : flèches 1 px · Maj + flèches 8 px · Échap : en sortir · clic : y amener le repère";
+    const float keysY = bottom - lh * 0.5f;
+    ui.label(ui.elide(keys, FontFace::Body, sf, iw), {ix, keysY}, sf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    const float textBottom = keysY - lh * 0.5f - ui.s(4);
+    auto wrapped = [&](const std::string& text, Color col) {
+        const Vec2 sz = ui.text().measureWrapped(text, FontFace::Body, ui.s(sf), iw);
+        if (y + sz.y <= textBottom) {
+            ui.labelWrapped(text, {ix, y}, iw, sf, col);
+            y += sz.y + ui.s(8);
+        } else if (y + lh <= textBottom) {
+            ui.label(ui.elide(text, FontFace::Body, sf, iw), {ix, y + lh * 0.5f}, sf, col, Align::Left, FontFace::Body, VAlign::Middle);
+            y += lh + ui.s(4);
+        }
+    };
+    // The title: « RÉGLAGE FIN · SP 2 ».
+    std::string name;
+    const StartPosEntry* sp = pick_ == Pick::StartPos && pickId_ > 0 ? g.startPositions.find(c.levelKey, pickId_) : nullptr;
+    if (pick_ == Pick::StartPos) name = sp ? "SP " + std::to_string(g.startPositions.rank(c.levelKey, sp->id) + 1) : std::string("Nouvelle startpos");
+    else if (pick_ == Pick::GateA) name = "Porte A" + std::to_string(pickId_);
+    else if (pick_ == Pick::GateB) name = "Porte B" + std::to_string(pickId_);
+    const std::string title = name.empty() ? std::string("RÉGLAGE FIN") : "RÉGLAGE FIN · " + name;
+    ui.label(ui.elide(title, FontFace::Bold, fz(ui, 14), iw), {ix, y + ui.s(10)}, fz(ui, 14), th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
+    y += ui.s(28);
+    if (placing_ != Place::None) {
+        const MeasurePair* waiting = nullptr;
+        for (const MeasurePair& p : g.measures.list(c.levelKey))
+            if (!p.complete()) waiting = g.measures.find(c.levelKey, p.id);
+        const std::string what = placing_ == Place::StartPos ? std::string("la startpos")
+                                 : waiting                    ? "la porte B" + std::to_string(waiting->id)
+                                                              : std::string("la porte A (puis B)");
+        wrapped("Pose de " + what + " : un clic sur la bande du niveau, ou son curseur avec les flèches (la croix) puis Entrée (A). Échap (B) : annuler.",
+                th.text);
+    }
+    if (!at) {
+        if (placing_ == Place::None)
+            wrapped("Choisissez une startpos ou une paire de mesure dans les listes (ou un repère de la bande), ou ajoutez-en une : elle apparaît ici, "
+                    "agrandie, à régler au pixel près.",
+                    th.textDim);
+        return;
+    }
+    // Where: pixels from the level's top left corner, and metres (1 m = 1 tile = 16 px).
+    const Rect& lb = strip_.info() ? strip_.info()->bounds : c.levelBounds;
+    const float px = at->x - lb.x, py = at->y - lb.y;
+    const std::string where = "x " + std::to_string(static_cast<int>(std::lround(px))) + " px · y " + std::to_string(static_cast<int>(std::lround(py))) + " px";
+    const Vec2 ws = ui.label(ui.elide(where, FontFace::Bold, f, iw), {ix, y + ui.s(11)}, f, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+    const std::string metres = "soit " + decimal1(metersOf(px)) + " m · " + decimal1(metersOf(py)) + " m";
+    const float mx = ix + ws.x + ui.s(14);
+    if (ix + iw - mx > ui.s(60))
+        ui.label(ui.elide(metres, FontFace::Body, sf, ix + iw - mx), {mx, y + ui.s(11)}, sf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    y += ui.s(30);
+    if (pick_ == Pick::StartPos) {
+        // Whether Nova's body is free there.
+        if (refused_) {
+            const bool out = *refused_ == StartPosProblem::OutOfLevel;
+            std::string why;
+            if (out && draft_) why = "Refusée ici : hors du niveau (au-delà d'un bord, sous le bas ou au plafond). Pas encore enregistrée : amenez-la dans le niveau.";
+            else if (out) why = "Refusée ici : hors du niveau (au-delà d'un bord, sous le bas ou au plafond). Elle reste à sa dernière place valide.";
+            else if (draft_) why = "Refusée ici : le corps de Nova serait dans le décor (sol, mur ou plafond). Pas encore enregistrée : amenez-la hors du décor.";
+            else why = "Refusée ici : le corps de Nova serait dans le décor (sol, mur ou plafond). Elle reste à sa dernière place valide.";
+            wrapped(why, th.danger);
+        } else {
+            wrapped("Position valide : le corps de Nova est libre ici.", th.success);
+        }
+        // How an attempt from it starts.
+        const bool menu = draft_ || (sp && sp->menu);
+        wrapped(menu ? "Départ comme l'entraînement de son segment : pouvoirs du départ et des tablettes d'avant, cœurs et énergie pleins."
+                     : "Départ : l'état pris en jeu à la pose (pouvoirs, cœurs et énergie de ce moment).",
+                th.textDim);
+        const StartPosState st = sp ? sp->state : c.placedState ? c.placedState(*at) : StartPosState{};
+        const float ic = ui.s(24);
+        if (y + ic <= textBottom) {
+            float x = ix;
+            for (size_t k = 0; k < st.powers.size() && k < 8; ++k)
+                if (const PowerDefinition* d = g.content.power(st.powers[k])) {
+                    if (x + ic > ix + iw * 0.5f) break;
+                    ui.icon("ui/icons_powers.png", d->icon, 32, {x, y, ic, ic});
+                    x += ic + ui.s(4);
+                }
+            const std::string life = std::to_string(st.health) + (st.health > 1 ? " cœurs" : " cœur") + " · énergie " +
+                                     std::to_string(static_cast<int>(std::lround(st.energy)));
+            const float lx = x + (x > ix ? ui.s(8) : 0.0f);
+            if (ix + iw - lx > ui.s(40))
+                ui.label(ui.elide(life, FontFace::Bold, sf, ix + iw - lx), {lx, y + ic * 0.5f}, sf, th.danger, Align::Left, FontFace::Bold, VAlign::Middle);
+        }
+    } else {
+        wrapped("Une porte se règle librement. La déplacer efface ses temps : ils ne se comparent plus.", th.textDim);
+    }
+}
+
+// ------------------------------------------------------------------ the lists
+
 void TrainingMarksPanel::drawStartPos(GameServices& g, const Rect& r, const Context& c) {
     UIContext& ui = g.ui;
     const UITheme& th = ui.theme();
+    const bool edit = static_cast<bool>(c.placedState);
     const std::vector<StartPosEntry> list = g.startPositions.list(c.levelKey);
     const int active = g.startPositions.activeId(c.levelKey);
     if (!list.empty() && std::none_of(list.begin(), list.end(), [&](const StartPosEntry& e) { return e.id == selectedSp_; }))
         selectedSp_ = active > 0 ? active : list.front().id;
     const float hf = fz(ui, 15), f = fz(ui, 15), sf = fz(ui, 13);
     float y = r.y;
-    // Title and its key.
+    // Title, « Ajouter » (ENTRAÎNEMENT) and the key that places one in a run, when it holds.
     const std::string title = "STARTPOS (" + std::to_string(list.size()) + ")";
-    const float kh = ui.s(26);
+    const float kh = ui.s(edit ? 34 : 26);
+    float right = r.right();
+    if (edit) {
+        const std::string add = placing_ == Place::StartPos ? "Annuler la pose" : "Ajouter une startpos";
+        const float aw = std::min(ui.text().measure(add, FontFace::Bold, ui.s(14)).x + ui.s(28), r.w * 0.5f);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.selected = placing_ == Place::StartPos;
+        st.enabled = c.art && c.art->level(c.levelId) && list.size() < StartPosStore::kPerLevel;
+        st.fontSize = ui.fitFont(add, FontFace::Bold, 14, aw - ui.s(16), 0.6f);
+        if (ui.button("spadd", {r.right() - aw, y, aw, kh}, add, st) && st.enabled) {
+            placing_ = placing_ == Place::StartPos ? Place::None : Place::StartPos;
+            if (placing_ != Place::None) wantFocus_ = "strip";
+        }
+        right -= aw + ui.s(12);
+    }
     const std::string hint = "Poser ici";
-    const float hintW = Glyphs::measureAction(ui, Action::StartPosPlace, kh) + ui.s(8) + ui.text().measure(hint, FontFace::Body, ui.s(sf)).x;
-    ui.label(ui.elide(title, FontFace::Bold, hf, r.w - hintW - ui.s(12)), {r.x, y + kh * 0.5f}, hf, th.accent, Align::Left, FontFace::Bold, VAlign::Middle);
-    const float hx = r.right() - hintW;
-    const float kw = Glyphs::drawAction(ui, Action::StartPosPlace, {hx, y + kh * 0.5f}, kh);
-    ui.label(hint, {hx + kw + ui.s(8), y + kh * 0.5f}, sf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    const float hintH = ui.s(26);
+    const float hintW = Glyphs::measureAction(ui, Action::StartPosPlace, hintH) + ui.s(8) + ui.text().measure(hint, FontFace::Body, ui.s(sf)).x;
+    const float titleW = ui.text().measure(title, FontFace::Bold, ui.s(hf)).x;
+    const bool showHint = titleW + ui.s(16) + hintW <= right - r.x;
+    ui.label(ui.elide(title, FontFace::Bold, hf, right - r.x - (showHint ? hintW + ui.s(12) : 0.0f)), {r.x, y + kh * 0.5f}, hf, th.accent, Align::Left,
+             FontFace::Bold, VAlign::Middle);
+    if (showHint) {
+        const float hx = right - hintW;
+        const float kw = Glyphs::drawAction(ui, Action::StartPosPlace, {hx, y + kh * 0.5f}, hintH);
+        ui.label(hint, {hx + kw + ui.s(8), y + kh * 0.5f}, sf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    }
     y += kh + ui.s(12);
     // The buttons and the notes at the bottom; the list takes the room left.
     const float notesH = ui.s(sf + 10.0f) * 2.0f;
@@ -109,17 +673,23 @@ void TrainingMarksPanel::drawStartPos(GameServices& g, const Rect& r, const Cont
     ui.beginScroll("splist", listRect, std::max(1.0f, static_cast<float>(list.size())) * (rh + gap));
     float ry = listRect.y - ui.scrollOffset();
     if (list.empty())
-        ui.labelWrapped("Aucune startpos pour cette version du niveau. En entraînement, posez-en une là où Nova se trouve ; les essais suivants partiront "
-                        "de là.",
+        ui.labelWrapped(edit ? "Aucune startpos pour cette version du niveau. Ajoutez-en une ici, ou posez-en une en entraînement là où Nova se trouve ; les "
+                               "essais suivants partiront de là."
+                             : "Aucune startpos pour cette version du niveau. En entraînement, posez-en une là où Nova se trouve ; les essais suivants "
+                               "partiront de là.",
                         {listRect.x + ui.s(6), ry + ui.s(6)}, listRect.w - ui.s(20), sf, th.textDim);
     for (size_t i = 0; i < list.size(); ++i, ry += rh + gap) {
         const StartPosEntry& e = list[i];
         const Rect row{listRect.x, ry, listRect.w - ui.s(14), rh};
         UIContext::ButtonStyle st;
         st.selected = e.id == selectedSp_;
-        if (ui.button("sp" + std::to_string(e.id), row, "", st)) selectedSp_ = e.id;
+        if (ui.button("sp" + std::to_string(e.id), row, "", st)) {
+            selectedSp_ = e.id;
+            choose(Pick::StartPos, e.id);
+        }
         if (row.bottom() < listRect.y || row.y > listRect.bottom()) continue;
-        // « SP n » tag, the place, then the date and the attempts; the powers and hearts at the right.
+        // « SP n » tag, the place, then the date, where it was placed and the attempts; how it
+        // starts at the right (its powers and hearts).
         const std::string tag = "SP " + std::to_string(i + 1);
         const float tw = ui.text().measure(tag, FontFace::Bold, ui.s(f)).x + ui.s(14);
         const Rect tr{row.x + ui.s(10), row.center().y - ui.s(14), tw, ui.s(28)};
@@ -132,8 +702,8 @@ void TrainingMarksPanel::drawStartPos(GameServices& g, const Rect& r, const Cont
         std::string where = c.where ? c.where(e.state.feet) : std::string();
         if (where.empty()) where = "x " + std::to_string(static_cast<int>(std::lround(metersOf(e.state.feet.x - c.levelBounds.x)))) + " m";
         ui.label(ui.elide(where, FontFace::Bold, f, room), {tx, row.y + rh * 0.32f}, f, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
-        std::string sub = (e.id == active ? std::string("active · ") : std::string()) + "posée le " + dayMonth(e.date) + " · " +
-                          std::to_string(e.attempts) + (e.attempts > 1 ? " essais depuis" : " essai depuis");
+        std::string sub = (e.id == active ? std::string("active · ") : std::string()) + "posée le " + dayMonth(e.date) +
+                          (e.menu ? " depuis ce menu" : " en jeu") + " · " + std::to_string(e.attempts) + (e.attempts > 1 ? " essais depuis" : " essai depuis");
         ui.label(ui.elide(sub, FontFace::Body, sf, room), {tx, row.y + rh * 0.72f}, sf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
         float px = row.right() - ui.s(12) - rightW;
         for (size_t k = 0; k < e.state.powers.size() && k < 4; ++k)
@@ -151,6 +721,7 @@ void TrainingMarksPanel::drawStartPos(GameServices& g, const Rect& r, const Cont
     const StartPosEntry* sel = nullptr;
     for (const StartPosEntry& e : list)
         if (e.id == selectedSp_) sel = &e;
+    if (!sel || sel->id != confirmDelSp_) confirmDelSp_ = 0;
     const int selRank = sel ? g.startPositions.rank(c.levelKey, sel->id) : -1;
     const float bgap = ui.s(10);
     const int buttons = c.startFrom ? 4 : 2;
@@ -172,13 +743,21 @@ void TrainingMarksPanel::drawStartPos(GameServices& g, const Rect& r, const Cont
         if (ui.button("spnone", {bx, y, bw, buttonsH}, none, fitted({}, none))) c.startFrom(0);
         bx += bw + bgap;
     }
+    // « Supprimer », then « Confirmer : supprimer » (a second press deletes it).
     UIContext::ButtonStyle del;
     del.enabled = sel != nullptr;
-    const std::string delLabel = "Supprimer";
+    del.danger = sel && confirmDelSp_ == sel->id;
+    const std::string delLabel = del.danger ? "Confirmer : supprimer" : "Supprimer";
     if (ui.button("spdel", {bx, y, bw, buttonsH}, delLabel, fitted(del, delLabel)) && sel) {
-        g.startPositions.remove(c.levelKey, sel->id);
-        g.startPositions.save();
-        selectedSp_ = 0;
+        if (confirmDelSp_ == sel->id) {
+            if (pick_ == Pick::StartPos && pickId_ == sel->id) choose(Pick::None, 0);
+            g.startPositions.remove(c.levelKey, sel->id);
+            g.startPositions.save();
+            selectedSp_ = 0;
+            confirmDelSp_ = 0;
+        } else {
+            confirmDelSp_ = sel->id;
+        }
     }
     bx += bw + bgap;
     UIContext::ButtonStyle clr;
@@ -214,6 +793,7 @@ void TrainingMarksPanel::drawStartPos(GameServices& g, const Rect& r, const Cont
 void TrainingMarksPanel::drawMeasures(GameServices& g, const Rect& r, const Context& c) {
     UIContext& ui = g.ui;
     const UITheme& th = ui.theme();
+    const bool edit = static_cast<bool>(c.placedState);
     const std::vector<MeasurePair> list = g.measures.list(c.levelKey);
     if (!list.empty() && std::none_of(list.begin(), list.end(), [&](const MeasurePair& p) { return p.id == selectedPair_; })) selectedPair_ = list.front().id;
     const float hf = fz(ui, 15), f = fz(ui, 15), sf = fz(ui, 13);
@@ -221,13 +801,41 @@ void TrainingMarksPanel::drawMeasures(GameServices& g, const Rect& r, const Cont
     int complete = 0;
     for (const MeasurePair& p : list) complete += p.complete() ? 1 : 0;
     const std::string title = "POINTS DE MESURE (" + std::to_string(complete) + (complete > 1 ? " PAIRES)" : " PAIRE)");
-    const float kh = ui.s(26);
+    const float kh = ui.s(edit ? 34 : 26);
+    float right = r.right();
+    if (edit) {
+        // « Ajouter A → B » (a new pair: A, then B on the strip), or « Poser B n » for a pair
+        // still waiting for its B.
+        const MeasurePair* waiting = nullptr;
+        for (const MeasurePair& p : list)
+            if (!p.complete()) waiting = &p;
+        const std::string add = placing_ == Place::Gate ? std::string("Annuler la pose")
+                                : waiting               ? "Poser B" + std::to_string(waiting->id)
+                                                        : std::string("Ajouter A → B");
+        const float aw = std::min(ui.text().measure(add, FontFace::Bold, ui.s(14)).x + ui.s(28), r.w * 0.5f);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.selected = placing_ == Place::Gate;
+        st.enabled = c.art && c.art->level(c.levelId) && (waiting || list.size() < MeasureStore::kPerLevel);
+        st.fontSize = ui.fitFont(add, FontFace::Bold, 14, aw - ui.s(16), 0.6f);
+        if (ui.button("madd", {r.right() - aw, y, aw, kh}, add, st) && st.enabled) {
+            placing_ = placing_ == Place::Gate ? Place::None : Place::Gate;
+            if (placing_ != Place::None) wantFocus_ = "strip";
+        }
+        right -= aw + ui.s(12);
+    }
+    const float hintH = ui.s(26);
     const std::string hint = "Poser A, puis B";
-    const float hintW = Glyphs::measureAction(ui, Action::MeasurePlace, kh) + ui.s(8) + ui.text().measure(hint, FontFace::Body, ui.s(sf)).x;
-    ui.label(ui.elide(title, FontFace::Bold, hf, r.w - hintW - ui.s(12)), {r.x, y + kh * 0.5f}, hf, kGate, Align::Left, FontFace::Bold, VAlign::Middle);
-    const float hx = r.right() - hintW;
-    const float kw = Glyphs::drawAction(ui, Action::MeasurePlace, {hx, y + kh * 0.5f}, kh);
-    ui.label(hint, {hx + kw + ui.s(8), y + kh * 0.5f}, sf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    const float hintW = Glyphs::measureAction(ui, Action::MeasurePlace, hintH) + ui.s(8) + ui.text().measure(hint, FontFace::Body, ui.s(sf)).x;
+    const float titleW = ui.text().measure(title, FontFace::Bold, ui.s(hf)).x;
+    const bool showHint = titleW + ui.s(16) + hintW <= right - r.x;
+    ui.label(ui.elide(title, FontFace::Bold, hf, right - r.x - (showHint ? hintW + ui.s(12) : 0.0f)), {r.x, y + kh * 0.5f}, hf, kGate, Align::Left,
+             FontFace::Bold, VAlign::Middle);
+    if (showHint) {
+        const float hx = right - hintW;
+        const float kw = Glyphs::drawAction(ui, Action::MeasurePlace, {hx, y + kh * 0.5f}, hintH);
+        ui.label(hint, {hx + kw + ui.s(8), y + kh * 0.5f}, sf, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    }
     y += kh + ui.s(12);
     // The bottom: buttons, three options, the note; the list takes the room left.
     const float buttonsH = ui.s(46), toggleH = ui.s(44);
@@ -239,7 +847,8 @@ void TrainingMarksPanel::drawMeasures(GameServices& g, const Rect& r, const Cont
     ui.beginScroll("mlist", listRect, std::max(1.0f, static_cast<float>(list.size())) * (rh + gap));
     float ry = listRect.y - ui.scrollOffset();
     if (list.empty())
-        ui.labelWrapped("Aucun point de mesure. En entraînement, posez A puis B : franchir A lance un chrono, franchir B l'arrête.",
+        ui.labelWrapped(edit ? "Aucun point de mesure. Ajoutez A puis B ici ou en entraînement : franchir A lance un chrono, franchir B l'arrête."
+                             : "Aucun point de mesure. En entraînement, posez A puis B : franchir A lance un chrono, franchir B l'arrête.",
                         {listRect.x + ui.s(6), ry + ui.s(6)}, listRect.w - ui.s(20), sf, th.textDim);
     for (const MeasurePair& p : list) {
         const Rect row{listRect.x, ry, listRect.w - ui.s(14), rh};
@@ -258,7 +867,10 @@ void TrainingMarksPanel::drawMeasures(GameServices& g, const Rect& r, const Cont
             }
             continue;
         }
-        if (ui.button("m" + n, row, "", st)) selectedPair_ = p.id;
+        if (ui.button("m" + n, row, "", st)) {
+            selectedPair_ = p.id;
+            if (!((pick_ == Pick::GateA || pick_ == Pick::GateB) && pickId_ == p.id)) choose(Pick::GateA, p.id);
+        }
         if (row.bottom() < listRect.y || row.y > listRect.bottom()) continue;
         const std::string tag = p.complete() ? "A" + n + "→B" + n : "A" + n + "…";
         const float tw = ui.text().measure(tag, FontFace::Bold, ui.s(f)).x + ui.s(14);
@@ -303,6 +915,7 @@ void TrainingMarksPanel::drawMeasures(GameServices& g, const Rect& r, const Cont
     // Rename, move, delete.
     y = listRect.bottom() + ui.s(12);
     const MeasurePair* sel = g.measures.find(c.levelKey, selectedPair_);
+    if (!sel || sel->id != confirmDelPair_) confirmDelPair_ = 0;
     const float bgap = ui.s(10);
     const int buttons = c.movePair ? 3 : 2;
     const float bw = (r.w - bgap * static_cast<float>(buttons - 1)) / static_cast<float>(buttons);
@@ -325,11 +938,20 @@ void TrainingMarksPanel::drawMeasures(GameServices& g, const Rect& r, const Cont
         if (ui.button("mmove", {bx, y, bw, buttonsH}, mv, fitted(on, mv)) && on.enabled) c.movePair(sel->id);
         bx += bw + bgap;
     }
-    const std::string del = "Supprimer";
-    if (ui.button("mdel", {bx, y, bw, buttonsH}, del, fitted(on, del)) && on.enabled) {
-        g.measures.remove(c.levelKey, sel->id);
-        g.measures.save();
-        selectedPair_ = 0;
+    // « Supprimer », then « Confirmer : supprimer ».
+    UIContext::ButtonStyle del = on;
+    del.danger = sel && confirmDelPair_ == sel->id;
+    const std::string delLabel = del.danger ? "Confirmer : supprimer" : "Supprimer";
+    if (ui.button("mdel", {bx, y, bw, buttonsH}, delLabel, fitted(del, delLabel)) && on.enabled) {
+        if (confirmDelPair_ == sel->id) {
+            if ((pick_ == Pick::GateA || pick_ == Pick::GateB) && pickId_ == sel->id) choose(Pick::None, 0);
+            g.measures.remove(c.levelKey, sel->id);
+            g.measures.save();
+            selectedPair_ = 0;
+            confirmDelPair_ = 0;
+        } else {
+            confirmDelPair_ = sel->id;
+        }
     }
     // The options (kept with the measures and the StartPos).
     y += buttonsH + ui.s(10);
@@ -350,7 +972,10 @@ void TrainingMarksPanel::drawMeasures(GameServices& g, const Rect& r, const Cont
     }
     y += toggleH + ui.s(6);
     ui.labelWrapped(warn, {r.x, y}, r.w, sf, th.warm);
-    if (renaming_ > 0 && ui.input().menuPressed(Action::MenuBack)) renaming_ = 0;
+    if (renaming_ > 0 && ui.input().menuPressed(Action::MenuBack)) {
+        renaming_ = 0;
+        backUsed_ = true;
+    }
 }
 
 }  // namespace cosmic

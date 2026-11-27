@@ -84,6 +84,7 @@
    "ui/screens/PlayerProfileScene.cpp": 1,
    "ui/screens/RewardsScene.cpp": 1,
    "ui/screens/StatisticsScene.cpp": 4,
+   "ui/screens/TrainingMarksPanel.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 1,
    "ui/studio/Studio.cpp": 1,
    "ui/studio/StudioFrise.cpp": 1,
@@ -926,7 +927,7 @@
    "ui/screens/PowerGuideScene.cpp": 2,
    "ui/screens/StatisticsLevels.cpp": 1,
    "ui/screens/StatisticsScene.cpp": 1,
-   "ui/screens/TrainingMarksPanel.cpp": 1,
+   "ui/screens/TrainingMarksPanel.cpp": 2,
    "ui/screens/TrainingSession.cpp": 1,
    "ui/widgets/PowerLabels.cpp": 1
   },
