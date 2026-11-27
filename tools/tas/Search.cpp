@@ -1113,7 +1113,10 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         if (x.finishes())
             std::snprintf(line, sizeof line, "Guide %zu : termine la catégorie en %.3f s, %zu section(s) atteinte(s)", extra.size(), static_cast<double>(x.clock),
                           x.ends.size());
-        else std::snprintf(line, sizeof line, "Guide %zu : ne termine pas la catégorie (utilisé jusqu'où il va : %zu section(s))", extra.size(), x.ends.size());
+        else
+            std::snprintf(line, sizeof line, "Guide %zu : ne termine pas la catégorie (utilisé jusqu'où il va : %zu section(s), la dernière finie au pas %zu, %.3f s au chrono)",
+                          extra.size(), x.ends.size(), x.ends.empty() ? size_t(0) : x.ends.back(),
+                          static_cast<double>(x.ends.empty() ? 0.0f : x.clockAt[std::min(x.ends.back(), x.clockAt.size() - 1)]));
         log(line);
     }
     out.guideSources = static_cast<int>(extra.size());

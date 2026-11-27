@@ -11,6 +11,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "engine/core/FileUtil.h"
@@ -206,6 +207,18 @@ std::vector<InputFrame> withPause(const std::vector<InputFrame>& run, size_t at,
     return out;
 }
 
+/// `run` slowed by a pause somewhere in [from, to) where it still finishes (the level's moving
+/// parts do not forgive a pause anywhere): the first such run and its verified time; -1: none.
+std::pair<std::vector<InputFrame>, int64_t> slowed(const Shipped& S, const std::vector<InputFrame>& run, size_t from, size_t to) {
+    for (int idle : {60, 24, 8})
+        for (size_t at = from; at < to && at + 1 < run.size(); at += 60) {
+            std::vector<InputFrame> r = withPause(run, at, idle);
+            const int64_t t = S.verified(r);
+            if (t > S.bestMs) return {std::move(r), t};
+        }
+    return {{}, -1};
+}
+
 }  // namespace
 
 TEST_CASE("tas guides: a guide of another version of the level or of the simulation is refused") {
@@ -242,18 +255,13 @@ TEST_CASE("tas guides: a guide faster early and a best run faster late are splic
     if (!S.ok) return;
     const auto ends = tas::sectionEndsOf(S.content, *S.level, RunCategory::AnyPercent, S.best);
     if (ends.size() < 7) return;
-    // The best run (the machine's): slower early (a pause after CP1, or the next checkpoint where
-    // the run still finishes); the guide (a player's run): slower late (a pause after CP6, before
-    // the exit) — the shape of a player's run against the machine's.
-    std::vector<InputFrame> tasRun, guide;
-    int64_t tasMs = -1;
-    for (size_t cp : {size_t(0), size_t(1), size_t(2)}) {
-        tasRun = withPause(S.best, ends[cp], 240);
-        tasMs = S.verified(tasRun);
-        if (tasMs > 0) break;
-    }
-    guide = withPause(S.best, ends[5], 240);
-    const int64_t guideMs = S.verified(guide);
+    // The best run (the machine's): slower early (a pause in section 4, where the run still
+    // finishes); the guide (a player's run): slower late (a pause in section 5, or 7) — the shape of
+    // a player's run against the machine's (sections 1 to 3 and the boss do not forgive a pause).
+    // (Sections 1, 2 and the boss do not forgive a pause: their moving parts; sections 3 and 4 do.)
+    auto [tasRun, tasMs] = slowed(S, S.best, ends[2], ends[2] + 600);
+    auto [guide, guideMs] = slowed(S, S.best, ends[3], ends[4]);
+    if (guideMs < 0) std::tie(guide, guideMs) = slowed(S, S.best, ends[5], ends[6]);
     std::printf("  course de la machine ralentie tôt : %lld ms ; guide ralenti tard : %lld ms ; livrée %lld ms\n", static_cast<long long>(tasMs),
                 static_cast<long long>(guideMs), static_cast<long long>(S.bestMs));
     CHECK(tasMs > S.bestMs && guideMs > S.bestMs);
@@ -292,7 +300,9 @@ TEST_CASE("tas guides: a splice slower than the best run is never kept") {
     const auto ends = tas::sectionEndsOf(S.content, *S.level, RunCategory::AnyPercent, S.best);
     if (ends.size() < 7) return;
     // The guide: the best run with a pause after CP3 — slower from there on, never faster.
-    const std::vector<InputFrame> guide = withPause(S.best, ends[2], 240);
+    const auto [guide, guideMs] = slowed(S, S.best, ends[2], ends[2] + 600);
+    CHECK(guideMs > S.bestMs);
+    if (guideMs <= 0) return;
     tas::SearchOptions o;
     o.category = RunCategory::AnyPercent;
     o.threads = 2;
@@ -334,9 +344,8 @@ TEST_CASE("tas guides: a run of an older version of the level guides by its rout
     CHECK(route.size() > 1000 && splits.size() == 6);
     std::error_code ec;
     fs::remove(file, ec);
-    // The machine's run slower from CP1 on (a pause): the route is ahead there, it is followed.
-    const std::vector<InputFrame> slow = withPause(S.best, ends[0], 240);
-    const int64_t slowMs = S.verified(slow);
+    // The machine's run slower from section 4 on (a pause): the route is ahead there, it is followed.
+    const auto [slow, slowMs] = slowed(S, S.best, ends[2], ends[2] + 600);
     CHECK(slowMs > S.bestMs);
     if (slowMs <= 0) return;
     tas::SearchOptions o;
@@ -346,7 +355,7 @@ TEST_CASE("tas guides: a run of an older version of the level guides by its rout
     o.seed = 13;
     o.seedRun = slow;
     o.routeHints = route;
-    o.windowFirst = o.windowLast = 2;
+    o.windowFirst = o.windowLast = 4;
     o.refine = false;
     const tas::SearchOutcome out = tas::search(S.content, *S.level, o);
     std::printf("  tracé : %lld états gardés parce qu'ils le suivent ; %.3f s (départ %.3f s)\n", static_cast<long long>(out.routeKept), static_cast<double>(out.clock),

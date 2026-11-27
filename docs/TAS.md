@@ -289,6 +289,11 @@ pouvoirs restent hors de portée, sauf si un **guide** les apporte.
 Mesure (2.99, `sylvanox_01` ANY%, 2 fils, depuis la course livrée 1:26.692 avec comme guide une
 course 1:26.617 d'un autre entraînement) : 1:26.600 vérifiée et écrite **6 s** après le départ (un
 raccord dans le guide après la section 1), 1:26.592 à 24 s, 1:26.567 au deuxième tour (1 min 40).
+Avec le record de NovaRider (1:34.392, jeu 2.88, simulation 17 : son tracé seulement), 1 fil : la
+recherche arrive au CP1 en 9,667 s (la machine 11,025 s, le joueur 9,225 s), mais l'avance fond
+aux CP2 (28,825 s) et CP3 (39,433 s) et ne se raccorde pas à la meilleure course : **continuer
+après une arrivée de plusieurs secondes en avance** reste la limite (les éléments du niveau qui
+bougent avec le temps ne sont plus au même endroit pour les images de la meilleure course).
 
 ### Vérification au fil de l'eau (2.99)
 

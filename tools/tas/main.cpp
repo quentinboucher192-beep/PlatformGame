@@ -385,6 +385,7 @@ int main(int argc, char** argv) {
     std::vector<std::vector<InputFrame>> guideRuns;
     std::vector<std::string> guideIds;
     std::vector<GuideArg> exactArgs;
+    std::vector<std::vector<int64_t>> exactSplits;  // their checkpoint times as recorded (when they no longer replay to the end)
     // A run of an older version of the level (its inputs no longer play the same): its ROUTE only,
     // never its inputs (docs/TAS.md « Le tracé d'une ancienne version »).
     struct RouteArg {
@@ -405,6 +406,15 @@ int main(int argc, char** argv) {
             opt.routeHints.insert(opt.routeHints.end(), route.begin(), route.end());
             routeArgs.push_back({g.player.empty() ? std::string("?") : g.player, Paths::toUtf8(Paths::fromUtf8(g.file).stem()), std::move(splits)});
             continue;
+        }
+        // Its recorded route too: where its inputs stop playing the same (a run recorded before a
+        // change of the simulation's details that the fingerprint does not see), it still says the way.
+        {
+            std::vector<tas::RouteHint> route;
+            std::vector<int64_t> splits;
+            std::string whyRoute;
+            if (tas::readRouteReplay(g.file, levelId, route, splits, whyRoute)) opt.routeHints.insert(opt.routeHints.end(), route.begin(), route.end());
+            exactSplits.push_back(std::move(splits));
         }
         guideRuns.push_back(std::move(in));
         guideIds.push_back(id.empty() ? Paths::toUtf8(Paths::fromUtf8(g.file).stem()) : id);
@@ -507,7 +517,14 @@ int main(int argc, char** argv) {
                 r.splits = splitsAt(gv.record.splits, cpIds);
                 say("Guide " + std::to_string(k + 1) + " (" + r.player + ") : " + formatRunTime(r.timeMs));
             } else {
-                say("Guide " + std::to_string(k + 1) + " (" + r.player + ") : ne termine pas la catégorie (" + gv.why + "), utilisé jusqu'où il va");
+                // It no longer plays to the end today: its times as recorded, said as another version's.
+                say("Guide " + std::to_string(k + 1) + " (" + r.player + ") : ne termine pas la catégorie aujourd'hui (" + gv.why +
+                    "), ses entrées utilisées jusqu'où elles vont, son tracé au-delà");
+                r.oldVersion = true;
+                r.splits.assign(cpIds.size(), 0);
+                for (size_t c = 0; c < exactSplits[k].size() && c < cpIds.size(); ++c) r.splits[c] = exactSplits[k][c];
+                for (size_t c = 1; c < r.splits.size(); ++c)
+                    if (r.splits[c] > 0 && r.splits[c] < r.splits[c - 1]) r.splits[c] = 0;
             }
             guidedBy.push_back({r.player, r.timeMs, guideIds[k]});
             refs.push_back(std::move(r));
