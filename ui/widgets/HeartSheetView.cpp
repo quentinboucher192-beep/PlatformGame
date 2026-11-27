@@ -224,10 +224,12 @@ Action drawHeart(GameServices& g, const raid::RaidSheets& s, const State& st, co
         UIContext::ButtonStyle bs;
         bs.small = true;
         bs.enabled = !st.real;
-        const std::string t = "État réel du clan (R)";
+        // 2.93: its key as the player set it (Paramètres › Contrôles › « Écrans »), R by default.
+        const SDL_Scancode key = ui.input().bindings().keyOf(cosmic::Action::SheetReset);
+        const std::string t = key != SDL_SCANCODE_UNKNOWN ? "État réel du clan (" + keyName(key) + ")" : std::string("État réel du clan");
         bs.fontSize = std::max(ui.fitFont(t, FontFace::Bold, 15, L.resetBtn.w - ui.s(16), 0.7f), 11.5f / ui.s(1.0f));
-        if (ui.button("heart/reset", L.resetBtn, t, bs)) act.reset = true;
-        if (!st.real && ui.acceptsInput() && ui.input().keyPressed(SDL_SCANCODE_R)) act.reset = true;
+        if (ui.button("heart/reset", L.resetBtn, ui.elide(t, FontFace::Bold, bs.fontSize, L.resetBtn.w - ui.s(16)), bs)) act.reset = true;
+        if (!st.real && ui.acceptsInput() && ui.input().commandPressed(cosmic::Action::SheetReset)) act.reset = true;
     }
     // The statistics.
     gbstats::drawStats(ui, L.stats, "heart/stats", tip);

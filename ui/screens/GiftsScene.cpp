@@ -830,8 +830,7 @@ private:
         }
         if (a < 0.3f) return;
         InputManager& in = g_.app.input();
-        const bool padY = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), yEdge = padY && !padY_;
-        padY_ = padY;
+        const bool yEdge = in.menuPressed(Action::GiftEquip);  // 2.93: Y / Ⓨ by default (Paramètres › Contrôles)
         UIContext::ButtonStyle primary;
         primary.primary = true;
         primary.fontSize = R.buttonSize;
@@ -856,7 +855,7 @@ private:
             eq.fontSize = R.buttonSize;
             eq.enabled = es == EquipState::Can && !equippedNow_;
             eq.selected = es == EquipState::Equipped || equippedNow_;
-            const bool equipAsked = ui.button("equip", R.buttons[0], T.buttons[0], eq) || ((in.shortcutPressed(SDLK_Y) || yEdge) && eq.enabled);
+            const bool equipAsked = ui.button("equip", R.buttons[0], T.buttons[0], eq) || (yEdge && eq.enabled);
             if (equipAsked && eq.enabled) {
                 equipReward(g_, *rw);
                 equippedNow_ = true;
@@ -902,12 +901,15 @@ private:
         float w = 0.0f;
         for (const auto& [a, text] : hints) w += Glyphs::measureAction(ui, a, h) + ui.s(8) + ui.text().measure(text, FontFace::Body, ui.s(16)).x + ui.s(26);
         float x = R.hint.center().x - w * 0.5f;
-        if (equip) {  // « Y équiper »: the key and the pad's Y
-            const float yw = h + ui.s(4) + h + ui.s(8) + ui.text().measure("équiper", FontFace::Body, ui.s(16)).x + ui.s(26);
+        if (equip) {  // « Y équiper »: the key and the pad's Y (2.93: the player's, measured as drawn)
+            const InputBindings& b = ui.input().bindings();
+            const SDL_Scancode key = b.keyOf(Action::GiftEquip);
+            const PadBinding pad = b.padOf(Action::GiftEquip);
+            const float keysW = Glyphs::drawBinding(ui, key, {}, false, {0, 0}, h, false) + ui.s(4) + Glyphs::drawBinding(ui, SDL_SCANCODE_UNKNOWN, pad, true, {0, 0}, h, false);
+            const float yw = keysW + ui.s(8) + ui.text().measure("équiper", FontFace::Body, ui.s(16)).x + ui.s(26);
             x -= yw * 0.5f;
-            x += Glyphs::drawKeycap(ui, "Y", {x, R.hint.center().y}, h) + ui.s(4);
-            Glyphs::drawPadButton(ui, PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), {x, R.hint.center().y}, h);
-            x += h + ui.s(8);
+            x += Glyphs::drawBinding(ui, key, {}, false, {x, R.hint.center().y}, h) + ui.s(4);
+            x += Glyphs::drawBinding(ui, SDL_SCANCODE_UNKNOWN, pad, true, {x, R.hint.center().y}, h) + ui.s(8);
             x += ui.label("équiper", {x, R.hint.center().y}, 16, kMuted, Align::Left, FontFace::Body, VAlign::Middle).x + ui.s(26);
         }
         for (const auto& [a, text] : hints) x += Glyphs::drawHint(ui, a, text, {x, R.hint.center().y}, h) + ui.s(26);
@@ -921,7 +923,7 @@ private:
     gifts::Unwrapping u_;  // what comes out of the box, one after another
     float t_ = 0.0f, k_ = 1.0f, o_x = 0.0f, o_y = 0.0f;
     float lidVx_ = 200.0f, lidVr_ = 2.0f;
-    bool boomed_ = false, revealed_ = false, rumbled_ = false, equippedNow_ = false, padY_ = false;
+    bool boomed_ = false, revealed_ = false, rumbled_ = false, equippedNow_ = false;
     bool rise_ = false;  // a parcel's next item: the box is already open, its lid gone
     std::vector<Part> parts_;
     std::string error_;

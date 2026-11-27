@@ -50,6 +50,16 @@ public:
     // ------------------------------------------------------------- menus
     /// True on press this frame (with auto-repeat for navigation actions).
     bool menuPressed(Action a) const { return framePressed_[idx(a)]; }
+    /// 2.93, the screens' shortcuts (docs/CONTROLES.md): `a` pressed this frame by any device, or
+    /// its key repeated by the system while held (as the editors' and the replays' keys always did).
+    bool commandPressed(Action a) const { return framePressed_[idx(a)] || keyRepeated_[idx(a)]; }
+    /// `a` pressed this frame by its key or mouse button (or a notch of the wheel); `withRepeat`: its
+    /// key repeated by the system while held counts too.
+    bool keyPressedFor(Action a, bool withRepeat = false) const { return keyFramePressed_[idx(a)] || (withRepeat && keyRepeated_[idx(a)]); }
+    /// `a` pressed this frame by its gamepad binding (a button, a trigger or a stick past its threshold).
+    bool padPressed(Action a) const { return padFramePressed_[idx(a)]; }
+    /// `a`'s gamepad binding held right now (on this manager's pad): the chords « Vue + croix ».
+    bool padHeld(Action a) const { return padHeld_[idx(a)]; }
     bool anyMenuInput() const;
     /// SDL ticks (ms) of the last key, button, click, wheel or stick move: presence (idle).
     uint64_t lastActivityMs() const { return lastActivityMs_; }
@@ -169,6 +179,13 @@ private:
     std::array<bool, kActionCount> gamePressed_{};
     std::array<bool, kActionCount> gameReleased_{};
     std::array<bool, kActionCount> framePressed_{};
+    // 2.93: the same by device (keyboard / mouse, gamepad), and the system's repeat of a key.
+    std::array<bool, kActionCount> keyFramePressed_{};
+    std::array<bool, kActionCount> keyRepeated_{};
+    std::array<bool, kActionCount> prevKeyHeld_{};
+    std::array<bool, kActionCount> padFramePressed_{};
+    std::array<bool, kActionCount> padHeld_{};
+    std::array<bool, kActionCount> prevPadHeld_{};
     std::array<float, kActionCount> repeatTimer_{};
     std::array<bool, kActionCount> simHeld_{};
 

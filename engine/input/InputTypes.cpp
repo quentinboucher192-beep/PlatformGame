@@ -6,25 +6,106 @@ namespace {
 struct ActionInfo {
     const char* id;
     const char* label;
+    uint32_t scope = 0;  // 0: not a command of the settings (old power buttons, power slots, menus)
+    BindingGroup group = BindingGroup::Count;
+    bool pad = true;           // the gamepad tab lists it
+    bool keyboardOnly = false;  // a key only (no mouse button, no wheel): read by the application
 };
+using G = BindingGroup;
 constexpr ActionInfo kActions[kActionCount] = {
-    {"move_left", "Gauche"},          {"move_right", "Droite"},        {"move_up", "Haut / Grimper"},
-    {"move_down", "Bas / Glissade"},  {"jump", "Saut"},                {"attack", "Attaque"},
-    {"dash", "Dash"},                 {"wave", "Onde énergétique"},    {"shield", "Bouclier"},
-    {"impulse", "Impulsion"},         {"teleport", "Téléportation"},   {"interact", "Interagir"},
+    {"move_left", "Gauche", kScopePlay, G::Moves},
+    {"move_right", "Droite", kScopePlay, G::Moves},
+    {"move_up", "Haut / Grimper", kScopePlay, G::Moves},
+    {"move_down", "Bas / Glissade", kScopePlay, G::Moves},
+    {"jump", "Saut", kScopePlay, G::Moves},
+    {"attack", "Attaque", kScopePlay, G::Moves},
+    {"dash", "Dash"},
+    {"wave", "Onde énergétique"},
+    {"shield", "Bouclier"},
+    {"impulse", "Impulsion"},
+    {"teleport", "Téléportation"},
+    {"interact", "Interagir", kScopePlay, G::Moves},
     {"special", "Pouvoir spécial"},
-    {"power_slot_1", "Pouvoir 1"},    {"power_slot_2", "Pouvoir 2"},   {"power_slot_3", "Pouvoir 3"},
-    {"power_slot_4", "Pouvoir 4"},    {"power_slot_5", "Pouvoir 5"},   {"power_slot_6", "Pouvoir 6"},
-    {"power_slot_7", "Pouvoir 7"},    {"power_slot_8", "Pouvoir 8"},
-    {"pause", "Pause"},               {"ghost_toggle", "Afficher / masquer les fantômes"},
-    {"focus_toggle", "Mode concentré"}, {"raid_map", "Carte du raid (agrandir)"},
-    {"raid_menu", "Menu du raid"},
-    {"bot_orders", "Ordres aux joueurs simulés"}, {"bot_thoughts", "Pensées des joueurs simulés"},
-    {"startpos_place", "Poser une startpos ici"}, {"startpos_prev", "Startpos précédente"},
-    {"startpos_next", "Startpos suivante"},       {"measure_place", "Point de mesure (A puis B)"},
-    {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
-    {"menu_left", "Menu gauche"},     {"menu_right", "Menu droite"},   {"menu_confirm", "Valider"},
-    {"menu_back", "Retour"},          {"menu_tab_prev", "Onglet précédent"}, {"menu_tab_next", "Onglet suivant"},
+    {"power_slot_1", "Pouvoir 1"},
+    {"power_slot_2", "Pouvoir 2"},
+    {"power_slot_3", "Pouvoir 3"},
+    {"power_slot_4", "Pouvoir 4"},
+    {"power_slot_5", "Pouvoir 5"},
+    {"power_slot_6", "Pouvoir 6"},
+    {"power_slot_7", "Pouvoir 7"},
+    {"power_slot_8", "Pouvoir 8"},
+    {"pause", "Pause", kScopePlay, G::Game},
+    {"ghost_toggle", "Afficher / masquer les fantômes", kScopeRun, G::Ghosts},
+    {"focus_toggle", "Mode concentré", kScopeRun, G::Game},
+    {"raid_map", "Carte du raid (agrandir)", kScopeRaid, G::Raid},
+    {"raid_menu", "Menu du raid", kScopeRaid, G::Raid},
+    {"bot_orders", "Ordres aux joueurs simulés", kScopeRaid, G::Raid},
+    {"bot_thoughts", "Pensées des joueurs simulés", kScopeRaid, G::Raid},
+    {"startpos_place", "Poser une startpos ici", kScopeRun, G::Training},
+    {"startpos_prev", "Startpos précédente", kScopeRun, G::Training},
+    {"startpos_next", "Startpos suivante", kScopeRun, G::Training},
+    // The measure point of a replay too (2.91: « as in training »).
+    {"measure_place", "Point de mesure (A puis B)", kScopeRun | kScopeReplay, G::Training},
+    {"restart", "Recommencer", kScopeRun, G::Game},
+    {"replay_play", "Lecture / pause", kScopeReplay, G::Replay},
+    {"replay_back", "Reculer de 5 s", kScopeReplay, G::Replay},
+    {"replay_forward", "Avancer de 5 s", kScopeReplay, G::Replay},
+    {"replay_frame_prev", "Image précédente", kScopeReplay, G::Replay},
+    {"replay_frame_next", "Image suivante", kScopeReplay, G::Replay},
+    {"replay_start", "Aller au début", kScopeReplay, G::Replay},
+    {"replay_end", "Aller à la fin", kScopeReplay, G::Replay},
+    {"replay_slower", "Ralentir", kScopeReplay, G::Replay},
+    {"replay_faster", "Accélérer", kScopeReplay, G::Replay},
+    {"replay_info", "Afficher / masquer les infos", kScopeReplay, G::Replay},
+    {"replay_camera", "Caméra (comparaison)", kScopeReplay, G::Replay},
+    {"replay_paths", "Trajectoires (comparaison)", kScopeReplay, G::Replay},
+    {"replay_align", "Recaler (comparaison)", kScopeReplay, G::Replay},
+    {"film_restart", "Revoir depuis le début", kScopeFilm, G::Film},
+    {"film_mode", "Mode Film", kScopeFilm, G::Film},
+    {"gift_equip", "Équiper la récompense", kScopeGifts, G::Screens},
+    {"view_zoom_in", "Zoom avant", kScopeViews, G::Screens},
+    {"view_zoom_out", "Zoom arrière", kScopeViews, G::Screens},
+    {"view_part_next", "Partie suivante", kScopeViews, G::Screens},
+    {"view_part_prev", "Partie précédente", kScopeViews, G::Screens},
+    {"sheet_reset", "Fiche du cœur : état réel du clan", kScopeViews, G::Screens},
+    {"editor_test", "Tester le niveau", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_help", "Liste des raccourcis", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_select", "Outil sélection", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_pan", "Outil main", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_rotate", "Rotation (Maj : sens inverse)", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_flip", "Miroir", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_snap", "Aimanter à la grille", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_minimap", "Carte du niveau", kScopeLevelEditor, G::LevelEditor, false},
+    {"editor_zoom_reset", "Zoom 100 %", kScopeLevelEditor, G::LevelEditor, false},
+    {"studio_pencil", "Crayon", kScopeStudio, G::Studio, false},
+    {"studio_eraser", "Gomme", kScopeStudio, G::Studio, false},
+    {"studio_fill", "Pot de peinture", kScopeStudio, G::Studio, false},
+    {"studio_picker", "Pipette", kScopeStudio, G::Studio, false},
+    {"studio_line", "Ligne", kScopeStudio, G::Studio, false},
+    {"studio_rect", "Rectangle", kScopeStudio, G::Studio, false},
+    {"studio_ellipse", "Ellipse", kScopeStudio, G::Studio, false},
+    {"studio_select", "Sélection", kScopeStudio, G::Studio, false},
+    {"studio_move", "Déplacer", kScopeStudio, G::Studio, false},
+    {"studio_mirror", "Retourner (Maj : de haut en bas)", kScopeStudio, G::Studio, false},
+    {"studio_symmetry", "Symétrie en dessinant", kScopeStudio, G::Studio, false},
+    {"studio_swap_colors", "Échanger les deux couleurs", kScopeStudio, G::Studio, false},
+    {"studio_play", "Jouer l'animation", kScopeStudio, G::Studio, false},
+    {"studio_frame_prev", "Image précédente de l'animation", kScopeStudio, G::Studio, false},
+    {"studio_frame_next", "Image suivante de l'animation", kScopeStudio, G::Studio, false},
+    {"studio_rename", "Renommer", kScopeStudio, G::Studio, false},
+    {"studio_undo", "Annuler la dernière modification", kScopeStudio, G::Studio},
+    {"studio_redo", "Rétablir la modification", kScopeStudio, G::Studio},
+    {"fullscreen", "Plein écran", kScopeEverywhere, G::Everywhere, false, true},
+    {"screenshot", "Capture d'écran", kScopeEverywhere, G::Everywhere, false, true},
+    {"debug_overlay", "Informations de debug (mode debug)", kScopeEverywhere, G::Everywhere, false, true},
+    {"menu_up", "Menu haut"},
+    {"menu_down", "Menu bas"},
+    {"menu_left", "Menu gauche"},
+    {"menu_right", "Menu droite"},
+    {"menu_confirm", "Valider"},
+    {"menu_back", "Retour"},
+    {"menu_tab_prev", "Onglet précédent"},
+    {"menu_tab_next", "Onglet suivant"},
 };
 }  // namespace
 
@@ -45,6 +126,41 @@ bool actionIsRebindable(Action a) {
     return static_cast<int>(a) < kFirstMenuAction && !actionIsLegacyPowerKey(a) && powerSlotOf(a) < 0;
 }
 bool actionIsPowerInput(Action a) { return static_cast<int>(a) >= 0 && static_cast<int>(a) <= static_cast<int>(Action::Special); }
+
+uint32_t actionScope(Action a) {
+    const int i = static_cast<int>(a);
+    return i >= 0 && i < kActionCount && actionIsRebindable(a) ? kActions[i].scope : 0u;
+}
+BindingGroup actionGroup(Action a) {
+    const int i = static_cast<int>(a);
+    return i >= 0 && i < kActionCount ? kActions[i].group : BindingGroup::Count;
+}
+const char* bindingGroupTitle(BindingGroup g) {
+    switch (g) {
+        case BindingGroup::Moves: return "Déplacements et actions";
+        case BindingGroup::Game: return "Partie";
+        case BindingGroup::Ghosts: return "Fantômes";
+        case BindingGroup::Training: return "Entraînement";
+        case BindingGroup::Raid: return "Raids";
+        case BindingGroup::Replay: return "Replays";
+        case BindingGroup::Film: return "Films et histoires";
+        case BindingGroup::Screens: return "Écrans";
+        case BindingGroup::LevelEditor: return "Éditeur de niveaux";
+        case BindingGroup::Studio: return "Studio des créations";
+        case BindingGroup::Everywhere: return "Partout";
+        case BindingGroup::Count: break;
+    }
+    return "";
+}
+bool actionsConflict(Action a, Action b) { return a != b && (actionScope(a) & actionScope(b)) != 0u; }
+bool actionHasPadBinding(Action a) {
+    const int i = static_cast<int>(a);
+    return actionScope(a) != 0u && kActions[i].pad;
+}
+bool actionKeyboardOnly(Action a) {
+    const int i = static_cast<int>(a);
+    return i >= 0 && i < kActionCount && kActions[i].keyboardOnly;
+}
 
 Action actionFromId(const std::string& id) {
     for (int i = 0; i < kActionCount; ++i)
@@ -79,6 +195,58 @@ void InputBindings::resetKeyboard() {
     set(Action::StartPosPrev, SDL_SCANCODE_F6);
     set(Action::StartPosNext, SDL_SCANCODE_F7);
     set(Action::MeasurePlace, SDL_SCANCODE_F8);
+    // 2.93 (docs/CONTROLES.md): the keys the screens had before they were rebindable, by their
+    // place on the keyboard (the replay viewer's « , » and « . » show the layout's own signs).
+    set(Action::Restart, SDL_SCANCODE_R);
+    set(Action::ReplayPlay, SDL_SCANCODE_K);
+    set(Action::ReplayBack, SDL_SCANCODE_J);
+    set(Action::ReplayForward, SDL_SCANCODE_L);
+    set(Action::ReplayFramePrev, SDL_SCANCODE_COMMA);
+    set(Action::ReplayFrameNext, SDL_SCANCODE_PERIOD);
+    set(Action::ReplayStart, SDL_SCANCODE_HOME);
+    set(Action::ReplayEnd, SDL_SCANCODE_END);
+    set(Action::ReplaySlower, SDL_SCANCODE_MINUS);   // and the keypad's − (fixed alternate)
+    set(Action::ReplayFaster, SDL_SCANCODE_EQUALS);  // and the keypad's +
+    set(Action::ReplayInfo, SDL_SCANCODE_I);
+    set(Action::ReplayCamera, SDL_SCANCODE_C);
+    set(Action::ReplayPaths, SDL_SCANCODE_T);
+    set(Action::ReplayAlign, SDL_SCANCODE_R);
+    set(Action::FilmRestart, SDL_SCANCODE_R);
+    set(Action::FilmMode, SDL_SCANCODE_F);
+    set(Action::GiftEquip, SDL_SCANCODE_Y);
+    set(Action::ViewZoomIn, SDL_SCANCODE_EQUALS);
+    set(Action::ViewZoomOut, SDL_SCANCODE_MINUS);
+    set(Action::ViewPartNext, SDL_SCANCODE_TAB);  // Maj + it: the previous one
+    set(Action::SheetReset, SDL_SCANCODE_R);
+    set(Action::EditorTest, SDL_SCANCODE_F5);
+    set(Action::EditorHelp, SDL_SCANCODE_F1);
+    set(Action::EditorSelect, SDL_SCANCODE_V);
+    set(Action::EditorPan, SDL_SCANCODE_H);
+    set(Action::EditorRotate, SDL_SCANCODE_R);
+    set(Action::EditorFlip, SDL_SCANCODE_F);
+    set(Action::EditorSnap, SDL_SCANCODE_G);
+    set(Action::EditorMinimap, SDL_SCANCODE_M);
+    set(Action::EditorZoomReset, SDL_SCANCODE_HOME);
+    set(Action::StudioPencil, SDL_SCANCODE_B);
+    set(Action::StudioEraser, SDL_SCANCODE_E);
+    set(Action::StudioFill, SDL_SCANCODE_G);
+    set(Action::StudioPicker, SDL_SCANCODE_I);
+    set(Action::StudioLine, SDL_SCANCODE_L);
+    set(Action::StudioRect, SDL_SCANCODE_R);
+    set(Action::StudioEllipse, SDL_SCANCODE_O);
+    set(Action::StudioSelect, SDL_SCANCODE_M);
+    set(Action::StudioMove, SDL_SCANCODE_V);
+    set(Action::StudioMirror, SDL_SCANCODE_H);
+    set(Action::StudioSymmetry, SDL_SCANCODE_S);
+    set(Action::StudioSwapColors, SDL_SCANCODE_X);
+    set(Action::StudioPlay, SDL_SCANCODE_P);
+    set(Action::StudioFramePrev, SDL_SCANCODE_COMMA);
+    set(Action::StudioFrameNext, SDL_SCANCODE_PERIOD);
+    set(Action::StudioRename, SDL_SCANCODE_F2);
+    // StudioUndo / StudioRedo: Ctrl+Z / Ctrl+Y always (fixed), no key of their own by default.
+    set(Action::Fullscreen, SDL_SCANCODE_F11);  // Alt+Entrée too (fixed)
+    set(Action::Screenshot, SDL_SCANCODE_F12);
+    set(Action::DebugOverlay, SDL_SCANCODE_F3);
     set(Action::MenuUp, SDL_SCANCODE_UP, SDL_SCANCODE_W);
     set(Action::MenuDown, SDL_SCANCODE_DOWN, SDL_SCANCODE_S);
     set(Action::MenuLeft, SDL_SCANCODE_LEFT, SDL_SCANCODE_A);
@@ -114,6 +282,23 @@ void InputBindings::resetGamepad() {
     // 2.79: a raid test's order wheel on the right stick's click (R3); the thoughts are shown or hidden from the
     // wheel itself (and Paramètres › HUD › « Raids »), no button of their own by default.
     set(Action::BotOrders, B::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
+    // 2.93: the buttons the screens had before they were rebindable. The quick restart on View
+    // (in training: on its release, View held + the d-pad placing the marks); the raid's map has
+    // the same button, never in the same game.
+    set(Action::Restart, B::button(SDL_GAMEPAD_BUTTON_BACK));
+    set(Action::ReplayPlay, B::button(SDL_GAMEPAD_BUTTON_WEST));
+    set(Action::ReplayBack, B::axisNeg(SDL_GAMEPAD_AXIS_RIGHTX));
+    set(Action::ReplayForward, B::axisPos(SDL_GAMEPAD_AXIS_RIGHTX));
+    set(Action::ReplayFramePrev, B::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER));
+    set(Action::ReplayFrameNext, B::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER));
+    set(Action::ReplayInfo, B::button(SDL_GAMEPAD_BUTTON_BACK));  // on its release (View held + ↑: a measure point)
+    set(Action::ReplayCamera, B::button(SDL_GAMEPAD_BUTTON_NORTH));
+    set(Action::FilmRestart, B::button(SDL_GAMEPAD_BUTTON_NORTH));  // also « Mode Film » when there is nothing to watch again
+    set(Action::GiftEquip, B::button(SDL_GAMEPAD_BUTTON_NORTH));
+    set(Action::ViewPartNext, B::button(SDL_GAMEPAD_BUTTON_NORTH));
+    set(Action::ViewPartPrev, B::button(SDL_GAMEPAD_BUTTON_WEST));
+    set(Action::StudioUndo, B::button(SDL_GAMEPAD_BUTTON_WEST));
+    set(Action::StudioRedo, B::button(SDL_GAMEPAD_BUTTON_NORTH));
     set(Action::MenuUp, B::button(SDL_GAMEPAD_BUTTON_DPAD_UP), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuDown, B::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN), B::axisPos(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuLeft, B::button(SDL_GAMEPAD_BUTTON_DPAD_LEFT), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTX));
@@ -132,6 +317,11 @@ SDL_Scancode builtInKeyAlternate(Action a) {
         case Action::MoveRight: return SDL_SCANCODE_RIGHT;
         case Action::MoveUp: return SDL_SCANCODE_UP;
         case Action::MoveDown: return SDL_SCANCODE_DOWN;
+        // 2.93: the keypad's + and − (the replay's speed, the views' zoom), as before.
+        case Action::ReplaySlower:
+        case Action::ViewZoomOut: return SDL_SCANCODE_KP_MINUS;
+        case Action::ReplayFaster:
+        case Action::ViewZoomIn: return SDL_SCANCODE_KP_PLUS;
         default: return SDL_SCANCODE_UNKNOWN;
     }
 }
@@ -156,21 +346,92 @@ void InputBindings::keepOneBinding() {
         auto& p = pad[i];
         if (p[0].kind == PadBinding::Kind::None) p[0] = p[1];
         p[1] = PadBinding{};
+        // 2.93: no gamepad for the commands of the keyboard only (editors, F11 / F12 / F3), no
+        // mouse for the application's ones (read before any screen).
+        if (actionIsRebindable(static_cast<Action>(i)) && !actionHasPadBinding(static_cast<Action>(i))) p[0] = PadBinding{};
+        if (actionKeyboardOnly(static_cast<Action>(i)) && !isKeyboardScancode(k[0])) k[0] = SDL_SCANCODE_UNKNOWN;
     }
-    // The fixed alternates, unless the player gave that key / button to another command.
+    // The fixed alternates, unless the player gave that key / button to a command read with it
+    // (2.93: on the same screen; another screen's command may have it).
     for (int i = 0; i < kFirstMenuAction; ++i) {
         const Action a = static_cast<Action>(i);
         SDL_Scancode alt = builtInKeyAlternate(a);
         bool taken = alt == SDL_SCANCODE_UNKNOWN || keys[i][0] == alt;
         for (int o = 0; o < kFirstMenuAction && !taken; ++o)
-            if (o != i && keys[o][0] == alt) taken = true;
+            if (o != i && keys[o][0] == alt && actionsConflict(a, static_cast<Action>(o))) taken = true;
         if (!taken) keys[i][1] = alt;
         PadBinding palt = builtInPadAlternate(a);
         bool ptaken = palt.kind == PadBinding::Kind::None || pad[i][0] == palt;
         for (int o = 0; o < kFirstMenuAction && !ptaken; ++o)
-            if (o != i && pad[o][0] == palt) ptaken = true;
+            if (o != i && pad[o][0] == palt && actionsConflict(a, static_cast<Action>(o))) ptaken = true;
         if (!ptaken) pad[i][1] = palt;
     }
+}
+
+SDL_Scancode InputBindings::keyOf(Action a) const {
+    const int i = static_cast<int>(a);
+    if (i < 0 || i >= kActionCount) return SDL_SCANCODE_UNKNOWN;
+    return keys[i][0] != SDL_SCANCODE_UNKNOWN ? keys[i][0] : keys[i][1];
+}
+
+PadBinding InputBindings::padOf(Action a) const {
+    const int i = static_cast<int>(a);
+    if (i < 0 || i >= kActionCount) return {};
+    return pad[i][0].kind != PadBinding::Kind::None ? pad[i][0] : pad[i][1];
+}
+
+std::vector<Action> InputBindings::keyConflicts(Action a, SDL_Scancode key) const {
+    std::vector<Action> out;
+    if (key == SDL_SCANCODE_UNKNOWN) return out;
+    for (int o = 0; o < kFirstMenuAction; ++o)
+        if (actionsConflict(a, static_cast<Action>(o)) && (keys[o][0] == key || keys[o][1] == key)) out.push_back(static_cast<Action>(o));
+    return out;
+}
+
+std::vector<Action> InputBindings::padConflicts(Action a, const PadBinding& p) const {
+    std::vector<Action> out;
+    if (p.kind == PadBinding::Kind::None) return out;
+    for (int o = 0; o < kFirstMenuAction; ++o)
+        if (actionsConflict(a, static_cast<Action>(o)) && (pad[o][0] == p || pad[o][1] == p)) out.push_back(static_cast<Action>(o));
+    return out;
+}
+
+std::vector<Action> InputBindings::bindKey(Action a, SDL_Scancode key) {
+    if (!actionIsRebindable(a)) return {};
+    std::vector<Action> lost = keyConflicts(a, key);
+    for (Action o : lost)
+        for (auto& k : keys[static_cast<int>(o)])
+            if (k == key) k = SDL_SCANCODE_UNKNOWN;
+    keys[static_cast<int>(a)] = {key, SDL_SCANCODE_UNKNOWN};
+    keepOneBinding();  // one key per command, the fixed alternates where they are free
+    return lost;
+}
+
+std::vector<Action> InputBindings::bindPad(Action a, const PadBinding& p) {
+    if (!actionIsRebindable(a) || !actionHasPadBinding(a)) return {};
+    std::vector<Action> lost = padConflicts(a, p);
+    for (Action o : lost)
+        for (auto& b : pad[static_cast<int>(o)])
+            if (b == p) b = PadBinding{};
+    pad[static_cast<int>(a)] = {p, PadBinding{}};
+    keepOneBinding();
+    return lost;
+}
+
+std::vector<Action> InputBindings::resetKey(Action a) { return bindKey(a, defaults().keys[static_cast<int>(a)][0]); }
+
+std::vector<Action> InputBindings::resetPad(Action a) { return bindPad(a, defaults().pad[static_cast<int>(a)][0]); }
+
+std::string actionKeyName(const InputBindings& b, Action a) { return keyName(b.keyOf(a)); }
+
+std::string actionPadName(const InputBindings& b, Action a, GamepadStyle style) { return padBindingName(b.padOf(a), style); }
+
+bool isMenuKey(SDL_Scancode sc) {
+    if (sc == SDL_SCANCODE_UNKNOWN) return false;
+    static const InputBindings d = InputBindings::defaults();
+    for (int i = kFirstMenuAction; i < kActionCount; ++i)
+        if (d.keys[i][0] == sc || d.keys[i][1] == sc) return true;
+    return false;
 }
 
 InputBindings InputBindings::defaults() {
@@ -316,9 +577,7 @@ InputBindings InputBindings::fromJson(const Json& j) {
             if (!actionIsRebindable(static_cast<Action>(i)) || b.keys[i][0] != SDL_SCANCODE_UNKNOWN || b.keys[i][1] != SDL_SCANCODE_UNKNOWN)
                 continue;
             const SDL_Scancode def = d.keys[i][0];
-            bool used = def == SDL_SCANCODE_UNKNOWN;
-            for (int o = 0; o < kFirstMenuAction && !used; ++o)
-                used = b.keys[o][0] == def || b.keys[o][1] == def;
+            const bool used = def == SDL_SCANCODE_UNKNOWN || !b.keyConflicts(static_cast<Action>(i), def).empty();
             if (!used) b.keys[i] = d.keys[i];
         }
     if (hadSlots("gamepad"))
@@ -327,27 +586,22 @@ InputBindings InputBindings::fromJson(const Json& j) {
                 b.pad[i][1].kind != PadBinding::Kind::None)
                 continue;
             const PadBinding def = d.pad[i][0];
-            bool used = def.kind == PadBinding::Kind::None;
-            for (int o = 0; o < kFirstMenuAction && !used; ++o)
-                used = b.pad[o][0] == def || b.pad[o][1] == def;
+            const bool used = def.kind == PadBinding::Kind::None || !b.padConflicts(static_cast<Action>(i), def).empty();
             if (!used) b.pad[i] = d.pad[i];
         }
-    // 2.75.5: a file written before the raid's menu (no « raid_menu »): its key (Tab) and its button
-    // (L3) only when no command of that file has them (L3 stays shared with the ghosts' toggle).
-    // 2.79: the same for the order wheel and the thoughts of a raid test's simulated players (C, V, R3).
-    // 2.91: the same for training's StartPos and measure points (F5 to F8).
-    for (Action added : {Action::RaidMenu, Action::BotOrders, Action::BotThoughts, Action::StartPosPlace, Action::StartPosPrev, Action::StartPosNext,
-                         Action::MeasurePlace}) {
-        const int menu = static_cast<int>(added);
-        auto lacksMenu = [&](const char* device) { return !j.contains(device) || !j[device].is_object() || !j[device].contains(actionId(added)); };
-        if (lacksMenu("keyboard") && d.keys[menu][0] != SDL_SCANCODE_UNKNOWN)
-            for (int o = 0; o < kFirstMenuAction; ++o)
-                if (o != menu && (b.keys[o][0] == d.keys[menu][0] || b.keys[o][1] == d.keys[menu][0])) b.keys[menu] = {SDL_SCANCODE_UNKNOWN, SDL_SCANCODE_UNKNOWN};
-        if (lacksMenu("gamepad") && d.pad[menu][0].kind != PadBinding::Kind::None)
-            for (int o = 0; o < kFirstMenuAction; ++o)
-                if (o != menu && !(added == Action::RaidMenu && o == static_cast<int>(Action::GhostToggle)) &&
-                    (b.pad[o][0] == d.pad[menu][0] || b.pad[o][1] == d.pad[menu][0]))
-                    b.pad[menu] = {PadBinding{}, PadBinding{}};
+    // A command the file does not know (written before it: the raid's menu in 2.75.5, the order wheel
+    // and the thoughts in 2.79, the StartPos and measure points in 2.91, the screens' keys in 2.93)
+    // gets its default key (and button) only when no command read with it has that key in the file:
+    // no key does two things on one screen (L3 stays the ghosts' toggle and the raid's menu, R the
+    // quick restart and the replay's « Recaler »: never on the same screen).
+    for (int menu = 0; menu < kFirstMenuAction; ++menu) {
+        const Action added = static_cast<Action>(menu);
+        if (!actionIsRebindable(added)) continue;
+        auto lacks = [&](const char* device) { return !j.contains(device) || !j[device].is_object() || !j[device].contains(actionId(added)); };
+        if (lacks("keyboard") && d.keys[menu][0] != SDL_SCANCODE_UNKNOWN && !b.keyConflicts(added, d.keys[menu][0]).empty())
+            b.keys[menu] = {SDL_SCANCODE_UNKNOWN, SDL_SCANCODE_UNKNOWN};
+        if (lacks("gamepad") && d.pad[menu][0].kind != PadBinding::Kind::None && !b.padConflicts(added, d.pad[menu][0]).empty())
+            b.pad[menu] = {PadBinding{}, PadBinding{}};
     }
     b.keepOneBinding();
     return b;

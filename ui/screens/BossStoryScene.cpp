@@ -96,6 +96,22 @@ std::vector<std::string> wrapWords(TextRenderer& tr, const std::vector<std::stri
     return lines;
 }
 
+/// 2.93 (Paramètres › Contrôles › « Films et histoires »): the key and the button of « Mode Film »
+/// (F; the button of « Depuis le début », Y, while it has none of its own) and of « Depuis le début » (R, Y).
+SDL_Scancode filmModeKey(UIContext& ui) { return ui.input().bindings().keyOf(Action::FilmMode); }
+PadBinding filmModePad(UIContext& ui) {
+    const PadBinding p = ui.input().bindings().padOf(Action::FilmMode);
+    return p.kind != PadBinding::Kind::None ? p : ui.input().bindings().padOf(Action::FilmRestart);
+}
+SDL_Scancode filmRestartKey(UIContext& ui) { return ui.input().bindings().keyOf(Action::FilmRestart); }
+PadBinding filmRestartPad(UIContext& ui) { return ui.input().bindings().padOf(Action::FilmRestart); }
+/// The key then the button, as the film's buttons show them (`draw` false: only measures).
+float drawKeyAndPad(UIContext& ui, SDL_Scancode key, const PadBinding& pad, Vec2 pos, float h, bool draw) {
+    float x = pos.x + Glyphs::drawBinding(ui, key, PadBinding{}, false, pos, h, draw) + ui.s(6);
+    x += Glyphs::drawBinding(ui, SDL_SCANCODE_UNKNOWN, pad, true, {x, pos.y}, h, draw);
+    return x - pos.x;
+}
+
 struct SkipHintMetrics {
     float h = 0, fs = 0, space = 0, keyW = 0, dotW = 0, txtW = 0, total = 0;
     // 2.63: « Échap · Ⓑ Quitter » after it (« Passer » skips the shot, « Quitter » the story)
@@ -287,15 +303,14 @@ public:
         InputManager& in = g_.app.input();
         const bool click = in.mousePressed(SDL_BUTTON_LEFT);
         // 2.81: « Depuis le début » (R, Ⓨ, a click on its button) for a late joiner; « Commencer maintenant » in a countdown.
-        const bool padY = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH);
-        const bool padYEdge = padY && !padY_;
-        padY_ = padY;
-        const bool restartAsked =
-            !locked_ && restartOffered() && (in.keyPressed(SDL_SCANCODE_R) || padYEdge || (click && restartRect_.contains(in.mousePos())));
+        // 2.93: the player's keys and buttons (Paramètres › Contrôles › « Films et histoires »).
+        const bool padYEdge = in.padPressed(Action::FilmRestart);
+        const bool restartAsked = !locked_ && restartOffered() &&
+                                  (in.keyPressedFor(Action::FilmRestart) || padYEdge || (click && restartRect_.contains(in.mousePos())));
         // 2.82: « Mode Film » on or off (F, Ⓨ when it does not restart, a click on its button) — in every film, even a
         // first viewing (it skips nothing)
         const bool modeClick = click && filmModeRect_.w > 0.0f && filmModeRect_.contains(in.mousePos());
-        const bool modeAsked = !restartAsked && (in.keyPressed(SDL_SCANCODE_F) || (padYEdge && !restartOffered()) || modeClick);
+        const bool modeAsked = !restartAsked && (in.menuPressed(Action::FilmMode) || (padYEdge && !restartOffered()) || modeClick);
         if (modeAsked) {
             toggleFilmMode();
             return;
@@ -457,9 +472,7 @@ private:
         r.drawRoundedRect(L.button, L.button.h * 0.3f, story_.color.withAlpha(static_cast<uint8_t>((hover ? 220 : 120) * shown)), std::max(1.0f, ui.s(1.5f)));
         float x = L.button.x + ui.s(12);
         const float cy = L.button.center().y;
-        x += Glyphs::drawBinding(ui, SDL_SCANCODE_F, PadBinding{}, false, {x, cy}, L.keyH, true) + ui.s(6);
-        Glyphs::drawPadButton(ui, PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), {x, cy}, L.keyH);
-        x += L.keyH + ui.s(10);
+        x += drawKeyAndPad(ui, filmModeKey(ui), filmModePad(ui), {x, cy}, L.keyH, true) + ui.s(10);
         TextStyle bs;
         bs.face = FontFace::Bold;
         bs.size = L.px;
@@ -624,9 +637,7 @@ private:
         r.drawRoundedRect(L.button, L.button.h * 0.3f, story_.color.withAlpha(hover ? 220 : 120), std::max(1.0f, ui.s(1.5f)));
         float x = L.button.x + ui.s(12);
         const float cy = L.button.center().y;
-        x += Glyphs::drawBinding(ui, SDL_SCANCODE_R, PadBinding{}, false, {x, cy}, L.keyH, true) + ui.s(6);
-        Glyphs::drawPadButton(ui, PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), {x, cy}, L.keyH);
-        x += L.keyH + ui.s(10);
+        x += drawKeyAndPad(ui, filmRestartKey(ui), filmRestartPad(ui), {x, cy}, L.keyH, true) + ui.s(10);
         TextStyle bs;
         bs.face = FontFace::Bold;
         bs.size = L.buttonPx;
@@ -1325,7 +1336,6 @@ private:
     bool synced_ = false;       // 2.81: in step with the others (until « Passer » or « Depuis le début »)
     bool lateJoin_ = false;     // 2.81: started mid-film: « Depuis le début » is offered
     bool musicStarted_ = false; // 2.81: its music (after a countdown)
-    bool padY_ = false;         // Ⓨ held last frame
     Rect restartRect_;          // 2.81: « Depuis le début » as drawn last (a click there)
     std::string prevMusic_;     // 2.68: the music before the film (played again after it)
     static constexpr float kFilmFade = 0.9f;  // 2.68: a film's end fades slowly to the screen below
@@ -1560,13 +1570,14 @@ FilmModeLayout layoutFilmMode(UIContext& ui, bool on) {
     const float band = std::round(H * 0.13f);
     const float margin = std::round(std::max(ui.s(56), 16.0f));
     L.text = i18n::tr(on ? "Quitter le mode Film" : "Mode Film");
-    L.noticeText = i18n::tr("Mode Film — F ou Y (manette) pour revenir");
+    L.noticeText = i18n::tr("Mode Film — " + actionKeyName(ui.input().bindings(), Action::FilmMode) + " ou " +
+                            padBindingName(filmModePad(ui), ui.input().gamepadStyle()) + " (manette) pour revenir");
     i18n::Verbatim asShown;
     TextRenderer& tr = ui.text();
     const float h = std::min(band * 0.62f, std::max(24.0f, ui.s(46)));
     L.keyH = h * 0.62f;
     L.px = std::max(11.0f, std::min(ui.s(18), h * 0.5f));
-    const float keysW = Glyphs::drawBinding(ui, SDL_SCANCODE_F, PadBinding{}, false, {0, 0}, L.keyH, false) + ui.s(6) + L.keyH + ui.s(10);
+    const float keysW = drawKeyAndPad(ui, filmModeKey(ui), filmModePad(ui), {0, 0}, L.keyH, false) + ui.s(10);
     auto widthAt = [&](float px) { return ui.s(12) + keysW + tr.measure(L.text, FontFace::Bold, px).x + ui.s(16); };
     const float maxW = (W - 2.0f * margin) * 0.34f;
     while (widthAt(L.px) > maxW && L.px > 10.0f) L.px -= 1.0f;
@@ -1602,7 +1613,7 @@ FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart, fl
     float buttonW = 0.0f;
     if (L.showButton) {
         L.buttonPx = std::max(11.0f, std::min(ui.s(20), h * 0.5f));
-        const float keysW = Glyphs::drawBinding(ui, SDL_SCANCODE_R, PadBinding{}, false, {0, 0}, L.keyH, false) + ui.s(6) + L.keyH + ui.s(10);
+        const float keysW = drawKeyAndPad(ui, filmRestartKey(ui), filmRestartPad(ui), {0, 0}, L.keyH, false) + ui.s(10);
         auto widthAt = [&](float px) { return ui.s(12) + keysW + tr.measure(L.buttonText, FontFace::Bold, px).x + ui.s(16); };
         while (widthAt(L.buttonPx) > room * 0.5f && L.buttonPx > 10.0f) L.buttonPx -= 1.0f;
         buttonW = std::min(room * 0.5f, widthAt(L.buttonPx));

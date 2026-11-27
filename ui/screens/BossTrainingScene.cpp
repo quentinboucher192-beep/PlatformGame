@@ -1201,7 +1201,7 @@ public:
         bool back = ui.button("back", {x + 2 * (bw + gap), by, bw, ui.s(60)}, "Retour");
         ui.popId();
         InputManager& in = g_.app.input();
-        if (again || in.keyPressed(SDL_SCANCODE_R) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK)) {
+        if (again || in.menuPressed(Action::Restart)) {  // 2.93: « Recommencer », R / Vue by default
             g_.app.popScene();
             game_.restart();
         } else if (settings) {

@@ -243,19 +243,22 @@ void LevelEditorScene::handleShortcuts() {
         if (tool_ == Tool::Place) tool_ = Tool::Select;
         else selection_.clear();
     }
-    if (in.shortcutPressed(SDLK_R)) rotateSelection(in.shift() ? -15.0f : 15.0f);
-    if (in.shortcutPressed(SDLK_F)) {
+    // 2.93: the player's keys (Paramètres › Contrôles › « Éditeur de niveaux », docs/CONTROLES.md); a key
+    // the system repeats while held repeats its shortcut, as before. Maj with them stays fixed.
+    auto key = [&](Action a) { return in.keyPressedFor(a, true); };
+    if (key(Action::EditorRotate)) rotateSelection(in.shift() ? -15.0f : 15.0f);
+    if (key(Action::EditorFlip)) {
         for (auto& o : level_.objects)
             if (selection_.count(o.id)) o.flipX = !o.flipX;
         if (!selection_.empty()) markChanged("Retourner");
     }
-    if (in.shortcutPressed(SDLK_G)) snapOn_ = !snapOn_;
-    if (in.shortcutPressed(SDLK_M)) minimapOn_ = !minimapOn_;
-    if (in.keyPressed(SDL_SCANCODE_F5)) testPlay(in.shift());
-    if (in.keyPressed(SDL_SCANCODE_F1)) modal_ = Modal::Help;
-    if (in.shortcutPressed(SDLK_V)) tool_ = Tool::Select;
-    if (in.shortcutPressed(SDLK_H)) tool_ = Tool::Pan;
-    if (in.keyPressed(SDL_SCANCODE_HOME)) cam_.zoom = 1.0f;
+    if (key(Action::EditorSnap)) snapOn_ = !snapOn_;
+    if (key(Action::EditorMinimap)) minimapOn_ = !minimapOn_;
+    if (key(Action::EditorTest)) testPlay(in.shift());
+    if (key(Action::EditorHelp)) modal_ = Modal::Help;
+    if (key(Action::EditorSelect)) tool_ = Tool::Select;
+    if (key(Action::EditorPan)) tool_ = Tool::Pan;
+    if (key(Action::EditorZoomReset)) cam_.zoom = 1.0f;
     // Nudge with Alt + arrows
     if (in.alt()) {
         Vec2 d;

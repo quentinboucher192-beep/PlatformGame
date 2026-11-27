@@ -24,6 +24,7 @@
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
 #include "ui/screens/TutorialScenes.h"
+#include "ui/widgets/Glyphs.h"
 #include "ui/widgets/PowerLabels.h"
 #include "game/tutorial/Tutorial.h"
 
@@ -42,6 +43,9 @@ struct QuietMusic {
     std::function<void(const std::string&)> saved;
 };
 QuietMusic g_quietMusic;
+
+/// « R / Vue : recommencer »: the quick restart's key and button as the player set them (2.93).
+std::string restartHint(const InputManager& in) { return Glyphs::keyAndButton(in, Action::Restart) + " : recommencer"; }
 }  // namespace
 
 GameScene::GameScene(GameServices& g, std::string levelId, PlayOptions opt)
@@ -419,7 +423,7 @@ void GameScene::drawChallengeBanner() {
     if (c.finishObjective) tag += " · finir le niveau";
     tag += " · " + std::to_string(r.hearts) + (r.hearts > 1 ? " cœurs" : " cœur");
     if (!r.checkpoints) tag += " · sans points de passage";
-    tag += " · " + keyName(SDL_SCANCODE_R) + " / Vue : recommencer";
+    tag += " · " + restartHint(g_.app.input());
     ui.label(ui.elide(tag, FontFace::Bold, 15, ui.screenW() * 0.5f), {ui.s(24), ui.screenH() - ui.s(28)}, 15,
              opt_.challenge->practice ? ui.theme().warm : ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
 }
@@ -1462,10 +1466,10 @@ void GameScene::update(float dt) {
     // 2.91: training's StartPos and measure points (F5 to F8, View held + the d-pad); View
     // released alone restarts the attempt (from the StartPos in use).
     const bool padRestart = session_.update(in, dt);
-    // Quick restart (contre-la-montre, training): R key or the gamepad View/Back button (in
-    // training: on its release, View being held for the marks too).
-    const bool padBack = opt_.training ? padRestart : in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK);
-    if (!ended_ && (in.keyPressed(SDL_SCANCODE_R) || padBack) &&
+    // Quick restart (contre-la-montre, training): « Recommencer », R or View by default (2.93: the
+    // player's key and button; in training: the button on its release, held for the marks too).
+    const bool restartAsked = opt_.training ? in.keyPressedFor(Action::Restart) || padRestart : in.menuPressed(Action::Restart);
+    if (!ended_ && restartAsked &&
         world_->state() == WorldState::Playing &&
         (level_.timerMode == TimerMode::TimeAttack || opt_.training || opt_.bossTraining || opt_.challenge || world_->practiceRespawn())) {
         restart();
@@ -1695,7 +1699,7 @@ void GameScene::drawTrainingBanner() {
                                                 std::to_string(world_->stats().deaths)
                                           : std::string("Entraînement — ne compte pas pour les succès ni les statistiques")) +
                                 (world_->invincible() ? std::string(" · INVINCIBLE") : std::string());
-        const std::string keys = keyName(SDL_SCANCODE_R) + " / Vue : recommencer";  // R as the keyboard layout names it
+        const std::string keys = restartHint(g_.app.input());  // R as the keyboard layout names it (2.93: the player's key)
         float fs = std::max(15.0f, 11.5f / ui.s(1.0f));
         const float room = W * 0.62f;
         float tw = ui.text().measure(tag, FontFace::Bold, ui.s(fs)).x;
@@ -1726,8 +1730,8 @@ void GameScene::drawTrainingBanner() {
     } else if (session_.chain()) {
         what = "ENCHAÎNEMENT · " + session_.pointName(opt_.trainingCheckpoint, true) + " → " + session_.pointName(opt_.trainingEnd, false) + " · ";
     }
-    std::string tag = what + (world_ && world_->invincible() ? "INVINCIBLE · " : "") + "hors classement · " + keyName(SDL_SCANCODE_R) +
-                      " / Vue : recommencer" + (opt_.trainingStartPos ? " depuis la startpos" : "");
+    std::string tag = what + (world_ && world_->invincible() ? "INVINCIBLE · " : "") + "hors classement · " + restartHint(g_.app.input()) +
+                      (opt_.trainingStartPos ? " depuis la startpos" : "");
     std::string shownTag = ui.elide(tag, FontFace::Bold, fs, W * 0.6f);
     Vec2 ts = ui.label(shownTag, {ui.s(24), H - ui.s(28)}, fs, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
     Rect tagRect{ui.s(24), H - ui.s(28) - ts.y * 0.5f, ts.x, ts.y};

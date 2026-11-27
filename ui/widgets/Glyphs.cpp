@@ -173,6 +173,10 @@ float drawFreePowerUse(UIContext& ui, const std::vector<Action>& keys, const std
     return w;
 }
 
+std::string keyAndButton(const InputManager& in, Action a) {
+    return actionKeyName(in.bindings(), a) + " / " + actionPadName(in.bindings(), a, in.gamepadStyle());
+}
+
 bool showsPad(UIContext& ui) {
     const InputManager& in = ui.input();
     return in.lastDevice() == InputDevice::Gamepad && in.hasGamepad();

@@ -1,4 +1,7 @@
 {
+  "2.93.0": [
+    "Contrôles : toutes les touches des écrans se règlent dans Paramètres (recommencer, replays, films, cadeaux, zoom, éditeur, Studio, plein écran, capture), conflits vérifiés écran par écran, inventaire dans docs/CONTROLES.md."
+  ],
   "2.92.2": [
     "Entraînement : les bandes de « Segments et enchaînements » et de « Startpos et mesures » montrent le niveau lui-même, et l'on y pose, règle au pixel près (aperçu agrandi) et supprime startpos et points de mesure ; une startpos dans le décor est refusée."
   ],

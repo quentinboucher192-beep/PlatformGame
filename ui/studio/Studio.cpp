@@ -1287,7 +1287,7 @@ void Studio::drawExplorer(const Rect& r) {
         if (smallButton("dup", {x, y2, third, bh}, "Dupliquer", any)) duplicateSelected();
         tip("dup", {x, y2, third, bh}, "Dupliquer", "Une copie, ouverte comme nouveau brouillon (jamais envoyée tant que vous ne l'envoyez pas).");
         if (smallButton("ren", {x + third + bgap, y2, third, bh}, "Renommer", any)) startRename();
-        tip("ren", {x + third + bgap, y2, third, bh}, "Renommer · F2", "Le nouveau nom part au serveur avec « Envoyer au serveur ».");
+        tip("ren", {x + third + bgap, y2, third, bh}, "Renommer · " + actionKeyName(ui_.input().bindings(), Action::StudioRename), "Le nouveau nom part au serveur avec « Envoyer au serveur ».");
         bool archivedSel = false;
         for (const StudioDoc& a : archived_)
             if (selKey_ == "d:" + a.uid) archivedSel = true;
@@ -1393,30 +1393,36 @@ void Studio::handleShortcuts() {
         if (in.shortcutPressed(SDLK_TAB) && !docs_.empty()) active_ = (active_ + (in.shift() ? -1 : 1) + static_cast<int>(docs_.size())) % static_cast<int>(docs_.size());
         return;
     }
-    if (in.keyPressed(SDL_SCANCODE_F2)) startRename();
+    // 2.93: the player's keys (Paramètres › Contrôles › « Studio des créations »); a key the system
+    // repeats while held repeats its shortcut, as before.
+    auto key = [&](Action a) { return in.keyPressedFor(a, true); };
+    if (key(Action::StudioRename)) startRename();
     if (!d) return;
+    if (key(Action::StudioUndo)) undo(*d);
+    if (key(Action::StudioRedo)) redo(*d);
     struct Key {
-        SDL_Keycode k;
+        Action a;
         Tool t;
     };
-    static const Key keys[] = {{SDLK_B, Tool::Pencil}, {SDLK_E, Tool::Eraser}, {SDLK_G, Tool::Fill},    {SDLK_I, Tool::Picker}, {SDLK_L, Tool::Line},
-                               {SDLK_R, Tool::Rect},   {SDLK_O, Tool::Ellipse}, {SDLK_M, Tool::Select}, {SDLK_V, Tool::Move}};
+    static const Key keys[] = {{Action::StudioPencil, Tool::Pencil}, {Action::StudioEraser, Tool::Eraser}, {Action::StudioFill, Tool::Fill},
+                               {Action::StudioPicker, Tool::Picker}, {Action::StudioLine, Tool::Line},     {Action::StudioRect, Tool::Rect},
+                               {Action::StudioEllipse, Tool::Ellipse}, {Action::StudioSelect, Tool::Select}, {Action::StudioMove, Tool::Move}};
     for (const Key& k : keys)
-        if (in.shortcutPressed(k.k)) {
+        if (key(k.a)) {
             if (tool_ != k.t) dropSelection(*d);
             tool_ = k.t;
         }
-    if (in.shortcutPressed(SDLK_H)) mirror(*d, in.shift());
-    if (in.shortcutPressed(SDLK_S)) d->sym = static_cast<Symmetry>((static_cast<int>(d->sym) + 1) % 4);
-    if (in.shortcutPressed(SDLK_X)) std::swap(color1_, color2_);
-    if (in.shortcutPressed(SDLK_P)) {
+    if (key(Action::StudioMirror)) mirror(*d, in.shift());
+    if (key(Action::StudioSymmetry)) d->sym = static_cast<Symmetry>((static_cast<int>(d->sym) + 1) % 4);
+    if (key(Action::StudioSwapColors)) std::swap(color1_, color2_);
+    if (key(Action::StudioPlay)) {
         d->playing = !d->playing;
         d->playClock = 0.0f;
     }
-    if (in.shortcutPressed(SDLK_COMMA) || in.shortcutPressed(SDLK_PERIOD)) {
+    if (key(Action::StudioFramePrev) || key(Action::StudioFrameNext)) {
         if (const DocAnim* a = currentAnim(*d)) {
             dropSelection(*d);
-            d->frame = (d->frame + (in.shortcutPressed(SDLK_COMMA) ? -1 : 1) + a->count) % a->count;
+            d->frame = (d->frame + (key(Action::StudioFramePrev) ? -1 : 1) + a->count) % a->count;
         }
     }
     if (in.keyPressed(SDL_SCANCODE_DELETE) && d->hasSel) {

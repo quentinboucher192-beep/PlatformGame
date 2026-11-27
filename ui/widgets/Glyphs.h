@@ -10,6 +10,7 @@
 namespace cosmic {
 
 class UIContext;
+class InputManager;
 struct PowerDefinition;
 struct PowerKeyMap;
 struct ResolvedPowerKey;
@@ -51,6 +52,9 @@ float drawFreePowerUse(UIContext& ui, const std::vector<Action>& keys, const std
 float drawBinding(UIContext& ui, SDL_Scancode key, const PadBinding& padBinding, bool pad, Vec2 pos, float height, bool draw = true);
 /// Whether the prompts follow the gamepad (the device in use).
 bool showsPad(UIContext& ui);
+/// 2.93: « R / Vue », the key then the gamepad button of `a` as the player set them, for the hints
+/// written in words (« R / Vue : recommencer »).
+std::string keyAndButton(const InputManager& in, Action a);
 /// 2.31: the key of a power in a level (game/powers/PowerKeys.h: levelPowerKey,
 /// levelPowerKeys), as the HUD shows it: its key on the keyboard / mouse or its button on the
 /// gamepad, following the device in use; « — » when it has none.

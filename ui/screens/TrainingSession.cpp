@@ -166,8 +166,9 @@ bool TrainingSession::update(InputManager& in, float dt) {
     if (in.menuPressed(Action::StartPosNext)) flags_ |= InputFrame::NextStartPos;
     if (in.menuPressed(Action::MeasurePlace)) flags_ |= InputFrame::PlaceMeasure;
     // The gamepad: View held + the d-pad (down: place, left / right: previous / next, up: a
-    // measure point); View released alone restarts the attempt.
-    const bool back = in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK);
+    // measure point); View released alone restarts the attempt. 2.93: View is the button of
+    // « Recommencer » (Paramètres › Contrôles), whichever the player chose.
+    const bool back = in.padHeld(Action::Restart);
     static constexpr SDL_GamepadButton kDirs[4] = {SDL_GAMEPAD_BUTTON_DPAD_DOWN, SDL_GAMEPAD_BUTTON_DPAD_LEFT, SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
                                                    SDL_GAMEPAD_BUTTON_DPAD_UP};
     static constexpr uint8_t kFlags[4] = {InputFrame::PlaceStartPos, InputFrame::PrevStartPos, InputFrame::NextStartPos, InputFrame::PlaceMeasure};
@@ -309,8 +310,11 @@ std::string TrainingSession::whereOnRoute(Vec2 feet) const {
 
 std::string TrainingSession::keysLine(InputManager& in) const {
     if (!s_.training) return {};
-    if (in.lastDevice() == InputDevice::Gamepad)
-        return "Vue + bas : poser une startpos · Vue + gauche / droite : choisir · Vue + haut : point de mesure";
+    if (in.lastDevice() == InputDevice::Gamepad) {
+        // 2.93: the button of « Recommencer » (View by default), held with the d-pad.
+        const std::string v = actionPadName(in.bindings(), Action::Restart, in.gamepadStyle());
+        return v + " + bas : poser une startpos · " + v + " + gauche / droite : choisir · " + v + " + haut : point de mesure";
+    }
     return keyOf(in, Action::StartPosPlace) + " : poser une startpos · " + keyOf(in, Action::StartPosPrev) + " / " + keyOf(in, Action::StartPosNext) +
            " : choisir · " + keyOf(in, Action::MeasurePlace) + " : point de mesure (A puis B)";
 }

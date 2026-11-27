@@ -655,6 +655,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
 * [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
+* [docs/CONTROLES.md](docs/CONTROLES.md) – inventaire des touches et boutons : ce qui se règle dans Paramètres › Contrôles, ce qui reste fixe et pourquoi
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
 * [docs/TAS.md](docs/TAS.md) – courses de la machine : format des fichiers, recherche hors ligne (`cosmic_tas`), vérification, états sauvegardés, audit du déterminisme

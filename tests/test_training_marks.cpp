@@ -369,9 +369,11 @@ TEST_CASE("startpos: F5 to F8 by default, rebindable, never taken from another c
         CHECK(actionIsRebindable(a));
         CHECK(d.keys[static_cast<int>(a)][0] == key);
         CHECK(actionFromId(actionId(a)) == a);
-        // No other command (game or menu) uses that key by default.
+        // No other command read in a game (2.93: the level editor's « Tester », F5, is another
+        // screen's) nor any menu uses that key by default.
         for (int o = 0; o < kActionCount; ++o)
-            if (o != static_cast<int>(a)) CHECK(d.keys[static_cast<size_t>(o)][0] != key && d.keys[static_cast<size_t>(o)][1] != key);
+            if (o != static_cast<int>(a) && (o >= kFirstMenuAction || (actionScope(static_cast<Action>(o)) & kScopeRun) != 0u))
+                CHECK(d.keys[static_cast<size_t>(o)][0] != key && d.keys[static_cast<size_t>(o)][1] != key);
         // The gamepad: View held + the d-pad (no button of their own).
         CHECK(d.pad[static_cast<int>(a)][0].kind == PadBinding::Kind::None);
     }

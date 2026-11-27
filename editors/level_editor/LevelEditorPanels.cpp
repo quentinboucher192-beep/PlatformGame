@@ -24,7 +24,8 @@ void LevelEditorScene::drawProperties(const Rect& r) {
         ui.label("Propriétés", {x, y}, 24, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(40);
         ui.labelWrapped("Sélectionnez un objet dans la vue, ou choisissez un élément dans la bibliothèque puis cliquez "
-                        "(ou tracez un rectangle) pour le placer.\n\nF1 : liste des raccourcis.",
+                        "(ou tracez un rectangle) pour le placer.\n\n" +
+                            actionKeyName(g_.app.input().bindings(), Action::EditorHelp) + " : liste des raccourcis.",
                         {x, y}, w, 19, ui.theme().textDim);
         ui.popId();
         return;
