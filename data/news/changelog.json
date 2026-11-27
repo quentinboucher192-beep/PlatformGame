@@ -1,4 +1,9 @@
 {
+  "2.96.0": [
+    "Raids : chat de groupe et chat du raid, comme dans Minecraft (T, Partage, ou menu du raid › Groupe) — canaux « Groupe » et « Raid » (Tab, RB, /g, /r), messages rapides à la manette, réglable dans l'éditeur du HUD ; à terre ou éliminé on écrit toujours ; en test local, les pensées des joueurs simulés s'y affichent (« IA »).",
+    "Raid simulé (test local) : un groupe dont le Gigaboss est tombé reste en attente dans sa branche et n'en part que pour remplacer un groupe éliminé, là où il est tombé ; le 8e groupe double le Torse ; le Cœur, combattu à plusieurs instances, n'a qu'une seule barre de vie ; les joueurs simulés ne restent plus bloqués aux monte-charges, aux échelles du Poignet-verrou ni aux plaques jumelles : chaque groupe atteint son Gigaboss.",
+    "TAS : les états sauvegardés de la recherche (cosmic_tas) sont vérifiés pas à pas et sans dépendre de la mémoire inutilisée, sous Windows comme sous Linux."
+  ],
   "2.95.0": [
     "SOB : un segment se chronomètre depuis sa première entrée — une réapparition ne le fait plus jamais partir (fini le segment de boss en 22 s des Ruines Suspendues) — et ne compte qu'après le segment d'avant joué en entier ; l'entraînement d'un segment part du précédent (élan non compté) ; les startpos se posent sur le tracé de la SOB et partent de l'état réel de ce meilleur replay ; F5 à F8 répondent dans tout entraînement ; SOB remises à zéro, records gardés.",
     "ADMINISTRATION › TAS : les administrateurs améliorent les courses de la machine sur leur propre ordinateur (plusieurs niveaux à la fois, un verrou par niveau, catégorie et version), les publient, et chaque jeu les rejoue avant de les montrer.",
