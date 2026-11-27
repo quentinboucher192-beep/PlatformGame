@@ -29,6 +29,7 @@ void PlanStats::add(const PlanStats& o) {
     calls += o.calls;
     proposals += o.proposals;
     arriving += o.arriving;
+    hinted += o.hinted;
     simSteps += o.simSteps;
     ms += o.ms;
     kept += o.kept;
@@ -481,7 +482,32 @@ std::vector<Plan> Planner::propose(const GameWorld& w, int targetWaypoint, uint3
     PlanGoal goal;
     goal.box = box;
     goal.distance = [this, targetWaypoint](Vec2 f) { return course_.distanceTo(targetWaypoint, f); };
-    return planOn(sim, start, prevHeld, terrain_->physics(), terrain_.get(), terrain_->killY(), goal, budget, &stats);
+    std::vector<Plan> out = planOn(sim, start, prevHeld, terrain_->physics(), terrain_.get(), terrain_->killY(), goal, budget, &stats);
+    // A human path (route hints): also toward its point about a second ahead of where Nova is on
+    // it, while that point is still on the way to the waypoint.
+    if (!hints_.empty()) {
+        const Vec2 f = start.feet();
+        size_t near = 0;
+        for (size_t i = 1; i < hints_.size(); ++i)
+            if ((hints_[i].feet - f).lengthSq() < (hints_[near].feet - f).lengthSq()) near = i;
+        size_t ahead = near;
+        while (ahead + 1 < hints_.size() && hints_[ahead].clock < hints_[near].clock + 1.0f) ++ahead;
+        const float here = course_.distanceTo(targetWaypoint, f), there = course_.distanceTo(targetWaypoint, hints_[ahead].feet);
+        // Its weight decays once the search matches the human there (as early or earlier).
+        if (w.timer().elapsed() <= hints_[near].clock + 0.05f) matched_ = std::min(matched_ + 1, 4);
+        const bool due = (hintCalls_++ % (int64_t{1} << matched_)) == 0;
+        if (due && ahead != near && std::isfinite(there) && there < here) {
+            PlanGoal hint;
+            hint.box = Rect::fromBottomCenter(hints_[ahead].feet, {24.0f, 32.0f});
+            PlanBudget b = budget;
+            b.horizon = std::min(budget.horizon, 480);
+            b.proposals = std::max(1, budget.proposals / 2);
+            std::vector<Plan> toward = planOn(sim, start, prevHeld, terrain_->physics(), terrain_.get(), terrain_->killY(), hint, b, &stats);
+            stats.hinted += static_cast<int64_t>(toward.size());
+            for (Plan& p : toward) out.push_back(std::move(p));
+        }
+    }
+    return out;
 }
 
 double Planner::lowerBoundSeconds(const GameWorld& w, int targetWaypoint) {

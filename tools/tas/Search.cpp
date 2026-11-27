@@ -233,7 +233,10 @@ public:
         world_.save(origin_);
         baseProgress_ = measure(0);
         baseNova_ = nova();
-        if (sh.opt.planner) planner_ = std::make_unique<Planner>(sh.course, &sh.content);
+        if (sh.opt.planner) {
+            planner_ = std::make_unique<Planner>(sh.course, &sh.content);
+            planner_->setRouteHints(sh.opt.routeHints);
+        }
     }
 
     ArenaWorld& world() { return world_; }
@@ -626,7 +629,11 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         if (index_ == 0) sh_.log("    plus aucun état en vie : la section recommence, faisceau " + std::to_string(tune.beam));
     };
     while (!sh_.stopped() && Clock::now() < deadline && static_cast<int>(steps) < maxSteps) {
-        if (firstArrivalGen >= 0 && gen - firstArrivalGen >= effort.settle) break;
+        // A few generations after the first arrival — but never before the best run's own frames have
+        // arrived (or stopped): an earlier arrival (a plan's) must not hide the one that re-joins.
+        bool guideLive = false;
+        for (size_t g = 0; g < nGuides; ++g) guideLive = guideLive || !gr[g].done;
+        if (firstArrivalGen >= 0 && gen - firstArrivalGen >= effort.settle && !guideLive) break;
         for (size_t g = nGuides; g < gr.size(); ++g)
             if (gr[g].done && gr[g].snap) giveSnap(std::move(gr[g].snap));  // a plan played to its end
         if (gen > 0 && sh_.opt.plannerEvery > 0 && gen % sh_.opt.plannerEvery == 0 && !beam.empty()) addPlans(&beam.front());

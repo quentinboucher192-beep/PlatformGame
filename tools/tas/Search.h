@@ -88,6 +88,8 @@ struct SearchOptions {
     bool planner = true;
     int plannerEvery = 8;
     PlanBudget plannerBudget;
+    /// A human path (a ghost's trajectory) the planner may aim along (optional; empty: none).
+    std::vector<RouteHint> routeHints;
     /// The whole level only: the run's first frames taken as they are (it goes on from the section
     /// they end in) — a run that has already left the seed run (the tests of the guidance).
     std::vector<InputFrame> startRun;

@@ -252,6 +252,14 @@ la course, vers le prochain repère (la fin de la section).
   été gardé par un faisceau, plans arrivés au bout de la section dans le vrai jeu, sections dont la
   gagnante vient d'un plan, et **l'écart entre la copie et le vrai jeu** (les pieds de Nova, en
   pixels, par nombre de pas joués du plan).
+* **Un chemin humain** (facultatif, `SearchOptions::routeHints` : les positions et les temps de la
+  trajectoire d'un fantôme) : seulement un point de départ (un chemin humain n'est pas la limite).
+  Le planificateur vise toujours le repère, et aussi le point de ce chemin une seconde plus loin
+  que Nova (une étape intermédiaire), tant qu'il est sur le chemin du repère ; de moins en moins
+  souvent (un plan sur 2, 4… 16) dès que Nova y est aussi tôt que l'humain, ou plus tôt.
+* Une section ne s'arrête pas (quelques générations après la première arrivée) tant que les images
+  de la meilleure course jouent encore : une arrivée plus tôt (celle d'un plan) ne doit pas cacher
+  celle qui se raccorde.
 * `--no-planner` l'arrête (pour comparer).
 
 **Mesure du planificateur** (`sylvanox_01` ANY%, depuis la course livrée 1:26.692, 7 min, 1 fil,

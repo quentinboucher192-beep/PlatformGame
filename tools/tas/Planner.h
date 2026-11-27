@@ -47,6 +47,16 @@ namespace cosmic::tas {
 
 class Course;
 
+/// A point of a human's path (a ghost's trajectory, SearchOptions::routeHints): where Nova's feet
+/// were, at what clock (s). Optional, and only a starting point (a human path is not the limit):
+/// the planner always plans toward the waypoint, and also toward the point of that path about a
+/// second ahead of where Nova is (an intermediate target) — less and less often once Nova is
+/// there as early as the human or earlier (every 2nd, 4th, ... 16th plan).
+struct RouteHint {
+    Vec2 feet;
+    float clock = 0.0f;
+};
+
 struct PlanBudget {
     int beam = 48;      // states kept per generation
     int horizon = 1440; // steps planned at most (12 s)
@@ -68,6 +78,7 @@ struct PlanStats {
     int64_t calls = 0;        // plans asked
     int64_t proposals = 0;    // plans given to the search
     int64_t arriving = 0;     // ... that touch their goal in the copy
+    int64_t hinted = 0;       // plans toward a route hint
     int64_t simSteps = 0;     // BodySim steps
     double ms = 0.0;          // time spent planning
     // Filled by the search (the real game):
@@ -124,6 +135,12 @@ public:
     /// ... to touch the exit (straight to it: a run may leave waypoints out).
     double lowerBoundToFinish(const GameWorld& w);
 
+    /// The human path to follow when there is one (empty: none).
+    void setRouteHints(std::vector<RouteHint> hints) {
+        hints_ = std::move(hints);
+        matched_ = 0;
+    }
+
     PlanStats stats;
 
 private:
@@ -132,6 +149,9 @@ private:
     const ContentDatabase* content_ = nullptr;
     std::unique_ptr<raid::nav::Terrain> terrain_;
     SpeedCaps caps_;
+    std::vector<RouteHint> hints_;
+    int matched_ = 0;          // plans asked from a state as early as the human's path, or earlier
+    int64_t hintCalls_ = 0;
     bool capsReady_ = false;
 };
 

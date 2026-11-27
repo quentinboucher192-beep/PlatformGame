@@ -319,11 +319,13 @@ TEST_CASE("tas planner: on the run shipped for sylvanox_01, the bound never exce
     const auto& wps = course.waypoints();
     // Pass 1: the step each waypoint is touched (its checkpoint lit, the exit reached).
     std::vector<size_t> touched(wps.size(), static_cast<size_t>(-1));
+    std::vector<tas::RouteHint> hints;  // the run's own path, as a ghost would give it
     {
         tas::ArenaWorld aw(content, *level);
         const tas::Course::Bound bound = course.bind(const_cast<GameWorld&>(aw.world()));
         for (size_t i = 0; i < run.size(); ++i) {
             aw.step(run[i]);
+            if (i % 30 == 0) hints.push_back({aw.world().player().feet(), aw.world().timer().elapsed()});
             for (size_t k = 0; k < wps.size(); ++k) {
                 if (touched[k] != static_cast<size_t>(-1)) continue;
                 bool hit = false;
@@ -366,6 +368,11 @@ TEST_CASE("tas planner: on the run shipped for sylvanox_01, the bound never exce
             CHECK(!first->empty());
             CHECK(first->size() == again.size());
             for (size_t p = 0; p < std::min(first->size(), again.size()); ++p) CHECK((*first)[p].frames == again[p].frames);
+            // With a human path: plans toward its point a second ahead, too.
+            tas::Planner guided(course, &content);
+            guided.setRouteHints(hints);
+            const auto withHints = guided.propose(aw.world(), 0, held, budget);
+            CHECK(guided.stats.hinted > 0 && withHints.size() > first->size());
         }
         aw.step(run[i]);
     }
