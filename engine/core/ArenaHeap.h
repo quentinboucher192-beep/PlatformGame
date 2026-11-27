@@ -31,6 +31,20 @@ class Arena;
 
 /// The arena of this thread (nullptr: the normal heap).
 extern thread_local Arena* t_current;
+/// ArenaScopes open on this thread (whatever ArenaOutside says inside them).
+extern thread_local int t_scopes;
+
+/// What this thread took from and gave back to the normal heap while an ArenaScope was open (an
+/// ArenaOutside inside it, or memory of the normal heap freed by the world). Counted by the hooks:
+/// a step of a world whose state is all in its arena leaves allocs == frees once its global caches
+/// are filled (tests/test_tas_savestate.cpp).
+struct OutsideCount {
+    int64_t allocs = 0;
+    int64_t frees = 0;
+};
+OutsideCount outsideCount();
+/// The hooks: an allocation (true) or a free (false) on the normal heap.
+void noteOutside(bool alloc) noexcept;
 
 /// True in a program that redirects operator new to the arenas (tools/tas/HeapHooks.cpp).
 bool hooksInstalled();
@@ -65,6 +79,11 @@ public:
     size_t used() const noexcept;
     /// Live allocations (statistics, tests).
     size_t liveBlocks() const noexcept;
+    /// A digest of the arena's blocks (place, size class, used or free), never of their contents:
+    /// the same allocations and frees in the same order give the same layout. Bytes nobody wrote
+    /// (the padding of a structure, the unused end of a short string copied whole by MSVC) are
+    /// left out, unlike a comparison of the bytes.
+    uint64_t layoutDigest() const noexcept;
 
     /// Copies the bytes in use into `s` (its buffer is reused when large enough). Never call it
     /// with this arena current: the buffer is on the normal heap.
@@ -91,8 +110,14 @@ private:
 /// The thread allocates in `a` while the scope lives (nested scopes restore the previous one).
 class ArenaScope {
 public:
-    explicit ArenaScope(Arena* a) noexcept : prev_(t_current) { t_current = a; }
-    ~ArenaScope() { t_current = prev_; }
+    explicit ArenaScope(Arena* a) noexcept : prev_(t_current) {
+        t_current = a;
+        ++t_scopes;
+    }
+    ~ArenaScope() {
+        t_current = prev_;
+        --t_scopes;
+    }
     ArenaScope(const ArenaScope&) = delete;
     ArenaScope& operator=(const ArenaScope&) = delete;
 

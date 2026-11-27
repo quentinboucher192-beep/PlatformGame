@@ -46,7 +46,10 @@ void normalAlignedFree(void* p) {
 
 void* allocate(std::size_t n) {
     if (Arena* a = cosmic::heap::t_current) return a->allocate(n, 16);
-    if (void* p = normalAlloc(n)) return p;
+    if (void* p = normalAlloc(n)) {
+        cosmic::heap::noteOutside(true);
+        return p;
+    }
     throw std::bad_alloc();
 }
 
@@ -61,7 +64,10 @@ void* allocateNoThrow(std::size_t n) noexcept {
 void* allocateAligned(std::size_t n, std::align_val_t al) {
     const auto align = static_cast<std::size_t>(al);
     if (Arena* a = cosmic::heap::t_current) return a->allocate(n, align);
-    if (void* p = normalAlignedAlloc(n, align)) return p;
+    if (void* p = normalAlignedAlloc(n, align)) {
+        cosmic::heap::noteOutside(true);
+        return p;
+    }
     throw std::bad_alloc();
 }
 
@@ -79,6 +85,7 @@ void release(void* p) noexcept {
         a->deallocate(p);
         return;
     }
+    cosmic::heap::noteOutside(false);
     std::free(p);
 }
 
@@ -88,6 +95,7 @@ void releaseAligned(void* p) noexcept {
         a->deallocate(p);
         return;
     }
+    cosmic::heap::noteOutside(false);
     normalAlignedFree(p);
 }
 
