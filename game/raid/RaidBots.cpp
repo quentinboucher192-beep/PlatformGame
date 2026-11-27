@@ -589,6 +589,22 @@ void TestBots::sense(RaidRun& run) {
     }
     for (size_t k = 0; k < any.size(); ++k)
         if (!any[k]) syncLow_[k] = 1;
+    // 2.93: what the players' waves already flying will take from each target of a sync group (their path to the end of
+    // their range, through what they have not hit yet).
+    incoming_.clear();
+    for (const bots::Target& t : view_.targets) {
+        if (t.sync <= 0 || t.sync >= 4) continue;
+        const Enemy* e = enemyOf(w, t.uid);
+        if (!e) continue;
+        float dmg = 0.0f;
+        for (const Projectile& pr : w.projectiles()) {
+            if (!pr.alive || !pr.fromPlayer || pr.explosionRadius > 0.0f) continue;
+            if (std::find(pr.hitTargets.begin(), pr.hitTargets.end(), static_cast<const void*>(e)) != pr.hitTargets.end()) continue;
+            const Vec2 end = pr.pos + pr.vel * std::max(0.0f, pr.life - pr.age);
+            if (Collision::segmentIntersectsRect(pr.pos, end, e->box.expanded(pr.radius + 2.0f))) dmg += pr.damage;
+        }
+        if (dmg > 0.0f) incoming_.push_back({t.uid, dmg});
+    }
 }
 
 bool TestBots::touchesBody(const Rect& r) const {
@@ -1608,7 +1624,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     Rect flood;
     for (const Danger& d : dangers_)
         if (d.kind == Danger::Kind::Flood && (flood.w <= 0.0f || d.area.w > flood.w) && d.area.x <= feet.x + 6.0f && d.area.right() >= feet.x - 6.0f) flood = d.area;
-    if (flood.w <= 0.0f)
+    // 2.93 (the escape): a wide blow along the floor is no liquid to climb above (Titanus's stomp, its band read as a flood: they
+    // climbed onto the ledges across its leg, every other blow ignored on the way) — the navigation leaves it with its time.
+    if (flood.w <= 0.0f && !escapeMode)
         for (const Danger& d : dangers_)
             if (d.kind == Danger::Kind::Area && d.area.w > 260.0f && d.in < kSimHz && d.area.expanded(6.0f).intersects(me.box) &&
                 (!fight_ || d.area.h < 120.0f) && (flood.w <= 0.0f || d.area.w > flood.w) && !d.ceiling)  // 2.87: not Graviton's vault
@@ -1785,8 +1803,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // Its body takes nothing now (armoured): keeps its energy, never strikes it (the lure keeps it busy).
     const bool worthStriking = foe && !(boss && foe == boss && !view_.bodyTakesDamage);
     // A target of a group finished together: brought low, then held there until every one of them is.
+    // 2.93: counting the waves already flying at it.
     const bool holdFire = foe && b.syncGroup > 0 && b.syncGroup < 4 && !syncLow_[static_cast<size_t>(b.syncGroup)] &&
-                          foe->hpRatio() <= b.holdAt + 0.001f;
+                          foe->hp() - incomingTo(foe->uid()) <= (b.holdAt + 0.001f) * foe->maxHp();
     if (!fleeing && !hiding && foe && !forced) {
         if (spotted) {
             // A place of the graph that sees it, out of its body and of what is coming (again every half second,
@@ -2363,7 +2382,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         for (const bots::Target& t : view_.targets) {
             if (t.sync <= 0 || t.sync >= 4 || t.uid == b.target || syncLow_[static_cast<size_t>(t.sync)]) continue;
             const Enemy* e = enemyOf(w, t.uid);
-            if (!e || e->hp() > t.holdAt * e->maxHp() + 4.0f) continue;
+            if (!e || e->hp() - incomingTo(t.uid) > t.holdAt * e->maxHp() + 4.0f) continue;
             if (Collision::segmentIntersectsRect(m, end, e->box.expanded(6.0f))) return true;
         }
         return false;
