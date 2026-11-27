@@ -236,6 +236,14 @@ private:
     uint32_t seats_ = 0;
     std::vector<std::string> names_;
     std::vector<uint8_t> syncLow_;  // per sync group: all its targets at or under their hold share
+    /// 2.93: the damage of the players' waves already flying at each target of a sync group (uid, damage): a target brought
+    /// to its hold share is held there counting what is on its way (four waves in flight broke it alone, and it grew back).
+    std::vector<std::pair<uint32_t, float>> incoming_;
+    float incomingTo(uint32_t uid) const {
+        for (const auto& [u, d] : incoming_)
+            if (u == uid) return d;
+        return 0.0f;
+    }
     uint32_t bossUid_ = 0;
     Rect bossBody_;  // its whole shape this step (every part, its box): kept out of
     std::vector<Rect> bodyParts_;  // 2.84: each part's box this step (what a player touches)

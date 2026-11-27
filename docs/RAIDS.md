@@ -3367,6 +3367,39 @@ la navigation (45 % au lieu de 52 %) ; contre Graviton, ses secteurs laissés au
 avec la nouvelle). Ce qui bloque encore : Titanus, le contact de son corps pendant son séisme et sa charge ; Graviton, sa
 Couronne de débris au contact et sa voûte ; ni l'un ni l'autre ne tombe.
 
+2.93 : **Titanus tombe enfin — sa bande de piétinement n'est plus un liquide, ses entraves comptent les ondes en vol**
+(titan 15, Titanus allégé ; difficulté 3 / 5, départs 1 à 8, sans invincibilité). Les sondes (`COSMIC_GOAT_DEATHS`,
+`COSMIC_GOAT_FOES`, `COSMIC_GOAT_HIT=Séisme`, `COSMIC_GOAT_HIST`) :
+
+* la bande au sol de son **Piétinement** (690 × 44 px, `readBossAttack`) passait pour un liquide montant (la règle d'avant :
+  une zone large et basse qui touche le joueur) — « monte au-dessus du liquide » : ses joueurs grimpaient sur les plateformes qui
+  traversent sa jambe, sans plus esquiver rien d'autre en route (13 des 39 morts du départ 7). Avec la sortie
+  (`Plan::escape`), cette règle ne vaut plus : la navigation quitte la bande avec son heure, comme les autres coups ;
+* une **entrave** amenée à sa part de garde (5 points de vie) continuait de descendre (8 → 2) et cédait seule, puis se
+  reforgeait : quatre frappeurs décidaient sur sa vie du moment, leurs ondes déjà en vol (0,9 s) pas comptées. Maintenant, ce
+  que les ondes des joueurs encore en vol vont lui ôter est compté (`TestBots::incoming_`) avant de tirer encore ou de tirer à
+  travers elle.
+
+| Combat (départs 1 à 8) | avant (2.92.0) | après |
+|---|---|---|
+| Titanus | 0 / 8, 70 % de sa vie ôtée (il lui restait 29 · 44 · 10 · 26 · 39 · 33 · 18 · 43 %) | **2 / 8** (départs 2 et 7), **81 %** (27 · 0 · 41 · 25 · 8 · 26 · 0 · 26 %) |
+| Graviton | 0 / 8, 51 % | 0 / 8, 51 % (mêmes résultats départ par départ) |
+| Dreadfang | 3 / 8 | 3 / 8 (mêmes résultats départ par départ) |
+| Skullmaw, Voidworm, Heartbreaker, Pyroclast, Cœur | | aucun chemin du code ne change (ni sortie, ni entraves) |
+
+Étape par étape : la bande seule 1 / 8, 79 % (départ 6 vaincu en 385 s, le départ 5 fini à 3 %) ; plus les ondes en vol
+2 / 8, 81 %. Essayés et retirés, contre Titanus : un réanimateur qui quitte son âme pour esquiver quand son bouclier n'est pas
+prêt (1 / 8, 75 %) ; les entraves finies seulement avec 6 joueurs en jeu ou après 15 s (à genou, deux ou trois joueurs ne lui
+ôtaient que 1 à 2 % : 2 / 8, 79 %) ; la sortie sans issue sûre qui n'entre jamais dans son corps (1 / 8, 72 %) ; une âme dans sa
+jambe réanimée seulement quand il s'en est éloigné (0 / 8, 70 %). Contre Graviton (ses groupes s'éteignent avec 8 à 17 morts
+seulement : les âmes tombent près de son corps, ses réanimateurs y meurent l'un après l'autre dans sa Couronne de débris) :
+les âmes près de son corps laissées jusqu'à ce qu'il s'éloigne (52 %, pas mieux : deux âmes restées 100 s à terre, il ne s'éloigne pas),
+le réanimateur sans bouclier qui esquive (plus mauvais sur 3 départs), sa Couronne lue avec son heure (2,8 s : 43 %), ses
+générateurs gardés sans être tenus tant que les quatre ne sont pas atteints (41 % sur 7 départs), la sortie sans issue sûre
+hors de son corps (41 %). Ce qui bloque encore : Titanus, le contact de sa jambe pendant son séisme (la première cause de
+morts), sa charge (360 px/s, plus haute que les plateformes : seul le bouclier la prend) et ses réanimateurs à son pied ;
+Graviton, ses réanimations près de lui.
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
