@@ -43,14 +43,16 @@ jobs:
           SDL_VIDEODRIVER: offscreen
           SDL_AUDIODRIVER: dummy
 
-  # Automatic GitHub release (2.93): once per version, after the Windows build and its tests,
-  # for pushes to the development branch. The installer and its notes (data/news/changelog.json,
-  # French + English, every version since the previous release: tools/release/notes.py). A version
-  # already released is skipped, so later pushes at the same version change nothing.
+  # Automatic GitHub release (2.93): once per version, for pushes to the development branch, as soon
+  # as the Windows job has built the installer (2.95: even when one of its tests failed — the notes
+  # then say so; a job cancelled or without an installer publishes nothing). The installer and its
+  # notes (data/news/changelog.json, French + English, every version since the previous release:
+  # tools/release/notes.py). A version already released is skipped, so later pushes at the same
+  # version change nothing.
   release:
     name: Release GitHub (automatique)
     needs: windows
-    if: github.event_name == 'push' && github.ref == 'refs/heads/claude/cosmic-platformer-2d-15v4i5'
+    if: always() && needs.windows.result != 'cancelled' && needs.windows.result != 'skipped' && github.event_name == 'push' && github.ref == 'refs/heads/claude/cosmic-platformer-2d-15v4i5'
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -63,6 +65,7 @@ jobs:
       - name: Publish the release (once per version)
         env:
           GH_TOKEN: ${{ github.token }}
+          WINDOWS_RESULT: ${{ needs.windows.result }}
         run: |
           VER=$(sed -n 's/^    VERSION \([0-9.]*\)$/\1/p' CMakeLists.txt | head -1)
           TAG="v$VER"
@@ -76,6 +79,9 @@ jobs:
             python3 tools/release/notes.py "$VER" --since "$PREV" --exe "$EXE" > notes.md
           else
             python3 tools/release/notes.py "$VER" --exe "$EXE" > notes.md
+          fi
+          if [ "$WINDOWS_RESULT" != "success" ]; then
+            printf '\n> Tests Windows de cette version : échec (voir le journal de la CI) — Windows tests of this version: failed (see the CI log).\n' >> notes.md
           fi
           gh release create "$TAG" "$EXE" --target "$GITHUB_SHA" --title "Cosmic Platformer $VER" \
             --notes-file notes.md --prerelease

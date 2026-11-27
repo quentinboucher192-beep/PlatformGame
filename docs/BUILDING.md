@@ -159,8 +159,9 @@ Le script configure, compile en Release, exécute les tests, prépare l'installa
 ### Releases GitHub automatiques (2.93)
 
 Le job « Release GitHub (automatique) » de `.github/workflows/build.yml` publie une release GitHub
-**une fois par version** : après la compilation Windows et ses tests, pour chaque envoi sur la
-branche de développement. Il ajoute l'installateur et des notes en français et en anglais, prises
+**une fois par version**, pour chaque envoi sur la branche de développement, dès que le job Windows
+a produit l'installateur (2.95 : même si l'un de ses tests a échoué — les notes le disent alors ;
+un job annulé ou sans installateur ne publie rien). Il ajoute l'installateur et des notes en français et en anglais, prises
 dans `data/news/changelog.json` pour toutes les versions depuis la release précédente
 (`tools/release/notes.py`), avec le SHA-256 de l'installateur. Une version déjà publiée est
 ignorée : les envois suivants à la même version ne changent rien. Les releases sont marquées
