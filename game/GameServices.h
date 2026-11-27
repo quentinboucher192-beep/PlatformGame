@@ -25,6 +25,8 @@
 #include "game/online/CampaignRevisions.h"
 #include "game/records/KeptRecords.h"
 #include "game/online/EnemyRevisions.h"
+#include "game/tas/TasOnline.h"
+#include "game/tas/TasTraining.h"
 #include "game/online/DailyChallenges.h"
 #include "game/online/OnlineService.h"
 #include "game/online/ReplayDownloads.h"
@@ -277,6 +279,16 @@ public:
     /// GET /enemies/revisions, every revision missing downloaded and checked. Offline, those
     /// kept on this computer are given to the content at start.
     EnemyRevisionStore enemyRevisions;
+    /// The machine's runs published on Cosmic Online (docs/TAS.md « Courses publiées en ligne »):
+    /// the list read now and then, each run downloaded and PLAYED AGAIN on a worker thread
+    /// before tasFor() ever gives it; the verified ones kept in <saves>/tas_online (offline too).
+    TasOnline tasOnline{online, content, online.fingerprints()};
+    /// ADMINISTRATION › TAS: the trainings run on this computer (one `cosmic_tas` child each,
+    /// one lease each). Lives as long as the game: closing the game stops them all.
+    TasTraining tasTraining{online};
+    /// The seed of a training: the replay of the fastest valid run of the pair here (this
+    /// computer's trainings, the downloaded runs, the shipped ones).
+    fs::path tasSeedFor(const TasPair& p);
     void fetchCampaignManifest(std::function<void(const std::string&)> done, std::string firstError);
     bool campaignRefreshing_ = false;
     bool campaignFetch_ = false;

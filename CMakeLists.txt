@@ -98,9 +98,10 @@ add_library(cosmic_heap_hooks OBJECT ${CMAKE_SOURCE_DIR}/tools/tas/HeapHooks.cpp
 target_link_libraries(cosmic_heap_hooks PRIVATE cosmic_engine)
 cosmic_set_warnings(cosmic_heap_hooks)
 
-# cosmic_tas: the search of the machine's runs, run offline on our machines (never installed,
-# never on a player's computer).
-option(COSMIC_BUILD_TAS "Build cosmic_tas, the offline search of the machine's runs" ON)
+# cosmic_tas: the search of the machine's runs. Installed next to the game (cmake/Install.cmake):
+# the game launches it as a child process on an administrator's computer (ADMINISTRATION › TAS,
+# docs/TAS.md); it never runs on a player's computer by itself.
+option(COSMIC_BUILD_TAS "Build cosmic_tas, the search of the machine's runs" ON)
 if(COSMIC_BUILD_TAS)
     file(GLOB COSMIC_TAS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/tools/tas/*.cpp ${CMAKE_SOURCE_DIR}/tools/tas/*.h)
     list(FILTER COSMIC_TAS_SOURCES EXCLUDE REGEX "HeapHooks\\.cpp$")
@@ -108,6 +109,7 @@ if(COSMIC_BUILD_TAS)
     add_executable(cosmic_tas ${COSMIC_TAS_SOURCES})
     target_link_libraries(cosmic_tas PRIVATE cosmic_game cosmic_heap_hooks Threads::Threads)
     cosmic_set_warnings(cosmic_tas)
+    set_target_properties(cosmic_tas PROPERTIES INSTALL_RPATH "$ORIGIN" BUILD_WITH_INSTALL_RPATH OFF)
 endif()
 
 # ------------------------------------------------------------------------- executable

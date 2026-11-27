@@ -126,6 +126,13 @@ struct Shared {
     std::atomic<int64_t> explored{0};
     std::atomic<bool> stop{false};
     std::mutex logMutex;
+    /// The search ends as soon as it can: asked from outside (SearchOptions::stopRequested), or by itself.
+    bool stopped() const { return stop.load() || (opt.stopRequested && opt.stopRequested->load()); }
+    /// One more attempt simulated (and in SearchOptions::exploredTotal, read by the progress of a training).
+    void count() {
+        explored.fetch_add(1, std::memory_order_relaxed);
+        if (opt.exploredTotal) opt.exploredTotal->fetch_add(1, std::memory_order_relaxed);
+    }
     Clock::time_point began = Clock::now();
     void log(const std::string& s) {
         std::lock_guard<std::mutex> l(logMutex);
@@ -359,7 +366,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         steps = 0;
         if (index_ == 0) sh_.log("    plus aucun état en vie : la section recommence, faisceau " + std::to_string(tune.beam));
     };
-    while (!sh_.stop.load() && Clock::now() < deadline && static_cast<int>(steps) < maxSteps) {
+    while (!sh_.stopped() && Clock::now() < deadline && static_cast<int>(steps) < maxSteps) {
         if (firstArrivalGen >= 0 && gen - firstArrivalGen >= window) break;
         // Expansion: every move from every state.
         std::vector<Candidate> cands;
@@ -389,7 +396,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                     }
                     if (world_.world().powerOffer()) break;  // the next move answers it
                 }
-                sh_.explored.fetch_add(1, std::memory_order_relaxed);
+                sh_.count();
                 if (broken) continue;
                 c.p = measure(n.p.waypoint);
                 if (c.p.rejected) continue;
@@ -639,6 +646,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         if (seedClock > 0.0f) std::snprintf(line, sizeof line, "Course de départ : termine la catégorie en %.3f s", static_cast<double>(seedClock));
         else std::snprintf(line, sizeof line, "Course de départ : ne termine pas la catégorie (utilisée jusqu'où elle va)");
         log(line);
+        if (seedClock > 0.0f && opt.onBest) opt.onBest(seedClock);
     }
 
     // Section by section. Each section keeps its best arrival for every set of powers carried
@@ -663,8 +671,8 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
     };
     for (size_t s = 0; s < sections;) {
         const auto now = Clock::now();
-        if (now >= deadline) {
-            out.why = "budget épuisé avant la fin du niveau";
+        if (now >= deadline || sh.stopped()) {
+            out.why = sh.stopped() ? "recherche arrêtée avant la fin du niveau" : "budget épuisé avant la fin du niveau";
             break;
         }
         // An even share of what is left (the refinement keeps a sixth of the budget), up to three
@@ -702,7 +710,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         }
         if (d.options.empty()) {
             // Back to the section before, with its next arrival.
-            if (s > 0 && backtracks < 3 && taken.back().used + 1 < taken.back().options.size() && Clock::now() < deadline) {
+            if (s > 0 && backtracks < 3 && taken.back().used + 1 < taken.back().options.size() && Clock::now() < deadline && !sh.stopped()) {
                 ++backtracks;
                 --s;
                 Decision& back = taken.back();
@@ -762,6 +770,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         char line[160];
         std::snprintf(line, sizeof line, "Course trouvée : %.3f s ; affinage jusqu'à la fin du budget", static_cast<double>(currentClock));
         log(line);
+        if (opt.onBest) opt.onBest(currentClock);
     }
 
     // Refinement: a change of input (a press or a release of a key) moved by one or two steps, or
@@ -798,7 +807,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                 aw.step(mine[i]);
             }
         };
-        while (!sh.stop.load() && Clock::now() < deadline) {
+        while (!sh.stopped() && Clock::now() < deadline) {
             if (mineVersion != version.load()) rebuild();
             if (mine.size() < 4) break;
             const size_t i = static_cast<size_t>(rng.rangeInt(1, static_cast<int>(mine.size()) - 1));
@@ -834,7 +843,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             repress(edited, lo, hi);
             const size_t rung = std::min(ladder.size() - 1, (lo > 0 ? lo - 1 : 0) / kRung);
             const float clock = w.evaluate(edited, rung * kRung, *ladder[rung], 0, static_cast<uint32_t>(edited.size()));
-            sh.explored.fetch_add(1, std::memory_order_relaxed);
+            sh.count();
             if (clock < 0.0f) continue;
             const int ch = changes(edited);
             std::lock_guard<std::mutex> l(mutex);
@@ -855,6 +864,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                 sh.log(line);
             }
             current = std::move(edited);
+            if (clock + 1e-6f < currentClock && opt.onBest) opt.onBest(clock);
             currentClock = clock;
             currentChanges = changes(current);
             version.fetch_add(1);

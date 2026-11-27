@@ -2,7 +2,9 @@
 ;
 ; Build: installer\build_installer.ps1   (or: iscc /DStageDir=<staging folder> CosmicPlatformer.iss)
 ; The staging folder is produced by `cmake --install <build> --prefix <stage>` and contains
-; CosmicPlatformer.exe, the SDL3 DLLs, assets\, data\, docs\ and licenses\.
+; CosmicPlatformer.exe, cosmic_tas.exe, the SDL3 DLLs, assets\, data\, docs\ and licenses\.
+; cosmic_tas.exe: the search of the machine's runs, launched by the game as a child process for an
+; administrator (ADMINISTRATION › TAS, docs/TAS.md); no secret in it, harmless for the players.
 ; The executable is linked against the static MSVC runtime: no redistributable needed.
 
 #define MyAppName "Cosmic Platformer"
@@ -85,7 +87,10 @@ Name: "association"; Description: "{cm:TaskAssoc}"; GroupDescription: "{cm:Group
 Name: "links"; Description: "{cm:TaskLinks}"; GroupDescription: "{cm:GroupFiles}"
 
 [Files]
-Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#StageDir}\*"; DestDir: "{app}"; Excludes: "cosmic_tas.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
+; ADMINISTRATION › TAS: cosmic_tas.exe next to the game, named on its own line so that an installer
+; built without it fails to compile (Inno Setup refuses a missing source file).
+Source: "{#StageDir}\cosmic_tas.exe"; DestDir: "{app}"; Flags: ignoreversion
 
 [INI]
 ; The language of the installation, for the game (Language=french or Language=english).

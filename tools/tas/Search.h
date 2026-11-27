@@ -21,6 +21,7 @@
 // * A seed run (--seed-replay) is played first: when it finishes the category it is the run to
 //   beat, its states join the beams, and the refinement starts from it.
 
+#include <atomic>
 #include <cstdint>
 #include <functional>
 #include <string>
@@ -47,6 +48,13 @@ struct SearchOptions {
     int keepSeedSections = 0;         // the seed run's first sections taken as they are
     std::function<void(const std::vector<InputFrame>&)> onSection;  // the run so far, after each section
     std::function<void(const std::string&)> log;
+    // A training from the game (docs/TAS.md « Entraînement depuis ADMINISTRATION »): stopped from
+    // outside (the search ends as soon as it can, with the best run it has), its attempts counted
+    // as they go, and the clock of each better run that finishes the category (before its
+    // verification), from the search's threads.
+    const std::atomic<bool>* stopRequested = nullptr;
+    std::atomic<int64_t>* exploredTotal = nullptr;
+    std::function<void(float clock)> onBest;
 };
 
 struct SearchOutcome {

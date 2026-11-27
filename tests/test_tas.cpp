@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdio>
 #include <string>
+#include <vector>
 
 #include "engine/audio/AudioSystem.h"
 #include "engine/core/FileUtil.h"
@@ -127,13 +128,17 @@ TEST_CASE("tas: shown only for the level and the simulation it was computed for"
 
 // The runs shipped in data/tas: each file reads; one computed for this version of its level and of
 // the simulation is shown (tasFor) and its replay, played by the normal replay playback, finishes
-// the level with the time and the category of its file. A run of another version stays hidden.
+// the level with the time and the category of its file (a hard failure otherwise: a run that
+// claims the level's current fingerprint must reproduce). A run of another version (the level
+// regenerated or edited, other rules) stays hidden and is only a WARNING listing the files to
+// compute again (docs/TAS.md « Quand un niveau change »): levels change often, the build goes on.
 TEST_CASE("tas: the machine's runs shipped with the levels play back to their time and category") {
     ContentDatabase content;
     content.reload();
     LevelFingerprints fingerprints;
     std::error_code ec;
     int files = 0, shown = 0;
+    std::vector<std::string> outdated;
     for (const auto& dir : fs::directory_iterator(tasRoot(), ec)) {
         if (!dir.is_directory()) continue;
         for (const auto& f : fs::directory_iterator(dir.path(), ec)) {
@@ -146,6 +151,7 @@ TEST_CASE("tas: the machine's runs shipped with the levels play back to their ti
             const LevelFingerprint* fp = fingerprints.get(content, r->levelId);
             if (!fp || fp->hash != r->levelHash || r->simVersion != kSimulationVersion) {
                 CHECK(!tasFor(content, fingerprints, r->levelId, r->category));  // another version: hidden
+                outdated.push_back(Paths::toUtf8(f.path().lexically_relative(tasRoot().parent_path())));
                 continue;
             }
             auto record = tasFor(content, fingerprints, r->levelId, r->category);
@@ -183,4 +189,8 @@ TEST_CASE("tas: the machine's runs shipped with the levels play back to their ti
         }
     }
     std::printf("  %d fichier(s) de courses de la machine, %d visible(s)\n", files, shown);
+    if (!outdated.empty()) {
+        std::printf("  AVERTISSEMENT : %zu course(s) de la machine à recalculer (niveau modifié ou autre simulation, cachées aux joueurs) :\n", outdated.size());
+        for (const std::string& f : outdated) std::printf("    %s\n", f.c_str());
+    }
 }

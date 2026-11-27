@@ -10,11 +10,13 @@ plus vite.
 
 * Un seul algorithme, le même pour tous les niveaux et toutes les catégories : aucun niveau n'est
   scripté, rien dans la recherche ne connaît un niveau.
-* La recherche tourne **hors ligne, sur nos machines** (`cosmic_tas`, jamais installé), jamais
-  sur l'ordinateur d'un joueur.
+* La recherche tourne **hors ligne**, sur nos machines ou sur l'ordinateur d'un administrateur
+  (`cosmic_tas`, installé à côté du jeu et lancé par ADMINISTRATION › TAS), jamais d'elle-même
+  sur l'ordinateur d'un joueur, jamais sur Cosmic Online.
 * Le résultat est un **replay ordinaire**, au format du jeu, que le vrai moteur rejoue exactement.
-* Il est rangé avec les niveaux (`data/tas/`) et n'entre **jamais** dans les classements
-  officiels : rien de ce qui suit ne passe par Cosmic Online, les records ou les classements.
+* Il est rangé avec les niveaux (`data/tas/`), ou publié en ligne par un administrateur et
+  **rejoué par chaque jeu** avant d'être montré ; il n'entre **jamais** dans les records ni les
+  classements officiels.
 
 ## Les fichiers
 
@@ -84,9 +86,30 @@ cmake --build build --target cosmic_tas
 | `--save-partial <fichier>` | la course après chaque section, en replay de ses entrées (pour repartir de là avec `--seed-replay`) |
 | `--out <dossier>` | ailleurs que `data/tas/` |
 | `--probe <repère> <y>` | les distances vers un repère le long d'une ligne du niveau (vérifier le parcours), rien d'autre |
+| `--until-stopped` | un entraînement : des tours de recherche, chacun parti de la meilleure course, jusqu'à l'arrêt (sans budget) |
+| `--round <minutes>` | la durée d'un tour (10 par défaut) : sa meilleure course est vérifiée et écrite à la fin de chacun ; sans course encore, le tour suivant repart des sections atteintes, deux fois plus long (60 min au plus) |
+| `--progress <fichier>` | la progression, réécrite (atomiquement) toutes les demi-secondes : `game/tas/TasProgress.h` |
+| `--stop-file <fichier>` | s'arrêter proprement dès que ce fichier existe |
+| `--stop-on-stdin` | s'arrêter proprement quand l'entrée standard lit `stop` ou se ferme (le jeu fermé, même par un plantage) |
+| `--user-dir <dossier>`, `--server <url>` | le niveau tel que le jeu le joue sur cet ordinateur : les révisions en ligne (campagne, entités) que le jeu a téléchargées |
 
 La course trouvée est **vérifiée** avant d'être écrite ; un fichier qui garde une course plus
-rapide (ou égale) du même niveau et de la même simulation n'est pas remplacé.
+rapide (ou égale) du même niveau et de la même simulation n'est pas remplacé. Arrêtée (fichier ou
+entrée standard), la recherche finit avec la meilleure course qu'elle tient, la vérifie, l'écrit si
+elle est plus rapide, puis s'arrête : quelques secondes.
+
+Le fichier de progression (`--progress`) :
+
+```json
+{"format": "cosmic.tas.progress", "phase": "searching", "level": "sylvanox_01", "category": "ANY_PERCENT",
+ "elapsedMs": 61250, "explored": 30144, "seedMs": 86692, "bestMs": 86650, "candidateMs": 86601,
+ "improvements": 1, "round": 2, "threads": 4, "sequence": 123, "message": "…"}
+```
+
+`phase` : `starting`, `searching`, `verifying`, `stopped`, `failed` ; `bestMs` : la meilleure course
+vérifiée de la session (celle de départ ou une plus rapide écrite) ; `candidateMs` : une course plus
+rapide que la recherche tient, pas encore vérifiée ; `improvements` : les courses plus rapides que
+celle de départ, vérifiées et écrites.
 
 ## La recherche
 
@@ -150,7 +173,8 @@ suit, et l'affinage part d'elle si rien n'est plus rapide.
 
 ## Vérification
 
-Avant d'écrire quoi que ce soit (`tools/tas/Output.cpp`) :
+Avant d'écrire quoi que ce soit (`tools/tas/Output.cpp`, les étapes 2 et 3 dans
+`game/tas/TasVerify.cpp`, que chaque jeu utilise aussi pour une course téléchargée) :
 
 1. les entrées sont jouées dans un monde ordinaire (tas normal, réglages d'une vraie partie),
    enregistrées par l'enregistreur du jeu (`ReplayRecorder`, comme `GameScene` enregistre une
@@ -161,6 +185,109 @@ Avant d'écrire quoi que ce soit (`tools/tas/Output.cpp`) :
 3. la catégorie est vérifiée avec les règles des records (`eligibleCategories`).
 
 Sinon la course est refusée et rien n'est écrit.
+
+## Entraînement depuis ADMINISTRATION
+
+ADMINISTRATION › **TAS** (`ui/screens/AdminTas.cpp`, seulement pour un compte administrateur ; le
+serveur vérifie le rôle de la session à chaque requête) liste **chaque niveau livré avec le jeu**
+(la campagne dans son ordre, puis les autres ; les raids ne sont pas des niveaux) et **chaque
+catégorie** (ANY%, 100 %, Sans mort, Sans dégât), avec :
+
+* la course **livrée** avec le jeu (`data/tas`) ;
+* la course **publiée** en ligne pour cette version du niveau, son numéro, sa date et son auteur ;
+* le **temps d'entraînement total** et les **essais explorés** de tous les administrateurs et de
+  toutes les sessions pour cette version (comptés par le serveur), la session en cours en direct ;
+* l'**état** : « Libre », « En entraînement ici » (durée, meilleur temps contre le temps en ligne,
+  améliorations), « En entraînement par X » (depuis…), « En file d'attente », « Amélioration
+  locale non publiée », « À recalculer (niveau modifié) », ou l'échec du dernier entraînement.
+
+**L'entraînement tourne sur l'ordinateur de l'administrateur**, jamais sur Cloudflare : chaque
+paire en entraînement est **un processus `cosmic_tas` enfant du jeu** (`game/tas/TasTraining.cpp`,
+`SDL_CreateProcess`, sans fenêtre), lancé avec `--until-stopped`, `--threads` (« Threads par
+entraînement »), `--progress`, `--stop-file`, `--stop-on-stdin` et, quand le jeu a déjà une course
+valide de la paire pour cette version (la sienne, une téléchargée, la livrée), `--seed-replay` : il
+en repart pour l'améliorer ; sinon il part de rien, ou de la course partielle qu'un entraînement
+précédent de cette version a laissée (`--save-partial`, `saves/tas_local/.training/`, gardée après
+chaque section : une première course plus longue qu'une session n'est pas perdue). Le jeu ne lie
+jamais la recherche ni son `operator new`.
+
+* **Plusieurs paires à la fois** : « Entraînements en parallèle » (par défaut : les cœurs de
+  l'ordinateur divisés par les threads d'un entraînement, 16 au plus), « Threads par
+  entraînement » (2), réglages gardés dans `saves/tas_local/settings.json`.
+* **« Tout entraîner »** met en file chaque paire affichée (filtres : catégorie, planète, « En
+  cours et en file ») qui n'est ni en cours ni tenue par un autre administrateur ; le jeu en garde
+  N en cours et lance la suivante dès qu'une s'arrête. **« Budget par paire »** (30 min par défaut,
+  ou « Sans limite ») : une paire arrêtée par son budget repart au bout de la file (chacune son
+  tour). La file vit tant que le jeu est ouvert (quitter la page ne l'arrête pas), pas au-delà.
+* **Le verrou** : avant de lancer `cosmic_tas`, le jeu prend le verrou de la paire **pour cette
+  version du niveau** (`POST /admin/tas/{niveau}/{catégorie}/lease`) ; un battement par minute le
+  garde ; trois minutes sans battement et il expire (un ordinateur éteint ou planté libère ses
+  paires tout seul). Un autre administrateur voit « En entraînement par X » et ne peut pas la
+  lancer ; « Tout entraîner » la passe. Si le battement est refusé (verrou perdu) ou ne passe plus
+  depuis près de trois minutes, l'entraînement s'arrête.
+* **« Arrêter »** (une paire) ou **« Tout arrêter »** : `cosmic_tas` reçoit l'ordre (fichier
+  d'arrêt et fin de son entrée standard), garde sa meilleure course (vérifiée, écrite dans
+  `saves/tas_local/`), et le verrou est rendu **aussitôt** : les autres voient la paire libre, et le
+  temps de la session s'ajoute au total. **Fermer le jeu** fait de même pour chaque entraînement
+  (les verrous rendus avant de quitter ; un plantage ferme l'entrée standard des enfants, qui
+  s'arrêtent seuls ; le verrou expire alors en trois minutes).
+* **« Publier »** (une paire) et **« Publier toutes les améliorations »** envoient la fiche et le
+  replay de `saves/tas_local/` (`POST /admin/tas/{niveau}/{catégorie}/publish`), chacun vérifié par
+  le serveur comme une publication seule : format, tailles, niveau et sa révision en ligne,
+  catégorie et ses règles, en-tête du replay (niveau, empreinte, simulation, temps), plus rapide que
+  la course publiée pour la même version ; le serveur garde aussi qui, quand, et les totaux
+  d'entraînement de ce moment. Routes : [API.md](online/API.md) (« Courses de la machine »).
+
+`cosmic_tas` est **installé à côté du jeu** (`cmake/Install.cmake`, ligne à part dans
+`installer/CosmicPlatformer.iss` : un installateur sans lui ne se compile pas). Il ne contient aucun
+secret et ne parle à aucun serveur ; pour un joueur, il ne sert à rien (la page n'existe que pour un
+administrateur).
+
+**Essai des catégories** (2.93, `sylvanox_01`, 5 min et 1 fil chacune, sans course de départ) :
+Sans dégât trouve et vérifie une course (1:37.917, 0 mort, 0 dégât) ; 100 % et Sans mort ne
+finissent pas le niveau dans ce budget et s'arrêtent proprement avec la raison (« section 2 / 3 non
+terminée dans le budget ») sans rien écrire. En entraînement (`--until-stopped`), un tour qui n'a
+pas encore de course ne recommence pas de zéro : le suivant repart des sections atteintes (gardées
+telles quelles) avec un tour deux fois plus long (60 min au plus), jusqu'à une première course.
+
+## Courses publiées en ligne
+
+Chaque jeu lit la liste publique (`GET /api/v1/tas`, quelques centaines d'octets par course) une
+minute après le démarrage puis toutes les 6 heures (`game/tas/TasOnline.cpp`). Il ne télécharge que
+les courses **de sa version du niveau** (empreinte et simulation) **plus rapides** que la meilleure
+qu'il a déjà, vérifie que les octets sont ceux annoncés (SHA-256, taille) et que la fiche dit ce que
+dit la liste, puis **rejoue la course** sur un fil à part, avec son propre contenu (les révisions en
+ligne de cet ordinateur comprises), exactement comme un replay (`verifyTasReplay` : aucune
+désynchronisation, le niveau fini, le temps annoncé, les règles de la catégorie, les morts, dégâts et
+collectibles de la fiche). Refusée, elle est oubliée (et ne sera pas retéléchargée) ; vérifiée, elle
+est gardée dans `saves/tas_online/runs/` (la disposition de `data/tas`). `tasFor()` rend la course
+valide **la plus rapide** des livrées et des téléchargées ; hors ligne, les courses déjà vérifiées et
+les livrées restent là.
+
+## Quand un niveau change
+
+Un niveau change de **version** quand son empreinte de classement change (le niveau modifié dans
+ADMINISTRATION › Campagne, régénéré par `tools/levelgen`, une révision d'une entité qu'il utilise) ou
+quand la simulation change (`kSimulationVersion`). Alors :
+
+* **Joueurs** : une course dont `levelHash` ou `simVersion` n'est pas celle du niveau tel que le jeu le
+  joue n'est jamais montrée, livrée ou téléchargée ; une course d'une autre version de la liste en
+  ligne n'est même pas téléchargée.
+* **Serveur** : les courses sont rangées **par version** (`level_hash`, `sim_version`) et jamais
+  supprimées ; une publication pour une version que le serveur sait dépassée est refusée
+  (`LEVEL_VERSION_OUTDATED` : « Ce niveau a changé : sa version en ligne est la révision N… ») ; la
+  liste de l'administration donne la course de la version en cours et, à part, la dernière d'une
+  ancienne version (« archive ») ; les verrous et les totaux d'entraînement sont **par version**.
+* **ADMINISTRATION › TAS** : une paire qui n'a de course que pour une ancienne version montre
+  « À recalculer (niveau modifié) », l'ancien temps marqué « ancienne version, non comparable » ;
+  elle compte comme jamais entraînée pour la nouvelle version et « Tout entraîner » la prend.
+  L'entraînement de la nouvelle version **part de rien** : une ancienne course n'est jamais donnée
+  comme course de départ (rien ne dit jusqu'où elle vaut sur le niveau changé), et rien n'est
+  publié qui n'a pas été vérifié sur la version en cours.
+* **Tests** : `tests/test_tas.cpp` rejoue chaque course livrée de la version en cours (une course
+  qui annonce l'empreinte actuelle et ne se reproduit pas est un échec) ; une course livrée d'une
+  ancienne version n'est qu'un **avertissement** qui liste les fichiers à recalculer (les niveaux
+  sont régénérés souvent : la construction continue).
 
 ## États sauvegardés
 

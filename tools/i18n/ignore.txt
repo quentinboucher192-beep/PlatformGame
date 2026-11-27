@@ -369,3 +369,8 @@ ArenaWorld: this program does not redirect its allocations to the arenas (tools/
 sp{0}
 |band|{0}|{1}
 |view|{0}|{1}|{2}|{3}
+tas
+threads
+training
+archive
+splits

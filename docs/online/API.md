@@ -1901,6 +1901,33 @@ s'il y a une progression à restaurer, `action: "progress_restore"`), `migration
 la progression (`GET /players/me/progress-copy`, `GET /admin/players/{id}/device`) donnent
 aussi `device_name` (2.50, `null` avant).
 
+### 8.10 septies Courses de la machine (TAS) : entraînement et publication
+
+Détails : [TAS.md](../TAS.md#entraînement-depuis-administration). La recherche tourne **sur
+l'ordinateur de l'administrateur** (`cosmic_tas`, processus enfant du jeu) : le serveur ne calcule
+rien. Il prête un **verrou** par niveau, catégorie et **version du niveau** (l'empreinte de
+classement `level_hash` et `sim_version`), compte le temps d'entraînement entre deux battements
+(mesuré par le serveur, jamais plus que la vie du verrou d'un coup) et les essais annoncés (au plus
+50 000 par seconde de verrou), garde toutes les courses publiées (fichiers dans R2, jamais
+supprimés ; métadonnées dans D1, migration `0220_tas.sql`). Les routes `/admin/tas` n'existent que
+pour un administrateur actif (rôle lu dans la session, `404` sinon, `401` sans session) ; écritures
+limitées par `admin_write`.
+
+| Méthode | Route | Corps / réponse |
+|---|---|---|
+| GET | `/admin/tas` | `{ now, lease_ttl_s: 180, heartbeat_s: 60, pairs: [{ level_id, category, current_hash, published, archive, trainings }] }` : `published` = la dernière course de la version en cours (empreinte connue du niveau, sinon celle de la dernière course ; la simulation la plus récente), `archive` = la dernière course d'une autre version (non comparable) ; une course : `{ revision, time_ms, level_hash, level_version, sim_version, explored, published_at, published_by: { id, username }, training_ms_at_publish, explored_at_publish, record_path, replay_path }` ; `trainings` : chaque version entraînée `{ level_hash, sim_version, total_ms, total_explored, sessions, lease: { holder: { id, username }, since, expires_at, mine } \| null }` |
+| POST | `/admin/tas/{levelId}/{category}/lease` | `{ level_hash, sim_version }` → `{ lease_id, expires_at, ttl_s, heartbeat_s, training }` ; `409 TAS_LOCKED` (`details.holder`, `since`, `expires_at`), `409 LEVEL_VERSION_OUTDATED` (le serveur connaît une autre empreinte du niveau : `details.current_version`, `level_hash`), `409 SIM_OUTDATED` ; le même administrateur reprend son propre verrou |
+| POST | `/admin/tas/{levelId}/{category}/lease/heartbeat` | `{ lease_id, explored }` (essais de la session, cumulés) → `{ expires_at, training }` ; `409 LEASE_LOST` (expiré, rendu ou repris) |
+| POST | `/admin/tas/{levelId}/{category}/lease/release` | `{ lease_id, explored }` → `{ released: true, training }` : la paire est libre aussitôt ; `409 LEASE_LOST` |
+| POST | `/admin/tas/{levelId}/{category}/publish` | `{ record, replay }` (la fiche JSON telle qu'écrite par `cosmic_tas`, ≤ 1 Mio ; le replay CPRZ en base64, ≤ 1 Mio) → `201 { level_id, category, published }` ; `422 TAS_INVALID` (format, niveau, catégorie, champs, règles de la catégorie), `422 TAS_REPLAY_INVALID` (en-tête : replay exact d'une course seule, touches par emplacement, même niveau, même empreinte, même `simVersion`, `durationMs` = `timeMs`, assez de pas), `409 LEVEL_VERSION_OUTDATED`, `422 LEVEL_VERSION_MISMATCH` (`levelVersion`, `totalCollectibles` de la révision en ligne), `409 TAS_LOCKED` (un autre administrateur tient le verrou de cette version), `409 SIM_OUTDATED`, `409 NOT_FASTER` (pas plus rapide que la course publiée pour la même version), `409 BASE_CHANGED`, `413` |
+| GET | `/tas` (public, cache) | `{ format: "cosmic.tas_runs", runs: [{ level_id, category, revision, level_hash, level_version, sim_version, time_ms, published_at, current, record_sha256, record_size, replay_sha256, replay_size, record_path, replay_path }] }` : la dernière course de **chaque version** de chaque paire (`current` : la version que le serveur connaît pour le niveau) ; aucun nom |
+| GET | `/tas/{levelId}/{category}/{revision}/record` · `/replay` (public) | le fichier tel que publié (`x-content-sha256`), n'importe quelle révision (immuable) ; `404 TAS_NOT_FOUND` |
+
+Journal : `admin_tas_published` (`tas: { level_id, category, revision, time_ms, previous_ms,
+level_version }`, genre `tas`). Le jeu relit `GET /tas` toutes les 6 heures, ne télécharge que les
+courses de **sa** version du niveau plus rapides que les siennes, et **rejoue chacune** avant de
+l'afficher (rien de ce que dit le serveur n'est cru sur parole).
+
 ## Annexe — format du replay (CPRZ / CPRP v1)
 
 Le jeu enregistre une trace compacte du run, pas une vidéo. Conteneur envoyé

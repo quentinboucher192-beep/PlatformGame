@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <mutex>
 
 #include "engine/core/FileUtil.h"
 #include "game/online/LevelFingerprint.h"
@@ -100,7 +101,51 @@ fs::path tasFilePath(const std::string& levelId, RunCategory c, const fs::path& 
 
 std::string tasReplayFileName(RunCategory c) { return std::string(categoryId(c)) + ".cprz"; }
 
-fs::path tasReplayPath(const TasRecord& r, const fs::path& root) { return root / Paths::fromUtf8(r.levelId) / Paths::fromUtf8(r.replay); }
+fs::path tasReplayPath(const TasRecord& r, const fs::path& root) {
+    return (r.sourceRoot.empty() ? root : r.sourceRoot) / Paths::fromUtf8(r.levelId) / Paths::fromUtf8(r.replay);
+}
+
+namespace {
+std::mutex& downloadedMutex() {
+    static std::mutex m;
+    return m;
+}
+fs::path& downloadedRoot() {
+    static fs::path p;
+    return p;
+}
+
+/// The run of one folder, when it can be shown (the rule of tasFor).
+std::optional<TasRecord> tasIn(const std::string& levelId, RunCategory c, const std::string& levelHash, const fs::path& root) {
+    if (root.empty()) return std::nullopt;
+    auto r = readTasFile(tasFilePath(levelId, c, root));
+    if (!r || r->levelId != levelId || r->category != c) return std::nullopt;
+    // The user's rule: computed for another version of the level or of the rules, it is hidden.
+    if (r->levelHash != levelHash || r->simVersion != kSimulationVersion) return std::nullopt;
+    r->sourceRoot = root;
+    std::error_code ec;
+    if (!fs::is_regular_file(tasReplayPath(*r, root), ec)) return std::nullopt;
+    return r;
+}
+}  // namespace
+
+void setTasDownloadedRoot(const fs::path& root) {
+    std::lock_guard<std::mutex> l(downloadedMutex());
+    downloadedRoot() = root;
+}
+
+fs::path tasDownloadedRoot() {
+    std::lock_guard<std::mutex> l(downloadedMutex());
+    return downloadedRoot();
+}
+
+std::optional<TasRecord> bestTasAmong(const std::string& levelId, RunCategory c, const std::string& levelHash, const std::vector<fs::path>& roots) {
+    if (levelId.empty() || !Paths::isSafeRelative(levelId) || levelHash.empty()) return std::nullopt;
+    std::optional<TasRecord> best;
+    for (const fs::path& root : roots)
+        if (auto r = tasIn(levelId, c, levelHash, root); r && (!best || r->timeMs < best->timeMs)) best = std::move(r);
+    return best;
+}
 
 std::optional<TasRecord> readTasFile(const fs::path& file, std::string* error) {
     auto text = FileUtil::readText(file);
@@ -119,14 +164,11 @@ std::optional<TasRecord> readTasFile(const fs::path& file, std::string* error) {
 bool writeTasFile(const fs::path& file, const TasRecord& r) { return FileUtil::writeTextAtomic(file, r.toJson().dump(1) + "\n"); }
 
 std::optional<TasRecord> tasFor(const std::string& levelId, RunCategory c, const std::string& levelHash, const fs::path& root) {
-    if (levelId.empty() || !Paths::isSafeRelative(levelId) || levelHash.empty()) return std::nullopt;
-    auto r = readTasFile(tasFilePath(levelId, c, root));
-    if (!r || r->levelId != levelId || r->category != c) return std::nullopt;
-    // The user's rule: computed for another version of the level or of the rules, it is hidden.
-    if (r->levelHash != levelHash || r->simVersion != kSimulationVersion) return std::nullopt;
-    std::error_code ec;
-    if (!fs::is_regular_file(tasReplayPath(*r, root), ec)) return std::nullopt;
-    return r;
+    std::vector<fs::path> roots{root};
+    // The runs published on Cosmic Online, verified on this computer, beside the shipped ones.
+    if (root == tasRoot())
+        if (fs::path d = tasDownloadedRoot(); !d.empty() && d != root) roots.push_back(d);
+    return bestTasAmong(levelId, c, levelHash, roots);
 }
 
 std::optional<TasRecord> tasFor(const ContentDatabase& content, LevelFingerprints& fingerprints, const std::string& levelId, RunCategory c,
