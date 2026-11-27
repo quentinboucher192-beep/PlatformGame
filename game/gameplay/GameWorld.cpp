@@ -18,6 +18,12 @@
 
 namespace cosmic {
 
+namespace {
+/// 2.54 (statistics): the source of the blows of the lasting effects. Built with the program (never
+/// on its first use, during a step: in the search, that step runs in a savestate's arena).
+const std::string kLastingEffects = "Effets persistants (lave, nuages, ronces…)";
+}  // namespace
+
 GameWorld::GameWorld(WorldServices services, WorldMode mode) : services_(services), mode_(mode) {}
 
 GameWorld::~GameWorld() = default;
@@ -359,8 +365,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     updateEnemies(timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
     if (!hazards_.empty()) {
         // 2.54 (statistics): the lasting effects of the bosses' attacks.
-        static const std::string kLasting = "Effets persistants (lave, nuages, ronces…)";
-        HurtScope lasting(*this, boss_ ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, boss_, 0, &kLasting);
+        HurtScope lasting(*this, boss_ ? HurtOrigin::BossAttack : HurtOrigin::EnemyAttack, boss_, 0, &kLastingEffects);
         hazards_.fixedUpdate(*this, timeSlow_ > 0.0f ? dt * timeSlowFactor_ : dt);
     }
     updateProjectiles(dt);

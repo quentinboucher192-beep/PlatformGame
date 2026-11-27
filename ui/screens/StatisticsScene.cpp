@@ -19,6 +19,8 @@
 
 #include "ui/screens/StatisticsScene.h"
 
+#include <SDL3/SDL_render.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cmath>
@@ -27,6 +29,8 @@
 
 #include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
+#include "engine/rendering/Renderer.h"
+#include "engine/rendering/ShapeProbe.h"
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
 #include "game/enemies/EnemyDefinition.h"
@@ -130,6 +134,58 @@ const char* originLabel(HurtOrigin o) {
 /// Characters the title face lacks: drawn with the body's bold face.
 bool titleLacks(uint32_t cp) { return cp == 0x00B1 || cp == 0x00B7 || cp == 0x25B2 || cp == 0x25BC || cp == 0x2192 || cp == 0x2190; }
 
+/// 2.92.1: what the page draws while it is set (Renderer::setListener, the previous listener given back by
+/// stop()): `shown`, each shape cut by the clip in force (the page's scroll region `view`, its cards' own
+/// clips) — what is seen —; `reach`, the shapes not cut by the scroll region — where the page goes (a shape
+/// inside a card's own clip counts with its card, drawn outside it). Shown::page and Shown::reach (tests).
+class PageProbe final : public ShapeListener {
+public:
+    PageProbe(Renderer& r, const Rect& view) : r_(r), before_(r.listener()), view_(view) { r_.setListener(this); }
+    ~PageProbe() override { stop(); }
+    PageProbe(const PageProbe&) = delete;
+    PageProbe& operator=(const PageProbe&) = delete;
+    void stop() {
+        if (on_) r_.setListener(before_);
+        on_ = false;
+    }
+    Rect shown() const { return shown_; }
+    Rect reach() const { return reach_; }
+
+    void triangle(Vec2 a, Vec2 b, Vec2 c) override {
+        add(std::min({a.x, b.x, c.x}), std::min({a.y, b.y, c.y}), std::max({a.x, b.x, c.x}), std::max({a.y, b.y, c.y}));
+    }
+    void segment(Vec2 a, Vec2 b) override { add(std::min(a.x, b.x), std::min(a.y, b.y), std::max(a.x, b.x), std::max(a.y, b.y)); }
+    void rect(const Rect& rc) override { add(rc.x, rc.y, rc.right(), rc.bottom()); }
+    void glow(Vec2 center, float radius) override {
+        const float k = radius * ShapeListener::kGlowCore;
+        add(center.x - k, center.y - k, center.x + k, center.y + k);
+    }
+
+private:
+    static void unite(Rect& into, const Rect& r) { into = into.empty() ? r : into.united(r); }
+    void add(float x0, float y0, float x1, float y1) {
+        // A line one pixel thick at least (a horizontal rule has no height).
+        const Rect b{x0 - 0.5f, y0 - 0.5f, x1 - x0 + 1.0f, y1 - y0 + 1.0f};
+        Rect clip = view_;
+        if (SDL_Renderer* sr = r_.sdl(); sr && SDL_RenderClipEnabled(sr)) {
+            SDL_Rect c{};
+            if (SDL_GetRenderClipRect(sr, &c)) clip = {static_cast<float>(c.x), static_cast<float>(c.y), static_cast<float>(c.w), static_cast<float>(c.h)};
+        }
+        // The scroll region alone (its clip in whole pixels, rounded or cut once a card's own clip is
+        // given back): the shape counts as drawn.
+        const float px = 3.0f;
+        const bool regionOnly = std::abs(clip.x - view_.x) <= px && std::abs(clip.y - view_.y) <= px && std::abs(clip.right() - view_.right()) <= px &&
+                                std::abs(clip.bottom() - view_.bottom()) <= px;
+        if (regionOnly) unite(reach_, b);
+        if (const Rect seen = b.intersection(clip); !seen.empty()) unite(shown_, seen);
+    }
+    Renderer& r_;
+    ShapeListener* before_;
+    Rect view_;
+    bool on_ = true;
+    Rect shown_, reach_;
+};
+
 }  // namespace
 
 std::vector<StatsLevelGroup> statisticsLevelGroups(const GameServices& g, const std::function<bool(const std::string&)>& hasData) {
@@ -196,7 +252,10 @@ void StatisticsScene::onEnter() {
         }
     }
     if (!selBoss_.empty()) group_ = -1;  // Boss opens on the page of the boss asked
-    if (!focusChart_.empty()) g_.ui.setFocus("stats/c/" + focusChart_);  // the charts are "c/<id>" under "stats"
+    if (!focusChart_.empty()) {
+        g_.ui.setFocus("stats/c/" + focusChart_);  // the charts are "c/<id>" under "stats"
+        g_.ui.setUsingPointer(false);              // 2.92.1: as reached with the keys: its cursor and tooltip show
+    }
     // « NOUVEAU » (2.54): this screen is seen once opened.
     if (g_.ui.featureSeen && g_.ui.isNew("stats.player")) g_.ui.featureSeen("stats.player");
 }
@@ -218,7 +277,7 @@ void StatisticsScene::render(float) {
     bg_.render(g_, 0.6f);
     tip_ = Tip{};
     today_ = g_.playStats.today();
-    const float W = ui.screenW(), H = ui.screenH(), m = ui.s(44);
+    const float W = ui.screenW(), m = ui.s(44);
     ui.pushId("stats");
     ui.inputEnabled = !confirmReset_;
     Rect back{W - m - ui.s(200), ui.s(26), ui.s(200), ui.s(46)};
@@ -247,28 +306,54 @@ void StatisticsScene::render(float) {
     } else if (tab_ != kTabData && ui.isNew("stats.file_parts")) {
         ui.drawNewPill(tabsR.right() - ui.s(10), tabsR.y);  // 2.91: « Répartition du fichier », until seen there
     }
-    Rect view{m, tabsR.bottom() + ui.s(10), W - 2 * m, H - tabsR.bottom() - ui.s(10) - ui.s(54)};
-    ui.beginScroll("page" + std::to_string(tab_), view, contentH_[tab_]);
+    // 2.92.1: the footer first, measured (what its hints really cover): the page ends above its band,
+    // never under it.
+    const Rect footer = drawFooter();
+    const float viewTop = tabsR.bottom() + ui.s(10);
+    const Rect view{m, viewTop, W - 2 * m, std::max(ui.s(40), footer.y - ui.s(10) - viewTop)};
+    const int shownTab = tab_;  // a card of « Récemment joué » may open another section while the page is drawn
+    ui.beginScroll("page" + std::to_string(shownTab), view, contentH_[shownTab]);
     const float x = view.x, w = view.w - ui.s(16);
-    float y = view.y - ui.scrollOffset() + ui.s(12);  // room for the « NOUVEAU » pill of a first row
-    const float startY = y;
-    if (tab_ == kTabData) y = drawData(x, y, w);
-    else if (noData() && tab_ != kTabBoss && tab_ != kTabLevels && tab_ != kTabHard) y = drawEmpty(x, y, w);  // 2.84: the levels are listed even before any run
-    else if (tab_ == kTabOverview) y = drawOverview(x, y, w);
-    else if (tab_ == kTabCombat) y = drawCombat(x, y, w);
-    else if (tab_ == kTabBoss) y = drawBoss(x, y, w);
-    else if (tab_ == kTabLevels) y = drawLevels(x, y, w);
-    else if (tab_ == kTabHard) y = drawHard(x, y, w);
-    contentH_[tab_] = y - startY + ui.s(16);
+    const float top = ui.s(12);  // room for the « NOUVEAU » pill of a first row
+    const float offset = ui.scrollOffset();
+    const float y = view.y - offset + top;
+    float h = 0.0f;  // the height each tab's page takes (2.92.1: a height, never a position)
+    PageProbe probe(ui.r(), view);
+    if (tab_ == kTabData) h = drawData(x, y, w);
+    else if (noData() && tab_ != kTabBoss && tab_ != kTabLevels && tab_ != kTabHard) h = drawEmpty(x, y, w);  // 2.84: the levels are listed even before any run
+    else if (tab_ == kTabOverview) h = drawOverview(x, y, w);
+    else if (tab_ == kTabCombat) h = drawCombat(x, y, w);
+    else if (tab_ == kTabBoss) h = drawBoss(x, y, w);
+    else if (tab_ == kTabLevels) h = drawLevels(x, y, w);
+    else if (tab_ == kTabHard) h = drawHard(x, y, w);
+    probe.stop();  // the scroll bar is not the page's
+    // Its room at the top, what it drew, a margin under its last row: scrolled to its end, the last row
+    // shows whole above the footer (2.92.1: the height was counted from the top of the screen).
+    contentH_[shownTab] = top + h + ui.s(16);
     ui.endScroll();
-    // The footer: how to move around at the left, what the charts answer at the right (never under
-    // the content, never one over the other: measured).
+    tip_.bounds = {0.0f, 0.0f, W, footer.y};  // over the page, never over the hints
+    const Rect tipBox = charts::drawTip(ui, tip_);
+    shown_ = Shown{shownTab, view, footer, probe.shown(), probe.reach(), contentH_[shownTab], offset, tip_.show, tipBox, tip_.item, tip_.title};
+    ui.inputEnabled = true;
+    if (confirmReset_) drawConfirm();
+    else if (leave || (ui.backPressed() && !ui.editingText())) g_.app.switchScene(makeMainMenu(g_), 0.3f);
+    ui.popId();
+    ui.end();
+}
+
+Rect StatisticsScene::drawFooter() {
+    UIContext& ui = g_.ui;
+    const float W = ui.screenW(), H = ui.screenH(), m = ui.s(44);
     const float fy = H - ui.s(28), hh = ui.s(28);
+    ShapeBounds drawn;  // what the hints really cover
+    ShapeListener* const before = ui.r().listener();
+    ui.r().setListener(&drawn);
     float hx = m;
     hx += Glyphs::drawHint(ui, Action::MenuTabPrev, "/", {hx, fy}, hh);
     hx += Glyphs::drawHint(ui, Action::MenuTabNext, "Sections", {hx + ui.s(6), fy}, hh) + ui.s(36);
     hx += Glyphs::drawHint(ui, Action::MenuBack, "Retour", {hx, fy}, hh) + ui.s(36);
     {
+        // What the charts answer, at the right when it fits after the others (measured, never over them).
         const std::string what = tab_ == kTabHard ? "Tranche" : tab_ == kTabData ? std::string() : "Curseur dans la courbe";
         if (!what.empty()) {
             auto hintW = [&](Action a, const std::string& t) {
@@ -282,12 +367,12 @@ void StatisticsScene::render(float) {
             }
         }
     }
-    charts::drawTip(ui, tip_);
-    ui.inputEnabled = true;
-    if (confirmReset_) drawConfirm();
-    else if (leave || (ui.backPressed() && !ui.editingText())) g_.app.switchScene(makeMainMenu(g_), 0.3f);
-    ui.popId();
-    ui.end();
+    ui.r().setListener(before);
+    // The band: from the top of what was drawn (at least the row of the hints) to the bottom of the screen.
+    float bandTop = fy - hh * 0.5f;
+    if (const Rect a = drawn.area(); !a.empty()) bandTop = std::min(bandTop, a.y);
+    bandTop = std::clamp(bandTop, 0.0f, H);
+    return {0.0f, bandTop, W, H - bandTop};
 }
 
 // ------------------------------------------------------------------ building blocks
@@ -752,16 +837,14 @@ void StatisticsScene::heroCard(const Rect& r, const PeriodTotals& cur) {
     const float cell = std::max(ui.s(4), std::min({ui.s(26), (area.w - gap * (cols - 1)) / cols, (area.h - gap * (rows - 1)) / std::max(1, rows)}));
     const double most = std::max(1.0, *std::max_element(secs.begin(), secs.end()));
     const Rect calR{area.x, area.y, cell * cols + gap * (cols - 1), cell * rows + gap * (rows - 1)};
-    bool hovered = false;
-    ui.hotspot("c/cal", calR, &hovered);
+    // 2.92.1: its tooltip while the mouse is over a day, or while it has the focus (keyboard, gamepad).
+    const charts::Pointing pt = charts::pointing(ui, "c/cal", calR);
     int& cursor = cursorOf("cal");
-    if (ui.focused("c/cal")) {
+    if (pt.keys) {
         if (cursor < 0 || cursor >= n) cursor = n - 1;
-        if (ui.acceptsInput()) {
-            if (ui.input().menuPressed(Action::MenuLeft)) cursor = std::max(0, cursor - 1);
-            if (ui.input().menuPressed(Action::MenuRight)) cursor = std::min(n - 1, cursor + 1);
-            ui.consumeNavigation(true, false);
-        }
+        if (ui.input().menuPressed(Action::MenuLeft)) cursor = std::max(0, cursor - 1);
+        if (ui.input().menuPressed(Action::MenuRight)) cursor = std::min(n - 1, cursor + 1);
+        ui.consumeNavigation(true, false);
     }
     int at = -1;
     for (int i = 0; i < n; ++i) {
@@ -769,19 +852,18 @@ void StatisticsScene::heroCard(const Rect& r, const PeriodTotals& cur) {
         const double s = secs[static_cast<size_t>(i)];
         const Color col = s >= 1.0 ? ui.theme().accent.withAlphaF(0.2f + 0.8f * static_cast<float>(s / most)) : Color{22, 32, 60, 255};
         ui.r().fillRoundedRect(c, std::min(ui.s(4), cell * 0.25f), col);
-        if (hovered && c.contains(ui.input().mousePos())) at = i, cursor = i;
+        if (pt.mouse && c.contains(ui.input().mousePos())) at = i, cursor = i;
     }
-    if (at < 0 && ui.focused("c/cal")) at = cursor;
-    if (ui.focused("c/cal")) ui.r().drawRoundedRect(calR.expanded(ui.s(4)), ui.s(6), ui.theme().accent.withAlpha(170), std::max(1.0f, ui.s(1.5f)));
+    if (at < 0 && pt.keys) at = cursor;
+    if (pt.any()) ui.r().drawRoundedRect(calR.expanded(ui.s(4)), ui.s(6), ui.theme().accent.withAlpha(170), std::max(1.0f, ui.s(1.5f)));
     if (at >= 0 && at < n) {
         const Rect c{calR.x + (cell + gap) * static_cast<float>(at % cols), calR.y + (cell + gap) * static_cast<float>(at / cols), cell, cell};
         ui.r().drawRoundedRect(c.expanded(ui.s(1.5f)), ui.s(4), ui.theme().text, std::max(1.0f, ui.s(1.5f)));
-        tip_ = Tip{};
-        tip_.show = true;
-        tip_.anchor = {c.center().x, c.y};
-        tip_.title = dayNamed(from + at);
-        const double s = secs[static_cast<size_t>(at)];
-        tip_.rows.push_back({charts::kNoSwatch, "Temps de jeu", s >= 1.0 ? duration(s) : std::string("pas joué")});
+        if (charts::showTip(ui, tip_, {c.center().x, c.y}, c.expanded(ui.s(1.5f)))) {
+            tip_.title = dayNamed(from + at);
+            const double s = secs[static_cast<size_t>(at)];
+            tip_.rows.push_back({charts::kNoSwatch, "Temps de jeu", s >= 1.0 ? duration(s) : std::string("pas joué")});
+        }
     }
     ui.label(ui.elide(cap, FontFace::Body, cf, r.w - 2 * pad), {r.x + pad, std::min(calR.bottom() + ui.s(6), r.bottom() - pad - ch)}, cf, ui.theme().textDim);
 }

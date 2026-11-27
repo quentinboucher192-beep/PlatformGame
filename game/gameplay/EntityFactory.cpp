@@ -1,5 +1,7 @@
 #include "game/gameplay/EntityFactory.h"
 
+#include "engine/core/ArenaHeap.h"
+
 #include "game/gameplay/entities/Entities.h"
 
 namespace cosmic {
@@ -12,6 +14,7 @@ EntityFactory::Creator make() {
 }  // namespace
 
 std::map<std::string, EntityFactory::Creator>& EntityFactory::registry() {
+    heap::ArenaOutside normalHeap;  // a global table: never in a savestate's arena (engine/core/ArenaHeap.h)
     static std::map<std::string, Creator> r = {
         {"moving_platform", make<MovingPlatformEntity>()},
         {"bubble", make<MovingPlatformEntity>()},  // 2.64: a carrying bubble (MovingPlatformEntity::bubble_)

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 project(CosmicPlatformer
-    VERSION 2.92.0
+    VERSION 2.92.1
     DESCRIPTION "Cosmic Platformer - 2D platformer with integrated editors"
     LANGUAGES C CXX)
 
@@ -88,6 +88,26 @@ if(COSMIC_ONLINE_HTTP)
             message(WARNING "libcurl introuvable : Cosmic Online est compilé sans client HTTP (installez libcurl4-openssl-dev).")
         endif()
     endif()
+endif()
+
+# ------------------------------------------------------------- machine's runs (TAS)
+# The programs that keep savestates of the simulation (the offline search and the tests) build
+# each run in an arena heap: they replace operator new with tools/tas/HeapHooks.cpp (docs/TAS.md).
+# The game never links it.
+add_library(cosmic_heap_hooks OBJECT ${CMAKE_SOURCE_DIR}/tools/tas/HeapHooks.cpp)
+target_link_libraries(cosmic_heap_hooks PRIVATE cosmic_engine)
+cosmic_set_warnings(cosmic_heap_hooks)
+
+# cosmic_tas: the search of the machine's runs, run offline on our machines (never installed,
+# never on a player's computer).
+option(COSMIC_BUILD_TAS "Build cosmic_tas, the offline search of the machine's runs" ON)
+if(COSMIC_BUILD_TAS)
+    file(GLOB COSMIC_TAS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/tools/tas/*.cpp ${CMAKE_SOURCE_DIR}/tools/tas/*.h)
+    list(FILTER COSMIC_TAS_SOURCES EXCLUDE REGEX "HeapHooks\\.cpp$")
+    find_package(Threads REQUIRED)
+    add_executable(cosmic_tas ${COSMIC_TAS_SOURCES})
+    target_link_libraries(cosmic_tas PRIVATE cosmic_game cosmic_heap_hooks Threads::Threads)
+    cosmic_set_warnings(cosmic_tas)
 endif()
 
 # ------------------------------------------------------------------------- executable

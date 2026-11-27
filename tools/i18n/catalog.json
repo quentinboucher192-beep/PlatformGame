@@ -69384,6 +69384,12 @@
    ]
   },
   {
+   "fr": "Statistiques : les info-bulles disparaissent dès que la souris quitte leur élément ou que le focus change, sans jamais couvrir ce qu'elles décrivent ; le bas de chaque onglet n'est plus caché sous le bandeau des raccourcis, la page défile jusqu'à sa dernière ligne.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Statistiques : tous les niveaux de la campagne, planète par planète (Aethra, Noyau stellaire, Les Confins compris), et tous les boss du jeu (gardiens, giga-boss, Gigaboss d'Asterion et son Cœur).",
    "where": [
     "data/news/changelog.json"

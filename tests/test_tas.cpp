@@ -1,11 +1,18 @@
 // The machine's runs (docs/TAS.md): their file format, and the rule of the screens — a run is
 // shown only for the level and the simulation it was computed for.
 
+#include <cmath>
+#include <cstdio>
 #include <string>
 
+#include "engine/audio/AudioSystem.h"
 #include "engine/core/FileUtil.h"
 #include "engine/core/Paths.h"
+#include "engine/resources/ResourceManager.h"
+#include "game/content/ContentDatabase.h"
+#include "game/gameplay/GameWorld.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/online/OnlineRecord.h"
 #include "game/online/Replay.h"
 #include "game/tas/TasFile.h"
 #include "tests/TestFramework.h"
@@ -116,4 +123,64 @@ TEST_CASE("tas: shown only for the level and the simulation it was computed for"
     CHECK(!tasFor(r.levelId, r.category, kHash, root));
     std::error_code ec;
     fs::remove_all(root, ec);
+}
+
+// The runs shipped in data/tas: each file reads; one computed for this version of its level and of
+// the simulation is shown (tasFor) and its replay, played by the normal replay playback, finishes
+// the level with the time and the category of its file. A run of another version stays hidden.
+TEST_CASE("tas: the machine's runs shipped with the levels play back to their time and category") {
+    ContentDatabase content;
+    content.reload();
+    LevelFingerprints fingerprints;
+    std::error_code ec;
+    int files = 0, shown = 0;
+    for (const auto& dir : fs::directory_iterator(tasRoot(), ec)) {
+        if (!dir.is_directory()) continue;
+        for (const auto& f : fs::directory_iterator(dir.path(), ec)) {
+            if (f.path().extension() != ".json") continue;
+            ++files;
+            auto r = readTasFile(f.path());
+            CHECK(r.has_value());
+            if (!r) continue;
+            CHECK(f.path() == tasFilePath(r->levelId, r->category));
+            const LevelFingerprint* fp = fingerprints.get(content, r->levelId);
+            if (!fp || fp->hash != r->levelHash || r->simVersion != kSimulationVersion) {
+                CHECK(!tasFor(content, fingerprints, r->levelId, r->category));  // another version: hidden
+                continue;
+            }
+            auto record = tasFor(content, fingerprints, r->levelId, r->category);
+            CHECK(record.has_value());
+            if (!record) continue;
+            ++shown;
+            auto replay = loadTasReplay(*record);
+            auto level = content.loadLevel(record->levelId);
+            CHECK(replay.has_value() && level.has_value());
+            if (!replay || !level) continue;
+            AudioSystem audio;
+            ResourceManager res;
+            res.init(nullptr, &audio);
+            WorldServices services{res, audio, content, nullptr, 0.0f, 1.0f};
+            GameWorld w(services, WorldMode::Play);
+            w.setKeysPerSlot(replay->keysPerSlot);
+            w.load(*level);
+            w.seedGameplay(levelSeed(level->id));
+            ReplaySimulator sim(*replay, w);
+            while (sim.step()) {
+            }
+            CHECK(!sim.desynced());
+            CHECK(w.state() == WorldState::Completed);
+            CHECK(std::llround(static_cast<double>(w.timer().elapsed()) * 1000.0) == record->timeMs);
+            RunCandidate run;
+            run.deaths = w.stats().deaths;
+            run.damageTaken = w.stats().damageTaken;
+            run.collectibles = w.stats().collectibles();
+            run.totalCollectibles = w.stats().totalCollectibles();
+            bool eligible = false;
+            for (RunCategory c : eligibleCategories(run)) eligible = eligible || c == record->category;
+            CHECK(eligible);
+            CHECK(run.deaths == record->deaths && run.damageTaken == record->damageTaken && run.collectibles == record->collectibles);
+            CHECK(!record->route.empty() && !record->splits.empty());
+        }
+    }
+    std::printf("  %d fichier(s) de courses de la machine, %d visible(s)\n", files, shown);
 }

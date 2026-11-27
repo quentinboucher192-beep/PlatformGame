@@ -5,6 +5,7 @@
 #include <iterator>
 #include <system_error>
 
+#include "engine/core/ArenaHeap.h"
 #include "engine/audio/AudioSystem.h"
 #include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
@@ -74,6 +75,9 @@ TexturePtr ResourceManager::texture(const std::string& rel, bool pixelArt) {
     std::lock_guard<std::recursive_mutex> lock(mutex_);
     auto path = resolve(rel);
     if (!path) {
+        heap::ArenaOutside normalHeap;  // what was warned is global: never in a savestate's arena (engine/core/ArenaHeap.h)
+        static std::mutex warnedMutex;  // shared by every ResourceManager (one per world in the machine's search)
+        std::lock_guard<std::mutex> warnedLock(warnedMutex);
         static std::unordered_map<std::string, bool> warned;
         if (!warned[rel]) {
             Log::error("Texture not found: {}", rel);

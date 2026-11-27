@@ -4,6 +4,9 @@
 // (ui/screens/StatisticsArt.h: read off the main thread, drawn a few per frame), the charts' new pieces,
 // and every tab drawn with real-looking statistics at 1280 x 720 and 1920 x 1080, in French and in English
 // with nothing left in French.
+// 2.92.1: every tab ends above the band of the hints (measured) and scrolls to its last row; a tooltip lives
+// one frame at a time — the mouse's while the pointer is over its item, the keys' while the item has the focus —,
+// beside its item, never over it, inside the screen.
 
 #include <SDL3/SDL.h>
 
@@ -24,6 +27,7 @@
 #include "tests/TestFramework.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/StatisticsArt.h"
+#include "ui/screens/StatisticsScene.h"
 #include "ui/widgets/Charts.h"
 #include "ui/widgets/UIContext.h"
 
@@ -286,6 +290,26 @@ struct ScreenRig {
     }
 };
 
+/// The statistics of `played`, and the one Sum of Best of the level version (game/ghost/PersonalBests.h): a full
+/// run, a section training.
+void playedWithBests(GameServices& g) {
+    g.playStats.setData(played(g.playStats.today()));
+    const std::string key = GhostStore::levelKey("aethra_01", "v1");
+    const std::vector<std::string> route = {"o104", "o148", "o213", "o263"};
+    g.bests.setRoute(key, route);
+    BestAttempt run;
+    run.passage = BestPassage::ofSplits({31.2f, 59.5f, 89.4f, 113.6f}, route, 152.0f);
+    run.date = "2026-11-20 10:00";
+    g.bests.add(key, run);
+    BestAttempt train;
+    train.passage = BestPassage::ofSplits({27.0f}, {"o148"}, -1.0f, BestPassage::From::Checkpoint, "o104");
+    train.source = BestSource::Training;
+    train.date = "2026-11-22 10:00";
+    g.bests.add(key, train);
+    CHECK(g.bests.sob(key) > 0.0f);
+    CHECK(g.bests.pb(key) != nullptr);
+}
+
 }  // namespace
 
 TEST_CASE("statistics screen: a level's pictures are drawn off the frame's path, then kept") {
@@ -331,25 +355,7 @@ TEST_CASE("statistics screen: every tab drawn with statistics, 1280 x 720 and 19
         for (Language lang : {Language::French, Language::English}) {
             ScreenRig rig(size ? 1920 : 1280, size ? 1080 : 720, lang);
             GameServices& g = *rig.g;
-            const int today = g.playStats.today();
-            g.playStats.setData(played(today));
-            // The one Sum of Best of the level version (game/ghost/PersonalBests.h): a full run, a section training.
-            {
-                const std::string key = GhostStore::levelKey("aethra_01", "v1");
-                const std::vector<std::string> route = {"o104", "o148", "o213", "o263"};
-                g.bests.setRoute(key, route);
-                BestAttempt run;
-                run.passage = BestPassage::ofSplits({31.2f, 59.5f, 89.4f, 113.6f}, route, 152.0f);
-                run.date = "2026-11-20 10:00";
-                g.bests.add(key, run);
-                BestAttempt train;
-                train.passage = BestPassage::ofSplits({27.0f}, {"o148"}, -1.0f, BestPassage::From::Checkpoint, "o104");
-                train.source = BestSource::Training;
-                train.date = "2026-11-22 10:00";
-                g.bests.add(key, train);
-                CHECK(g.bests.sob(key) > 0.0f);
-                CHECK(g.bests.pb(key) != nullptr);
-            }
+            playedWithBests(g);
             if (lang == Language::English) i18n::startAudit();
             rig.app.pushScene(makeMainMenu(g));
             rig.app.runFrames(2);
@@ -383,4 +389,227 @@ TEST_CASE("statistics screen: every tab drawn with statistics, 1280 x 720 and 19
                 i18n::stopAudit();
             }
         }
+}
+
+// ------------------------------------------------------------------ 2.92.1
+
+namespace {
+
+void pointAt(Vec2 p) {
+    SDL_Event e{};
+    e.type = SDL_EVENT_MOUSE_MOTION;
+    e.motion.x = p.x;
+    e.motion.y = p.y;
+    e.motion.xrel = 3;
+    SDL_PushEvent(&e);
+}
+
+void wheelAt(Vec2 p, float notches) {
+    SDL_Event e{};
+    e.type = SDL_EVENT_MOUSE_WHEEL;
+    e.wheel.y = notches;
+    e.wheel.mouse_x = p.x;
+    e.wheel.mouse_y = p.y;
+    SDL_PushEvent(&e);
+}
+
+void pressKey(SDL_Scancode sc, SDL_Keycode k) {
+    SDL_Event down{};
+    down.type = SDL_EVENT_KEY_DOWN;
+    down.key.scancode = sc;
+    down.key.key = k;
+    down.key.down = true;
+    SDL_PushEvent(&down);
+    SDL_Event up = down;
+    up.type = SDL_EVENT_KEY_UP;
+    up.key.down = false;
+    SDL_PushEvent(&up);
+}
+
+/// What the statistics screen on top showed on its last frame.
+const StatisticsScene::Shown& shownOf(Application& app) {
+    static const StatisticsScene::Shown none;
+    const auto* sc = dynamic_cast<const StatisticsScene*>(app.topScene());
+    return sc ? sc->shown() : none;
+}
+
+bool within(const Rect& inner, const Rect& outer, float slack = 1.0f) {
+    return inner.x >= outer.x - slack && inner.y >= outer.y - slack && inner.right() <= outer.right() + slack && inner.bottom() <= outer.bottom() + slack;
+}
+
+}  // namespace
+
+TEST_CASE("statistics screen: every tab ends above the footer band and scrolls to its last row, 1280 x 720 and 1920 x 1080, French and English") {
+    for (int size = 0; size < 2; ++size)
+        for (Language lang : {Language::French, Language::English}) {
+            const float W = size ? 1920.0f : 1280.0f, H = size ? 1080.0f : 720.0f;
+            ScreenRig rig(static_cast<int>(W), static_cast<int>(H), lang);
+            GameServices& g = *rig.g;
+            playedWithBests(g);
+            rig.app.pushScene(makeMainMenu(g));
+            rig.app.runFrames(2);
+            for (int tab = 0; tab < StatisticsScene::kTabCount; ++tab) {
+                g.onlineOpen = "stats:runs=aethra_01,level=aethra_01";
+                rig.app.pushScene(makeStatistics(g, tab));
+                rig.app.runFrames(20);
+                auto report = [&](const char* what) {
+                    const StatisticsScene::Shown& s = shownOf(rig.app);
+                    std::fprintf(stderr,
+                                 "  %s: tab %d, %dx%d %s — view %.0f..%.0f, footer from %.0f, page %.0f..%.0f, reach to %.0f, content %.0f, scroll %.0f\n",
+                                 what, tab, static_cast<int>(W), static_cast<int>(H), i18n::code(lang), s.view.y, s.view.bottom(), s.footer.y, s.page.y,
+                                 s.page.bottom(), s.reach.bottom(), s.content, s.offset);
+                };
+                {
+                    const StatisticsScene::Shown& s = shownOf(rig.app);
+                    CHECK(s.tab == tab);
+                    // The band of the hints, measured: at the bottom of the screen, the width of it.
+                    CHECK(!s.footer.empty() && s.footer.x <= 0.5f && s.footer.right() >= W - 0.5f && std::abs(s.footer.bottom() - H) < 0.5f);
+                    CHECK(s.footer.h < H * 0.1f);
+                    // The page ends above it; what it draws shows inside it, never under the band.
+                    if (s.view.bottom() > s.footer.y + 0.5f || s.page.empty() || s.page.intersects(s.footer) || !within(s.page, s.view))
+                        report("page under the footer");
+                    CHECK(s.view.bottom() <= s.footer.y + 0.5f);
+                    CHECK(!s.page.empty());
+                    CHECK(!s.page.intersects(s.footer));
+                    CHECK(within(s.page, s.view));
+                    CHECK(!s.tip);  // the mouse points at nothing, nothing has the focus: no tooltip
+                }
+                // Scrolled to its end: the last row shows whole, a margin under it, above the band.
+                g.ui.setScroll("stats/page" + std::to_string(tab), 1e9f);
+                rig.app.runFrames(3);
+                {
+                    const StatisticsScene::Shown& e = shownOf(rig.app);
+                    const float maxOff = std::max(0.0f, e.content - e.view.h);
+                    const bool scrolls = e.content > e.view.h + 1.0f;
+                    const float lowest = e.view.bottom() - g.ui.s(16) - g.ui.s(40);  // its last row, then its margin
+                    const bool ok = std::abs(e.offset - maxOff) < 1.0f && e.reach.bottom() <= e.view.bottom() + 1.0f && (!scrolls || e.reach.bottom() >= lowest) &&
+                                    !e.page.intersects(e.footer) && within(e.page, e.view);
+                    if (!ok) report("scrolled to the end");
+                    CHECK(std::abs(e.offset - maxOff) < 1.0f);
+                    CHECK(e.reach.bottom() <= e.view.bottom() + 1.0f);  // nothing left under the view: the last row whole
+                    if (scrolls) CHECK(e.reach.bottom() >= lowest);     // never scrolled past its end
+                    CHECK(!e.page.intersects(e.footer));
+                    CHECK(within(e.page, e.view));
+                }
+                rig.app.popScene();
+                rig.app.runFrames(1);
+            }
+        }
+}
+
+TEST_CASE("statistics screen: a tooltip lives while its item is pointed at or focused — gone the next frame once the pointer leaves, the focus moves or the mouse takes over (every chart of the six tabs)") {
+    struct Chart {
+        int tab;
+        const char* id;
+    };
+    const Chart charts[] = {{0, "cal"},    {0, "stars"},     {0, "dph"},      {1, "dodge"}, {1, "accuracy"}, {1, "powers"},
+                            {1, "blows"},  {2, "phases"},    {2, "bosscurve"}, {3, "sobparts"}, {3, "sob"},   {3, "zones"},
+                            {3, "spread"}, {3, "near"},      {3, "regularity"}, {4, "heat"},    {5, "fileparts"}};
+    for (int size = 0; size < 2; ++size) {
+        const float W = size ? 1920.0f : 1280.0f, H = size ? 1080.0f : 720.0f;
+        ScreenRig rig(static_cast<int>(W), static_cast<int>(H), Language::French);
+        GameServices& g = *rig.g;
+        UIContext& ui = g.ui;
+        playedWithBests(g);
+        g.playStats.saveAsync();  // « Répartition du fichier » reads the file
+        g.playStats.flush();
+        rig.app.pushScene(makeMainMenu(g));
+        rig.app.runFrames(2);
+        for (int tab = 0; tab < StatisticsScene::kTabCount; ++tab) {
+            g.onlineOpen = "stats:runs=aethra_01,level=aethra_01";
+            rig.app.pushScene(makeStatistics(g, tab));
+            rig.app.runFrames(20);
+            for (const Chart& c : charts) {
+                if (c.tab != tab) continue;
+                const std::string id = std::string("stats/c/") + c.id;
+                auto fail = [&](const char* what) {
+                    const StatisticsScene::Shown& s = shownOf(rig.app);
+                    std::fprintf(stderr, "  %s: chart %s (tab %d), %dx%d — tip %d « %s », box %.0f,%.0f %.0fx%.0f, item %.0f,%.0f %.0fx%.0f, footer from %.0f\n",
+                                 what, c.id, tab, static_cast<int>(W), static_cast<int>(H), s.tip ? 1 : 0, s.tipTitle.c_str(), s.tipBox.x, s.tipBox.y,
+                                 s.tipBox.w, s.tipBox.h, s.tipItem.x, s.tipItem.y, s.tipItem.w, s.tipItem.h, s.footer.y);
+                };
+                // Its box: inside the screen, above the hints, never over the item it tells about.
+                auto placed = [&](const StatisticsScene::Shown& s) {
+                    const Rect over = s.tipBox.intersection(s.tipItem);
+                    const bool ok = within(s.tipBox, {0.0f, 0.0f, W, H}, 0.5f) && s.tipBox.bottom() <= s.footer.y + 0.5f && over.w * over.h < 1.0f &&
+                                    !s.tipItem.empty();
+                    if (!ok) fail("tooltip misplaced");
+                    return ok;
+                };
+                // Wait for what the chart needs (the file read off the main thread, the level's pictures).
+                for (int f = 0; f < 300 && !ui.navigable(id); ++f) rig.app.runFrames(1);
+                if (!ui.navigable(id)) fail("chart not drawn");
+                CHECK(ui.navigable(id));
+                // Focused with the keys (the scroll brings it into view): its tooltip.
+                ui.setFocus(id);
+                ui.setUsingPointer(false);
+                rig.app.runFrames(3);
+                if (!shownOf(rig.app).tip) fail("no tooltip with the keys");
+                CHECK(shownOf(rig.app).tip);
+                CHECK(placed(shownOf(rig.app)));
+                const std::string title = shownOf(rig.app).tipTitle;
+                const Rect item = shownOf(rig.app).tipItem;
+                const Rect view = shownOf(rig.app).view;
+                const Vec2 away{view.right() - ui.s(3), view.y + view.h * 0.5f};  // the scroll bar's lane: over no chart
+                // The focus moves: gone on the next frame.
+                ui.setFocus("stats/back");
+                rig.app.runFrames(1);
+                if (shownOf(rig.app).tip) fail("tooltip kept after the focus moved");
+                CHECK(!shownOf(rig.app).tip);
+                // Focused again; then the mouse takes over, away from it: gone on the next frame, and for good.
+                ui.setFocus(id);
+                ui.setUsingPointer(false);
+                rig.app.runFrames(1);
+                CHECK(shownOf(rig.app).tip && shownOf(rig.app).tipTitle == title);
+                pointAt(away);
+                rig.app.runFrames(1);
+                if (shownOf(rig.app).tip) fail("tooltip kept once the mouse took over");
+                CHECK(!shownOf(rig.app).tip);
+                for (int f = 0; f < 8; ++f) {
+                    rig.app.runFrames(1);
+                    CHECK(!shownOf(rig.app).tip);
+                }
+                // The mouse over the item: the same tooltip, placed; the mouse away: gone on the next frame, and
+                // never back while it stays away (the focus the mouse left on the chart shows nothing).
+                pointAt(item.center());
+                rig.app.runFrames(1);
+                if (!shownOf(rig.app).tip || shownOf(rig.app).tipTitle != title) fail("no tooltip under the mouse");
+                CHECK(shownOf(rig.app).tip && shownOf(rig.app).tipTitle == title);
+                CHECK(placed(shownOf(rig.app)));
+                CHECK(ui.focused(id));  // pointed at: the chart took the focus
+                pointAt(away);
+                rig.app.runFrames(1);
+                if (shownOf(rig.app).tip) fail("tooltip kept after the pointer left");
+                CHECK(!shownOf(rig.app).tip);
+                for (int f = 0; f < 8; ++f) {
+                    rig.app.runFrames(1);
+                    CHECK(!shownOf(rig.app).tip);
+                }
+                // A tooltip of the keys, then the page scrolled with the wheel: gone with it.
+                ui.setFocus(id);
+                ui.setUsingPointer(false);
+                rig.app.runFrames(2);
+                CHECK(shownOf(rig.app).tip);
+                wheelAt(away, -1.0f);
+                rig.app.runFrames(1);
+                if (shownOf(rig.app).tip) fail("tooltip kept after a scroll");
+                CHECK(!shownOf(rig.app).tip);
+            }
+            // A tooltip of the keys, then the next section: gone with it.
+            for (const Chart& c : charts) {
+                if (c.tab != tab) continue;
+                ui.setFocus(std::string("stats/c/") + c.id);
+                ui.setUsingPointer(false);
+                rig.app.runFrames(3);
+                CHECK(shownOf(rig.app).tip);
+                pressKey(SDL_SCANCODE_E, SDLK_E);
+                rig.app.runFrames(2);
+                CHECK(shownOf(rig.app).tab == (tab + 1) % StatisticsScene::kTabCount);
+                CHECK(!shownOf(rig.app).tip);
+                break;
+            }
+            rig.app.popScene();
+            rig.app.runFrames(1);
+        }
+    }
 }

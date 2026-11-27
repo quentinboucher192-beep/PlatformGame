@@ -1045,18 +1045,15 @@ float StatisticsScene::drawHard(float x, float y0, float w) {
             const Rect strip{in.x, in.y, in.w, std::min(ui.s(107), in.h * 0.45f)};
             const float cw = strip.w / kSlices;
             const Rect bars{in.x, strip.bottom() + ui.s(12) + lh + ui.s(14), in.w, in.bottom() - (strip.bottom() + ui.s(12) + lh + ui.s(14))};
-            bool hovered = false;
+            // 2.92.1: its tooltip while the mouse is over it, or while it has the focus (keyboard, gamepad).
             const Rect hit{in.x, strip.y, in.w, in.bottom() - strip.y};
-            ui.hotspot("c/heat", hit, &hovered);
-            const bool focused = ui.focused("c/heat");
+            const charts::Pointing pt = charts::pointing(ui, "c/heat", hit);
             int& cursor = cursorOf("heat");
-            if (focused) {
+            if (pt.keys) {
                 if (cursor < 0 || cursor >= kSlices) cursor = kSlices / 2;
-                if (ui.acceptsInput()) {
-                    if (ui.input().menuPressed(Action::MenuLeft)) cursor = std::max(0, cursor - 1);
-                    if (ui.input().menuPressed(Action::MenuRight)) cursor = std::min(kSlices - 1, cursor + 1);
-                    ui.consumeNavigation(true, false);
-                }
+                if (ui.input().menuPressed(Action::MenuLeft)) cursor = std::max(0, cursor - 1);
+                if (ui.input().menuPressed(Action::MenuRight)) cursor = std::min(kSlices - 1, cursor + 1);
+                ui.consumeNavigation(true, false);
             }
             ui.r().fillRoundedRect(strip, ui.s(8), Color{11, 16, 32, 255});
             const int cellPx = std::max(8, static_cast<int>(std::lround(cw)));
@@ -1108,8 +1105,8 @@ float StatisticsScene::drawHard(float x, float y0, float w) {
             // The bars.
             int at = -1;
             const Vec2 mp = ui.input().mousePos();
-            if (hovered) at = std::clamp(static_cast<int>((mp.x - in.x) / cw), 0, kSlices - 1), cursor = at;
-            else if (focused) at = cursor;
+            if (pt.mouse) at = std::clamp(static_cast<int>((mp.x - in.x) / cw), 0, kSlices - 1), cursor = at;
+            else if (pt.keys) at = cursor;
             for (int i = 0; i < kSlices; ++i) {
                 const size_t k = static_cast<size_t>(i);
                 const float bx = bars.x + cw * static_cast<float>(i) + ui.s(3), bw = std::max(1.0f, cw - ui.s(6));
@@ -1120,15 +1117,16 @@ float StatisticsScene::drawHard(float x, float y0, float w) {
                 const float bh = std::max(ui.s(3), bars.h * std::clamp(ds[k] / mx, 0.0f, 1.0f));
                 ui.r().fillRoundedRect({bx, bars.bottom() - bh, bw, bh}, std::min(ui.s(3), bh * 0.5f), charts::heatSolid(ds[k] / mx));
             }
-            if (focused) ui.r().drawRoundedRect(hit.expanded(ui.s(4)), ui.s(8), ui.theme().accent.withAlpha(170), std::max(1.0f, ui.s(1.5f)));
+            if (pt.any()) ui.r().drawRoundedRect(hit.expanded(ui.s(4)), ui.s(8), ui.theme().accent.withAlpha(170), std::max(1.0f, ui.s(1.5f)));
             if (at >= 0) {
-                const size_t k = static_cast<size_t>(at);
                 const Rect c{strip.x + cw * static_cast<float>(at), strip.y, cw, strip.h};
                 ui.r().drawRect(c, Color::white(), std::max(1.0f, ui.s(2.0f)));
                 ui.r().drawRect({bars.x + cw * static_cast<float>(at), bars.y, cw, bars.h}, kText2.withAlpha(90), 1.0f);
-                tip_ = Tip{};
-                tip_.show = true;
-                tip_.anchor = {c.center().x, c.y};
+                // The slice lit, from the picture to its bar: the box keeps clear of it.
+                if (!charts::showTip(ui, tip_, {c.center().x, c.y}, {c.x, c.y, c.w, bars.bottom() - c.y})) at = -1;
+            }
+            if (at >= 0) {
+                const size_t k = static_cast<size_t>(at);
                 tip_.title = "Tranche " + std::to_string(static_cast<int>(std::lround(at * 2.5f))) + "–" + std::to_string(static_cast<int>(std::lround((at + 1) * 2.5f))) +
                              " %" + (segOf[k].empty() ? std::string() : " · " + segOf[k]);
                 tip_.rows.push_back({charts::kNoSwatch, "Morts / passages", std::to_string(l.deaths[k]) + " sur " + std::to_string(l.passes[k])});

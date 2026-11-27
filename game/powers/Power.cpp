@@ -1,5 +1,6 @@
 #include "game/powers/Power.h"
 
+#include "engine/core/ArenaHeap.h"
 #include "engine/input/InputManager.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/player/Player.h"
@@ -40,6 +41,7 @@ void Power::activate(Player& p, GameWorld& w) {
 void Power::fixedUpdate(Player& /*p*/, GameWorld& /*w*/, float dt) { cooldown_ = std::max(0.0f, cooldown_ - dt); }
 
 PowerRegistry& PowerRegistry::instance() {
+    heap::ArenaOutside normalHeap;  // a global table: never in a savestate's arena (engine/core/ArenaHeap.h)
     static PowerRegistry r;
     return r;
 }

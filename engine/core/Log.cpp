@@ -1,5 +1,7 @@
 #include "engine/core/Log.h"
 
+#include "engine/core/ArenaHeap.h"
+
 #include <chrono>
 #include <cstdio>
 #include <ctime>
@@ -56,6 +58,7 @@ void Log::setMinLevel(LogLevel level) {
 }
 
 void Log::write(LogLevel level, std::string_view message) {
+    heap::ArenaOutside normalHeap;  // the recent lines are global: never in a savestate's arena (engine/core/ArenaHeap.h)
     std::lock_guard lock(g_mutex);
     if (level < g_minLevel) return;
     std::string line = std::format("[{}] {} {}", timestamp(), levelName(level), message);

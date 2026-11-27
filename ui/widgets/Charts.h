@@ -9,6 +9,10 @@
 // Each chart is focusable: the mouse shows the tooltip of what it points at; focused (keyboard,
 // gamepad), ← → move a cursor over the points with the same tooltip. The tooltip is gathered
 // in a Tip and drawn last, over everything (drawTip).
+//
+// 2.92.1: a tooltip lives one frame (pointing): the mouse's while the pointer is over its item that
+// very frame, the keyboard's or the gamepad's while the item has the focus and the mouse is not in
+// use. A focus the mouse left behind (hovered, then left) shows nothing: the tooltip never stays.
 
 #include <array>
 #include <functional>
@@ -30,12 +34,35 @@ struct Tip {
         std::string label, value;
     };
     bool show = false;
-    Vec2 anchor;  // the point the box keeps clear of
+    Vec2 anchor;  // the point the box is drawn from
+    /// 2.92.1: the item it tells about (its row, bar, cell, the cursor's points), the part of it that
+    /// shows: the box never covers it. Empty: the anchor alone.
+    Rect item;
+    /// 2.92.1: where the box stays (empty: the screen); a screen gives the room above its hints.
+    Rect bounds;
     std::string title;
     std::vector<Row> rows;
 };
-/// Draws the tooltip (inside the screen, measured).
-void drawTip(UIContext& ui, const Tip& t);
+/// 2.92.1: the box drawTip gives `t` (empty when it is not shown): measured, inside its bounds, above its
+/// item, else under it, else at its side — never over it while there is room for it around.
+Rect tipBox(UIContext& ui, const Tip& t);
+/// Draws the tooltip (inside its bounds, measured); returns its box (empty when not shown).
+Rect drawTip(UIContext& ui, const Tip& t);
+
+/// 2.92.1: who an item with a tooltip answers this frame, registered as the focus stop `id` over `r`:
+/// the mouse while it is in use and over the item this very frame; the keyboard or the gamepad while
+/// the item has the focus and the mouse is not in use. Neither once the pointer has left, the focus
+/// has moved or the mouse has taken over (a focus the mouse left behind shows nothing).
+struct Pointing {
+    bool mouse = false;  // the pointer over the item, now
+    bool keys = false;   // focused, the keyboard or the gamepad in use
+    bool any() const { return mouse || keys; }
+};
+Pointing pointing(UIContext& ui, const std::string& id, const Rect& r);
+/// 2.92.1: makes `tip` the tooltip of `item` (only the part of it the clip in force lets show: the
+/// page's scroll region), drawn from `anchor` (kept on that part). False, and `tip` left as it is,
+/// when nothing of the item shows (scrolled out of sight).
+bool showTip(UIContext& ui, Tip& tip, Vec2 anchor, const Rect& item);
 
 /// Never below 11.5 pixels on screen (the font loses its spaces under that).
 float fz(const UIContext& ui, float size);
