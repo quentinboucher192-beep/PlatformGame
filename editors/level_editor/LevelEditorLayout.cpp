@@ -130,9 +130,12 @@ void LevelEditorScene::drawToolbar(const Rect& r) {
     {
         UIContext::ButtonStyle st;
         st.small = true;
-        st.fontSize = 18;
         st.primary = true;
-        if (ui.button("test", {x, y, ui.s(128), h}, "Tester (F5)", st)) testPlay(false);
+        // 2.93: the key of « Tester le niveau » as the player set it (F5 by default), never past the button.
+        const SDL_Scancode testKey = g_.app.input().bindings().keyOf(Action::EditorTest);
+        const std::string testLabel = testKey != SDL_SCANCODE_UNKNOWN ? "Tester (" + keyName(testKey) + ")" : std::string("Tester");
+        st.fontSize = ui.fitFont(testLabel, FontFace::Bold, 18, ui.s(128) - ui.s(16), 0.6f);
+        if (ui.button("test", {x, y, ui.s(128), h}, ui.elide(testLabel, FontFace::Bold, st.fontSize, ui.s(128) - ui.s(16)), st)) testPlay(false);
         Rect mb{x + ui.s(130), y, ui.s(36), h};
         st.selected = menu_ == Menu::Test;
         if (ui.button("testmenu", mb, "", st)) {
@@ -396,7 +399,7 @@ void LevelEditorScene::drawExplorer(const Rect& r) {
             ts.small = true;
             ts.fontSize = 14;
             ts.selected = l.visible;
-            if (ui.button("V" + l.id, vis, l.visible ? "Vue" : "—", ts)) {
+            if (ui.button("V" + l.id, vis, l.visible ? "\x1F" "calque|Vue" : "—", ts)) {
                 l.visible = !l.visible;
                 markChanged("Visibilité du calque");
             }

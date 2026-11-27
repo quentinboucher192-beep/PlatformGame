@@ -692,30 +692,38 @@ void LevelEditorScene::modalCinematics(const Rect& c) {
 void LevelEditorScene::modalHelp(const Rect& c) {
     UIContext& ui = g_.ui;
     ui.label("Raccourcis de l'éditeur", {c.x, c.y}, 30, ui.theme().text, Align::Left, FontFace::Bold);
-    const char* lines[] = {
-        "Clic gauche : sélectionner / placer · Maj+clic : sélection multiple · glisser dans le vide : rectangle de sélection",
-        "Glisser un objet sélectionné : déplacer (aimanté à la grille) · poignées : redimensionner",
-        "Terrain, liquides, zones : tracez un rectangle pour les créer",
-        "Clic droit / molette enfoncée / Espace+glisser : déplacer la vue · molette : zoom · Origine : zoom 100 %",
-        "{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
-        "Ctrl+Z / Ctrl+Y : annuler / rétablir · Ctrl+C / Ctrl+V / Ctrl+D : copier, coller, dupliquer · Ctrl+A : tout",
-        "Suppr : supprimer · R / Maj+R : rotation · F : miroir · G : aimanter à la grille · V : sélection · H : main",
-        "Ctrl+S : enregistrer · F5 : tester depuis le départ · Maj+F5 : depuis la vue · menu de Tester : depuis la sélection",
-        "Ctrl+G : grouper · Ctrl+Maj+G : dégrouper · Alt+clic : un seul objet d'un groupe · M : carte (clic pour s'y rendre)",
-        "Plusieurs objets sélectionnés : tableau sous la vue (calque, groupe, liens) ; aligner et répartir dans ENTITÉ",
-        "À gauche : explorateur (par calque ou par type, filtre), historique (cliquez pour revenir à une étape), vérifier",
-        "À droite : bibliothèque (catégories, recherche, étoile = favori) et entité (propriétés, relations avec les autres objets)",
-        "Au-dessus de la vue : taille de la grille, aimanter, zoom, « Tout le niveau », surcouches grille, liens, zones, collisions",
-        "Niveaux de la campagne et importés : lecture seule, « Dupliquer » crée votre copie modifiable",
-        "Sauvegarde automatique régulière dans le dossier utilisateur (levels/autosave).",
-    };
-    float y = c.y + ui.s(60);
+    // 2.93: the keys of the editor's commands as the player set them (Paramètres › Contrôles ›
+    // « Éditeur de niveaux »), put in the {n} of their line.
+    const InputBindings& b = g_.app.input().bindings();
+    auto k = [&](Action a) { return actionKeyName(b, a); };
     // The view keys by their place on the keyboard (W A S D positions), named as the player's
     // layout names them: « ZQSD » on AZERTY, « WASD » on QWERTY.
     const std::string viewKeys = keyName(SDL_SCANCODE_W) + keyName(SDL_SCANCODE_A) + keyName(SDL_SCANCODE_S) + keyName(SDL_SCANCODE_D);
-    for (const char* raw : lines) {
+    const std::vector<std::pair<const char*, std::vector<std::string>>> lines = {
+        {"Clic gauche : sélectionner / placer · Maj+clic : sélection multiple · glisser dans le vide : rectangle de sélection", {}},
+        {"Glisser un objet sélectionné : déplacer (aimanté à la grille) · poignées : redimensionner", {}},
+        {"Terrain, liquides, zones : tracez un rectangle pour les créer", {}},
+        {"Clic droit / molette enfoncée / Espace+glisser : déplacer la vue · molette : zoom · {0} : zoom 100 %", {k(Action::EditorZoomReset)}},
+        {"{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection", {viewKeys}},
+        {"Ctrl+Z / Ctrl+Y : annuler / rétablir · Ctrl+C / Ctrl+V / Ctrl+D : copier, coller, dupliquer · Ctrl+A : tout", {}},
+        {"Suppr : supprimer · {0} (Maj : sens inverse) : rotation · {1} : miroir · {2} : aimanter à la grille · {3} : sélection · {4} : main",
+         {k(Action::EditorRotate), k(Action::EditorFlip), k(Action::EditorSnap), k(Action::EditorSelect), k(Action::EditorPan)}},
+        {"Ctrl+S : enregistrer · {0} : tester depuis le départ (Maj : depuis la vue) · menu de Tester : depuis la sélection", {k(Action::EditorTest)}},
+        {"Ctrl+G : grouper · Ctrl+Maj+G : dégrouper · Alt+clic : un seul objet d'un groupe · {0} : carte (clic pour s'y rendre)", {k(Action::EditorMinimap)}},
+        {"Plusieurs objets sélectionnés : tableau sous la vue (calque, groupe, liens) ; aligner et répartir dans ENTITÉ", {}},
+        {"À gauche : explorateur (par calque ou par type, filtre), historique (cliquez pour revenir à une étape), vérifier", {}},
+        {"À droite : bibliothèque (catégories, recherche, étoile = favori) et entité (propriétés, relations avec les autres objets)", {}},
+        {"Au-dessus de la vue : taille de la grille, aimanter, zoom, « Tout le niveau », surcouches grille, liens, zones, collisions", {}},
+        {"Niveaux de la campagne et importés : lecture seule, « Dupliquer » crée votre copie modifiable", {}},
+        {"Sauvegarde automatique régulière dans le dossier utilisateur (levels/autosave).", {}},
+    };
+    float y = c.y + ui.s(60);
+    for (const auto& [raw, keys] : lines) {
         std::string l = raw;
-        if (size_t at = l.find("{0}"); at != std::string::npos) l.replace(at, 3, viewKeys);
+        for (size_t n = 0; n < keys.size(); ++n) {
+            const std::string slot = "{" + std::to_string(n) + "}";
+            if (size_t at = l.find(slot); at != std::string::npos) l.replace(at, slot.size(), keys[n]);
+        }
         Vec2 s = ui.labelWrapped(l, {c.x, y}, c.w, 19, ui.theme().text);
         y += s.y + ui.s(10);
     }

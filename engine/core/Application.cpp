@@ -139,18 +139,29 @@ void Application::processEvents() {
             running_ = false;
             continue;
         }
+        // 2.93: F11, F3 and F12 are the player's (Paramètres › Contrôles › « Partout »): a key of the
+        // keyboard, never a menu's; none while a key is being chosen (it may be that one), none of the
+        // letters while typing (Alt+Entrée stays the full screen's, fixed).
+        const SDL_Scancode sc = e.type == SDL_EVENT_KEY_DOWN ? e.key.scancode : SDL_SCANCODE_UNKNOWN;
+        auto bound = [&](Action a) {
+            if (sc == SDL_SCANCODE_UNKNOWN || input_.capturing()) return false;
+            if (input_.textInputActive() && !(sc >= SDL_SCANCODE_F1 && sc <= SDL_SCANCODE_F12) && !(sc >= SDL_SCANCODE_F13 && sc <= SDL_SCANCODE_F24))
+                return false;
+            for (SDL_Scancode k : input_.bindings().keys[static_cast<int>(a)])
+                if (k == sc) return true;
+            return false;
+        };
         if (e.type == SDL_EVENT_KEY_DOWN && !e.key.repeat) {
-            if (e.key.scancode == SDL_SCANCODE_F11 ||
-                (e.key.scancode == SDL_SCANCODE_RETURN && (e.key.mod & SDL_KMOD_ALT))) {
+            if (bound(Action::Fullscreen) || (e.key.scancode == SDL_SCANCODE_RETURN && (e.key.mod & SDL_KMOD_ALT))) {
                 setFullscreen(!fullscreen_);
                 if (onFullscreenToggled) onFullscreenToggled(fullscreen_);
                 continue;
             }
-            if (e.key.scancode == SDL_SCANCODE_F3) {
+            if (bound(Action::DebugOverlay)) {
                 debugOverlay = !debugOverlay;
                 continue;
             }
-            if (e.key.scancode == SDL_SCANCODE_F12) {
+            if (bound(Action::Screenshot)) {
                 screenshotPath_ = Paths::toUtf8(Paths::screenshotsDir() /
                                                 ("cosmic_" + std::to_string(SDL_GetTicks()) + ".png"));
                 continue;

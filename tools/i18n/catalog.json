@@ -1768,6 +1768,12 @@
    ]
   },
   {
+   "fr": "Accélérer",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Acharné",
    "where": [
     "data/achievements/achievements.json"
@@ -2384,6 +2390,12 @@
    ]
   },
   {
+   "fr": "Afficher / masquer les infos",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Afficher hitbox et portées",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -2536,6 +2548,12 @@
    "fr": "Aimanter",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Aimanter à la grille",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -2763,6 +2781,18 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Aller au début",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Aller à la fin",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -3251,6 +3281,12 @@
    "fr": "Annuler l'événement…",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Annuler la dernière modification",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -7496,6 +7532,12 @@
    ]
   },
   {
+   "fr": "Avancer de 5 s",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Avancez quand le faisceau éclaire votre chemin, et ne sautez jamais dans le noir.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -7888,8 +7930,7 @@
     "engine/input/InputTypes.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
-    "ui/screens/ReplayScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -9371,6 +9412,12 @@
    ]
   },
   {
+   "fr": "Bouton retiré de «",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Bouton retiré de « {0} »",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -10084,8 +10131,7 @@
   {
    "fr": "C",
    "where": [
-    "ui/screens/NotificationsScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -10609,6 +10655,12 @@
    ]
   },
   {
+   "fr": "calque|Vue",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
    "fr": "Calé : {0} vanne à tourner · {1} s",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -10666,6 +10718,12 @@
    "fr": "caméra",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Caméra (comparaison)",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -10803,6 +10861,12 @@
    ]
   },
   {
+   "fr": "Capture d'écran",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Capture impossible",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -10911,6 +10975,12 @@
    "fr": "Carte des planètes : décor de la planète choisie, système entier dans sa zone, fiche holographique et plaque Explorer.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Carte du niveau",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -14765,7 +14835,7 @@
    ]
   },
   {
-   "fr": "Clic droit / molette enfoncée / Espace+glisser : déplacer la vue · molette : zoom · Origine : zoom 100 %",
+   "fr": "Clic droit / molette enfoncée / Espace+glisser : déplacer la vue · molette : zoom · {0} : zoom 100 %",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
    ]
@@ -18304,6 +18374,7 @@
   {
    "fr": "Crayon",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -18922,13 +18993,13 @@
    ]
   },
   {
-   "fr": "Ctrl+G : grouper · Ctrl+Maj+G : dégrouper · Alt+clic : un seul objet d'un groupe · M : carte (clic pour s'y rendre)",
+   "fr": "Ctrl+G : grouper · Ctrl+Maj+G : dégrouper · Alt+clic : un seul objet d'un groupe · {0} : carte (clic pour s'y rendre)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
    ]
   },
   {
-   "fr": "Ctrl+S : enregistrer · F5 : tester depuis le départ · Maj+F5 : depuis la vue · menu de Tester : depuis la sélection",
+   "fr": "Ctrl+S : enregistrer · {0} : tester depuis le départ (Maj : depuis la vue) · menu de Tester : depuis la sélection",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
    ]
@@ -18937,6 +19008,12 @@
    "fr": "Ctrl+Z / Ctrl+Y : annuler / rétablir · Ctrl+C / Ctrl+V / Ctrl+D : copier, coller, dupliquer · Ctrl+A : tout",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Ctrl+Z / Ctrl+Y annulent et rétablissent toujours. Restent fixes : les autres raccourcis avec Ctrl, Suppr, Échap, les flèches et la souris ; à la manette, LB / RB changent d'outil et les gâchettes d'image.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -23887,6 +23964,12 @@
    ]
   },
   {
+   "fr": "Déplacements et actions",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "déplacements impossibles",
    "where": [
     "server/src/race.ts"
@@ -23915,6 +23998,7 @@
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
     "editors/level_editor/LevelEditorViewport.cpp",
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -24091,8 +24175,7 @@
   {
    "fr": "E",
    "where": [
-    "ui/screens/NotificationsScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -24408,6 +24491,7 @@
   {
    "fr": "Ellipse",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -26072,10 +26156,10 @@
   {
    "fr": "Entraînement",
    "where": [
+    "engine/input/InputTypes.cpp",
     "game/ghost/PersonalBests.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
-    "ui/screens/SettingsScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
    ]
   },
@@ -26690,7 +26774,7 @@
    ]
   },
   {
-   "fr": "Espace : pause · ← → : image (en pause) · + − : zoom · Maj + flèches : déplacer · Tab : partie suivante",
+   "fr": "Espace : pause · ← → : image (en pause) · {0} / {1} : zoom · Maj + flèches : déplacer · {2} : partie suivante",
    "where": [
     "ui/widgets/HitPartsView.cpp"
    ]
@@ -27219,12 +27303,6 @@
    ]
   },
   {
-   "fr": "F8",
-   "where": [
-    "ui/screens/ReplayScene.cpp"
-   ]
-  },
-  {
    "fr": "Facile",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -27512,6 +27590,7 @@
    "fr": "Fantômes",
    "where": [
     "data/achievements/achievements.json",
+    "engine/input/InputTypes.cpp",
     "ui/screens/PauseScene.cpp"
    ]
   },
@@ -27837,6 +27916,12 @@
    "fr": "Fiche du clan indisponible.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche du cœur : état réel du clan",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -28284,6 +28369,12 @@
    "fr": "Films d'Asterion",
    "where": [
     "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Films et histoires",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -29381,8 +29472,7 @@
   {
    "fr": "G",
    "where": [
-    "ui/screens/NotificationsScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -30721,6 +30811,7 @@
   {
    "fr": "Gomme",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -31680,12 +31771,6 @@
    ]
   },
   {
-   "fr": "H",
-   "where": [
-    "ui/studio/StudioCanvas.cpp"
-   ]
-  },
-  {
    "fr": "Habitant du cosmos",
    "where": [
     "data/achievements/achievements.json"
@@ -32459,13 +32544,6 @@
    ]
   },
   {
-   "fr": "I",
-   "where": [
-    "ui/screens/ReplayScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
-   ]
-  },
-  {
    "fr": "IA",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -33169,6 +33247,30 @@
    ]
   },
   {
+   "fr": "Image précédente",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Image précédente de l'animation",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Image suivante",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Image suivante de l'animation",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Image trop grande : {0} × {1} pixels ({2} × {3} au plus).",
    "where": [
     "ui/studio/StudioSlicer.cpp"
@@ -33690,6 +33792,12 @@
    "fr": "informations",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Informations de debug (mode debug)",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -34502,8 +34610,7 @@
   {
    "fr": "J",
    "where": [
-    "ui/screens/NotificationsScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -34835,6 +34942,12 @@
    "fr": "Jouer hors ligne",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Jouer l'animation",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -35433,8 +35546,7 @@
   {
    "fr": "K",
    "where": [
-    "ui/screens/NotificationsScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -35495,9 +35607,7 @@
   {
    "fr": "L",
    "where": [
-    "engine/input/InputTypes.cpp",
-    "ui/screens/ReplayScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -39645,6 +39755,12 @@
    ]
   },
   {
+   "fr": "Le lecteur de replays et le montage « Regarder » (reculer / avancer : le segment d'avant, le suivant). À la manette, le bouton des infos maintenu + haut pose un point de mesure. Les flèches, Entrée, Échap et les onglets (points précédent / suivant) restent ceux des menus.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Le lendemain, il renaquit de ses cendres, plus grand et plus brillant. Et il recommença.",
    "where": [
     "data/stories/phenix.json"
@@ -41211,6 +41327,12 @@
    ]
   },
   {
+   "fr": "Lecture / pause",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Lecture de l'aperçu…",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -41956,6 +42078,12 @@
    "fr": "Les fichiers R2 listés (replays, avatars, niveaux de la communauté, projets…) sont dans le fichier .cpbk téléchargé ; les installateurs du jeu (releases/) n'en font pas partie.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Les films et les histoires des giga-boss. « Passer » et « Quitter » sont Valider et Retour des menus. Le bouton de « Revoir depuis le début » sert aussi au mode Film quand il n'y a rien à revoir.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -43268,6 +43396,7 @@
   {
    "fr": "Ligne",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -43578,6 +43707,12 @@
    ]
   },
   {
+   "fr": "Liste des raccourcis",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Liste indisponible : {0}",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -43765,6 +43900,12 @@
    ]
   },
   {
+   "fr": "Lues sur tous les écrans, avant tout le reste : une touche du clavier seulement, jamais une touche des menus. Alt+Entrée bascule aussi le plein écran.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Lueur",
    "where": [
     "game/levels/ObjectTypes.cpp",
@@ -43904,8 +44045,7 @@
   {
    "fr": "M",
    "where": [
-    "ui/screens/NotificationsScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -45673,7 +45813,8 @@
   {
    "fr": "Miroir",
    "where": [
-    "data/levels/aethra_02.json"
+    "data/levels/aethra_02.json",
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -45818,7 +45959,7 @@
    ]
   },
   {
-   "fr": "Mode debug (F3 en jeu)",
+   "fr": "Mode debug ({0} en jeu)",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -45839,6 +45980,7 @@
   {
    "fr": "Mode Film",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/screens/BossStoryScene.cpp"
    ]
   },
@@ -45849,7 +45991,7 @@
    ]
   },
   {
-   "fr": "Mode Film — F ou Y (manette) pour revenir",
+   "fr": "Mode Film — {0} ou {1} (manette) pour revenir",
    "where": [
     "ui/screens/BossStoryScene.cpp"
    ]
@@ -49540,12 +49682,6 @@
    ]
   },
   {
-   "fr": "O",
-   "where": [
-    "ui/studio/StudioCanvas.cpp"
-   ]
-  },
-  {
    "fr": "Objectif",
    "where": [
     "ui/online/RaidHud.cpp",
@@ -50817,6 +50953,18 @@
    ]
   },
   {
+   "fr": "Outil main",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Outil sélection",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Outils admin",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -51824,8 +51972,8 @@
   {
    "fr": "Partie",
    "where": [
+    "engine/input/InputTypes.cpp",
     "game/ghost/PersonalBests.cpp",
-    "ui/screens/SettingsScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
    ]
   },
@@ -51933,6 +52081,12 @@
    ]
   },
   {
+   "fr": "Partie précédente",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Partie rejouée à l'identique",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -51942,6 +52096,12 @@
    "fr": "Partie rejouée à l'identique · {0} contrôles vérifiés",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Partie suivante",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -52038,6 +52198,12 @@
    "fr": "Partir de SP {0}",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Partout",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -53464,6 +53630,12 @@
    ]
   },
   {
+   "fr": "Pendant une course contre les fantômes.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "pendant {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -54110,6 +54282,7 @@
   {
    "fr": "Pipette",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -54783,7 +54956,13 @@
    ]
   },
   {
-   "fr": "Plein écran sans bordure (F11)",
+   "fr": "Plein écran",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Plein écran sans bordure ({0})",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -56137,6 +56316,7 @@
   {
    "fr": "Pot de peinture",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -58520,9 +58700,7 @@
    "fr": "R",
    "where": [
     "engine/input/InputTypes.cpp",
-    "ui/screens/NotificationsScene.cpp",
-    "ui/screens/ReplayScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -58978,10 +59156,10 @@
   {
    "fr": "Raids",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp",
-    "ui/screens/HudEditorScene.cpp",
-    "ui/screens/SettingsScene.cpp"
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -59283,6 +59461,12 @@
    "where": [
     "data/powers/time_slow.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Ralentir",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -59693,6 +59877,12 @@
    ]
   },
   {
+   "fr": "Recaler (comparaison)",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Recaler B",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -59935,11 +60125,17 @@
   {
    "fr": "Recommencer",
    "where": [
-    "game/powers/PowerKeys.cpp",
+    "engine/input/InputTypes.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recommencer : contre-la-montre, entraînement, défis et leurs écrans de fin.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -60292,6 +60488,7 @@
   {
    "fr": "Rectangle",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -60305,6 +60502,12 @@
    "fr": "Recul infligé",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Reculer de 5 s",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -61293,6 +61496,7 @@
   {
    "fr": "Renommer",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/SocialScene.cpp",
@@ -61319,7 +61523,7 @@
    ]
   },
   {
-   "fr": "Renommer · F2",
+   "fr": "Renommer · {0}",
    "where": [
     "ui/studio/Studio.cpp"
    ]
@@ -61646,6 +61850,7 @@
   {
    "fr": "Replays",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -61976,6 +62181,12 @@
    "fr": "reste {0}",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Restent fixes : les raccourcis avec Ctrl (annuler, copier, enregistrer…), Suppr, Échap, les flèches et ZQSD / WASD pour la vue, Alt + flèches, la souris.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -62357,7 +62568,13 @@
    ]
   },
   {
-   "fr": "Retourner la sélection ou l'image (H, Maj+H) · symétrie en dessinant (S)",
+   "fr": "Retourner (Maj : de haut en bas)",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Retourner la sélection ou l'image (Maj : de haut en bas) · symétrie en dessinant",
    "where": [
     "ui/studio/StudioCanvas.cpp"
    ]
@@ -62462,6 +62679,12 @@
    "fr": "Revoir",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revoir depuis le début",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -62820,6 +63043,12 @@
    "where": [
     "game/levels/LevelData.cpp",
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rotation (Maj : sens inverse)",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -64256,6 +64485,12 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Rétablir la modification",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -68549,7 +68784,7 @@
    ]
   },
   {
-   "fr": "Startpos et points de mesure, pendant un entraînement de segment ou d'enchaînement. À la manette : Vue maintenue + la croix (bas : poser, gauche / droite : précédente / suivante, haut : point de mesure) ; Vue seule recommence l'essai.",
+   "fr": "Startpos et points de mesure, pendant un entraînement de segment ou d'enchaînement (le point de mesure sert aussi dans les replays). À la manette : le bouton de « Recommencer » (Vue) maintenu + la croix (bas : poser, gauche / droite : précédente / suivante, haut : point de mesure) ; relâché seul, il recommence l'essai.",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -69017,6 +69252,12 @@
    ]
   },
   {
+   "fr": "Studio des créations",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Style",
    "where": [
     "game/levels/ObjectTypes.cpp",
@@ -69408,7 +69649,7 @@
    ]
   },
   {
-   "fr": "Suppr : supprimer · R / Maj+R : rotation · F : miroir · G : aimanter à la grille · V : sélection · H : main",
+   "fr": "Suppr : supprimer · {0} (Maj : sens inverse) : rotation · {1} : miroir · {2} : aimanter à la grille · {3} : sélection · {4} : main",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
    ]
@@ -69943,6 +70184,12 @@
    ]
   },
   {
+   "fr": "Symétrie en dessinant",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Symétrie en dessinant · S",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -70104,6 +70351,7 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorLayout.cpp",
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -70132,7 +70380,7 @@
    ]
   },
   {
-   "fr": "Sélectionnez un objet dans la vue, ou choisissez un élément dans la bibliothèque puis cliquez (ou tracez un rectangle) pour le placer.\n\nF1 : liste des raccourcis.",
+   "fr": "Sélectionnez un objet dans la vue, ou choisissez un élément dans la bibliothèque puis cliquez (ou tracez un rectangle) pour le placer.\n\n{0} : liste des raccourcis.",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
    ]
@@ -72035,7 +72283,13 @@
    ]
   },
   {
-   "fr": "Tester (F5)",
+   "fr": "Tester",
+   "where": [
+    "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Tester ({0})",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
    ]
@@ -72092,6 +72346,12 @@
    "fr": "Tester ici",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Tester le niveau",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -72841,6 +73101,18 @@
    "fr": "Touche : {0}",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Touche des menus : choisissez-en une autre",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touche retirée de «",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -73708,6 +73980,12 @@
    "fr": "Trajectoire enregistrée (simulation désynchronisée)",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trajectoires (comparaison)",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -74869,6 +75147,12 @@
    "fr": "Un brouillon ne se suspend pas : il n'est pas publié.",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Un cadeau ouvert, la toile des succès, les parties des ennemis, la fiche du cœur d'un raid. Le + et le − du pavé numérique zooment aussi ; Maj + la touche de « Partie suivante » donne la précédente.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -76528,6 +76812,12 @@
    ]
   },
   {
+   "fr": "Une touche du clavier seulement pour cette commande",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Une touche et un bouton de manette pour chaque pouvoir du niveau qui s'utilise avec une touche à lui : les mêmes quel que soit l'emplacement du pouvoir. Sans choix ici, un pouvoir garde sa touche suggérée. Chaque joueur peut changer les siennes (choix du niveau, pause).",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
@@ -76940,8 +77230,7 @@
   {
    "fr": "V",
    "where": [
-    "ui/screens/NotificationsScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -80600,14 +80889,7 @@
   {
    "fr": "Vue",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp",
     "engine/input/InputTypes.cpp"
-   ]
-  },
-  {
-   "fr": "Vue + bas : poser une startpos · Vue + gauche / droite : choisir · Vue + haut : point de mesure",
-   "where": [
-    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -80850,8 +81132,7 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
-    "engine/input/InputTypes.cpp",
-    "ui/screens/GiftsScene.cpp"
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -81306,14 +81587,22 @@
    ]
   },
   {
+   "fr": "Zoom 100 %",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Zoom arrière",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
    "fr": "Zoom avant",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -81710,6 +81999,12 @@
    ]
   },
   {
+   "fr": "{0} + bas : poser une startpos · {1} + gauche / droite : choisir · {2} + haut : point de mesure",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "{0} + {1} toutes les {2} s",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -81737,12 +82032,6 @@
    "fr": "{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
-   ]
-  },
-  {
-   "fr": "{0} / Vue : recommencer",
-   "where": [
-    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -82170,6 +82459,12 @@
    "fr": "{0} : poser une startpos · {1} / {2} : choisir · {3} : point de mesure (A puis B)",
    "where": [
     "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : recommencer",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -86394,25 +86689,25 @@
    ]
   },
   {
-   "fr": "{0}hors classement · {1} / Vue : recommencer",
+   "fr": "{0}hors classement · {1}",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
   {
-   "fr": "{0}hors classement · {1} / Vue : recommencer depuis la startpos",
+   "fr": "{0}hors classement · {1} depuis la startpos",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
   {
-   "fr": "{0}INVINCIBLE · hors classement · {1} / Vue : recommencer",
+   "fr": "{0}INVINCIBLE · hors classement · {1}",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
   {
-   "fr": "{0}INVINCIBLE · hors classement · {1} / Vue : recommencer depuis la startpos",
+   "fr": "{0}INVINCIBLE · hors classement · {1} depuis la startpos",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
@@ -87535,6 +87830,12 @@
    ]
   },
   {
+   "fr": "Échanger les deux couleurs",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Échap",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -88184,6 +88485,12 @@
    ]
   },
   {
+   "fr": "Écrans",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Écrasement",
    "where": [
     "data/enemies/echo_prime_sentinel.json",
@@ -88376,7 +88683,8 @@
   {
    "fr": "Éditeur de niveaux",
    "where": [
-    "editors/enemy_editor/EnemyEditorScene.cpp"
+    "editors/enemy_editor/EnemyEditorScene.cpp",
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -88770,6 +89078,12 @@
    ]
   },
   {
+   "fr": "Équiper la récompense",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Équiper maintenant",
    "where": [
     "ui/screens/GiftsScene.cpp"
@@ -88866,7 +89180,13 @@
    ]
   },
   {
-   "fr": "État réel du clan (R)",
+   "fr": "État réel du clan",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
+   "fr": "État réel du clan ({0})",
    "where": [
     "ui/widgets/HeartSheetView.cpp"
    ]

@@ -110,7 +110,9 @@ public:
             g_.app.popScene();
         }
         if (messageTimer_ > 0.0f)
-            ui.label(message_, {panel.x + ui.s(40), by + ui.s(29)}, 22, ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
+            // Never under « Retour » (2.93: the commands' names are longer).
+            ui.label(ui.elide(message_, FontFace::Body, 22, panel.right() - ui.s(360) - (panel.x + ui.s(40))), {panel.x + ui.s(40), by + ui.s(29)}, 22,
+                     ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
         float fy = ui.screenH() - ui.s(40);
         float x = panel.x;
         x += Glyphs::drawHint(ui, Action::MenuTabPrev, "/", {x, fy}, ui.s(30));
@@ -191,7 +193,8 @@ private:
         float y = c.y, w = std::min(c.w, ui.s(900));
         Rect r{c.x, y, w, ui.s(54)};
         auto next = [&]() { r.y += row(); };
-        if (ui.toggle("fullscreen", r, "Plein écran sans bordure (F11)", working_.graphics.fullscreen)) {
+        // 2.93: the key of « Plein écran » as the player set it (F11 by default).
+        if (ui.toggle("fullscreen", r, "Plein écran sans bordure (" + actionKeyName(working_.input, Action::Fullscreen) + ")", working_.graphics.fullscreen)) {
             g_.app.setFullscreen(working_.graphics.fullscreen);
         }
         next();
@@ -235,14 +238,15 @@ private:
         if (fx) g_.uiSound("collect_shard", 0.7f);
     }
 
-    void bindingRow(const Rect& r, Action a, bool pad) {
+    void bindingRow(const Rect& r, Action a, bool pad, const InputBindings& d) {
         UIContext& ui = g_.ui;
         int i = static_cast<int>(a);
         // The name never reaches the buttons (long names are drawn smaller).
         const std::string name = actionLabel(a);
         const float nameRoom = r.w * 0.42f - ui.s(20);
-        ui.label(name, {r.x + ui.s(10), r.center().y}, ui.fitFont(name, FontFace::Body, 22, nameRoom), ui.theme().text, Align::Left,
-                 FontFace::Body, VAlign::Middle);
+        const float nameFs = ui.fitFont(name, FontFace::Body, 22, nameRoom);
+        ui.label(ui.elide(name, FontFace::Body, nameFs, nameRoom), {r.x + ui.s(10), r.center().y}, nameFs, ui.theme().text, Align::Left, FontFace::Body,
+                 VAlign::Middle);
         // One key / one button per command (2.29): a single column.
         for (int slot = 0; slot < 1; ++slot) {
             Rect b{r.x + r.w * 0.42f, r.y, r.w * 0.38f, r.h};
@@ -282,9 +286,8 @@ private:
             if (icon) Glyphs::drawPadButton(ui, pb, {b.x + ui.s(8), b.center().y}, ui.s(32), padStyle());
         }
         // « Par défaut »: this command alone back to its key / button of origin (active only when
-        // it was changed). A command that used that key loses it, as when a key is chosen.
+        // it was changed). A command read with it that used that key loses it, as when a key is chosen.
         {
-            const InputBindings d = InputBindings::defaults();
             const bool same = pad ? cur().pad[i] == d.pad[i] : cur().keys[i] == d.keys[i];
             Rect rb{r.x + r.w * 0.82f, r.y, r.w * 0.18f, r.h};
             UIContext::ButtonStyle st;
@@ -298,26 +301,9 @@ private:
             // disabled one too); the pill itself only on the first row, not on every line.
             ui.newBadge(resetId, rb, pad ? "settings.reset_one.gamepad" : "settings.reset_one.keyboard", a == Action::MoveLeft, true);
             if (resetClicked && !same) {
-                if (pad) {
-                    const PadBinding def = d.pad[i][0];
-                    for (int o = 0; o < kFirstMenuAction; ++o)
-                        for (auto& p : cur().pad[o])
-                            if (o != i && def.kind != PadBinding::Kind::None && p == def) {
-                                p = PadBinding{};
-                                flash(std::string("Bouton retiré de « ") + actionLabel(static_cast<Action>(o)) + " »");
-                            }
-                    cur().pad[i] = d.pad[i];
-                } else {
-                    const SDL_Scancode def = d.keys[i][0];
-                    for (int o = 0; o < kFirstMenuAction; ++o)
-                        for (auto& k : cur().keys[o])
-                            if (o != i && def != SDL_SCANCODE_UNKNOWN && k == def) {
-                                k = SDL_SCANCODE_UNKNOWN;
-                                flash(std::string("Touche retirée de « ") + actionLabel(static_cast<Action>(o)) + " »");
-                            }
-                    cur().keys[i] = d.keys[i];
-                }
-                cur().keepOneBinding();
+                // 2.93: only the commands of the same screens lose that key (InputBindings::resetKey).
+                for (Action o : pad ? cur().resetPad(a) : cur().resetKey(a))
+                    flash(std::string(pad ? "Bouton retiré de « " : "Touche retirée de « ") + actionLabel(o) + " »");
                 apply();
                 g_.uiSound("ui_confirm");
             }
@@ -332,7 +318,43 @@ private:
         float h = 0.0f;
     };
 
-    std::vector<ListItem> bindingItems(float width) {
+    /// 2.93: what a section of the list says under its title (docs/CONTROLES.md: what stays fixed).
+    static const char* groupNote(BindingGroup g) {
+        switch (g) {
+            case BindingGroup::Game: return "Recommencer : contre-la-montre, entraînement, défis et leurs écrans de fin.";
+            case BindingGroup::Ghosts: return "Pendant une course contre les fantômes.";
+            case BindingGroup::Training:
+                return "Startpos et points de mesure, pendant un entraînement de segment ou d'enchaînement (le point de mesure sert aussi dans "
+                       "les replays). À la manette : le bouton de « Recommencer » (Vue) maintenu + la croix (bas : poser, gauche / droite : "
+                       "précédente / suivante, haut : point de mesure) ; relâché seul, il recommence l'essai.";
+            case BindingGroup::Raid:
+                return "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, "
+                       "groupe, titan), pendant un raid : le groupe continue à jouer. Dans un test : la roue d'ordres aux joueurs simulés et "
+                       "leurs pensées.";
+            case BindingGroup::Replay:
+                return "Le lecteur de replays et le montage « Regarder » (reculer / avancer : le segment d'avant, le suivant). À la manette, "
+                       "le bouton des infos maintenu + haut pose un point de mesure. Les flèches, Entrée, Échap et les onglets (points "
+                       "précédent / suivant) restent ceux des menus.";
+            case BindingGroup::Film:
+                return "Les films et les histoires des giga-boss. « Passer » et « Quitter » sont Valider et Retour des menus. Le bouton de "
+                       "« Revoir depuis le début » sert aussi au mode Film quand il n'y a rien à revoir.";
+            case BindingGroup::Screens:
+                return "Un cadeau ouvert, la toile des succès, les parties des ennemis, la fiche du cœur d'un raid. Le + et le − du pavé "
+                       "numérique zooment aussi ; Maj + la touche de « Partie suivante » donne la précédente.";
+            case BindingGroup::LevelEditor:
+                return "Restent fixes : les raccourcis avec Ctrl (annuler, copier, enregistrer…), Suppr, Échap, les flèches et ZQSD / WASD "
+                       "pour la vue, Alt + flèches, la souris.";
+            case BindingGroup::Studio:
+                return "Ctrl+Z / Ctrl+Y annulent et rétablissent toujours. Restent fixes : les autres raccourcis avec Ctrl, Suppr, Échap, "
+                       "les flèches et la souris ; à la manette, LB / RB changent d'outil et les gâchettes d'image.";
+            case BindingGroup::Everywhere:
+                return "Lues sur tous les écrans, avant tout le reste : une touche du clavier seulement, jamais une touche des menus. "
+                       "Alt+Entrée bascule aussi le plein écran.";
+            default: return "";
+        }
+    }
+
+    std::vector<ListItem> bindingItems(float width, bool pad) {
         UIContext& ui = g_.ui;
         std::vector<ListItem> items;
         auto text = [&](std::string title, std::string body) {
@@ -345,31 +367,31 @@ private:
             it.h = h + ui.s(10);
             items.push_back(std::move(it));
         };
-        for (int i = 0; i < kFirstMenuAction; ++i) {
-            Action a = static_cast<Action>(i);
-            if (!actionIsRebindable(a)) continue;  // the power buttons before 2.24, the power slots
-            if (a == Action::Jump)
-                text("", "Les flèches du clavier et la croix de la manette déplacent aussi Nova, en plus des commandes choisies ci-dessus.");
-            if (a == Action::Pause)
-                text("Pouvoirs",
-                     "Les touches des pouvoirs se règlent pour chaque niveau : éditeur, choix du niveau › Touches…, pause › Touches de ce niveau.");
-            if (a == Action::Pause) text("Partie", "");
-            if (a == Action::RaidMap)
-                text("Raids", "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, "
-                              "groupe, titan), pendant un raid : le groupe continue à jouer. Dans un test : la roue d'ordres aux joueurs simulés et "
-                              "leurs pensées.");
-            if (a == Action::StartPosPlace)
-                text("Entraînement", "Startpos et points de mesure, pendant un entraînement de segment ou d'enchaînement. À la manette : "
-                                     "Vue maintenue + la croix (bas : poser, gauche / droite : précédente / suivante, haut : point de mesure) ; "
-                                     "Vue seule recommence l'essai.");
-            ListItem it;
-            it.action = a;
-            it.h = ui.s(52);
-            items.push_back(std::move(it));
-            // 2.71: the attack upwards and downwards (no key of its own: a direction held).
-            if (a == Action::Attack)
-                text("", "Attaque vers le haut : Haut + Attaque, au sol ou en l'air. Attaque vers le bas : Bas + Attaque, en l'air "
-                         "seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe).");
+        // 2.93: section by section (where the commands are read: two sections may share a key, one
+        // section never; docs/CONTROLES.md); the gamepad tab leaves out the keyboard's only.
+        for (int g = 0; g < static_cast<int>(BindingGroup::Count); ++g) {
+            const BindingGroup group = static_cast<BindingGroup>(g);
+            bool titled = false;
+            for (int i = 0; i < kFirstMenuAction; ++i) {
+                Action a = static_cast<Action>(i);
+                // The power buttons before 2.24, the power slots; the keyboard's only on the gamepad tab.
+                if (!actionIsRebindable(a) || actionGroup(a) != group || (pad && !actionHasPadBinding(a))) continue;
+                if (group == BindingGroup::Game && !titled)
+                    text("Pouvoirs",
+                         "Les touches des pouvoirs se règlent pour chaque niveau : éditeur, choix du niveau › Touches…, pause › Touches de ce niveau.");
+                if (group != BindingGroup::Moves && !titled) text(bindingGroupTitle(group), groupNote(group));
+                titled = true;
+                if (a == Action::Jump)
+                    text("", "Les flèches du clavier et la croix de la manette déplacent aussi Nova, en plus des commandes choisies ci-dessus.");
+                ListItem it;
+                it.action = a;
+                it.h = ui.s(52);
+                items.push_back(std::move(it));
+                // 2.71: the attack upwards and downwards (no key of its own: a direction held).
+                if (a == Action::Attack)
+                    text("", "Attaque vers le haut : Haut + Attaque, au sol ou en l'air. Attaque vers le bas : Bas + Attaque, en l'air "
+                             "seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe).");
+            }
         }
         return items;
     }
@@ -379,7 +401,8 @@ private:
         float gap = ui.s(8);
         Rect list{c.x, c.y, std::min(c.w, ui.s(900)), c.h - ui.s(70)};
         const float rowW = list.w - ui.s(16);
-        auto items = bindingItems(rowW - ui.s(20));
+        auto items = bindingItems(rowW - ui.s(20), pad);
+        const InputBindings defaults = InputBindings::defaults();  // « Par défaut » of every row
         float total = 0.0f, slotsAt = 0.0f;
         for (const auto& it : items) {
             if (it.action == Action::Count && !it.title.empty() && slotsAt == 0.0f) slotsAt = total;
@@ -393,7 +416,7 @@ private:
         float y = list.y - ui.scrollOffset();
         for (const auto& it : items) {
             if (it.action != Action::Count) {
-                bindingRow({list.x, y, rowW, it.h}, it.action, pad);
+                bindingRow({list.x, y, rowW, it.h}, it.action, pad, defaults);
             } else {
                 float ty = y + ui.s(10);
                 if (!it.title.empty()) {
@@ -561,7 +584,7 @@ private:
         ui.toggle("hudfade", r, "Effacer le HUD quand il cache l'action", working_.gameplay.fadeHud);
         ui.newBadge("hudfade", r, "settings.game.hud_fade", true, true);
         r.y += row();
-        ui.toggle("debug", r, "Mode debug (F3 en jeu)", working_.gameplay.debugMode);
+        ui.toggle("debug", r, "Mode debug (" + actionKeyName(working_.input, Action::DebugOverlay) + " en jeu)", working_.gameplay.debugMode);
         r.y += row();
         ui.toggle("unlockall", r, "Tout débloquer : planètes et niveaux (mode test)", working_.gameplay.unlockAll);
         r.y += row();
@@ -594,28 +617,23 @@ private:
         in.cancelCapture();
         int i = static_cast<int>(captureAction_);
         if (captureAction_ == Action::Count) return;
+        (void)i;
+        // 2.93: the key (or button) is taken from the commands read on the same screens only
+        // (InputBindings::bindKey); the application's commands take a key of the keyboard that no
+        // menu uses (they are read before any screen: the menus would lose it).
         if (!capturePad_) {
             SDL_Scancode sc = in.capturedKey();
             if (sc == SDL_SCANCODE_ESCAPE && captureAction_ != Action::Pause) {
                 flash("Modification annulée");
+            } else if (sc != SDL_SCANCODE_UNKNOWN && actionKeyboardOnly(captureAction_) && !isKeyboardScancode(sc)) {
+                flash("Une touche du clavier seulement pour cette commande");
+            } else if (sc != SDL_SCANCODE_UNKNOWN && actionKeyboardOnly(captureAction_) && isMenuKey(sc)) {
+                flash("Touche des menus : choisissez-en une autre");
             } else if (sc != SDL_SCANCODE_UNKNOWN) {
-                for (int a = 0; a < kFirstMenuAction; ++a)
-                    for (auto& k : cur().keys[a])
-                        if (k == sc && !(a == i)) {
-                            k = SDL_SCANCODE_UNKNOWN;
-                            flash(std::string("Touche retirée de « ") + actionLabel(static_cast<Action>(a)) + " »");
-                        }
-                cur().keys[i][captureSlot_] = sc;
+                for (Action o : cur().bindKey(captureAction_, sc)) flash(std::string("Touche retirée de « ") + actionLabel(o) + " »");
             }
         } else {
-            PadBinding b = in.capturedPad();
-            for (int a = 0; a < kFirstMenuAction; ++a)
-                for (auto& p : cur().pad[a])
-                    if (p == b && a != i) {
-                        p = PadBinding{};
-                        flash(std::string("Bouton retiré de « ") + actionLabel(static_cast<Action>(a)) + " »");
-                    }
-            cur().pad[i][captureSlot_] = b;
+            for (Action o : cur().bindPad(captureAction_, in.capturedPad())) flash(std::string("Bouton retiré de « ") + actionLabel(o) + " »");
         }
         cur().keepOneBinding();  // one key per command, the arrows / d-pad still move
         apply();
@@ -629,8 +647,10 @@ private:
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, {0, 0, 0, 150});
         Rect m = Rect::fromCenter({ui.screenW() * 0.5f, ui.screenH() * 0.5f}, {ui.s(760), ui.s(240)});
         cframe::panel(ui, m, true, 16);
-        ui.label(std::string("Nouvelle commande : ") + actionLabel(captureAction_), {m.center().x, m.y + ui.s(40)}, 28,
-                 ui.theme().text, Align::Center, FontFace::Bold);
+        const std::string title = std::string("Nouvelle commande : ") + actionLabel(captureAction_);
+        const float titleFs = ui.fitFont(title, FontFace::Bold, 28, m.w - ui.s(40));
+        ui.label(ui.elide(title, FontFace::Bold, titleFs, m.w - ui.s(40)), {m.center().x, m.y + ui.s(40)}, titleFs, ui.theme().text, Align::Center,
+                 FontFace::Bold);
         // Keyboard / mouse: any key, any mouse button (side buttons and the extra buttons of
         // gaming mice included) or a notch of the wheel.
         const std::string ask = capturePad_ ? "Appuyez sur un bouton ou une gâchette de la manette"

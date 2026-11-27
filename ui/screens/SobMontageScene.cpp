@@ -594,17 +594,14 @@ private:
             return;
         }
         if (!ui.acceptsInput() || ui.editingText()) return;
-        auto key = [&](SDL_Keycode k) { return in.shortcutPressed(k); };
-        if (key(SDLK_K)) togglePlay();
-        if (key(SDLK_J) && cur_ > 0) goTo(cur_ - 1);
-        if (key(SDLK_L) && cur_ < count()) next();
+        // 2.93: the replay viewer's keys (Paramètres › Contrôles › « Replays »): play / pause (K, X),
+        // back / forward (J / L: the segment before, the next one).
+        auto key = [&](Action a) { return in.keyPressedFor(a, true); };
+        if (key(Action::ReplayPlay) || in.padPressed(Action::ReplayPlay)) togglePlay();
+        if (key(Action::ReplayBack) && cur_ > 0) goTo(cur_ - 1);
+        if (key(Action::ReplayForward) && cur_ < count()) next();
         if (in.menuPressed(Action::MenuTabPrev) && cur_ > 0) goTo(cur_ - 1);
         if (in.menuPressed(Action::MenuTabNext) && cur_ < count()) next();
-        // Gamepad: X play / pause.
-        if (!in.hasGamepad()) return;
-        bool x = in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST);
-        if (x && !padX_) togglePlay();
-        padX_ = x;
     }
 
     GameServices& g_;
@@ -638,7 +635,6 @@ private:
     int speedIdx_ = 1;
     float acc_ = 0.0f;
     bool closeRequested_ = false;
-    bool padX_ = false;
     // Layout of the last frame.
     Rect stripRect_, chronoRect_;
     std::vector<Rect> hudRects_;

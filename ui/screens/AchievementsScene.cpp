@@ -503,8 +503,9 @@ private:
         Vec2 m = in.mousePos();
         bool over = area.contains(m);
         if (over && in.wheel() != 0.0f) zoomAt(zoom_ * (in.wheel() > 0.0f ? 1.18f : 1.0f / 1.18f), m, area);
-        if (in.keyPressed(SDL_SCANCODE_EQUALS) || in.keyPressed(SDL_SCANCODE_KP_PLUS)) zoomAt(zoom_ * 1.25f, area.center(), area);
-        if (in.keyPressed(SDL_SCANCODE_MINUS) || in.keyPressed(SDL_SCANCODE_KP_MINUS)) zoomAt(zoom_ / 1.25f, area.center(), area);
+        // 2.93: « Zoom avant / arrière » (= and −, the keypad's + and − too: Paramètres › Contrôles › « Écrans »).
+        if (in.commandPressed(Action::ViewZoomIn)) zoomAt(zoom_ * 1.25f, area.center(), area);
+        if (in.commandPressed(Action::ViewZoomOut)) zoomAt(zoom_ / 1.25f, area.center(), area);
         // Drag to move the web (from anywhere on it).
         if (over && in.mousePressed(SDL_BUTTON_LEFT)) {
             dragging_ = true;

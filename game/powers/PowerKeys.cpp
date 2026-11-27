@@ -42,12 +42,14 @@ namespace {
 /// 2.72: the raid's large map is not one of them (it exists in the raids only: the powers of the other
 /// levels keep their keys, M for the decoy among them). 2.79: nor the order wheel and the thoughts of a raid
 /// test's simulated players (C, V, R3: an administrator's test only).
+/// 2.93: the commands read while a level is played (actionScope: kScopeRun) and the application's
+/// (F11, F12, F3: read before the game sees the key), with the raid's menu as before; never the keys
+/// of the screens (replays, editors, Studio…), which a level never reads. The quick restart
+/// (« Recommencer », R / Vue) is one of them since it is a command of its own.
 bool isBaseCommand(int a) {
     const Action act = static_cast<Action>(a);
-    return a < kFirstMenuAction && actionIsRebindable(act) && act != Action::RaidMap && act != Action::BotOrders && act != Action::BotThoughts;
+    return a < kFirstMenuAction && actionIsRebindable(act) && ((actionScope(act) & kScopeRun) != 0u || act == Action::RaidMenu);
 }
-
-const char* const kRestart = "Recommencer";
 
 /// The free keys a power gets when the one it asks for is taken by another power: the
 /// suggestions of the game's powers first (the right hand around the attack), then others.
@@ -128,7 +130,6 @@ std::string baseCommandOfKey(const InputBindings& base, SDL_Scancode key) {
         if (isBaseCommand(a))
             for (auto k : base.keys[a])
                 if (k == key) return actionLabel(static_cast<Action>(a));
-    if (key == SDL_SCANCODE_R) return kRestart;  // quick restart (contre-la-montre, trainings)
     return {};
 }
 
@@ -138,7 +139,6 @@ std::string baseCommandOfPad(const InputBindings& base, const PadBinding& pad) {
         if (isBaseCommand(a))
             for (const auto& p : base.pad[a])
                 if (p == pad) return actionLabel(static_cast<Action>(a));
-    if (pad == PadBinding::button(SDL_GAMEPAD_BUTTON_BACK)) return kRestart;
     return {};
 }
 

@@ -524,8 +524,6 @@ TEST_CASE("power keys: the settings give no key to the power slots any more (2.3
     // Defaults: the commands only; the slots and the old power buttons have no key (the keys
     // of the powers are chosen per level: tests/test_level_power_keys.cpp).
     InputBindings d = InputBindings::defaults();
-    std::set<int> keys;
-    std::vector<PadBinding> pads;
     for (int a = 0; a < kFirstMenuAction; ++a) {
         if (actionIsLegacyPowerKey(static_cast<Action>(a)) || powerSlotOf(static_cast<Action>(a)) >= 0) {
             CHECK(d.keys[a][0] == SDL_SCANCODE_UNKNOWN && d.keys[a][1] == SDL_SCANCODE_UNKNOWN);
@@ -533,19 +531,15 @@ TEST_CASE("power keys: the settings give no key to the power slots any more (2.3
             CHECK(!actionIsRebindable(static_cast<Action>(a)));
             continue;
         }
-        // No default key used twice by gameplay actions.
-        for (auto sc : d.keys[a])
-            if (sc != SDL_SCANCODE_UNKNOWN) {
-                CHECK(keys.count(sc) == 0);
-                keys.insert(sc);
-            }
-        for (const auto& pb : d.pad[a])
-            if (pb.kind != PadBinding::Kind::None) {
-                // 2.75.5: the raid's menu shares L3 with the ghosts' toggle: never in the same game.
-                if (static_cast<Action>(a) == Action::RaidMenu && pb == d.pad[static_cast<int>(Action::GhostToggle)][0]) continue;
-                for (const auto& other : pads) CHECK(!(other == pb));
-                pads.push_back(pb);
-            }
+        // No default key used twice by commands read together (2.93: on the same screens; the raid's
+        // menu shares L3 with the ghosts' toggle, never in the same game: tests/test_controls.cpp).
+        for (int o = 0; o < kFirstMenuAction; ++o) {
+            if (!actionsConflict(static_cast<Action>(a), static_cast<Action>(o))) continue;
+            for (auto sc : d.keys[a])
+                if (sc != SDL_SCANCODE_UNKNOWN) CHECK(d.keys[o][0] != sc && d.keys[o][1] != sc);
+            for (const auto& pb : d.pad[a])
+                if (pb.kind != PadBinding::Kind::None) CHECK(!(d.pad[o][0] == pb) && !(d.pad[o][1] == pb));
+        }
     }
     // A file of 2.23 (one button per power) and of 2.24-2.31 (keys per slot): those entries are
     // ignored, the commands keep what the player chose.

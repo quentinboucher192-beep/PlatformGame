@@ -655,6 +655,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
 * [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
+* [docs/CONTROLES.md](docs/CONTROLES.md) – inventaire des touches et boutons : ce qui se règle dans Paramètres › Contrôles, ce qui reste fixe et pourquoi
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
 * [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8 (chacun sa zone), consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche, tableau des contributions

@@ -3,7 +3,9 @@
 #include <SDL3/SDL.h>
 
 #include <array>
+#include <cstdint>
 #include <string>
+#include <vector>
 
 #include "engine/core/Json.h"
 
@@ -56,6 +58,60 @@ enum class Action : int {
     StartPosPrev,
     StartPosNext,
     MeasurePlace,
+    // 2.93 (docs/CONTROLES.md): the keys the screens read, rebindable like the commands of the game
+    // (Paramètres › Contrôles). Never bits of the recorded actions: replays never depend on them.
+    Restart,            // R / Vue: the quick restart (contre-la-montre, entraînement, défis, fins d'essai)
+    ReplayPlay,         // the replay viewer (and the montage « Regarder »)
+    ReplayBack,
+    ReplayForward,
+    ReplayFramePrev,
+    ReplayFrameNext,
+    ReplayStart,
+    ReplayEnd,
+    ReplaySlower,
+    ReplayFaster,
+    ReplayInfo,
+    ReplayCamera,
+    ReplayPaths,
+    ReplayAlign,
+    FilmRestart,        // films and boss stories
+    FilmMode,
+    GiftEquip,          // a reward revealed (gifts)
+    ViewZoomIn,         // views that zoom (web of the achievements, parts of an enemy)
+    ViewZoomOut,
+    ViewPartNext,       // parts of an enemy (hit parts)
+    ViewPartPrev,
+    SheetReset,         // a raid's heart sheet: back to the clan's real state
+    EditorTest,         // the level editor
+    EditorHelp,
+    EditorSelect,
+    EditorPan,
+    EditorRotate,
+    EditorFlip,
+    EditorSnap,
+    EditorMinimap,
+    EditorZoomReset,
+    StudioPencil,       // the Studio of the creations
+    StudioEraser,
+    StudioFill,
+    StudioPicker,
+    StudioLine,
+    StudioRect,
+    StudioEllipse,
+    StudioSelect,
+    StudioMove,
+    StudioMirror,
+    StudioSymmetry,
+    StudioSwapColors,
+    StudioPlay,
+    StudioFramePrev,
+    StudioFrameNext,
+    StudioRename,
+    StudioUndo,
+    StudioRedo,
+    Fullscreen,         // every screen (read by the application)
+    Screenshot,
+    DebugOverlay,
     MenuUp,
     MenuDown,
     MenuLeft,
@@ -95,6 +151,36 @@ bool actionIsLegacyPowerKey(Action a);
 /// What a power definition may name as its `input` (MoveLeft .. Special).
 bool actionIsPowerInput(Action a);
 Action actionFromId(const std::string& id);
+
+/// 2.93: where a command is read (docs/CONTROLES.md). Two commands may share a key only when no
+/// screen reads both: a conflict is looked for among the commands whose scopes meet
+/// (actionsConflict). The menus' keys are fixed and never compared (each screen reads them too).
+enum BindingScope : uint32_t {
+    kScopeRun = 1u << 0,          // a level played (GameScene: course, contre-la-montre, entraînement, défis)
+    kScopeRaid = 1u << 1,         // a raid, its tests
+    kScopeReplay = 1u << 2,       // the replay viewer, the montage « Regarder »
+    kScopeFilm = 1u << 3,         // films and boss stories
+    kScopeGifts = 1u << 4,        // a gift opened
+    kScopeViews = 1u << 5,        // web of the achievements, parts of the enemies, heart sheet of a raid
+    kScopeLevelEditor = 1u << 6,  // the level editor
+    kScopeStudio = 1u << 7,       // the Studio of the creations
+    kScopePlay = kScopeRun | kScopeRaid,  // moving and fighting: every game (alone, in a team, in a raid)
+    kScopeEverywhere = 0xFFFFFFFFu,       // read by the application on every screen (F11, F12, F3)
+};
+/// The section of Paramètres › Contrôles that lists a command (the order of the list).
+enum class BindingGroup { Moves, Game, Ghosts, Training, Raid, Replay, Film, Screens, LevelEditor, Studio, Everywhere, Count };
+uint32_t actionScope(Action a);
+BindingGroup actionGroup(Action a);
+/// The title of a section (French; translated when drawn).
+const char* bindingGroupTitle(BindingGroup g);
+/// `a` and `b` are two different commands some screen reads together: one key (or button) cannot
+/// do both. Always false for a menu action or a command that is not rebindable.
+bool actionsConflict(Action a, Action b);
+/// The gamepad tab lists it (false: keyboard only, the editors' and the application's keys).
+bool actionHasPadBinding(Action a);
+/// A key of the keyboard only (no mouse button, no wheel): the application's commands, read
+/// before any screen (F11, F12, F3).
+bool actionKeyboardOnly(Action a);
 
 enum class InputDevice { Keyboard, Gamepad };
 /// The glyphs of a gamepad (2.65: Switch, its pads and Joy-Con, with its own names: B at the
@@ -142,10 +228,34 @@ struct InputBindings {
     static InputBindings fromJson(const Json& j);
     /// One key and one button per command (2.29: the settings show a single column). The
     /// second place holds only the fixed alternates: the arrows (keyboard) and the d-pad
-    /// (gamepad) for moving, the touchpad for the focus mode on PlayStation pads; anything else
-    /// there is dropped (a lone second key becomes the first).
+    /// (gamepad) for moving, the touchpad for the focus mode on PlayStation pads, the keypad's
+    /// + and − (2.93); anything else there is dropped (a lone second key becomes the first).
     void keepOneBinding();
+
+    /// 2.93: the key (or mouse button) shown for `a`: its first one, SDL_SCANCODE_UNKNOWN for none.
+    SDL_Scancode keyOf(Action a) const;
+    /// The gamepad binding shown for `a`: its first one, Kind::None for none.
+    PadBinding padOf(Action a) const;
+    /// The commands that would lose `key` (or `pad`) if `a` took it: those a screen reads with `a`.
+    std::vector<Action> keyConflicts(Action a, SDL_Scancode key) const;
+    std::vector<Action> padConflicts(Action a, const PadBinding& pad) const;
+    /// `a` takes `key` / `pad` (its single binding); the commands in conflict lose it (returned, in
+    /// the order of the list), the others keep it (another screen: no conflict).
+    std::vector<Action> bindKey(Action a, SDL_Scancode key);
+    std::vector<Action> bindPad(Action a, const PadBinding& pad);
+    /// « Par défaut »: `a` alone back to its key (or button) of origin, taken from the commands in conflict.
+    std::vector<Action> resetKey(Action a);
+    std::vector<Action> resetPad(Action a);
 };
+
+/// 2.93: the name of `a`'s key in the hints (« R », « Souris 4 », « — » for none), and of its gamepad
+/// binding (« Vue », « Y », « — »): the hints of the screens follow the player's choices.
+std::string actionKeyName(const InputBindings& b, Action a);
+std::string actionPadName(const InputBindings& b, Action a, GamepadStyle style);
+
+/// 2.93: a key the menus use (arrows, ZQSD / WASD, Entrée, Espace, Échap, Retour arrière, onglets):
+/// the application's commands, read before any screen, never take one (the menus would lose it).
+bool isMenuKey(SDL_Scancode sc);
 
 /// The fixed alternate of a command (always active, not shown as a choice): an arrow for
 /// moving, SDL_SCANCODE_UNKNOWN for the others.

@@ -2395,23 +2395,31 @@ private:
         };
         using B = PadBinding;
         std::vector<Hint> hints;
+        // 2.93: every glyph is the binding the player chose (Paramètres › Contrôles › « Replays »).
+        auto act = [](Action a) { return Glyph{"", {}, a}; };
         if (pad) {
-            hints = {{{{"", B::button(SDL_GAMEPAD_BUTTON_WEST)}}, "lecture"},
-                     {{{"", B::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER)}, {"", B::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)}}, "image"},
-                     {{{"", {}, Action::MenuTabPrev}, {"", {}, Action::MenuTabNext}}, "point"},
-                     {{{"", B::axisPos(SDL_GAMEPAD_AXIS_RIGHTX)}}, "±5 s"}};
-            if (comparing_) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_NORTH)}}, "caméra"});
-            hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_BACK)}}, "infos"});
-            if (g_.measures.inReplays) hints.push_back({{{"", B::button(SDL_GAMEPAD_BUTTON_BACK)}, {"", B::button(SDL_GAMEPAD_BUTTON_DPAD_UP)}}, "point de mesure"});
+            // The two ways of one stick (±5 s by default): its glyph once.
+            const PadBinding sb = in.bindings().padOf(Action::ReplayBack), sf = in.bindings().padOf(Action::ReplayForward);
+            const bool oneStick = sb.kind != B::Kind::Button && sf.kind != B::Kind::Button && sb.kind != B::Kind::None && sb.code == sf.code;
+            hints = {{{act(Action::ReplayPlay)}, "lecture"},
+                     {{act(Action::ReplayFramePrev), act(Action::ReplayFrameNext)}, "image"},
+                     {{act(Action::MenuTabPrev), act(Action::MenuTabNext)}, "point"},
+                     {oneStick ? std::vector<Glyph>{act(Action::ReplayForward)} : std::vector<Glyph>{act(Action::ReplayBack), act(Action::ReplayForward)}, "±5 s"}};
+            if (comparing_) hints.push_back({{act(Action::ReplayCamera)}, "caméra"});
+            hints.push_back({{act(Action::ReplayInfo)}, "infos"});
+            if (g_.measures.inReplays) hints.push_back({{act(Action::ReplayInfo), {"", B::button(SDL_GAMEPAD_BUTTON_DPAD_UP)}}, "point de mesure"});
         } else {
-            hints = {{{{"K", {}}}, "lecture"}, {{{",", {}}, {".", {}}}, "image"}, {{{"J", {}}, {"L", {}}}, "±5 s"},
-                     {{{"", {}, Action::MenuTabPrev}, {"", {}, Action::MenuTabNext}}, "point"}, {{{"−", {}}, {"+", {}}}, "vitesse"}};
+            hints = {{{act(Action::ReplayPlay)}, "lecture"},
+                     {{act(Action::ReplayFramePrev), act(Action::ReplayFrameNext)}, "image"},
+                     {{act(Action::ReplayBack), act(Action::ReplayForward)}, "±5 s"},
+                     {{act(Action::MenuTabPrev), act(Action::MenuTabNext)}, "point"},
+                     {{act(Action::ReplaySlower), act(Action::ReplayFaster)}, "vitesse"}};
             if (comparing_) {
-                hints.push_back({{{"C", {}}}, "caméra"});
-                hints.push_back({{{"R", {}}}, "recaler"});
+                hints.push_back({{act(Action::ReplayCamera)}, "caméra"});
+                hints.push_back({{act(Action::ReplayAlign)}, "recaler"});
             }
-            hints.push_back({{{"I", {}}}, "infos"});
-            if (g_.measures.inReplays) hints.push_back({{{"F8", {}}}, "point de mesure"});
+            hints.push_back({{act(Action::ReplayInfo)}, "infos"});
+            if (g_.measures.inReplays) hints.push_back({{act(Action::MeasurePlace)}, "point de mesure"});
         }
         const float h = std::max(ui.s(22), px(13) * 1.5f);
         const float fs = fz(ui, 13), gap = ui.s(4), sep = ui.s(14);
@@ -2475,40 +2483,39 @@ private:
         }
         editedThisFrame_ = false;
         if (!ui.acceptsInput() || ui.editingText() || !loaded()) return;
-        auto key = [&](SDL_Keycode k) { return in.shortcutPressed(k); };
-        if (key(SDLK_K)) togglePlay();
-        if (key(SDLK_J)) seekRelative(-5.0);
-        if (key(SDLK_L)) seekRelative(5.0);
-        if (key(SDLK_COMMA)) stepFrame(-1);
-        if (key(SDLK_PERIOD) || key(SDLK_SEMICOLON)) stepFrame(1);
-        if (in.keyPressed(SDL_SCANCODE_HOME)) seekTo(0.0);
-        if (in.keyPressed(SDL_SCANCODE_END)) seekTo(endTime());
+        // 2.93: the player's keys and buttons (Paramètres › Contrôles › « Replays », docs/CONTROLES.md);
+        // a key the system repeats while it is held repeats its shortcut, as before.
+        auto key = [&](Action a) { return in.keyPressedFor(a, true); };
+        if (key(Action::ReplayPlay) || in.padPressed(Action::ReplayPlay)) togglePlay();
+        if (key(Action::ReplayBack)) seekRelative(-5.0);
+        if (key(Action::ReplayForward)) seekRelative(5.0);
+        if (key(Action::ReplayFramePrev)) stepFrame(-1);
+        if (key(Action::ReplayFrameNext)) stepFrame(1);
+        if (in.commandPressed(Action::ReplayStart)) seekTo(0.0);
+        if (in.commandPressed(Action::ReplayEnd)) seekTo(endTime());
         if (in.menuPressed(Action::MenuTabPrev)) jumpPoint(-1);
         if (in.menuPressed(Action::MenuTabNext)) jumpPoint(1);
-        if (key(SDLK_MINUS) || in.keyPressed(SDL_SCANCODE_KP_MINUS)) speedIdx_ = std::max(0, speedIdx_ - 1);
-        if (key(SDLK_PLUS) || key(SDLK_EQUALS) || in.keyPressed(SDL_SCANCODE_KP_PLUS))
-            speedIdx_ = std::min(static_cast<int>(kSpeeds.size()) - 1, speedIdx_ + 1);
-        if (key(SDLK_I)) toggleInfo();
-        if (in.keyPressed(SDL_SCANCODE_F8)) placeMeasure();  // 2.91: a measure point, as in training
+        if (in.commandPressed(Action::ReplaySlower)) speedIdx_ = std::max(0, speedIdx_ - 1);
+        if (in.commandPressed(Action::ReplayFaster)) speedIdx_ = std::min(static_cast<int>(kSpeeds.size()) - 1, speedIdx_ + 1);
+        if (key(Action::ReplayInfo)) toggleInfo();
+        if (in.commandPressed(Action::MeasurePlace)) placeMeasure();  // 2.91: a measure point, as in training
         if (comparing_) {
-            if (key(SDLK_C)) cycleCamera();
-            if (key(SDLK_T)) showPaths_ = !showPaths_;
-            if (key(SDLK_R)) alignOn(alignRow_);
+            if (in.commandPressed(Action::ReplayCamera)) cycleCamera();
+            if (in.commandPressed(Action::ReplayPaths)) showPaths_ = !showPaths_;
+            if (in.commandPressed(Action::ReplayAlign)) alignOn(alignRow_);
         }
         // Gamepad: X play / pause, triggers step by step (held: repeated), right stick ±5 s,
-        // Y the camera.
+        // Y the camera (2.93: the buttons the player chose).
         if (!in.hasGamepad()) return;
         auto edge = [&](bool now, bool& prev) {
             bool e = now && !prev;
             prev = now;
             return e;
         };
-        if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST), padX_)) togglePlay();
-        if (edge(in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), padY_) && comparing_) cycleCamera();
         // Vue alone shows / hides the infos (when let go); held with ↑, a measure point (2.91, as
         // in training; ↑ then moves nothing between the buttons).
         {
-            const bool back = in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK);
+            const bool back = in.padHeld(Action::ReplayInfo);
             if (back && !padBack_) backChord_ = false;
             if (back) {
                 ui.consumeNavigation(false, true);
@@ -2538,12 +2545,10 @@ private:
             }
             return false;
         };
-        float thr = std::max(0.3f, in.bindings().gamepad.triggerThreshold);
-        if (repeat(in.leftTrigger() > thr, ltTimer_, 0.35f, 0.05f)) stepFrame(-1);
-        if (repeat(in.rightTrigger() > thr, rtTimer_, 0.35f, 0.05f)) stepFrame(1);
-        float sx = in.rightStick().x;
-        if (repeat(sx < -0.6f, rsLeft_, 0.45f, 0.35f)) seekRelative(-5.0);
-        if (repeat(sx > 0.6f, rsRight_, 0.45f, 0.35f)) seekRelative(5.0);
+        if (repeat(in.padHeld(Action::ReplayFramePrev), ltTimer_, 0.35f, 0.05f)) stepFrame(-1);
+        if (repeat(in.padHeld(Action::ReplayFrameNext), rtTimer_, 0.35f, 0.05f)) stepFrame(1);
+        if (repeat(in.padHeld(Action::ReplayBack), rsLeft_, 0.45f, 0.35f)) seekRelative(-5.0);
+        if (repeat(in.padHeld(Action::ReplayForward), rsRight_, 0.45f, 0.35f)) seekRelative(5.0);
     }
 
     void cycleCamera() {
@@ -2682,7 +2687,7 @@ private:
     float msgTimer_ = 0.0f;
     bool closeRequested_ = false;
     bool editedThisFrame_ = false;
-    bool padX_ = false, padY_ = false, padBack_ = false, padUp_ = false;
+    bool padBack_ = false, padUp_ = false;
     float ltTimer_ = -1.0f, rtTimer_ = -1.0f, rsLeft_ = -1.0f, rsRight_ = -1.0f;
 };
 

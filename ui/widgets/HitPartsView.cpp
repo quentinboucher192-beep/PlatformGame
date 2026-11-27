@@ -635,11 +635,13 @@ bool HitStage::input(UIContext& ui, const std::string& id, float dt) {
         }
     }
     // Tab (not typing): the view takes the focus and the next part (Maj: the previous one).
-    if (in.keyPressed(SDL_SCANCODE_TAB) && !ui.editingText()) {
+    // 2.93: « Partie suivante / précédente », Tab by default (Paramètres › Contrôles › « Écrans »).
+    const bool nextKey = in.keyPressedFor(Action::ViewPartNext, true), prevKey = in.keyPressedFor(Action::ViewPartPrev, true);
+    if ((nextKey || prevKey) && !ui.editingText()) {
         if (!ui.focused(id)) ui.setFocus(id);
-        cycle_ = in.shift() ? -1 : 1;
+        cycle_ = prevKey || in.shift() ? -1 : 1;
     }
-    const bool north = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH), west = in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST);
+    const bool north = in.padPressed(Action::ViewPartNext), west = in.padPressed(Action::ViewPartPrev);
     if (ui.focused(id)) {
         const Vec2 ls = in.leftStick();
         const bool stickPan = zoom_ > 1.001f && (std::abs(ls.x) > 0.2f || std::abs(ls.y) > 0.2f);
@@ -661,16 +663,16 @@ bool HitStage::input(UIContext& ui, const std::string& id, float dt) {
                 ui.consumeNavigation(true, false);
             }
         }
-        if (in.shortcutPressed(SDLK_PLUS) || in.shortcutPressed(SDLK_EQUALS) || in.keyPressed(SDL_SCANCODE_KP_PLUS)) zoomBy(1.25f);
-        if (in.shortcutPressed(SDLK_MINUS) || in.keyPressed(SDL_SCANCODE_KP_MINUS)) zoomBy(0.8f);
+        if (in.commandPressed(Action::ViewZoomIn)) zoomBy(1.25f);
+        if (in.commandPressed(Action::ViewZoomOut)) zoomBy(0.8f);
         // The triggers (RT closer, LT further) and the right stick zoom around the centre.
         const float lt = in.leftTrigger() > 0.08f ? in.leftTrigger() : 0.0f, rt = in.rightTrigger() > 0.08f ? in.rightTrigger() : 0.0f;
         const float ry = std::abs(in.rightStick().y) > 0.2f ? in.rightStick().y : 0.0f;
         const float rate = (rt - lt) * 1.6f - ry * 2.0f;
         if (rate != 0.0f) zoomBy(std::exp(rate * dt));
         // Y the next part, X the previous one.
-        if (north && !padNorth_) cycle_ = 1;
-        if (west && !padWest_) cycle_ = -1;
+        if (north) cycle_ = 1;
+        if (west) cycle_ = -1;
     } else if (!captureTip_) {
         keyTip_ = false;  // the focus gone: the part chosen with the keys has no tooltip any more
     }
@@ -913,9 +915,13 @@ std::string HitStage::helpText(UIContext& ui, int device, bool picks) const {
         return padBindingName(PadBinding::button(SDL_GAMEPAD_BUTTON_SOUTH), st) + " : pause · croix : image (en pause) · " +
                padBindingName(PadBinding::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER), st) + " / " +
                padBindingName(PadBinding::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER), st) + " : zoom · stick gauche : déplacer · " +
-               padBindingName(PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), st) + " : partie suivante";
+               actionPadName(ui.input().bindings(), Action::ViewPartNext, st) + " : partie suivante";
     }
-    if (device == 1) return "Espace : pause · ← → : image (en pause) · + − : zoom · Maj + flèches : déplacer · Tab : partie suivante";
+    // 2.93: the zoom's and the next part's keys as the player set them (Paramètres › Contrôles › « Écrans »).
+    const InputBindings& b = ui.input().bindings();
+    if (device == 1)
+        return "Espace : pause · ← → : image (en pause) · " + actionKeyName(b, Action::ViewZoomIn) + " / " + actionKeyName(b, Action::ViewZoomOut) +
+               " : zoom · Maj + flèches : déplacer · " + actionKeyName(b, Action::ViewPartNext) + " : partie suivante";
     return picks ? "Survolez une partie : ce qu'elle fait · clic : la choisir · molette : zoom · glisser : déplacer"
                  : "Survolez une partie : ce qu'elle fait · molette : zoom · glisser : déplacer";
 }

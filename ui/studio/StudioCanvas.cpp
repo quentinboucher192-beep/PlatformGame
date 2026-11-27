@@ -27,20 +27,20 @@ namespace {
 struct ToolInfo {
     Tool tool;
     const char* name;
-    const char* key;
+    Action key;  // 2.93: its key as the player set it (Paramètres › Contrôles › « Studio des créations »)
     const char* help;
 };
 const ToolInfo kTools[] = {
-    {Tool::Pencil, "Crayon", "B", "Clic : couleur 1 · clic droit : couleur 2 · Maj : ligne droite depuis le dernier point"},
-    {Tool::Eraser, "Gomme", "E", "Rend les pixels transparents · Maj : ligne droite"},
-    {Tool::Fill, "Pot de peinture", "G", "Remplit la zone d'une même couleur, dans l'image en cours · clic droit : couleur 2"},
-    {Tool::Picker, "Pipette", "I", "Prend la couleur d'un pixel · clic droit : pour la couleur 2"},
-    {Tool::Line, "Ligne", "L", "Glisser d'un bout à l'autre · clic droit : couleur 2"},
-    {Tool::Rect, "Rectangle", "R", "Glisser d'un coin à l'autre · Maj en lâchant : plein"},
-    {Tool::Ellipse, "Ellipse", "O", "Glisser d'un coin à l'autre · Maj en lâchant : pleine"},
-    {Tool::Select, "Sélection", "M", "Glisser pour choisir un rectangle · Suppr : l'effacer · Échap : la quitter"},
-    {Tool::Move, "Déplacer", "V", "Glisser la sélection, ou toute l'image si rien n'est choisi · flèches : 1 pixel"},
-    {Tool::Mirror, "Miroir et symétrie", "H", "Retourner la sélection ou l'image (H, Maj+H) · symétrie en dessinant (S)"},
+    {Tool::Pencil, "Crayon", Action::StudioPencil, "Clic : couleur 1 · clic droit : couleur 2 · Maj : ligne droite depuis le dernier point"},
+    {Tool::Eraser, "Gomme", Action::StudioEraser, "Rend les pixels transparents · Maj : ligne droite"},
+    {Tool::Fill, "Pot de peinture", Action::StudioFill, "Remplit la zone d'une même couleur, dans l'image en cours · clic droit : couleur 2"},
+    {Tool::Picker, "Pipette", Action::StudioPicker, "Prend la couleur d'un pixel · clic droit : pour la couleur 2"},
+    {Tool::Line, "Ligne", Action::StudioLine, "Glisser d'un bout à l'autre · clic droit : couleur 2"},
+    {Tool::Rect, "Rectangle", Action::StudioRect, "Glisser d'un coin à l'autre · Maj en lâchant : plein"},
+    {Tool::Ellipse, "Ellipse", Action::StudioEllipse, "Glisser d'un coin à l'autre · Maj en lâchant : pleine"},
+    {Tool::Select, "Sélection", Action::StudioSelect, "Glisser pour choisir un rectangle · Suppr : l'effacer · Échap : la quitter"},
+    {Tool::Move, "Déplacer", Action::StudioMove, "Glisser la sélection, ou toute l'image si rien n'est choisi · flèches : 1 pixel"},
+    {Tool::Mirror, "Miroir et symétrie", Action::StudioMirror, "Retourner la sélection ou l'image (Maj : de haut en bas) · symétrie en dessinant"},
 };
 constexpr int kToolCount = static_cast<int>(sizeof(kTools) / sizeof(kTools[0]));
 
@@ -160,7 +160,10 @@ void Studio::drawRail(const Rect& r) {
                            std::max(1.0f, ui_.s(on ? 2.0f : 1.0f)));
         const float ib = btn * 0.56f;
         toolIcon(rr, t.tool, {b.center().x - ib * 0.5f, b.center().y - ib * 0.5f, ib, ib}, on ? Color::white() : kSub, std::max(1.2f, ui_.s(1.6f)));
-        tip(id, b, std::string(t.name) + " · " + t.key, t.help);
+        const InputBindings& keys = ui_.input().bindings();
+        std::string keyText = actionKeyName(keys, t.key);
+        if (t.tool == Tool::Mirror) keyText += " / " + actionKeyName(keys, Action::StudioSymmetry);  // flip / symmetry
+        tip(id, b, std::string(t.name) + " · " + keyText, t.help);
         if (t.tool == Tool::Mirror) mirrorButton_ = b;
     }
     ui_.popId();
@@ -479,10 +482,9 @@ void Studio::handleCanvasInput(OpenDoc& d, const Rect& view, const Rect& fs, flo
         }
         triggerL_ = lt;
         triggerR_ = rt;
-        if (in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST) && !padWest_) undo(d);
-        if (in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH) && !padNorth_) redo(d);
-        padWest_ = in.rawPadButton(SDL_GAMEPAD_BUTTON_WEST);
-        padNorth_ = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH);
+        // 2.93: X / Y by default (Paramètres › Contrôles › « Studio des créations »).
+        if (in.padPressed(Action::StudioUndo)) undo(d);
+        if (in.padPressed(Action::StudioRedo)) redo(d);
         const bool held = in.rawPadButton(SDL_GAMEPAD_BUTTON_SOUTH) || in.keyDown(SDL_SCANCODE_RETURN) || in.keyDown(SDL_SCANCODE_SPACE);
         const int x = f.x + cursorX_, y = f.y + cursorY_;
         if (confirm && !padHeld_) {

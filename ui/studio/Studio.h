@@ -295,7 +295,7 @@ private:
     Json metaBefore_;
     bool panning_ = false;
     int cursorX_ = 0, cursorY_ = 0;  // the gamepad's / keyboard's cursor on the canvas (frame pixels)
-    bool padHeld_ = false, padWest_ = false, padNorth_ = false;
+    bool padHeld_ = false;
     float triggerL_ = 0.0f, triggerR_ = 0.0f;
     int hoverX_ = -1, hoverY_ = -1;
     Rect canvasView_;

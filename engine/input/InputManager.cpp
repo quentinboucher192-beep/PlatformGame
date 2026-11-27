@@ -90,6 +90,9 @@ void InputManager::openFirstGamepad() {
 
 void InputManager::beginFrame() {
     framePressed_.fill(false);
+    keyFramePressed_.fill(false);
+    keyRepeated_.fill(false);
+    padFramePressed_.fill(false);
     keysPressed_.clear();
     keyLabelsPressed_.clear();
     std::fill(std::begin(mousePressed_), std::end(mousePressed_), false);
@@ -150,10 +153,17 @@ void InputManager::handleEvent(const SDL_Event& e) {
                     if (textActive_ && i < kFirstMenuAction) continue;
                     for (auto sc : bindings_.keys[i])
                         if (sc == e.key.scancode && sc != SDL_SCANCODE_UNKNOWN) {
-                            gamePressed_[i] = framePressed_[i] = true;
+                            gamePressed_[i] = framePressed_[i] = keyFramePressed_[i] = true;
                             // A new press: the key was released since its slot changed.
                             if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0) slotWaitRelease_[static_cast<size_t>(s)] = false;
                         }
+                }
+            } else {
+                // 2.93: the system's repeat of a held key, for the screens' shortcuts (commandPressed).
+                for (int i = 0; i < kActionCount; ++i) {
+                    if (textActive_ && i < kFirstMenuAction) continue;
+                    for (auto sc : bindings_.keys[i])
+                        if (sc == e.key.scancode && sc != SDL_SCANCODE_UNKNOWN) keyRepeated_[i] = true;
                 }
             }
             break;
@@ -255,7 +265,7 @@ void InputManager::handleEvent(const SDL_Event& e) {
             for (int i = padGameplay_ ? 0 : kFirstMenuAction; i < kActionCount; ++i)
                 for (const auto& pb : bindings_.pad[i])
                     if (pb.kind == PadBinding::Kind::Button && pb.code == e.gbutton.button) {
-                        gamePressed_[i] = framePressed_[i] = true;
+                        gamePressed_[i] = framePressed_[i] = padFramePressed_[i] = true;
                         if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0) slotWaitRelease_[static_cast<size_t>(s)] = false;
                     }
             if (gamepad_ == nullptr || e.gbutton.which != gamepadId_) {
@@ -337,6 +347,7 @@ void InputManager::update(float dt) {
     const bool blockKeys = textActive_;  // typing in a text field must not move the player
     for (int i = 0; i < kActionCount; ++i) {
         bool h = false;
+        bool ph = false;  // 2.93: held by the gamepad (padHeld)
         if (!blockKeys || i >= kFirstMenuAction) {
             for (auto sc : bindings_.keys[i]) {
                 if (sc == SDL_SCANCODE_UNKNOWN || sc == swallowKey_) continue;
@@ -349,6 +360,12 @@ void InputManager::update(float dt) {
                 }
             }
         }
+        {
+            // 2.93: pressed by the keyboard / mouse (keyPressedFor), whatever the events said.
+            const bool kh = h || simHeld_[i];
+            if (kh && !prevKeyHeld_[i]) keyFramePressed_[i] = true;
+            prevKeyHeld_[i] = kh;
+        }
         for (const auto& pb : bindings_.pad[i]) {
             if (!padGameplay_ && i < kFirstMenuAction) break;  // 2.65: the pads only move in the menus
             if (swallowingPad_ && pb == swallowPad_) continue;
@@ -358,8 +375,11 @@ void InputManager::update(float dt) {
             float threshold = pb.kind == PadBinding::Kind::Button ? 0.5f
                               : isTrigger ? bindings_.gamepad.triggerThreshold
                                           : 0.5f;
-            if (v >= threshold) h = true;
+            if (v >= threshold) h = ph = true;
         }
+        padHeld_[i] = ph;
+        if (ph && !prevPadHeld_[i]) padFramePressed_[i] = true;  // a trigger, a stick (the buttons: their events too)
+        prevPadHeld_[i] = ph;
         if (blockKeys && i < kFirstMenuAction) h = h && lastDevice_ == InputDevice::Gamepad;
         if (simHeld_[i]) h = true;  // titan 13: a key held in a test
         // A power slot whose key changed while held: not held until released.
@@ -491,7 +511,7 @@ void InputManager::pressBound(SDL_Scancode code) {
         if (textActive_ && i < kFirstMenuAction) continue;
         for (auto sc : bindings_.keys[i])
             if (sc == code) {
-                gamePressed_[i] = framePressed_[i] = true;
+                gamePressed_[i] = framePressed_[i] = keyFramePressed_[i] = true;
                 if (int s = powerSlotOf(static_cast<Action>(i)); s >= 0) slotWaitRelease_[static_cast<size_t>(s)] = false;
             }
     }
