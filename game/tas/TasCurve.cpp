@@ -27,6 +27,31 @@ std::string byOf(const Json& j) {
     return by.is_object() ? jstr(by, "username") : std::string();
 }
 
+/// The server's points ([training ms, time ms]) from a window's start (its `start`): as the
+/// progress file writes them. Anything malformed is left as it is (the window's checks refuse it).
+Json camelPoints(const Json& a, int64_t start) {
+    if (!a.is_array()) return a;
+    Json out = Json::array();
+    for (const Json& p : a) {
+        if (p.is_array() && p.size() == 2 && p[0].is_number_integer()) out.push_back(Json::array({p[0].get<int64_t>() - start, p[1]}));
+        else out.push_back(p);
+    }
+    return out;
+}
+
+Json camelCheckpoints(const Json& a, int64_t start) {
+    if (!a.is_array()) return a;
+    Json out = Json::array();
+    for (const Json& c : a)
+        out.push_back(c.is_object() ? Json{{"reached", jfield(c, "reached", Json())},
+                                           {"bestMs", jfield(c, "best_ms", Json())},
+                                           {"medianMs", jfield(c, "median_ms", Json())},
+                                           {"worstMs", jfield(c, "worst_ms", Json())},
+                                           {"sample", camelPoints(jfield(c, "sample", Json::array()), start)}}
+                                    : c);
+    return out;
+}
+
 /// A window of the server's (snake_case) as the progress file writes one, for its checks.
 Json camelWindow(const Json& j) {
     const int64_t start = jget<int64_t>(j, "start_ms", 0), end = jget<int64_t>(j, "end_ms", 0);
@@ -44,13 +69,16 @@ Json camelWindow(const Json& j) {
             {"routeMedian", jfield(j, "route_median", Json())},
             {"routeMax", jfield(j, "route_max", Json())},
             {"stopped", jfield(j, "stopped", Json::array())},
-            {"broken", jfield(j, "broken", Json::array())}};
+            {"broken", jfield(j, "broken", Json::array())},
+            {"finishes", camelPoints(jfield(j, "finishes", Json::array()), start)},
+            {"checkpoints", camelCheckpoints(jfield(j, "checkpoints", Json::array()), start)}};
 }
 
 /// Two neighbouring windows that can be one (beyond kMaxWindows).
 bool mergeable(const TasCurveWindow& a, const TasCurveWindow& b) {
     return a.session == b.session && a.local == b.local && a.share == b.share && a.leaseId == b.leaseId && a.stats.round == b.stats.round &&
-           a.stats.section == b.stats.section && a.stats.sections == b.stats.sections;
+           a.stats.section == b.stats.section && a.stats.sections == b.stats.sections && a.stats.focusFirst == b.stats.focusFirst &&
+           a.stats.focusLast == b.stats.focusLast;
 }
 
 TasCurveWindow mergedWindow(const TasCurveWindow& a, const TasCurveWindow& b) {
@@ -83,6 +111,31 @@ void capWindows(std::vector<TasCurveWindow>& ws) {
     }
     if (out.size() > TasCurve::kMaxWindows) out.erase(out.begin(), out.begin() + static_cast<std::ptrdiff_t>(out.size() - TasCurve::kMaxWindows));
     ws = std::move(out);
+}
+
+/// The points of a version's clouds bounded (TasCurve::kMaxCloudPoints finished attempts, as many
+/// checkpoint times): beyond, the oldest windows keep only their best (to three quarters).
+void capPoints(std::vector<TasCurveWindow>& ws) {
+    size_t finishes = 0, cps = 0;
+    for (const TasCurveWindow& w : ws) {
+        finishes += w.stats.finishes.size();
+        for (const auto& c : w.stats.checkpoints) cps += c.sample.size();
+    }
+    const size_t target = TasCurve::kMaxCloudPoints * 3 / 4;
+    if (finishes > TasCurve::kMaxCloudPoints)
+        for (size_t i = 0; i < ws.size() && finishes > target; ++i) {
+            auto& f = ws[i].stats.finishes;
+            const size_t before = f.size();
+            TasAttemptWindow::thin(f, 1);
+            finishes -= before - f.size();
+        }
+    if (cps > TasCurve::kMaxCloudPoints)
+        for (size_t i = 0; i < ws.size() && cps > target; ++i)
+            for (auto& c : ws[i].stats.checkpoints) {
+                const size_t before = c.sample.size();
+                TasAttemptWindow::thin(c.sample, 1);
+                cps -= before - c.sample.size();
+            }
 }
 
 }  // namespace
@@ -304,6 +357,7 @@ void TasCurve::addWindow(const std::string& hash, int sim, TasCurveWindow w) {
     auto at = std::upper_bound(v.windows.begin(), v.windows.end(), w.fromMs, [](int64_t x, const TasCurveWindow& o) { return x < o.fromMs; });
     v.windows.insert(at, std::move(w));
     capWindows(v.windows);
+    capPoints(v.windows);
 }
 
 bool TasCurve::mergeServerPoints(const std::string& hash, int sim, std::vector<TasCurvePoint> pts) {
@@ -336,6 +390,7 @@ bool TasCurve::mergeServerWindows(const std::string& hash, int sim, std::vector<
         }
     sortWindows(out);
     capWindows(out);
+    capPoints(out);
     // Changed: the others' windows are not what they were (their count, attempts, end).
     auto signature = [](const std::vector<TasCurveWindow>& list) {
         int64_t n = 0, attempts = 0, end = 0;
@@ -383,7 +438,9 @@ Json TasCurve::toJson() const {
         Json pts = Json::array(), ws = Json::array();
         for (const TasCurvePoint& p : v.points) pts.push_back(p.toJson());
         for (const TasCurveWindow& w : v.windows) ws.push_back(w.toJson());
-        vs.push_back({{"levelHash", v.levelHash}, {"simVersion", v.simVersion}, {"points", pts}, {"windows", ws}});
+        Json cps = Json::array();
+        for (const TasCheckpoint& c : v.checkpoints) cps.push_back({{"id", c.id}, {"label", c.label}});
+        vs.push_back({{"levelHash", v.levelHash}, {"simVersion", v.simVersion}, {"points", pts}, {"windows", ws}, {"checkpoints", cps}});
     }
     return {{"format", kCurveFormat}, {"level", levelId}, {"category", categoryId(category)}, {"versions", vs}};
 }
@@ -406,9 +463,14 @@ std::optional<TasCurve> TasCurve::fromJson(const Json& j) {
         if (const Json ws = jfield(x, "windows", Json::array()); ws.is_array())
             for (const Json& w : ws)
                 if (auto cw = TasCurveWindow::fromJson(w)) v.windows.push_back(std::move(*cw));
+        if (const Json cps = jfield(x, "checkpoints", Json::array()); cps.is_array())
+            for (const Json& k : cps)
+                if (k.is_object() && v.checkpoints.size() < static_cast<size_t>(TasAttemptWindow::kMaxSections))
+                    v.checkpoints.push_back({jstr(k, "id"), jstr(k, "label")});
         normalize(v);
         sortWindows(v.windows);
         capWindows(v.windows);
+        capPoints(v.windows);
         c.versions.push_back(std::move(v));
     }
     return c;

@@ -168,8 +168,62 @@ aussi tôt avec moins d'entrées). Les états sauvegardés tous les 2 s de la co
 rejouer depuis le début.
 
 **Course de départ** (`--seed-replay`) : jouée d'abord ; si elle finit la catégorie, c'est la
-course à battre, ses états rejoignent les faisceaux de chaque section tant que la recherche la
-suit, et l'affinage part d'elle si rien n'est plus rapide.
+course à battre (la « meilleure course ») et elle guide toute la recherche (ci-dessous) ;
+l'affinage part d'elle si rien n'est plus rapide.
+
+### La meilleure course guide la recherche
+
+* **Ses images, à chaque section, même après une divergence.** Chaque section est proposée aux
+  faisceaux avec les images de la meilleure course pour cette section : par l'index de la section
+  et, quand la course trouvée l'a quittée, aussi depuis l'instant où Nova y était la plus proche de
+  son état présent (position et vitesse, à ± 1 s). Elles sont jouées depuis l'état où la recherche
+  se trouve (l'appui de la jointure recalculé comme un joueur appuierait) ; leurs états rejoignent
+  le faisceau à chaque génération (le faisceau peut en partir), et leur arrivée est une arrivée
+  comme les autres. Avant, elles n'étaient proposées que tant que la course restait identique à
+  la meilleure : à la première divergence, les sections suivantes étaient cherchées à l'aveugle.
+* **Les raccords.** À la fin de chaque section, les meilleures arrivées (et celles de la meilleure
+  course) sont jouées jusqu'à la sortie **avec la suite de la meilleure course**, reprise à
+  quelques endroits proches (là où Nova y était la plus proche, et sa propre arrivée à ± 2 pas) :
+  un raccord qui finit plus vite est une course entière plus rapide, aussitôt (rejouée depuis le
+  départ avant d'être gardée, puis vérifiée par la lecture normale des replays comme toute course).
+* **Le gagnant d'une section** est l'arrivée qui donne **la meilleure fin mesurée** (par son
+  raccord) ; seulement quand aucune ne se raccorde, la meilleure fin estimée (sa propre arrivée plus
+  le reste de la meilleure course depuis la sienne, un cœur perdu compté en temps, une marge de
+  0,25 s). Une arrivée plus tôt mais dans un plus mauvais état ne passe plus devant : sur
+  `sylvanox_01`, des arrivées de plus d'une seconde en avance au premier point de passage ne se
+  raccordent jamais (elles ont laissé derrière elles ce dont la suite a besoin), et la recherche
+  d'avant s'y perdait jusqu'à la fin de son budget.
+
+### Les tours
+
+Un entraînement (`--until-stopped`) cherche par **tours** (`--round`, 10 min dans le jeu). Le
+**premier tour** cherche tout le niveau, section par section, guidé comme ci-dessus. Dès le
+**deuxième** (avec une course vérifiée), un tour cherche une **fenêtre** d'une ou deux sections
+consécutives (une seule pour un niveau d'une ou deux sections) :
+
+* les sections de la meilleure course **avant** la fenêtre sont **gardées exactement** (l'affinage
+  n'y touche pas non plus) ; **après** la fenêtre, la course **rejoint la meilleure course** par
+  ses raccords (si aucun ne finit, la recherche continue section par section, guidée, jusqu'à un
+  raccord ou la sortie) ;
+* la fenêtre est cherchée **en plusieurs passes**, de plus en plus profondes (faisceau ×1 à ×4,
+  plus de coups par état, plus de générations après la première arrivée) ; sur une fenêtre de deux
+  sections, une passe sur deux part de l'arrivée la plus tôt de la première section (son gain peut
+  n'apparaître qu'avec la section suivante cherchée) ; le dernier sixième du tour est l'affinage, à
+  partir du début de la fenêtre ;
+* **les fenêtres tournent sur tout le niveau** (`WindowPlanner`, gardé tant que le processus vit) :
+  d'abord les sections cherchées il y a le plus longtemps, et plus tôt de nouveau celles où un tour
+  a gagné du temps (le poids d'un gain diminue de moitié à chaque tour qui n'y gagne rien) ;
+* **jamais pire** : seule une course vérifiée plus rapide remplace la meilleure.
+
+La progression (`--progress`) donne la fenêtre du tour (`focusFirst`, `focusLast` ; 0 : tout le
+niveau) ; la courbe l'affiche (« Tour 3 · sections 4 à 5 (le reste suit la meilleure course) »).
+Pendant une fenêtre, **« Finis » reste bas** : les essais du faisceau s'arrêtent à la fin de la
+section cherchée ; ne vont jusqu'à la sortie que les raccords et l'affinage.
+
+**Mesure** (2.98, `sylvanox_01` ANY%, depuis la course livrée 1:26.692, 4 fils, graine 1) : avant,
+3 tours de 4 min restent à 1:26.692 (chaque tour recherchait tout le niveau, ne finissait pas la
+section 3 dans son budget et rendait la course de départ) ; après, 2 tours de 3 min donnent
+1:26.667 (tour 1 : raccords après les sections 1 et 4) puis 1:26.650 (tour 2, fenêtre 1 à 2).
 
 ## Vérification
 
@@ -264,6 +318,9 @@ les anciennes restent, en lecture seule (rien ne les entraîne plus). Modèle :
 * `bestMs`, `bestElapsedMs`, `bestExplored` : le meilleur temps vérifié, le moment de la session où
   il l'a été et les essais simulés alors ;
 * `section` / `sections` : la section cherchée (0 : l'affinage d'une course entière) ;
+* `focusFirst` / `focusLast` (2.98) : la fenêtre du tour (0 : tout le niveau ; absents des
+  fichiers d'avant : tout le niveau) ; `checkpoints` : les points de passage du niveau que les
+  fenêtres comptent, CP1 d'abord (l'ordre du parcours, leur nom dans le niveau) ;
 * `windows` : les **fenêtres d'essais** (les 24 dernières, les plus anciennes d'abord) : les essais de la
   recherche sont **comptés, jamais listés**, par fenêtre de 5 s (fermée plus tôt quand la section
   ou le tour change) : combien, combien **finissent** (la sortie atteinte, la catégorie gardée) et
@@ -271,7 +328,13 @@ les anciennes restent, en lecture seule (rien ne les entraîne plus). Modèle :
   les autres la **section où ils se sont arrêtés**, combien d'entre eux sont **morts** (ou touchés
   en Sans dégât) et jusqu'où ils sont allés sur le parcours (médiane et maximum, en ‰). Un essai
   du faisceau qui casse la catégorie compte là où son coup commençait ; un essai de l'affinage
-  (une course entière rejouée) est mesuré là où il s'arrête.
+  (une course entière rejouée) est mesuré là où il s'arrête. Depuis 2.98, chaque fenêtre garde
+  aussi ses **nuages** : **chaque essai fini** (son temps et son instant, 400 au plus par fenêtre ;
+  au-delà, un échantillon uniforme où son meilleur est toujours) et, **par point de passage**
+  (CP1, CP2… : les points de passage du niveau, comme les temps intermédiaires les numérotent ; un
+  essai l'atteint quand il l'allume), combien d'essais l'ont atteint, leurs temps meilleur /
+  médian / pire (la médiane d'un échantillon) et un **échantillon** de 32 temps au plus (son
+  meilleur toujours). Les fichiers d'avant se lisent toujours (sans nuage).
 
 Le jeu lit ce fichier toutes les demi-secondes (`TasTraining::noteCurve`) :
 
@@ -282,6 +345,15 @@ Le jeu lit ce fichier toutes les demi-secondes (`TasTraining::noteCurve`) :
 * chaque **fenêtre d'essais**, placée de même ;
 * les **courses publiées** sont des marques de la courbe de leur version (le serveur les donne,
   avec le temps d'entraînement au moment de la publication, la session en cours comprise).
+
+Les nuages sont bornés : 30 000 points d'essais finis et autant de temps aux points de passage par
+version sur cet ordinateur (au-delà, les plus anciennes fenêtres ne gardent que leur meilleur) ;
+un battement en emporte au plus 96 par fenêtre et 8 par point de passage (4 fenêtres) ; le serveur
+les vérifie comme les fenêtres (rôle de la session, bornes, chaque point dans sa fenêtre et entre
+son meilleur et son pire temps, jamais plus de points que d'essais), les place sur sa propre mesure
+du temps d'entraînement et en garde 60 000 par version (au-delà, une fenêtre ne garde que ses
+meilleurs points ; migration `0235_tas_curve_clouds.sql`). Un serveur qui ne les connaît pas encore
+les refuse : le jeu renvoie alors la courbe sans eux.
 
 **Gardée sur cet ordinateur** (`saves/tas_local/.training/<niveau>_<CATÉGORIE>.curve.json`, lue et
 écrite sur un fil à part : jamais sur le fil principal ; au plus 1 000 points et 1 500 fenêtres par
@@ -313,16 +385,46 @@ celles du serveur pour les sessions des autres ordinateurs. Routes : [API.md](on
 * une ligne **sélectionnée** (clic, Entrée / A ; flèches et croix pour y aller) ouvre sa courbe
   **sous le tableau** (le tableau garde trois lignes au moins, à 1280 × 720 comme à 1920 × 1080) ;
   Échap / B, « Fermer » ou la même ligne la referment ;
+* **des onglets** au-dessus de la courbe : **« TOUT »** (la course entière : les temps à
+  l'arrivée) puis **CP1, CP2… CPn** (les points de passage du niveau ; leur nom au-dessus des
+  chiffres) ; à la souris, ou au clavier et à la manette quand la rangée a le focus (← →, LB / RB :
+  ADMINISTRATION ne change alors pas d'onglet) ; les étiquettes rapetissent (puis « … ») quand il y
+  en a beaucoup ;
+* **les nuages** : derrière la ligne du meilleur temps, chaque essai fini (« TOUT ») ou chaque
+  temps échantillonné au point de passage (CPk) est un petit point translucide (la densité se
+  voit), le meilleur de chaque fenêtre plus vif ; l'échelle des temps s'arrête au 95ᵉ centile du
+  nuage : les points plus lents sont des marques sur le bord haut, comptés dans une note (« Hors de
+  la vue : 12 plus lents ») ; quand le nuage n'est qu'un échantillon, il le dit (« Nuage : 1 234
+  points sur 5 678 ») ; sur un onglet CPk, la ligne est le meilleur temps à ce point de passage le
+  long de l'entraînement et les chiffres à droite sont les siens (atteint, meilleur, médian, pire,
+  l'échantillon) ; au-delà de 16 000 points dans la vue, une part régulière est dessinée (les
+  meilleurs de chaque fenêtre toujours) ;
+* **le zoom**, sur chaque axe indépendamment (`ui/widgets/ChartView.h`), jusqu'à 3 s
+  d'entraînement et 4 ms à l'écran (1:26.658 et 1:26.660 bien séparés) : la molette autour du
+  curseur (Maj ou Ctrl + molette : les temps seulement), glisser pour se déplacer, clic droit
+  glissé (ou Maj + glisser) pour zoomer dans un rectangle ; au clavier, un réticule (← → ↑ ↓,
+  + / − pour zoomer autour de lui, 0 ou Origine pour revenir) ; à la manette, le stick gauche ou la
+  croix, les gâchettes ou le stick droit, Y pour revenir. Zoomée, une **vue d'ensemble** en haut à
+  droite de la courbe montre où l'on est, et « Réinitialiser le zoom » est au bout des onglets ;
+  les graduations suivent (millisecondes en ordonnée, secondes en abscisse : « 5 h 02:13 »),
+  mesurées et éclaircies quand elles se serrent. En direct, la vue par défaut suit les nouvelles
+  données, une vue zoomée reste où elle est ;
 * **la courbe** : en abscisse le temps d'entraînement cumulé (graduations « 30 min », « 2 h »,
   « 1 h 30 »), en ordonnée le meilleur temps (« 1:26.692 ») ; une ligne en escalier qui descend
   jusqu'au temps d'entraînement actuel, un point plein par amélioration, un anneau pour la course
   de départ, un losange par course publiée ; les temps **livré** et **en ligne** en lignes
   pointillées, nommées à leur droite ; derrière, pour chaque fenêtre, un trait fin du meilleur au
-  pire temps des essais finis et une marque à leur médiane ; sous l'axe, les **tours** de
-  `cosmic_tas` (« Tour 3 (en cours) ») ; en dessous, la bande des **sections atteintes** (par
+  pire temps des essais finis et une marque à leur médiane (les fenêtres sans nuage : d'avant
+  2.98, ou d'autres ordinateurs) ; sous l'axe, les **tours** de `cosmic_tas` avec ce qu'ils
+  cherchent quand c'est connu (« Tour 3 (en cours) · sections 4 à 5 ») ; un tour recommence à 1 à
+  chaque session : quand la courbe en a plusieurs, chaque marque dit la sienne (« S2 · Tour 3 ») ;
+  les marques trop serrées sont éclaircies, le détail reste dans la bulle de la bande ; en dessous,
+  la bande des **sections atteintes** (par
   fenêtre, la part de ses essais qui atteint chaque section, l'arrivée en haut : plus c'est sombre,
   moins ils y arrivent) ; une légende de chaque marque ; une grille discrète, des textes dans les
   couleurs du texte, des formes distinctes (pas seulement des couleurs) ;
+* **ce que fait le tour**, à droite sous ses chiffres : « Tour 3 · sections 4 à 5 (le reste suit
+  la meilleure course) », et pourquoi « Finis » reste bas pendant une fenêtre ;
 * **les chiffres**, à droite : pour **tout l'entraînement** et pour **le tour en cours** (ou le
   dernier) : essais, essais finis et leur part, meilleur / médian / pire temps des essais finis,
   morts ; puis les **arrêts par section** (une barre, la part des morts en rouge, le nombre, les

@@ -452,6 +452,12 @@
    ]
   },
   {
+   "fr": "0 sans essai qui l'atteint",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "0,0 m : côte à côte",
    "where": [
     "ui/screens/ReplayGapView.cpp"
@@ -554,6 +560,12 @@
    "fr": "1. Le service",
    "where": [
     "data/online/terms_fr.txt"
+   ]
+  },
+  {
+   "fr": "10 h 30:30",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -5367,6 +5379,18 @@
    ]
   },
   {
+   "fr": "Atteint",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "atteint : entre 0 et le nombre d'essais attendu",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "attend",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -6532,6 +6556,12 @@
    "fr": "Aucun package installé.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun passage compté à ce point de passage pour l'instant.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -13975,6 +14005,8 @@
    "fr": "checkpoints",
    "where": [
     "game/levels/DifficultyRating.cpp",
+    "game/tas/TasCurve.cpp",
+    "game/tas/TasProgress.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp"
    ]
@@ -18524,6 +18556,12 @@
    ]
   },
   {
+   "fr": "Courbe d'entraînement TAS : nuages de tous les essais finis et des temps à chaque point de passage (onglets TOUT, CP1…), zoom profond sur les deux axes, tours étiquetés avec leur fenêtre et leur session.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Courbe d'entraînement · {0} · {1}",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
@@ -18933,6 +18971,12 @@
    "fr": "Couvée : un soin",
    "where": [
     "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "CP{0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -27786,6 +27830,12 @@
    ]
   },
   {
+   "fr": "Essai fini",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Essai introuvable.",
    "where": [
     "server/src/challenges.ts"
@@ -27823,7 +27873,7 @@
    ]
   },
   {
-   "fr": "Essais finis : meilleur–pire, médian",
+   "fr": "Essais finis",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
    ]
@@ -28628,7 +28678,8 @@
   {
    "fr": "Fenêtre",
    "where": [
-    "data/raids/asterion_sheets.json"
+    "data/raids/asterion_sheets.json",
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -29622,6 +29673,18 @@
   },
   {
    "fr": "Finis",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Finis : seuls les essais qui atteignent la sortie ; la recherche avance section par section et ses essais s'arrêtent à la fin de chacune, jusqu'à la dernière et l'affinage.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Finis : seuls les essais qui atteignent la sortie. Pendant la fenêtre, les essais s'arrêtent à la fin de la section cherchée ; ne finissent que les raccords avec la meilleure course et l'affinage.",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
    ]
@@ -33337,6 +33400,24 @@
    "fr": "HORS DE LA SIMULATION",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors de la vue : {0} plus lents",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Hors de la vue : {0} plus lents, {1} plus rapides",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Hors de la vue : {0} plus rapides",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -45069,6 +45150,12 @@
    ]
   },
   {
+   "fr": "liste de {0} points de passage au plus attendue",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "liste de {0} récompenses au plus attendue",
    "where": [
     "server/src/adminChallenges.ts"
@@ -46357,6 +46444,7 @@
   {
    "fr": "Meilleur",
    "where": [
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/StatisticsBoss.cpp",
     "ui/screens/StatisticsLevels.cpp",
     "ui/screens/TrainingSession.cpp"
@@ -46384,6 +46472,12 @@
    "fr": "Meilleur combat",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur de sa fenêtre",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -46461,6 +46555,12 @@
   },
   {
    "fr": "Meilleur temps vérifié",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur temps à ce point de passage",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
    ]
@@ -51106,6 +51206,12 @@
    ]
   },
   {
+   "fr": "Nuage : {0} points sur {1}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Nuage d'encre",
    "where": [
     "data/enemies/kraken.json"
@@ -54453,6 +54559,12 @@
    ]
   },
   {
+   "fr": "Passage au CP{0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "passage fermé (le levier est dans la Tempe)",
    "where": [
     "data/raids/asterion/crane/branch.json"
@@ -54969,6 +55081,12 @@
    "fr": "passages",
    "where": [
     "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Passages (échantillon)",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -57390,6 +57508,12 @@
     "ui/screens/TasSheetScene.cpp",
     "ui/screens/TrainingMarksPanel.cpp",
     "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "point de passage invalide",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -66086,6 +66210,12 @@
    ]
   },
   {
+   "fr": "Réinitialiser le zoom",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Réinitialiser les records",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -68276,6 +68406,18 @@
    ]
   },
   {
+   "fr": "section {0}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "section {0} (le reste suit la meilleure course)",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Section {0} atteinte",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
@@ -68292,6 +68434,24 @@
    "fr": "Sections atteintes",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Sections cherchées",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "sections {0} à {1}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "sections {0} à {1} (le reste suit la meilleure course)",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -69100,6 +69260,12 @@
    "fr": "Session révoquée.",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "Session · tour",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -70118,6 +70284,12 @@
    "fr": "Son manteau se déchire : les abysses s'ouvrent !",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "son meilleur essai",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -72510,6 +72682,13 @@
    ]
   },
   {
+   "fr": "S{0} · {1}",
+   "where": [
+    "ui/screens/AdminTas.cpp",
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "São Paulo",
    "where": [
     "game/online/Raids.cpp"
@@ -73124,6 +73303,12 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/StatisticsLevels.cpp",
     "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS : chaque tour s'appuie sur la meilleure course — chaque section est guidée par elle et s'y raccorde, et dès le tour 2 l'entraînement creuse une fenêtre d'une ou deux sections au lieu de tout recommencer.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -75706,13 +75891,13 @@
   {
    "fr": "Tour {0}",
    "where": [
-    "ui/screens/AdminTasCurve.cpp"
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
    "fr": "Tour {0} (en cours)",
    "where": [
-    "ui/screens/AdminTasCurve.cpp"
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -75907,6 +76092,12 @@
    ]
   },
   {
+   "fr": "TOUT",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Tout",
    "where": [
     "ui/screens/AdminAssets.cpp",
@@ -76027,6 +76218,12 @@
    "fr": "Tout le niveau",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "tout le niveau",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -86662,6 +86859,12 @@
    ]
   },
   {
+   "fr": "{0} h {1}:{2}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "{0} Hz · {1}",
    "where": [
     "ui/screens/AdminAssets.cpp"
@@ -87728,6 +87931,12 @@
    "fr": "{0} planètes · {1} / {2} niveaux",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} points au plus (jamais plus que les essais finis), dans la fenêtre et entre le meilleur et le pire temps",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -90664,6 +90873,24 @@
    "fr": "Échanger les deux couleurs",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Échantillon : {0} points sur {1}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Échantillon : {0} temps sur {1} passages (chaque fenêtre de 5 s en garde au plus 32, son meilleur toujours ; la médiane vient de l'échantillon).",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "échantillon de {0} temps au plus, dans la fenêtre et entre le meilleur et le pire",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {

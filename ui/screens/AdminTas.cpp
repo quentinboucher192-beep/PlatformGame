@@ -71,6 +71,8 @@ std::string durationTick(int64_t ms) {
     if (s == 0) return "0";
     // Days in hours (« 48 h »: the same in both languages).
     if (s >= 3600 && s % 3600 == 0) std::snprintf(b, sizeof b, "%lld h", static_cast<long long>(s / 3600));
+    else if (s >= 3600 && s % 60 != 0)  // zoomed in to the second (2.98): « 5 h 02:13 »
+        std::snprintf(b, sizeof b, "%lld h %02lld:%02lld", static_cast<long long>(s / 3600), static_cast<long long>((s / 60) % 60), static_cast<long long>(s % 60));
     else if (s >= 3600) std::snprintf(b, sizeof b, "%lld h %02lld", static_cast<long long>(s / 3600), static_cast<long long>((s / 60) % 60));
     else if (s >= 60 && s % 60 == 0) std::snprintf(b, sizeof b, "%lld min", static_cast<long long>(s / 60));
     else if (s >= 60) std::snprintf(b, sizeof b, "%lld min %02lld", static_cast<long long>(s / 60), static_cast<long long>(s % 60));
@@ -109,15 +111,27 @@ const std::vector<int64_t>& runTimeSteps() {
     return s;
 }
 
-std::vector<std::pair<int64_t, int>> roundStarts(const std::vector<TasCurveWindow>& windows) {
-    std::vector<std::pair<int64_t, int>> out;
+std::vector<RoundStart> roundStarts(const std::vector<TasCurveWindow>& windows) {
+    std::vector<RoundStart> out;
     int session = -1, round = -1;
     for (const TasCurveWindow& w : windows) {
-        if (w.session != session || w.stats.round != round) out.emplace_back(w.fromMs, w.stats.round);
+        if (w.session != session || w.stats.round != round) out.push_back({w.fromMs, w.stats.round, w.session, w.stats.focusFirst, w.stats.focusLast, w.local});
         session = w.session;
         round = w.stats.round;
     }
     return out;
+}
+
+std::string focusText(int first, int last, bool tail) {
+    if (first <= 0) return "tout le niveau";
+    if (last <= first) return tail ? "section " + std::to_string(first) + " (le reste suit la meilleure course)" : "section " + std::to_string(first);
+    return tail ? "sections " + std::to_string(first) + " à " + std::to_string(last) + " (le reste suit la meilleure course)"
+                : "sections " + std::to_string(first) + " à " + std::to_string(last);
+}
+
+std::string roundText(int round, bool live, int session) {
+    const std::string r = live ? "Tour " + std::to_string(round) + " (en cours)" : "Tour " + std::to_string(round);
+    return session > 0 ? "S" + std::to_string(session) + " · " + r : r;
 }
 
 std::string durationText(int64_t ms) {

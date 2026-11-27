@@ -32,6 +32,7 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <tuple>
 #include <vector>
 
 #include "engine/core/FileUtil.h"
@@ -39,6 +40,7 @@
 #include "engine/core/Paths.h"
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/InputFrame.h"
+#include "game/levels/LevelData.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "game/tas/TasFile.h"
@@ -94,31 +96,40 @@ struct Training {
     int64_t windowStart = 0, windowId = 0;
 
     int64_t elapsed() const { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - began).count(); }
-    void attempts(const tas::AttemptNote* notes, size_t n) {
+    void attempts(const tas::AttemptNote* notes, size_t n, const tas::Crossing* crossings, size_t nc) {
+        const int64_t at = elapsed();
         std::lock_guard<std::mutex> l(statsMutex);
         for (size_t i = 0; i < n; ++i) {
             const tas::AttemptNote& a = notes[i];
-            if (a.finished) stats.addFinished(clockMs(a.clock));
+            if (a.finished) stats.addFinished(clockMs(a.clock), at);
             else stats.addStopped(a.section, static_cast<int>(std::lround(a.route * 1000.0f)), a.broke);
         }
+        for (size_t i = 0; i < nc; ++i) stats.addCrossing(crossings[i].checkpoint, clockMs(crossings[i].clock), at);
     }
     /// The window under way closed into the progress file's list (when it counted anything).
     void closeWindow() {
         TasAttemptWindow w;
         bool any = false;
+        int64_t from = 0, now = 0;
+        {
+            std::lock_guard<std::mutex> l(m);
+            now = elapsed();
+            from = std::min(windowStart, now);
+        }
         {
             std::lock_guard<std::mutex> s(statsMutex);
             any = !stats.empty();
-            if (any) w = stats.take();
+            if (any) w = stats.take(from, now);
         }
         std::lock_guard<std::mutex> l(m);
-        const int64_t now = elapsed();
-        if (any) {
+        if (any && w.attempts > 0) {
             w.id = ++windowId;
-            w.startMs = std::min(windowStart, now);
+            w.startMs = from;
             w.endMs = now;
             w.round = p.round;
             w.section = std::min(p.section, w.sections);
+            w.focusFirst = p.focusFirst;
+            w.focusLast = p.focusLast;
             p.windows.push_back(std::move(w));
             if (p.windows.size() > TasProgress::kMaxWindows) p.windows.erase(p.windows.begin());
         }
@@ -273,9 +284,10 @@ int main(int argc, char** argv) {
         while ((old == 0 || c < old) && !training.candidateMs.compare_exchange_weak(old, c)) {
         }
     };
-    // The attempts counted for the training's windows (only when someone reads the progress).
+    // The attempts counted for the training's windows (only when someone reads the progress), with
+    // the level's checkpoints they reach (CP1 first: the course's order, the level's labels).
     if (!training.progressFile.empty()) {
-        opt.onAttempts = [&](const tas::AttemptNote* notes, size_t n) { training.attempts(notes, n); };
+        opt.onAttempts = [&](const tas::AttemptNote* notes, size_t n, const tas::Crossing* crossings, size_t nc) { training.attempts(notes, n, crossings, nc); };
         opt.onStage = [&](int section, int sections) { training.stage(section, sections); };
     }
     training.p.threads = opt.threads;
@@ -339,6 +351,28 @@ int main(int argc, char** argv) {
             return finish(TasPhase::Stopped, "", 0);
         }
 
+    // The level's sections (the windows of a training's rounds) and checkpoints (the attempts that
+    // reach each one: the clouds of the training curve), CP1 first, named as the level names them.
+    tas::WindowPlanner planner;
+    if (untilStopped || !training.progressFile.empty()) {
+        tas::Course course(*level, content, category);
+        planner = tas::WindowPlanner(static_cast<int>(course.sectionEnds().size()));
+        std::vector<TasCheckpoint> cps;
+        for (const tas::Waypoint& w : course.waypoints()) {
+            if (w.kind != tas::Waypoint::Kind::Checkpoint || cps.size() >= static_cast<size_t>(TasAttemptWindow::kMaxSections)) continue;
+            TasCheckpoint c;
+            c.id = w.objectId;
+            for (const LevelObject& o : level->objects)
+                if (o.id == w.objectId) c.label = o.propStr("label");
+            cps.push_back(std::move(c));
+        }
+        {
+            std::lock_guard<std::mutex> s(training.statsMutex);
+            training.stats.setCheckpoints(static_cast<int>(cps.size()));
+        }
+        training.edit([&](TasProgress& p) { p.checkpoints = std::move(cps); });
+    }
+
     // The run to beat: the seed run, verified as a run of the machine (its exact time), when it is one.
     std::vector<InputFrame> best;
     int64_t bestMs = 0;
@@ -365,12 +399,23 @@ int main(int argc, char** argv) {
     const int64_t seedMs = bestMs;
     int round = 0, improvements = 0;
     std::string lastWhy;
+    // The window of the round (docs/TAS.md « Les tours »): the first round searches the whole
+    // level; with a best run, the next ones a window of one or two sections (the rest follows the
+    // best run), rotating over the level, sooner again where a round gained.
+    int focusFirst = 0, focusLast = 0;
+    int64_t roundFrom = 0;  // the best time when the round started
     do {
         ++round;
-        if (round > 1) opt.seed = baseSeed + static_cast<uint64_t>(round - 1) * 7919u;
+        if (round > 1) {
+            planner.done(round - 1, focusFirst, focusLast, roundFrom > 0 && bestMs > 0 ? std::max<int64_t>(0, roundFrom - bestMs) : 0);
+            opt.seed = baseSeed + static_cast<uint64_t>(round - 1) * 7919u;
+        }
+        roundFrom = bestMs;
+        focusFirst = focusLast = 0;
         if (!best.empty()) {
             opt.seedRun = best;
             opt.keepSeedSections = 0;
+            if (untilStopped && round > 1 && planner.sections() > 0) std::tie(focusFirst, focusLast) = planner.next(round);
         } else if (round > 1 && !partialRun.empty()) {
             // No run yet: from where the last round got to (its sections kept), with a longer round.
             opt.seedRun = partialRun;
@@ -382,10 +427,20 @@ int main(int argc, char** argv) {
         partialSections = 0;
         training.candidateMs = 0;
         training.closeWindow();  // the last round's attempts stay in their own window
+        opt.windowFirst = focusFirst;
+        opt.windowLast = focusLast;
         training.edit([&](TasProgress& p) {
             p.phase = TasPhase::Searching;
             p.round = round;
+            p.focusFirst = focusFirst;
+            p.focusLast = focusLast;
         });
+        if (untilStopped) {
+            if (focusFirst > 0)
+                say("Tour " + std::to_string(round) + " : sections " + std::to_string(focusFirst) + " à " + std::to_string(focusLast) +
+                    ", le reste suit la meilleure course");
+            else say("Tour " + std::to_string(round) + " : tout le niveau");
+        }
         const tas::SearchOutcome found = tas::search(content, *level, opt);
         if (!found.found) {
             lastWhy = found.why;

@@ -68,6 +68,15 @@ export const MAX_CURVE_SECTIONS = 32;
 /** How long ago a point or a window may say it happened, how long a window may last. */
 const MAX_AGE_MS = 86_400_000;
 const MAX_WINDOW_MS = 600_000;
+/**
+ * The clouds of a window (2.98, docs/TAS.md « Courbe d'entraînement »): its finished attempts and,
+ * per checkpoint of the level, a sample of the times the attempts reached it, each point
+ * [ms from the window's start, time ms] (stored on the server's training time). Bounded per window
+ * (so per heartbeat: four windows at most) and per version (beyond, a window keeps only its best points).
+ */
+export const MAX_CLOUD_FINISHES_PER_WINDOW = 96;
+export const MAX_CLOUD_SAMPLE_PER_CHECKPOINT = 8;
+export const MAX_CLOUD_POINTS = 60_000;
 
 interface TrainingRow {
     level_id: string;
@@ -145,6 +154,9 @@ interface CurveWindowRow {
     route_max: number;
     stopped: string;
     broken: string;
+    finishes: string;
+    checkpoints: string;
+    points: number;
     found_by: string | null;
     found_by_username: string | null;
     at: string;
@@ -236,6 +248,23 @@ const counts = (text: string): number[] => {
     }
 };
 
+/** A stored cloud: its points ([training ms, time ms]) and its checkpoints, as JSON (anything else: none). */
+const cloudPoints = (x: unknown): [number, number][] =>
+    Array.isArray(x) ? (x.filter((p) => Array.isArray(p) && p.length === 2 && p.every((n) => Number.isSafeInteger(n))) as [number, number][]) : [];
+const cloudOf = (text: string | null | undefined): unknown => {
+    try {
+        return text ? JSON.parse(text) : [];
+    } catch {
+        return [];
+    }
+};
+const checkpointsOf = (text: string | null | undefined) => {
+    const a = cloudOf(text);
+    return Array.isArray(a)
+        ? a.filter(isObject).map((c) => ({ reached: c.reached, best_ms: c.best_ms, median_ms: c.median_ms, worst_ms: c.worst_ms, sample: cloudPoints(c.sample) }))
+        : [];
+};
+
 function curveWindowJson(w: CurveWindowRow) {
     return {
         session: w.session,
@@ -253,6 +282,8 @@ function curveWindowJson(w: CurveWindowRow) {
         route_max: w.route_max,
         stopped: counts(w.stopped),
         broken: counts(w.broken),
+        finishes: cloudPoints(cloudOf(w.finishes)),
+        checkpoints: checkpointsOf(w.checkpoints),
         at: w.at,
         by: byJson(w.found_by, w.found_by_username),
     };
@@ -478,6 +509,16 @@ interface CurveWindowIn {
     route_max: number;
     stopped: number[];
     broken: number[];
+    finishes: [number, number][];
+    checkpoints: CheckpointIn[];
+}
+
+interface CheckpointIn {
+    reached: number;
+    best_ms: number;
+    median_ms: number;
+    worst_ms: number;
+    sample: [number, number][];
 }
 
 /** `curve` of a heartbeat or a release: the new best times, each field checked (problems added to `v`). */
@@ -500,7 +541,33 @@ function curvePointsIn(v: Validator, raw: unknown): CurvePointIn[] {
     return out;
 }
 
-const WINDOW_KEYS = ["age_ms", "duration_ms", "round", "section", "sections", "attempts", "finished", "best_ms", "median_ms", "worst_ms", "route_median", "route_max", "stopped", "broken"];
+const WINDOW_KEYS = [
+    "age_ms",
+    "duration_ms",
+    "round",
+    "section",
+    "sections",
+    "attempts",
+    "finished",
+    "best_ms",
+    "median_ms",
+    "worst_ms",
+    "route_median",
+    "route_max",
+    "stopped",
+    "broken",
+    "finishes",
+    "checkpoints",
+];
+const CHECKPOINT_KEYS = ["reached", "best_ms", "median_ms", "worst_ms", "sample"];
+
+/** Points of a cloud: at most `max`, each [0..span ms into the window, a time within lo..hi]; null when malformed. */
+function cloudIn(x: unknown, max: number, lo: number, hi: number, span: number): [number, number][] | null {
+    if (x === undefined) return [];
+    if (!Array.isArray(x) || x.length > max) return null;
+    for (const p of x) if (!Array.isArray(p) || p.length !== 2 || !isInt(p[0], 0, span) || !isInt(p[1], lo, hi)) return null;
+    return x as [number, number][];
+}
 
 /** `attempts` of a heartbeat or a release: windows of counts, each checked and consistent (problems added to `v`). */
 function curveWindowsIn(v: Validator, raw: unknown): CurveWindowIn[] {
@@ -534,9 +601,73 @@ function curveWindowsIn(v: Validator, raw: unknown): CurveWindowIn[] {
         const stopped = w.stopped as number[], broken = w.broken as number[];
         if (broken.some((n, k) => n > stopped[k]!)) return bad("broken", "jamais plus que les arrêts de la section");
         if (w.sections > 0 && stopped.reduce((a, b) => a + b, 0) !== w.attempts - w.finished) return bad("stopped", "la somme doit valoir les essais non finis");
-        out.push(w as unknown as CurveWindowIn);
+        // The clouds (absent from a game before 2.98): bounded, within the window and its times.
+        const finishes = cloudIn(w.finishes, Math.min(MAX_CLOUD_FINISHES_PER_WINDOW, w.finished), w.best_ms as number, w.worst_ms as number, w.duration_ms);
+        if (!finishes) return bad("finishes", `${MAX_CLOUD_FINISHES_PER_WINDOW} points au plus (jamais plus que les essais finis), dans la fenêtre et entre le meilleur et le pire temps`);
+        const cps = w.checkpoints === undefined ? [] : w.checkpoints;
+        if (!Array.isArray(cps) || cps.length > MAX_CURVE_SECTIONS) return bad("checkpoints", `liste de ${MAX_CURVE_SECTIONS} points de passage au plus attendue`);
+        const checkpoints: CheckpointIn[] = [];
+        for (const c of cps) {
+            if (!isObject(c) || Object.keys(c).some((k) => !CHECKPOINT_KEYS.includes(k))) return bad("checkpoints", "point de passage invalide");
+            if (!isInt(c.reached, 0, w.attempts as number)) return bad("checkpoints", "atteint : entre 0 et le nombre d'essais attendu");
+            if (c.reached === 0) {
+                if (c.best_ms !== 0 || c.median_ms !== 0 || c.worst_ms !== 0) return bad("checkpoints", "0 sans essai qui l'atteint");
+            } else if (!isInt(c.best_ms, 1, MAX_TAS_TIME_MS) || !isInt(c.median_ms, c.best_ms, MAX_TAS_TIME_MS) || !isInt(c.worst_ms, c.median_ms, MAX_TAS_TIME_MS)) {
+                return bad("checkpoints", "meilleur ≤ médian ≤ pire attendus");
+            }
+            const sample = cloudIn(c.sample, Math.min(MAX_CLOUD_SAMPLE_PER_CHECKPOINT, c.reached), c.best_ms as number, c.worst_ms as number, w.duration_ms);
+            if (!sample) return bad("checkpoints", `échantillon de ${MAX_CLOUD_SAMPLE_PER_CHECKPOINT} temps au plus, dans la fenêtre et entre le meilleur et le pire`);
+            checkpoints.push({ reached: c.reached, best_ms: c.best_ms as number, median_ms: c.median_ms as number, worst_ms: c.worst_ms as number, sample });
+        }
+        out.push({ ...(w as unknown as CurveWindowIn), finishes, checkpoints });
     });
     return out;
+}
+
+/** A cloud cut to `cap` points: its best (lowest time) kept, the others evenly spread, by training time. */
+export function thinCloud(pts: [number, number][], cap: number): [number, number][] {
+    if (pts.length <= cap) return pts;
+    if (cap <= 0) return [];
+    let best = 0;
+    pts.forEach((p, i) => {
+        if (p[1] < pts[best]![1]) best = i;
+    });
+    const out: [number, number][] = [pts[best]!];
+    const others = cap - 1;
+    for (let k = 0; k < others; ++k) {
+        let i = Math.min(pts.length - 1, Math.floor(((k + 0.5) * pts.length) / others));
+        if (i === best) i = i + 1 < pts.length ? i + 1 : i - 1;
+        out.push(pts[i]!);
+    }
+    return out.sort((x, y) => x[0] - y[0]);
+}
+
+type StoredCheckpoint = { reached: number; best_ms: number; median_ms: number; worst_ms: number; sample: [number, number][] };
+
+/** A window's clouds placed on the server's training time (its points from `start`, within `end`). */
+function placedCloud(w: CurveWindowIn, start: number, end: number) {
+    const at = (p: [number, number]): [number, number] => [Math.max(start, Math.min(end, start + p[0])), p[1]];
+    return {
+        finishes: (w.finishes ?? []).map(at),
+        checkpoints: (w.checkpoints ?? []).map((c): StoredCheckpoint => ({ ...c, sample: c.sample.map(at) })),
+    };
+}
+
+const cloudSize = (c: { finishes: unknown[]; checkpoints: { sample: unknown[] }[] }) => c.finishes.length + c.checkpoints.reduce((n, k) => n + k.sample.length, 0);
+
+/** Two windows' checkpoints as one (counts added, best and worst kept, medians weighted, samples bounded). */
+function mergedCheckpoints(a: StoredCheckpoint[], b: StoredCheckpoint[]): StoredCheckpoint[] {
+    const lowest = (x: number, y: number) => (x <= 0 ? y : y <= 0 ? x : Math.min(x, y));
+    const none: StoredCheckpoint = { reached: 0, best_ms: 0, median_ms: 0, worst_ms: 0, sample: [] };
+    return Array.from({ length: Math.max(a.length, b.length) }, (_, k) => {
+        const x = a[k] ?? none,
+            y = b[k] ?? none;
+        const reached = x.reached + y.reached;
+        const best = lowest(x.best_ms, y.best_ms),
+            worst = Math.max(x.worst_ms, y.worst_ms);
+        const median = reached > 0 ? Math.max(best, Math.min(worst, Math.round((x.median_ms * x.reached + y.median_ms * y.reached) / reached))) : 0;
+        return { reached, best_ms: best, median_ms: median, worst_ms: worst, sample: thinCloud([...x.sample, ...y.sample], MAX_CLOUD_SAMPLE_PER_CHECKPOINT) };
+    });
 }
 
 /** Two windows of counts as one (counts added, best and worst kept, medians weighted by their counts). */
@@ -565,6 +696,12 @@ function mergedWindow(a: CurveWindowRow, b: CurveWindowIn & { start_ms: number; 
         route_max: Math.max(a.route_max, b.route_max),
         stopped: JSON.stringify(add(sa, b.stopped)),
         broken: JSON.stringify(add(ba, b.broken)),
+        ...(() => {
+            const nb = placedCloud(b, b.start_ms, b.end_ms);
+            const finishes = thinCloud([...cloudPoints(cloudOf(a.finishes)), ...nb.finishes], MAX_CLOUD_FINISHES_PER_WINDOW);
+            const checkpoints = mergedCheckpoints(checkpointsOf(a.checkpoints) as StoredCheckpoint[], nb.checkpoints);
+            return { finishes: JSON.stringify(finishes), checkpoints: JSON.stringify(checkpoints), points: cloudSize({ finishes, checkpoints }) };
+        })(),
     };
 }
 
@@ -593,9 +730,12 @@ async function storeCurve(
         ctx.env.DB.prepare(`SELECT seq, time_ms, training_ms, (SELECT COUNT(*) FROM tas_curve_points WHERE ${where}) AS n FROM tas_curve_points WHERE ${where} ORDER BY seq DESC LIMIT 1`)
             .bind(...key)
             .first<{ seq: number; time_ms: number; training_ms: number; n: number }>(),
-        ctx.env.DB.prepare(`SELECT *, (SELECT COUNT(*) FROM tas_curve_windows WHERE ${where}) AS n FROM tas_curve_windows WHERE ${where} ORDER BY seq DESC LIMIT 1`)
+        ctx.env.DB.prepare(
+            `SELECT *, (SELECT COUNT(*) FROM tas_curve_windows WHERE ${where}) AS n, (SELECT COALESCE(SUM(points), 0) FROM tas_curve_windows WHERE ${where}) AS cloud
+             FROM tas_curve_windows WHERE ${where} ORDER BY seq DESC LIMIT 1`,
+        )
             .bind(...key)
-            .first<CurveWindowRow & { n: number }>(),
+            .first<CurveWindowRow & { n: number; cloud: number }>(),
     ]);
     const stmts: D1PreparedStatement[] = [];
     const added: ReturnType<typeof curvePointJson>[] = [];
@@ -656,29 +796,37 @@ async function storeCurve(
     // The windows of attempts, oldest first.
     let wSeq = lastWindow?.seq ?? 0;
     let wN = lastWindow?.n ?? 0;
+    let cloud = lastWindow?.cloud ?? 0;
     let last: CurveWindowRow | null = lastWindow ?? null;
     let stored = 0;
     const columns =
-        "level_id, category, level_hash, sim_version, seq, session, round, section, sections, start_ms, end_ms, attempts, finished, best_ms, median_ms, worst_ms, route_median, route_max, stopped, broken, found_by, found_by_username, at";
+        "level_id, category, level_hash, sim_version, seq, session, round, section, sections, start_ms, end_ms, attempts, finished, best_ms, median_ms, worst_ms, route_median, route_max, stopped, broken, found_by, found_by_username, at, finishes, checkpoints, points";
     const bindWindow = (s: D1PreparedStatement, w: CurveWindowRow) =>
         s.bind(w.level_id, w.category, w.level_hash, w.sim_version, w.seq, w.session, w.round, w.section, w.sections, w.start_ms, w.end_ms, w.attempts, w.finished,
-            w.best_ms, w.median_ms, w.worst_ms, w.route_median, w.route_max, w.stopped, w.broken, w.found_by, w.found_by_username, w.at);
+            w.best_ms, w.median_ms, w.worst_ms, w.route_median, w.route_max, w.stopped, w.broken, w.found_by, w.found_by_username, w.at, w.finishes, w.checkpoints, w.points);
     for (const w of [...windows].sort((a, b) => b.age_ms - a.age_ms)) {
         const end = xOf(w.age_ms);
         const placed = { ...w, start_ms: Math.max(0, end - w.duration_ms), end_ms: end };
+        // The version's clouds bounded: beyond, the window keeps only its best points.
+        if (cloud + cloudSize(placed) > MAX_CLOUD_POINTS) {
+            placed.finishes = thinCloud(placed.finishes, 1);
+            placed.checkpoints = placed.checkpoints.map((c) => ({ ...c, sample: thinCloud(c.sample, 1) }));
+        }
         if (wN >= MAX_CURVE_WINDOWS) {
             // The cap: added to the last window of its session, else left out.
             if (!last || last.session !== k.session) {
                 ++refused;
                 continue;
             }
+            const before = last.points ?? 0;
             last = mergedWindow(last, placed);
+            cloud += last.points - before;
             stmts.push(
                 bindWindow(
                     ctx.env.DB.prepare(
                         `UPDATE tas_curve_windows SET level_id = ?1, category = ?2, level_hash = ?3, sim_version = ?4, session = ?6, round = ?7, section = ?8, sections = ?9,
                            start_ms = ?10, end_ms = ?11, attempts = ?12, finished = ?13, best_ms = ?14, median_ms = ?15, worst_ms = ?16, route_median = ?17, route_max = ?18,
-                           stopped = ?19, broken = ?20, found_by = ?21, found_by_username = ?22, at = ?23
+                           stopped = ?19, broken = ?20, found_by = ?21, found_by_username = ?22, at = ?23, finishes = ?24, checkpoints = ?25, points = ?26
                          WHERE level_id = ?1 AND category = ?2 AND level_hash = ?3 AND sim_version = ?4 AND seq = ?5`,
                     ),
                     last,
@@ -708,11 +856,23 @@ async function storeCurve(
             route_max: w.route_max,
             stopped: JSON.stringify(w.stopped),
             broken: JSON.stringify(w.broken),
+            ...(() => {
+                const c = placedCloud(placed, placed.start_ms, placed.end_ms);
+                return { finishes: JSON.stringify(c.finishes), checkpoints: JSON.stringify(c.checkpoints), points: cloudSize(c) };
+            })(),
             found_by: k.by.id,
             found_by_username: k.by.username,
             at: atOf(end),
         };
-        stmts.push(bindWindow(ctx.env.DB.prepare(`INSERT INTO tas_curve_windows (${columns}) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23) ON CONFLICT DO NOTHING`), row));
+        cloud += row.points;
+        stmts.push(
+            bindWindow(
+                ctx.env.DB.prepare(
+                    `INSERT INTO tas_curve_windows (${columns}) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26) ON CONFLICT DO NOTHING`,
+                ),
+                row,
+            ),
+        );
         last = row;
         ++wN;
         ++stored;
