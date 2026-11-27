@@ -411,7 +411,10 @@ Json TasProgress::toJson() const {
     Json cps = Json::array();
     for (const TasCheckpoint& c : checkpoints) cps.push_back({{"id", c.id}, {"label", c.label}});
     Json refs = Json::array();
-    for (const Reference& r : guides) refs.push_back({{"player", r.player}, {"timeMs", r.timeMs}, {"splits", r.splits}});
+    for (const Reference& r : guides) {
+        refs.push_back({{"player", r.player}, {"timeMs", r.timeMs}, {"splits", r.splits}});
+        if (r.oldVersion) refs.back()["oldVersion"] = true;
+    }
     return {{"format", kTasProgressFormat},
             {"phase", tasPhaseId(phase)},
             {"level", levelId},
@@ -487,6 +490,7 @@ std::optional<TasProgress> TasProgress::fromJson(const Json& j, std::string* err
             r.player = jstr(g, "player").substr(0, 64);
             r.timeMs = std::max<int64_t>(0, jget<int64_t>(g, "timeMs", 0));
             if (auto sp = tasSplitsFromJson(jfield(g, "splits", Json::array()), r.timeMs)) r.splits = std::move(*sp);
+            r.oldVersion = jget<bool>(g, "oldVersion", false);
             p.guides.push_back(std::move(r));
         }
     p.sequence = count("sequence");

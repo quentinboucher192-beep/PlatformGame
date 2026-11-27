@@ -69,14 +69,19 @@ TasTrainingSettings TasTrainingSettings::fromJson(const Json& j, int cores) {
 std::vector<TasTraining::GuideRun> TasTraining::guidesOf(const TasPair& pair, const std::string& levelHash) const {
     std::vector<GuideRun> out;
     if (!settings_.guidePb || levelHash.empty()) return out;
+    // This version's PB first; else the PB of an older version of the level (its animations, its
+    // cinematics may have changed: cosmic_tas then uses its route only, never its inputs).
     const OnlineAttempt* pb = nullptr;
-    for (const OnlineAttempt& a : online_.attempts().all()) {
-        if (a.levelId != pair.levelId || a.levelHash != levelHash || !a.hasReplay) continue;
-        const OnlineSubmission* s = a.submission(pair.category);
-        if (!s || s->status == RecordStatus::Rejected) continue;
-        std::error_code ec;
-        if (!fs::exists(online_.attempts().replayPath(a.attemptId), ec)) continue;
-        if (!pb || a.timeMs < pb->timeMs) pb = &a;
+    for (const bool sameVersion : {true, false}) {
+        for (const OnlineAttempt& a : online_.attempts().all()) {
+            if (a.levelId != pair.levelId || (a.levelHash == levelHash) != sameVersion || !a.hasReplay) continue;
+            const OnlineSubmission* s = a.submission(pair.category);
+            if (!s || s->status == RecordStatus::Rejected) continue;
+            std::error_code ec;
+            if (!fs::exists(online_.attempts().replayPath(a.attemptId), ec)) continue;
+            if (!pb || a.timeMs < pb->timeMs) pb = &a;
+        }
+        if (pb) break;
     }
     if (pb) {
         const std::string me = online_.username();

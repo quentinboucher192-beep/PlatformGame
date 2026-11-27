@@ -201,6 +201,9 @@ struct TasProgress {
         std::string player;
         int64_t timeMs = 0;
         std::vector<int64_t> splits;
+        /// A run of an older version of the level (only its route guides): its times say so, part
+        /// of a gap may come from the level's changes, not from the play.
+        bool oldVersion = false;
         bool operator==(const Reference&) const = default;
     };
     static constexpr size_t kMaxReferences = 8;

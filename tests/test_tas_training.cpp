@@ -789,7 +789,8 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
         }
         c.version(hash, kSimulationVersion).checkpoints = {{"o63", "Seuil des Anciens"}, {"o140", "Canopée brisée"}, {"o206", ""}};
         // 2.99: a player's run guides it (its splits: the references at each checkpoint, the sum of the best segments).
-        c.version(hash, kSimulationVersion).references = {{"UnTresLongPseudo", 85000, {9500, 26000, 43000}}};
+        c.version(hash, kSimulationVersion).references = {{"UnTresLongPseudo", 85000, {9500, 26000, 43000}},
+                                                          {"NovaRider", 0, {9000, 25000, 41000}, true}};  // an older version: its route only
         CHECK(c.addBest(std::string(64, 'b'), kSimulationVersion, pt(TasCurveKind::Improvement, 80000, 1000)));
         page.select("level_0", RunCategory::AnyPercent);
         CHECK(page.selected("level_0", RunCategory::AnyPercent) && page.capturesBack());
@@ -897,7 +898,7 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             }
             if (!deep && tabNow > 0) {
                 // A CP tab: the gains marked where its segment changed, the guide's time there and the gap.
-                CHECK(L.gainMarks >= 1 && L.referenceLines >= 2 && L.referenceGaps == 1);
+                CHECK(L.gainMarks >= 1 && L.referenceLines >= 2 && L.referenceGaps == 2);
             }
             if (deep) {
                 // As deep as it goes: a few seconds, a few milliseconds; the overview and « Réinitialiser le zoom » shown.

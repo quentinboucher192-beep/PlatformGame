@@ -93,7 +93,7 @@ cmake --build build --target cosmic_tas
 | `--stop-file <fichier>` | s'arrêter proprement dès que ce fichier existe |
 | `--stop-on-stdin` | s'arrêter proprement quand l'entrée standard lit `stop` ou se ferme (le jeu fermé, même par un plantage) |
 | `--user-dir <dossier>`, `--server <url>` | le niveau tel que le jeu le joue sur cet ordinateur : les révisions en ligne (campagne, entités) que le jeu a téléchargées |
-| `--guide <replay> [--guide-name <joueur>]` | (2.99, plusieurs fois, 8 au plus) une course d'un joueur qui guide la recherche : un replay exact de **cette version** du niveau et de la simulation, refusé sinon (« Guide refusé (…) : replay d'une autre version du niveau… ») ; voir « Les guides » |
+| `--guide <replay> [--guide-name <joueur>]` | (2.99, plusieurs fois, 8 au plus) une course d'un joueur qui guide la recherche : un replay exact de **cette version** du niveau et de la simulation ; d'une autre version du même niveau, son **tracé** seulement (jamais ses entrées) ; d'un autre niveau, refusé (« Guide refusé (…) : … ») ; voir « Les guides » |
 
 La course trouvée est **vérifiée** avant d'être écrite ; un fichier qui garde une course plus
 rapide (ou égale) du même niveau et de la même simulation n'est pas remplacé. Arrêtée (fichier ou
@@ -263,9 +263,28 @@ pouvoirs restent hors de portée, sauf si un **guide** les apporte.
 * **Dans le jeu** : l'entraînement d'une paire reçoit le **PB de cet ordinateur** (la tentative la
   plus rapide de la catégorie sur cette version du niveau dont le replay est gardé, non refusée ;
   « Guide : votre PB (oui / non) » dans les réglages, gardé dans `settings.json`).
+* **Le tracé d'une ancienne version.** Une course d'une **autre version** du niveau (ses animations,
+  ses cinématiques ont pu changer : ses entrées ne se rejouent plus pareil) n'est **jamais**
+  rejouée ni assemblée : `--guide` la prend pour son **tracé** (`RouteHint` : les positions
+  enregistrées dans son replay, à sa cadence, et ses temps aux points de passage). À chaque
+  génération d'une section, en plus de sa sélection, le faisceau garde quelques états qui suivent
+  ce tracé le plus loin (à 24 px d'un de ses points) : la recherche cherche les entrées
+  d'aujourd'hui qui prennent le chemin du joueur, avec les règles d'aujourd'hui, et toute course
+  est vérifiée comme d'habitude. La liste `routeHints` est générique (d'autres modules peuvent en
+  proposer). Dit honnêtement : « Guidé par le tracé de la course de NovaRider (ancienne version du
+  niveau) », et ses temps « CP5 : TAS +4,200 s sur NovaRider (ancienne version) » (une partie de
+  l'écart peut venir du niveau changé, pas du jeu) ; ils n'entrent pas dans la somme des meilleurs
+  segments. Le jeu passe le PB de cette version, sinon celui d'une ancienne version.
+* **Un départ, jamais un plafond.** Un temps de joueur à un point de passage est une borne à
+  battre : rien ne s'arrête ni ne ralentit quand la machine l'égale ; le tracé n'attire plus une
+  section dès que la meilleure course y arrive aussi tôt que lui ; après un gain par un guide, les
+  tours continuent comme d'habitude (fenêtres, affinage) ; l'écart passe au vert quand la machine
+  passe devant.
 * **Ce qui n'est pas encore fait** : les records du monde en ligne et les replays des meilleurs
   segments comme guides (le téléchargement des replays vérifiés existe, le lien avec
-  l'entraînement non) ; un choix guide par guide.
+  l'entraînement non) ; un choix guide par guide ; les ensembles d'arrivées de Pareto aux points
+  de passage (une arrivée plus lente mais plus rapide en vitesse ou en énergie gardée pour la
+  suite).
 
 Mesure (2.99, `sylvanox_01` ANY%, 2 fils, depuis la course livrée 1:26.692 avec comme guide une
 course 1:26.617 d'un autre entraînement) : 1:26.600 vérifiée et écrite **6 s** après le départ (un

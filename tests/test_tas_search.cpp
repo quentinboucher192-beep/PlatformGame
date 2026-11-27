@@ -309,3 +309,51 @@ TEST_CASE("tas guides: a splice slower than the best run is never kept") {
     CHECK(slower == 0);  // nothing slower is ever handed over to be written
     CHECK(S.verified(out.inputs) == ms(out.clock));
 }
+
+TEST_CASE("tas guides: a run of an older version of the level guides by its route only, never by its inputs") {
+    Shipped S;
+    if (!S.ok) return;
+    const auto ends = tas::sectionEndsOf(S.content, *S.level, RunCategory::AnyPercent, S.best);
+    if (ends.size() < 7) return;
+    // The player's run, recorded on an older version of the level (another fingerprint).
+    const tas::Verified v = tas::recordAndVerify(S.content, *S.level, *S.fp, RunCategory::AnyPercent, S.best, 0);
+    CHECK(v.ok);
+    if (!v.ok) return;
+    ReplayData old = v.replay;
+    old.levelHash = std::string(64, 'f');
+    const fs::path file = Paths::userDir() / "tas_route_old_version.cprz";
+    CHECK(FileUtil::writeBinary(file, old.encode()));
+    // Never its inputs: refused as a guide (another version of the level)...
+    std::vector<InputFrame> in;
+    std::string id, why;
+    CHECK(!tas::readGuideReplay(Paths::toUtf8(file), "sylvanox_01", S.fp->hash, in, id, why));
+    // ... its route instead: its positions and its checkpoint times.
+    std::vector<tas::RouteHint> route;
+    std::vector<int64_t> splits;
+    CHECK(tas::readRouteReplay(Paths::toUtf8(file), "sylvanox_01", route, splits, why));
+    CHECK(route.size() > 1000 && splits.size() == 6);
+    std::error_code ec;
+    fs::remove(file, ec);
+    // The machine's run slower from CP1 on (a pause): the route is ahead there, it is followed.
+    const std::vector<InputFrame> slow = withPause(S.best, ends[0], 240);
+    const int64_t slowMs = S.verified(slow);
+    CHECK(slowMs > S.bestMs);
+    if (slowMs <= 0) return;
+    tas::SearchOptions o;
+    o.category = RunCategory::AnyPercent;
+    o.threads = 2;
+    o.budgetSeconds = 20.0;
+    o.seed = 13;
+    o.seedRun = slow;
+    o.routeHints = route;
+    o.windowFirst = o.windowLast = 2;
+    o.refine = false;
+    const tas::SearchOutcome out = tas::search(S.content, *S.level, o);
+    std::printf("  tracé : %lld états gardés parce qu'ils le suivent ; %.3f s (départ %.3f s)\n", static_cast<long long>(out.routeKept), static_cast<double>(out.clock),
+                static_cast<double>(slowMs) / 1000.0);
+    CHECK(out.guideSources == 0 && out.splicedSections == 0);  // nothing of its inputs
+    CHECK(out.routeKept > 0);
+    // Never worse, and a real run: verified by the normal replay playback.
+    CHECK(out.found && ms(out.clock) <= slowMs);
+    CHECK(S.verified(out.inputs) == ms(out.clock));
+}

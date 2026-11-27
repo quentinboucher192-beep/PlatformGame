@@ -66,6 +66,8 @@ struct TasGuide {
     std::string player;    // its player's pseudonym (« votre PB » runs: this computer's player)
     int64_t timeMs = 0;    // its time when it finishes the category (verified by cosmic_tas), else 0
     std::string replayId;  // its replay (the attempt's id)
+    /// A run of an older version of the level: only its route guided the search (never its inputs).
+    bool routeOnly = false;
     bool operator==(const TasGuide&) const = default;
     static constexpr size_t kMax = 8;
 };

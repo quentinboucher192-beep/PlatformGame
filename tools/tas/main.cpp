@@ -384,12 +384,31 @@ int main(int argc, char** argv) {
     if (guideArgs.size() > TasGuide::kMax) return finish(TasPhase::Failed, "Trop de guides (" + std::to_string(TasGuide::kMax) + " au plus)", 2);
     std::vector<std::vector<InputFrame>> guideRuns;
     std::vector<std::string> guideIds;
+    std::vector<GuideArg> exactArgs;
+    // A run of an older version of the level (its inputs no longer play the same): its ROUTE only,
+    // never its inputs (docs/TAS.md « Le tracé d'une ancienne version »).
+    struct RouteArg {
+        std::string player, id;
+        std::vector<int64_t> splits;
+    };
+    std::vector<RouteArg> routeArgs;
     for (const GuideArg& g : guideArgs) {
         std::vector<InputFrame> in;
         std::string id, why;
-        if (!tas::readGuideReplay(g.file, levelId, fp->hash, in, id, why)) return finish(TasPhase::Failed, "Guide refusé (" + g.file + ") : " + why, 2);
+        if (!tas::readGuideReplay(g.file, levelId, fp->hash, in, id, why)) {
+            std::vector<tas::RouteHint> route;
+            std::vector<int64_t> splits;
+            std::string whyRoute;
+            if (!tas::readRouteReplay(g.file, levelId, route, splits, whyRoute)) return finish(TasPhase::Failed, "Guide refusé (" + g.file + ") : " + why, 2);
+            say("Guide " + (g.player.empty() ? g.file : g.player) + " : " + why + " ; son tracé seulement guide la recherche (" + std::to_string(route.size()) +
+                " positions)");
+            opt.routeHints.insert(opt.routeHints.end(), route.begin(), route.end());
+            routeArgs.push_back({g.player.empty() ? std::string("?") : g.player, Paths::toUtf8(Paths::fromUtf8(g.file).stem()), std::move(splits)});
+            continue;
+        }
         guideRuns.push_back(std::move(in));
         guideIds.push_back(id.empty() ? Paths::toUtf8(Paths::fromUtf8(g.file).stem()) : id);
+        exactArgs.push_back(g);
     }
     // --save-partial <file>: the run so far after each section, as a replay of its inputs (to start
     // a later search from it with --seed-replay; never a run of the machine by itself).
@@ -482,7 +501,7 @@ int main(int argc, char** argv) {
         for (size_t k = 0; k < guideRuns.size(); ++k) {
             const tas::Verified gv = tas::recordAndVerify(content, *level, *fp, category, guideRuns[k], 0);
             TasProgress::Reference r;
-            r.player = guideArgs[k].player.empty() ? std::string("?") : guideArgs[k].player;
+            r.player = exactArgs[k].player.empty() ? std::string("?") : exactArgs[k].player;
             if (gv.ok) {
                 r.timeMs = gv.record.timeMs;
                 r.splits = splitsAt(gv.record.splits, cpIds);
@@ -491,6 +510,20 @@ int main(int argc, char** argv) {
                 say("Guide " + std::to_string(k + 1) + " (" + r.player + ") : ne termine pas la catégorie (" + gv.why + "), utilisé jusqu'où il va");
             }
             guidedBy.push_back({r.player, r.timeMs, guideIds[k]});
+            refs.push_back(std::move(r));
+        }
+        // The routes of older versions: their checkpoint times as they were (said: another version).
+        for (RouteArg& a : routeArgs) {
+            TasProgress::Reference r;
+            r.player = a.player;
+            r.oldVersion = true;
+            r.splits.assign(cpIds.size(), 0);
+            for (size_t k = 0; k < a.splits.size() && k < cpIds.size(); ++k) r.splits[k] = a.splits[k];
+            for (size_t k = 1; k < r.splits.size(); ++k)
+                if (r.splits[k] > 0 && r.splits[k] < r.splits[k - 1]) r.splits[k] = 0;
+            TasGuide g{a.player, 0, a.id};
+            g.routeOnly = true;
+            guidedBy.push_back(g);
             refs.push_back(std::move(r));
         }
         training.edit([&](TasProgress& p) { p.guides = std::move(refs); });

@@ -55,7 +55,10 @@ Json TasRecord::toJson() const {
             {"replay", replay}};
     if (!guidedBy.empty()) {
         Json g = Json::array();
-        for (const TasGuide& x : guidedBy) g.push_back({{"player", x.player}, {"timeMs", x.timeMs}, {"replayId", x.replayId}});
+        for (const TasGuide& x : guidedBy) {
+            g.push_back({{"player", x.player}, {"timeMs", x.timeMs}, {"replayId", x.replayId}});
+            if (x.routeOnly) g.back()["routeOnly"] = true;
+        }
         j["guidedBy"] = g;
     }
     return j;
@@ -102,6 +105,7 @@ std::optional<TasRecord> TasRecord::fromJson(const Json& j, std::string* error) 
         x.player = jstr(g, "player").substr(0, 64);
         x.timeMs = std::max<int64_t>(0, jget<int64_t>(g, "timeMs", 0));
         x.replayId = jstr(g, "replayId").substr(0, 128);
+        x.routeOnly = jget<bool>(g, "routeOnly", false);
         r.guidedBy.push_back(std::move(x));
     }
     return r;

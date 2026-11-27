@@ -19024,6 +19024,12 @@
    ]
   },
   {
+   "fr": "CP{0} : TAS {1} sur {2} (ancienne version)",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Crachat acide",
    "where": [
     "data/enemies/gloop.json",
@@ -32858,7 +32864,7 @@
    ]
   },
   {
-   "fr": "Guidé par la course de {0}",
+   "fr": "Guidé par {0}",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
    ]
@@ -38009,6 +38015,18 @@
    ]
   },
   {
+   "fr": "la course de {0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "la course de {0} ({1})",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "la course ne remplit pas la catégorie {0}",
    "where": [
     "game/tas/TasVerify.cpp"
@@ -42700,6 +42718,12 @@
    "fr": "Le tracé de la course de ce niveau EXTRÊME manque : publiez-le depuis une version à jour du jeu.",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "le tracé de la course de {0} (ancienne version du niveau)",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -84851,6 +84875,12 @@
    "fr": "{0} (admin)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (ancienne version) {1}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {

@@ -37,6 +37,7 @@
 #include <utility>
 #include <vector>
 
+#include "engine/core/Math.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/online/OnlineTypes.h"
 
@@ -61,6 +62,15 @@ struct AttemptNote {
 /// route, CP1 first: the level's checkpoints a player's splits count), and the level's clock then.
 struct Crossing {
     int checkpoint = 0;  // 0-based
+    float clock = 0.0f;
+};
+
+/// A point of a player's ROUTE (docs/TAS.md « Les guides », « Le tracé d'une ancienne version »):
+/// where Nova's feet were, at `clock` s, in a run of an older version of the level — its inputs no
+/// longer play the same (the level's animations, its cinematics changed), its path still says
+/// where a player went. Generic: any module that proposes a route can fill them.
+struct RouteHint {
+    Vec2 feet;
     float clock = 0.0f;
 };
 
@@ -108,6 +118,12 @@ struct SearchOptions {
     /// that really plays), kept when it finishes faster.
     std::vector<std::vector<InputFrame>> guides;
     bool splice = true;
+    /// Routes of players' runs of older versions of the level (never their inputs): at every
+    /// generation of a section, besides its own selection, the beam keeps the states that follow
+    /// one of them the furthest (within kRouteRadius px of a point of it), so that today's inputs
+    /// that take the player's way are searched under today's rules.
+    std::vector<RouteHint> routeHints;
+    static constexpr float kRouteRadius = 24.0f;
 };
 
 struct SearchOutcome {
@@ -127,6 +143,7 @@ struct SearchOutcome {
     int splicedSections = 0;              // the splice: its sections taken from a guide (not the best run)
     int spliceWays = 0, spliceArrivals = 0, spliceJoined = 0;  // the splice: ways played, those that reached their section's end, those re-joined (measured)
     float spliceClock = -1.0f;            // the splice's run at the exit (negative: it did not finish)
+    int64_t routeKept = 0;                // states kept in the beam because they follow a route hint
     std::string bestSource;               // where the best run kept came from ("beam", "guide", "splice", "polish"; empty: the seed run)
     /// Before the refinement, the run kept ended with the seed run's rest: inputs[rejoinAt..] are
     /// seedRun[rejoinSeedAt..] (the first one's presses and releases recomputed).

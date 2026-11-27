@@ -15814,6 +15814,12 @@
     "mot court en minuscules attendu": "short lowercase word expected",
     "un guide (course d'un joueur)": "a guide (a player's run)",
     "−{0} ms": "−{0} ms",
-    "candidat {0}": "candidate {0}"
+    "candidat {0}": "candidate {0}",
+    "CP{0} : TAS {1} sur {2} (ancienne version)": "CP{0}: TAS {1} vs {2} (older version)",
+    "Guidé par {0}": "Guided by {0}",
+    "la course de {0}": "the run of {0}",
+    "la course de {0} ({1})": "the run of {0} ({1})",
+    "le tracé de la course de {0} (ancienne version du niveau)": "the route of the run of {0} (older version of the level)",
+    "{0} (ancienne version) {1}": "{0} (older version) {1}"
   }
 }

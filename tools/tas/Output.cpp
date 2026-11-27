@@ -157,6 +157,41 @@ bool readGuideReplay(const std::string& path, const std::string& levelId, const 
     return true;
 }
 
+std::vector<RouteHint> routeOf(const ReplayData& r) {
+    std::vector<RouteHint> out;
+    const float hz = static_cast<float>(std::max<uint16_t>(1, r.sampleHz));
+    out.reserve(r.frames.size());
+    for (size_t i = 0; i < r.frames.size(); ++i) out.push_back({{r.frames[i].x, r.frames[i].y}, static_cast<float>(i) / hz});
+    return out;
+}
+
+bool readRouteReplay(const std::string& path, const std::string& levelId, std::vector<RouteHint>& route, std::vector<int64_t>& splits, std::string& why) {
+    auto bytes = FileUtil::readBinary(Paths::fromUtf8(path));
+    if (!bytes) {
+        why = "fichier illisible";
+        return false;
+    }
+    auto r = ReplayData::decode(*bytes, &why);
+    if (!r) return false;
+    if (r->levelId != levelId) {
+        why = "replay d'un autre niveau (" + r->levelId + ")";
+        return false;
+    }
+    if (!r->team.empty()) {
+        why = "pas une course seule";
+        return false;
+    }
+    route = routeOf(*r);
+    if (route.size() < 2) {
+        why = "replay sans positions";
+        return false;
+    }
+    splits.clear();
+    for (const ReplayEvent& e : r->events)
+        if (e.type == ReplayEventType::Split) splits.push_back(r->splitTimeMs(e));
+    return true;
+}
+
 bool readSeedReplay(const std::string& path, const std::string& levelId, std::vector<InputFrame>& out, std::string& why) {
     auto bytes = FileUtil::readBinary(Paths::fromUtf8(path));
     if (!bytes) {

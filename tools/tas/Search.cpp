@@ -96,6 +96,7 @@ struct Tuning {
 struct Effort {
     int beam = 24, moves = 10, len = 16;
     int settle = 4;
+    bool route = true;  // the route hints followed (SearchOptions::routeHints): not once the best run is as fast there
 };
 
 /// A state of the beam (its world in a savestate of the worker's arena).
@@ -202,6 +203,7 @@ struct Shared {
     const Course& course;
     const SearchOptions& opt;
     std::atomic<int64_t> explored{0};
+    std::atomic<int64_t> routeKept{0};
     std::atomic<bool> stop{false};
     std::mutex logMutex;
     /// The search ends as soon as it can: asked from outside (SearchOptions::stopRequested), or by itself.
@@ -763,6 +765,30 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         }
         for (int gi : guideCand)
             if (gi >= 0 && !cands[static_cast<size_t>(gi)].arrived) keep.push_back(gi);
+        // The routes of older runs (SearchOptions::routeHints): a few more states, those that follow
+        // a route the furthest (the latest point of it within kRouteRadius px of Nova's feet).
+        if (const auto& hints = sh_.opt.routeHints; !hints.empty() && effort.route) {
+            const float r2 = SearchOptions::kRouteRadius * SearchOptions::kRouteRadius;
+            std::vector<std::pair<size_t, int>> along;
+            for (int i : rest) {
+                const Candidate& c = cands[static_cast<size_t>(i)];
+                if (c.arrived || c.parent < 0 || std::find(keep.begin(), keep.end(), i) != keep.end()) continue;
+                size_t far = 0;
+                bool near = false;
+                for (size_t h = 0; h < hints.size(); ++h)
+                    if ((hints[h].feet - c.p.feet).lengthSq() <= r2) far = h, near = true;
+                if (near) along.push_back({far, i});
+            }
+            std::sort(along.begin(), along.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
+            const size_t extra = static_cast<size_t>(std::max(1, tune.beam / 6));
+            std::unordered_set<size_t> spots;
+            for (const auto& [h, i] : along) {
+                if (spots.size() >= extra) break;
+                if (!spots.insert(h / 8).second) continue;  // not all on the same stretch of it
+                keep.push_back(i);
+                sh_.routeKept.fetch_add(1, std::memory_order_relaxed);
+            }
+        }
         // Progress and stall: the beam widens and the moves lengthen while nothing gets better.
         const float top = cands[static_cast<size_t>(order.front())].p.score;
         if (top > bestScore + 8.0f) {
@@ -1158,7 +1184,22 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         return gs;
     };
     // A section searched by every thread from the base: the arrivals, each way once.
-    auto searchSection = [&](size_t s, Clock::time_point until, const Effort& e, const std::vector<Lead>& gs) {
+    // A route hint is a start, never a ceiling: once the best run reaches the section's end no later
+    // than the route did (its point nearest to the section's checkpoint), the section is searched
+    // without it (its pull stops, the search goes on beyond the player's way).
+    auto routeWanted = [&](size_t s) {
+        const auto& hints = opt.routeHints;
+        if (hints.empty()) return false;
+        if (!guide.finishes() || s >= guide.ends.size()) return true;
+        const Vec2 at = course.waypoints()[static_cast<size_t>(course.sectionEnds()[s])].feet;
+        size_t h = 0;
+        for (size_t k = 1; k < hints.size(); ++k)
+            if ((hints[k].feet - at).lengthSq() < (hints[h].feet - at).lengthSq()) h = k;
+        return guide.clockAt[std::min(guide.ends[s], guide.clockAt.size() - 1)] > hints[h].clock;
+    };
+    auto searchSection = [&](size_t s, Clock::time_point until, const Effort& effort, const std::vector<Lead>& gs) {
+        Effort e = effort;
+        e.route = routeWanted(s);
         std::vector<std::vector<Arrival>> found(workers.size());
         {
             std::vector<std::thread> pool;
@@ -1685,6 +1726,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         for (int i = 0; i < threads; ++i) pool.emplace_back(refine, i);
         for (auto& t : pool) t.join();
     }
+    out.routeKept = sh.routeKept.load();
     out.found = true;
     out.inputs = std::move(current);
     out.clock = currentClock;
