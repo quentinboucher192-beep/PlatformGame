@@ -37272,6 +37272,12 @@
    ]
   },
   {
+   "fr": "l'exploration (Go-Explore)",
+   "where": [
+    "game/tas/TasCurve.cpp"
+   ]
+  },
+  {
    "fr": "L'expédition",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -41797,6 +41803,12 @@
    ]
   },
   {
+   "fr": "le planificateur (sauts et dashs planifiés)",
+   "where": [
+    "game/tas/TasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Le plasma referme l'arène !",
    "where": [
     "data/levels/noyau_03.json"
@@ -41866,6 +41878,12 @@
    "fr": "le point faible (× 2)",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "le polissage des timings",
+   "where": [
+    "game/tas/TasCurve.cpp"
    ]
   },
   {
@@ -56582,6 +56600,12 @@
    ]
   },
   {
+   "fr": "planificateur",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Plante carnivore colossale enracinée au cœur de la canopée. Ses trois têtes mordent, ses sacs crachent des spores.",
    "where": [
     "data/enemies/spore_queen.json"
@@ -57916,6 +57940,12 @@
    "where": [
     "game/content/AssetCatalog.cpp",
     "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "polissage",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {

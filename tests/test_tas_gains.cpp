@@ -130,6 +130,8 @@ TEST_CASE("tas gains: the sum of the best segments of the guides and of the mach
     alone.points.push_back(best);
     CHECK(tasSumOfBest(alone, 0) == 0);
     CHECK(tasSourceLabel("splice") == "l'assemblage des guides");
+    // Every source a gain can come from has its words (the planner, the portfolio's arms).
+    for (const char* src : {"beam", "guide", "splice", "polish", "planner", "explore", "timing"}) CHECK(tasSourceLabel(src) != src);
 }
 
 TEST_CASE("tas gains: guidedBy on the run's sheet, written and read back") {

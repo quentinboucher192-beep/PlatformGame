@@ -549,8 +549,8 @@ est plus rapide, sinon rien. Une plus lente en attente est oubliée au profit de
 progression le dit en quelques secondes : `candidateMs` et `verifying` (« candidat 1:26.642 ·
 vérification… »), puis `bestMs`, ses temps aux points de passage et l'origine du gain
 (`bestSplits`, `bestSource` : `beam` la recherche, `guide`, `splice` l'assemblage, `polish`
-l'affinage). Le tour suivant part de la meilleure course vérifiée. Jamais une course non vérifiée
-n'est écrite.
+l'affinage, `planner` le planificateur ; avec le portefeuille, `explore` et `timing`). Le tour
+suivant part de la meilleure course vérifiée. Jamais une course non vérifiée n'est écrite.
 
 ## Vérification
 

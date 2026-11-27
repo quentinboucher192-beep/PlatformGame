@@ -223,6 +223,9 @@ std::string tasSourceLabel(const std::string& source) {
     if (source == "guide") return "un guide (course d'un joueur)";
     if (source == "splice") return "l'assemblage des guides";
     if (source == "polish") return "l'affinage image par image";
+    if (source == "planner") return "le planificateur (sauts et dashs planifiés)";
+    if (source == "explore") return "l'exploration (Go-Explore)";
+    if (source == "timing") return "le polissage des timings";
     return source;
 }
 
