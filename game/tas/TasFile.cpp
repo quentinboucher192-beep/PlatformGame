@@ -24,7 +24,8 @@ bool plainFileName(const std::string& s) {
     return s.find('/') == std::string::npos && s.find('\\') == std::string::npos && s.find(':') == std::string::npos;
 }
 
-float tenth(float v) { return std::round(v * 10.0f) / 10.0f; }
+/// To the tenth of a pixel, as a double (written as « 144.1 », not as the float nearest to it).
+double tenth(float v) { return std::round(static_cast<double>(v) * 10.0) / 10.0; }
 
 }  // namespace
 
