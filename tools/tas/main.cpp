@@ -87,13 +87,61 @@ struct Training {
     std::chrono::steady_clock::time_point began = std::chrono::steady_clock::now();
     bool done = false;
     std::thread writer;
+    // The attempts counted in windows (TasProgress::windows): the counter under its own lock (the
+    // search's threads add to it), the window's start and number under m.
+    std::mutex statsMutex;
+    TasAttemptStats stats;
+    int64_t windowStart = 0, windowId = 0;
+
+    int64_t elapsed() const { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - began).count(); }
+    void attempts(const tas::AttemptNote* notes, size_t n) {
+        std::lock_guard<std::mutex> l(statsMutex);
+        for (size_t i = 0; i < n; ++i) {
+            const tas::AttemptNote& a = notes[i];
+            if (a.finished) stats.addFinished(clockMs(a.clock));
+            else stats.addStopped(a.section, static_cast<int>(std::lround(a.route * 1000.0f)), a.broke);
+        }
+    }
+    /// The window under way closed into the progress file's list (when it counted anything).
+    void closeWindow() {
+        TasAttemptWindow w;
+        bool any = false;
+        {
+            std::lock_guard<std::mutex> s(statsMutex);
+            any = !stats.empty();
+            if (any) w = stats.take();
+        }
+        std::lock_guard<std::mutex> l(m);
+        const int64_t now = elapsed();
+        if (any) {
+            w.id = ++windowId;
+            w.startMs = std::min(windowStart, now);
+            w.endMs = now;
+            w.round = p.round;
+            w.section = std::min(p.section, w.sections);
+            p.windows.push_back(std::move(w));
+            if (p.windows.size() > TasProgress::kMaxWindows) p.windows.erase(p.windows.begin());
+        }
+        windowStart = now;
+    }
+    /// A new stage of the search (a section, or the refinement): its attempts in a window of their own.
+    void stage(int section, int sections) {
+        closeWindow();
+        {
+            std::lock_guard<std::mutex> s(statsMutex);
+            stats.setSections(sections);
+        }
+        std::lock_guard<std::mutex> l(m);
+        p.sections = std::clamp(sections, 0, TasAttemptWindow::kMaxSections);
+        p.section = std::clamp(section, 0, p.sections);
+    }
 
     void write() {
         if (progressFile.empty()) return;
         TasProgress copy;
         {
             std::lock_guard<std::mutex> l(m);
-            p.elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - began).count();
+            p.elapsedMs = elapsed();
             p.explored = explored.load();
             const int64_t c = candidateMs.load();
             p.candidateMs = c > 0 && (p.bestMs == 0 || c < p.bestMs) ? c : 0;
@@ -128,6 +176,12 @@ struct Training {
                 l.unlock();
                 std::error_code ec;
                 if (!stopFile.empty() && fs::exists(stopFile, ec)) stop = true;
+                bool due = false;
+                {
+                    std::lock_guard<std::mutex> w(m);
+                    due = elapsed() - windowStart >= TasProgress::kWindowMs;
+                }
+                if (due) closeWindow();
                 write();
                 l.lock();
                 cv.wait_for(l, std::chrono::milliseconds(500), [this] { return done; });
@@ -141,6 +195,7 @@ struct Training {
         }
         cv.notify_all();
         if (writer.joinable()) writer.join();
+        closeWindow();
         write();
     }
 };
@@ -218,6 +273,11 @@ int main(int argc, char** argv) {
         while ((old == 0 || c < old) && !training.candidateMs.compare_exchange_weak(old, c)) {
         }
     };
+    // The attempts counted for the training's windows (only when someone reads the progress).
+    if (!training.progressFile.empty()) {
+        opt.onAttempts = [&](const tas::AttemptNote* notes, size_t n) { training.attempts(notes, n); };
+        opt.onStage = [&](int section, int sections) { training.stage(section, sections); };
+    }
     training.p.threads = opt.threads;
     if (std::string seed = value("--seed-replay", ""); !seed.empty()) {
         std::string why;
@@ -295,6 +355,8 @@ int main(int argc, char** argv) {
         training.edit([&](TasProgress& p) {
             p.seedMs = bestMs;
             p.bestMs = bestMs;
+            p.bestElapsedMs = training.elapsed();
+            p.bestExplored = training.explored.load();
         });
     }
 
@@ -319,6 +381,7 @@ int main(int argc, char** argv) {
         partialRun.clear();
         partialSections = 0;
         training.candidateMs = 0;
+        training.closeWindow();  // the last round's attempts stay in their own window
         training.edit([&](TasProgress& p) {
             p.phase = TasPhase::Searching;
             p.round = round;
@@ -358,6 +421,8 @@ int main(int argc, char** argv) {
         training.edit([&](TasProgress& p) {
             p.bestMs = bestMs;
             p.improvements = improvements;
+            p.bestElapsedMs = training.elapsed();
+            p.bestExplored = training.explored.load();
         });
     } while (untilStopped && !training.stop.load());
 

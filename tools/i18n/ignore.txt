@@ -381,3 +381,10 @@ archive
 splits
 # 2.95: the raids' HUD element of the chat (its id in the settings), never shown
 chat
+# The training curve of the TAS (TasCurve.cpp, AdminTasCurve.cpp, server/src/tas.ts): a date format, a probe of width, JSON keys
+%Y-%m-%dT%H:%M:%SZ
+10 h 30
+publish
+session
+versions
+windows

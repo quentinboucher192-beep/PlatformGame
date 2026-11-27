@@ -10,6 +10,15 @@
 // held by another administrator skipped), the trainings in parallel and their threads, a budget
 // per pair (round-robin), « Publier » per pair and « Publier toutes les améliorations ». The
 // trainings themselves live in GameServices::tasTraining (they go on when the page is left).
+//
+// The training curve (docs/TAS.md « Courbe d'entraînement », game/tas/TasCurve.h): each row shows
+// a small step line of its best time and its attempts in short (finished, their share, the best
+// time); a row selected (click, Entrée / A) opens its curve under the table (AdminTasCurve.cpp):
+// the best time against the cumulative training time with its improvements, the runs published,
+// the shipped and online times as reference lines, the attempts of each window (finished:
+// best–worst and median; the sections reached), the rounds of cosmic_tas, and the counts of the
+// whole training and of the round (finished, their times, where the others stopped). Échap / B or
+// the row selected again closes it.
 
 #include <functional>
 #include <future>
@@ -23,11 +32,14 @@
 #include "engine/core/Paths.h"
 #include "engine/rendering/Text.h"
 #include "game/online/OnlineTypes.h"
+#include "ui/widgets/Charts.h"
 
 namespace cosmic {
 
 class GameServices;
 class TasTraining;
+struct TasCurveVersion;
+struct TasCurveWindow;
 
 namespace tasadmin {
 
@@ -79,6 +91,23 @@ std::string statusLabel(Status s);
 std::vector<Local> scanLocal(const fs::path& userDir, const std::string& server);
 /// « 2 h 05 min », « 12 min 30 s », « 45 s ».
 std::string durationText(int64_t ms);
+/// "27/11 · 14:05" (local time) of an ISO date of the server, « — » when it is not one.
+std::string stamp(const std::string& iso);
+/// A tick of the training time: « 0 », « 30 s », « 12 min », « 2 h », « 1 h 30 ».
+std::string durationTick(int64_t ms);
+/// « 1 234 567 » (French digit groups), « 12,3 M » / « 456 k » when compact.
+std::string countText(int64_t n);
+std::string compactCount(int64_t n);
+/// « 0,04 % » (a share of `total`, at least two significant digits), « — » without a total.
+std::string percentText(int64_t part, int64_t total);
+/// The ticks of an axis: round steps (`steps`, increasing) from `lo` to `hi`, at most `maxCount`.
+std::vector<int64_t> axisTicks(int64_t lo, int64_t hi, int maxCount, const std::vector<int64_t>& steps);
+/// The steps of the training time (1 s … 7 days) and of a run's time (1 ms … 10 min).
+const std::vector<int64_t>& durationSteps();
+const std::vector<int64_t>& runTimeSteps();
+/// Where the rounds of cosmic_tas start along the training time (a new session or a new round of
+/// the windows, in order): {training time, round}.
+std::vector<std::pair<int64_t, int>> roundStarts(const std::vector<TasCurveWindow>& windows);
 
 }  // namespace tasadmin
 
@@ -95,6 +124,12 @@ struct AdminTasLayout {
     std::vector<Text> texts;
     std::vector<Rect> buttons;
     int rowsDrawn = 0;
+    int sparklines = 0;  // rows with a curve drawn
+    // The curve of the row selected (empty when closed): its panel, the best time's plot, the
+    // strip of the sections reached, the counts.
+    Rect detail, plot, strip, stats;
+    int pointsDrawn = 0, windowsDrawn = 0, roundsDrawn = 0, referenceLines = 0;
+    bool emptyCurve = false;  // « jamais entraînée » / no point yet
 };
 
 class AdminTas {
@@ -107,13 +142,28 @@ public:
     void draw(const Rect& inner);
     const AdminTasLayout& lastLayout() const { return layout_; }
 
-    /// The pairs as scanLocal() gives them (tests), and the server's list (GET /admin/tas → data).
+    /// The pairs as scanLocal() gives them (tests), and the server's list (GET /admin/tas → data:
+    /// its curves taken into this computer's, GameServices::tasTraining.curves()).
     void setLocal(std::vector<tasadmin::Local> local);
     void applyServer(const Json& data);
+    /// GET /admin/tas/{level}/{category}/curve → data: the windows of attempts of every version too.
+    void applyCurve(const Json& data);
     std::vector<tasadmin::Row> rows() const;
+
+    /// The curve of a pair opened under the table (`levelId` empty: closed).
+    void select(const std::string& levelId, RunCategory c);
+    bool selected(const std::string& levelId, RunCategory c) const { return !selLevel_.empty() && selLevel_ == levelId && selCat_ == c; }
+    /// Échap / B closes the curve first (ADMINISTRATION does not leave).
+    bool capturesBack() const { return !selLevel_.empty(); }
+    /// The tooltip of the curve (a point, a window of attempts), over everything: drawn last.
+    void drawTooltip();
+    const charts::Tip& tip() const { return tip_; }
 
 private:
     void loadServer();
+    void loadCurve();
+    void drawDetail(const tasadmin::Row& row, const Rect& area);
+    void drawStats(const tasadmin::Row& row, const TasCurveVersion* v, const Rect& r, bool training, int round);
     void publish(const tasadmin::Row& r, std::function<void(bool)> done);
     void publishNext();
     std::vector<const tasadmin::Local*> shown() const;
@@ -144,6 +194,18 @@ private:
     std::vector<std::pair<std::string, RunCategory>> publishQueue_;
     bool publishing_ = false;
     int published_ = 0, publishFailed_ = 0;
+
+    // The curve opened: its pair, the version looked at (0: this game's, then the older ones),
+    // the keyboard cursors (a point, a window), the tooltip, its windows asked for every 30 s.
+    std::string selLevel_;
+    RunCategory selCat_ = RunCategory::AnyPercent;
+    int selVersion_ = 0;
+    int pointCursor_ = -1, windowCursor_ = -1;
+    bool scrollToSel_ = false;
+    charts::Tip tip_;
+    bool curveBusy_ = false;
+    float curveT_ = -100.0f;
+    bool inList_ = false;  // drawing the rows (their scroll region cuts what is out of it)
 
     AdminTasLayout layout_;
 };

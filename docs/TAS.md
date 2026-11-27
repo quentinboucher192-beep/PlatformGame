@@ -227,10 +227,12 @@ jamais la recherche ni son `operator new`.
   depuis près de trois minutes, l'entraînement s'arrête.
 * **« Arrêter »** (une paire) ou **« Tout arrêter »** : `cosmic_tas` reçoit l'ordre (fichier
   d'arrêt et fin de son entrée standard), garde sa meilleure course (vérifiée, écrite dans
-  `saves/tas_local/`), et le verrou est rendu **aussitôt** : les autres voient la paire libre, et le
-  temps de la session s'ajoute au total. **Fermer le jeu** fait de même pour chaque entraînement
-  (les verrous rendus avant de quitter ; un plantage ferme l'entrée standard des enfants, qui
-  s'arrêtent seuls ; le verrou expire alors en trois minutes).
+  `saves/tas_local/`), et le verrou est rendu **dès qu'il a fini** (sa dernière vérification,
+  quelques secondes ; 20 s au plus) : sa dernière amélioration part avec le verrou rendu (voir
+  « Courbe d'entraînement »), les autres voient la paire libre, et le temps de la session s'ajoute
+  au total. Le budget par paire arrête de même. **Fermer le jeu** rend chaque verrou aussitôt
+  (avant de quitter ; un plantage ferme l'entrée standard des enfants, qui s'arrêtent seuls ; le
+  verrou expire alors en trois minutes).
 * **« Publier »** (une paire) et **« Publier toutes les améliorations »** envoient la fiche et le
   replay de `saves/tas_local/` (`POST /admin/tas/{niveau}/{catégorie}/publish`), chacun vérifié par
   le serveur comme une publication seule : format, tailles, niveau et sa révision en ligne,
@@ -249,6 +251,90 @@ finissent pas le niveau dans ce budget et s'arrêtent proprement avec la raison 
 terminée dans le budget ») sans rien écrire. En entraînement (`--until-stopped`), un tour qui n'a
 pas encore de course ne recommence pas de zéro : le suivant repart des sections atteintes (gardées
 telles quelles) avec un tour deux fois plus long (60 min au plus), jusqu'à une première course.
+
+## Courbe d'entraînement
+
+Chaque paire (niveau, catégorie) a sa **courbe d'entraînement**, **par version du niveau**
+(empreinte de classement et `kSimulationVersion`) : un niveau modifié commence une nouvelle courbe,
+les anciennes restent, en lecture seule (rien ne les entraîne plus). Modèle :
+`game/tas/TasCurve.h` ; écran : `ui/screens/AdminTasCurve.cpp`.
+
+**Des données réelles, jamais inventées.** `cosmic_tas --progress` écrit, en plus de son état :
+
+* `bestMs`, `bestElapsedMs`, `bestExplored` : le meilleur temps vérifié, le moment de la session où
+  il l'a été et les essais simulés alors ;
+* `section` / `sections` : la section cherchée (0 : l'affinage d'une course entière) ;
+* `windows` : les **fenêtres d'essais** (les 24 dernières, les plus anciennes d'abord) : les essais de la
+  recherche sont **comptés, jamais listés**, par fenêtre de 5 s (fermée plus tôt quand la section
+  ou le tour change) : combien, combien **finissent** (la sortie atteinte, la catégorie gardée) et
+  leurs temps **meilleur / médian / pire** (médiane d'un échantillon de 256 temps au plus), et pour
+  les autres la **section où ils se sont arrêtés**, combien d'entre eux sont **morts** (ou touchés
+  en Sans dégât) et jusqu'où ils sont allés sur le parcours (médiane et maximum, en ‰). Un essai
+  du faisceau qui casse la catégorie compte là où son coup commençait ; un essai de l'affinage
+  (une course entière rejouée) est mesuré là où il s'arrête.
+
+Le jeu lit ce fichier toutes les demi-secondes (`TasTraining::noteCurve`) :
+
+* un **point** chaque fois que le meilleur temps s'améliore (strictement), placé au **temps
+  d'entraînement cumulé** de la version à ce moment (le total que montre la page : celui du serveur
+  à son dernier battement, plus le temps depuis) et aux essais cumulés ; le premier, s'il vient de
+  la course de départ vérifiée, est marqué « Départ » ;
+* chaque **fenêtre d'essais**, placée de même ;
+* les **courses publiées** sont des marques de la courbe de leur version (le serveur les donne,
+  avec le temps d'entraînement au moment de la publication, la session en cours comprise).
+
+**Gardée sur cet ordinateur** (`saves/tas_local/.training/<niveau>_<CATÉGORIE>.curve.json`, lue et
+écrite sur un fil à part : jamais sur le fil principal ; au plus 1 000 points et 1 500 fenêtres par
+version, les fenêtres voisines d'une même session, d'un même tour et d'une même section fusionnées
+au-delà) **et partagée** : les nouveaux points (16 au plus) et un **résumé** des fenêtres (4 au
+plus : les fenêtres fusionnées, médianes pondérées, donc approchées) partent avec le **battement**
+ou le **verrou rendu** (`curve`, `attempts`). Le serveur ne croit rien : il place chaque point et
+chaque fenêtre sur **sa propre mesure** du temps d'entraînement et des essais, dans ce que ce
+battement a compté (le jeu ne dit que « il y a combien de temps ») ; il refuse un appel mal formé
+(types, bornes, comptes incohérents, plus d'essais que le temps n'en permet), ne garde un point
+que s'il est **strictement plus rapide** que tous ceux de sa version (sinon il le compte comme
+refusé) et en garde **1 000 au plus** (au-delà, le dernier cède la place : la courbe garde son
+départ et son meilleur temps) ; 1 500 fenêtres au plus (au-delà, une fenêtre s'ajoute à la
+dernière de sa session). Un point ou une fenêtre que le serveur n'a pas pris (verrou perdu,
+réseau coupé au moment de rendre le verrou) reste sur cet ordinateur, marqué « cet ordinateur
+seulement ». Un serveur qui ne connaît pas encore la courbe refuse ces champs : le jeu renvoie
+alors le battement sans eux (le verrou n'est jamais perdu pour la courbe) et garde la courbe ici.
+Chaque administrateur voit la même courbe : `GET /admin/tas` donne les points de chaque paire,
+`GET /admin/tas/{niveau}/{catégorie}/curve` aussi ses fenêtres (demandées à l'ouverture, puis
+toutes les 30 s) ; ce jeu garde ses propres fenêtres, plus fines, pour ses sessions, et prend
+celles du serveur pour les sessions des autres ordinateurs. Routes : [API.md](online/API.md)
+(« Courses de la machine »).
+
+**Dans ADMINISTRATION › TAS** :
+
+* chaque ligne : une **petite courbe en escalier** du meilleur temps le long de l'entraînement, et
+  les essais en bref (« 1 800 finis · 0,03 % », « meilleur 1:25.100 »), mesurés à côté des
+  autres colonnes ;
+* une ligne **sélectionnée** (clic, Entrée / A ; flèches et croix pour y aller) ouvre sa courbe
+  **sous le tableau** (le tableau garde trois lignes au moins, à 1280 × 720 comme à 1920 × 1080) ;
+  Échap / B, « Fermer » ou la même ligne la referment ;
+* **la courbe** : en abscisse le temps d'entraînement cumulé (graduations « 30 min », « 2 h »,
+  « 1 h 30 »), en ordonnée le meilleur temps (« 1:26.692 ») ; une ligne en escalier qui descend
+  jusqu'au temps d'entraînement actuel, un point plein par amélioration, un anneau pour la course
+  de départ, un losange par course publiée ; les temps **livré** et **en ligne** en lignes
+  pointillées, nommées à leur droite ; derrière, pour chaque fenêtre, un trait fin du meilleur au
+  pire temps des essais finis et une marque à leur médiane ; sous l'axe, les **tours** de
+  `cosmic_tas` (« Tour 3 (en cours) ») ; en dessous, la bande des **sections atteintes** (par
+  fenêtre, la part de ses essais qui atteint chaque section, l'arrivée en haut : plus c'est sombre,
+  moins ils y arrivent) ; une légende de chaque marque ; une grille discrète, des textes dans les
+  couleurs du texte, des formes distinctes (pas seulement des couleurs) ;
+* **les chiffres**, à droite : pour **tout l'entraînement** et pour **le tour en cours** (ou le
+  dernier) : essais, essais finis et leur part, meilleur / médian / pire temps des essais finis,
+  morts ; puis les **arrêts par section** (une barre, la part des morts en rouge, le nombre, les
+  morts, ceux du tour), l'arrivée en dernier ; quand des essais ont été faits avant le suivi par
+  fenêtre, la part détaillée est dite (« Détail de 1,2 M essais sur 12,3 M ») ;
+* une **bulle** sur chaque point (temps, gain sur le précédent, temps d'entraînement, essais, date,
+  l'ordinateur de quel administrateur, en attente de partage ou non) et sur chaque fenêtre (tour et
+  section, essais, finis, meilleur · médian · pire, parcours des non finis, morts, sections
+  atteintes) : à la souris, ou au clavier et à la manette (← → sur la courbe ou la bande) ;
+* tout se met à jour **en direct** pendant que la paire s'entraîne ici ; une paire jamais entraînée
+  pour cette version le dit (« Cette paire n'a jamais été entraînée pour cette version du
+  niveau. ») ; « ‹ Version actuelle › » montre les anciennes versions, en lecture seule.
 
 ## Courses publiées en ligne
 

@@ -133,6 +133,13 @@ struct Shared {
         explored.fetch_add(1, std::memory_order_relaxed);
         if (opt.exploredTotal) opt.exploredTotal->fetch_add(1, std::memory_order_relaxed);
     }
+    /// The section (0-based) a state is in: the section ends it has passed.
+    int sectionOf(int waypoint) const {
+        int s = 0;
+        for (int end : course.sectionEnds())
+            if (waypoint > end) ++s;
+        return std::min(s, std::max(0, static_cast<int>(course.sectionEnds().size()) - 1));
+    }
     Clock::time_point began = Clock::now();
     void log(const std::string& s) {
         std::lock_guard<std::mutex> l(logMutex);
@@ -200,8 +207,19 @@ public:
     std::vector<Arrival> section(int target, Clock::time_point deadline, int maxSteps, const std::vector<InputFrame>& seedFrames);
 
     /// Plays `frames` from the base until the exit (or `limit` steps): the clock at the exit, or a
-    /// negative value when the run does not finish the category.
-    float evaluate(const std::vector<InputFrame>& frames, size_t from, const ArenaWorld::State& at, int fromWaypoint, uint32_t limit);
+    /// negative value when the run does not finish the category. `note` (an attempt of the
+    /// refinement): where it stopped, measured, when it does not finish.
+    float evaluate(const std::vector<InputFrame>& frames, size_t from, const ArenaWorld::State& at, int fromWaypoint, uint32_t limit,
+                   AttemptNote* note = nullptr);
+    /// The note of an attempt that did not finish, from where its furthest point is.
+    AttemptNote stoppedAt(const Progress& p, bool broke) const {
+        AttemptNote n;
+        n.section = sh_.sectionOf(p.waypoint);
+        const float len = sh_.course.length();
+        n.route = len > 0.0f ? std::clamp(p.potential / len, 0.0f, 1.0f) : 0.0f;
+        n.broke = broke;
+        return n;
+    }
 
 private:
     std::unique_ptr<ArenaWorld::State> takeSnap() {
@@ -370,6 +388,8 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         if (firstArrivalGen >= 0 && gen - firstArrivalGen >= window) break;
         // Expansion: every move from every state.
         std::vector<Candidate> cands;
+        std::vector<AttemptNote> notes;  // the attempts of this generation (a training's counts)
+        const bool noting = static_cast<bool>(sh_.opt.onAttempts);
         for (size_t b = 0; b < beam.size(); ++b) {
             const Node& n = beam[b];
             const std::vector<Move> moves = movesFor(n, tune);
@@ -397,13 +417,31 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                     if (world_.world().powerOffer()) break;  // the next move answers it
                 }
                 sh_.count();
-                if (broken) continue;
+                // A broken attempt counts where its move started (its last state kept).
+                if (broken) {
+                    if (noting) notes.push_back(stoppedAt(n.p, true));
+                    continue;
+                }
                 c.p = measure(n.p.waypoint);
-                if (c.p.rejected) continue;
+                if (c.p.rejected) {
+                    if (noting) notes.push_back(stoppedAt(c.p, true));
+                    continue;
+                }
                 if (c.p.waypoint > target) c.arrived = true;
+                if (noting) {
+                    if (c.p.finished) {
+                        AttemptNote f;
+                        f.finished = true;
+                        f.clock = c.p.clock;
+                        notes.push_back(f);
+                    } else {
+                        notes.push_back(stoppedAt(c.p, false));
+                    }
+                }
                 cands.push_back(std::move(c));
             }
         }
+        if (noting && !notes.empty()) sh_.opt.onAttempts(notes.data(), notes.size());
         // The seed run's state at this generation.
         int seedCand = -1;
         if (seed.snap && seedAt < seedFrames.size()) {
@@ -525,22 +563,32 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
     return arrivals;
 }
 
-float Worker::evaluate(const std::vector<InputFrame>& frames, size_t from, const ArenaWorld::State& at, int fromWaypoint, uint32_t limit) {
+float Worker::evaluate(const std::vector<InputFrame>& frames, size_t from, const ArenaWorld::State& at, int fromWaypoint, uint32_t limit, AttemptNote* note) {
     world_.restore(at);
+    // Where a run that does not finish stopped (measured once, from the start of the route).
+    auto stopped = [&](bool broke) {
+        if (note) *note = stoppedAt(measure(0), broke);
+        return -1.0f;
+    };
     for (size_t i = from; i < frames.size() && i < limit; ++i) {
         world_.step(frames[i]);
         const GameWorld& w = world_.world();
         const RunStats& s = w.stats();
         if (w.state() == WorldState::Failed || (sh_.opt.category == RunCategory::NoDeath && s.deaths > 0) ||
             (sh_.opt.category == RunCategory::NoDamage && (s.deaths > 0 || s.damageTaken > 0)))
-            return -1.0f;
+            return stopped(true);
         if (w.state() == WorldState::Outro || w.state() == WorldState::Completed) {
-            if (sh_.opt.category == RunCategory::HundredPercent && s.collectibles() < s.totalCollectibles()) return -1.0f;
+            if (sh_.opt.category == RunCategory::HundredPercent && s.collectibles() < s.totalCollectibles()) return stopped(false);
+            if (note) {
+                *note = AttemptNote{};
+                note->finished = true;
+                note->clock = w.timer().elapsed();
+            }
             return w.timer().elapsed();
         }
     }
     (void)fromWaypoint;
-    return -1.0f;
+    return stopped(false);
 }
 
 /// Counts the input changes (presses and releases) of a run: fewer is a cleaner run.
@@ -685,6 +733,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             const size_t from = run.size(), to = seedEnds[s];
             if (to > from) seedFrames.assign(opt.seedRun.begin() + static_cast<std::ptrdiff_t>(from), opt.seedRun.begin() + static_cast<std::ptrdiff_t>(to));
         }
+        if (opt.onStage) opt.onStage(static_cast<int>(s) + 1, static_cast<int>(sections));
         std::vector<std::vector<Arrival>> found(workers.size());
         if (static_cast<int>(s) < opt.keepSeedSections && !seedFrames.empty()) {
             // The seed run's section taken as it is (--keep-seed-sections).
@@ -771,6 +820,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         std::snprintf(line, sizeof line, "Course trouvée : %.3f s ; affinage jusqu'à la fin du budget", static_cast<double>(currentClock));
         log(line);
         if (opt.onBest) opt.onBest(currentClock);
+        if (opt.onStage) opt.onStage(0, static_cast<int>(sections));
     }
 
     // Refinement: a change of input (a press or a release of a key) moved by one or two steps, or
@@ -842,8 +892,10 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             if (frozen) continue;
             repress(edited, lo, hi);
             const size_t rung = std::min(ladder.size() - 1, (lo > 0 ? lo - 1 : 0) / kRung);
-            const float clock = w.evaluate(edited, rung * kRung, *ladder[rung], 0, static_cast<uint32_t>(edited.size()));
+            AttemptNote note;
+            const float clock = w.evaluate(edited, rung * kRung, *ladder[rung], 0, static_cast<uint32_t>(edited.size()), opt.onAttempts ? &note : nullptr);
             sh.count();
+            if (opt.onAttempts) opt.onAttempts(&note, 1);
             if (clock < 0.0f) continue;
             const int ch = changes(edited);
             std::lock_guard<std::mutex> l(mutex);

@@ -23,6 +23,9 @@ constexpr auto kBeatRetry = std::chrono::seconds(20);
 constexpr auto kLeaseSafe = std::chrono::seconds(165);
 /// A child asked to stop that is still there after this long (its last verification) is ended.
 constexpr auto kStopGrace = std::chrono::seconds(120);
+/// A training asked to stop gives its lease back when its child has exited (its last best time on
+/// the curve goes with the release), or after this long.
+constexpr auto kReleaseGrace = std::chrono::seconds(20);
 /// The length of a round of the search (cosmic_tas --round): its best run is verified and written
 /// at the end of each one.
 constexpr int kRoundMinutes = 10;
@@ -67,6 +70,13 @@ int64_t TasTraining::Job::sessionMs() const {
     return msSince(started);
 }
 
+int64_t TasTraining::Job::trainingTotalMs() const {
+    if (leaseId.empty() || lastBeatOk == Clock::time_point{}) return serverTotalMs;
+    return serverTotalMs + std::max<int64_t>(0, msSince(lastBeatOk));
+}
+
+int64_t TasTraining::Job::exploredAt(int64_t sessionExplored) const { return std::max<int64_t>(0, serverExplored + sessionExplored - exploredReported); }
+
 TasTraining::TasTraining(OnlineService& online) : online_(online) {}
 
 TasTraining::~TasTraining() {
@@ -94,6 +104,7 @@ fs::path TasTraining::localRoot() { return Paths::savesDir() / "tas_local"; }
 int TasTraining::cores() { return std::max(1, SDL_GetNumLogicalCPUCores()); }
 
 void TasTraining::loadSettings() {
+    curves_.open(trainingDir());  // the training curves, read on a thread
     Json j = Json::object();
     if (auto text = FileUtil::readText(localRoot() / "settings.json")) {
         Json parsed = Json::parse(*text, nullptr, false);
@@ -156,8 +167,7 @@ void TasTraining::stop(const TasPair& p) {
     for (auto& j : jobs_)
         if (j->pair == p) {
             j->budgetReached = false;
-            requestStop(*j);
-            release(*j);
+            requestStop(*j);  // its lease given back once cosmic_tas has exited (update, ended)
         }
 }
 
@@ -166,7 +176,6 @@ void TasTraining::stopAll() {
     for (auto& j : jobs_) {
         j->budgetReached = false;
         requestStop(*j);
-        release(*j);
     }
 }
 
@@ -221,6 +230,7 @@ void TasTraining::acquire(Job& j) {
                      const Json& t = jfield(r.data, "training", Json::object());
                      j->serverTotalMs = jget<int64_t>(t, "total_ms", 0);
                      j->serverExplored = jget<int64_t>(t, "total_explored", 0);
+                     j->session = jget<int>(t, "sessions", 0);  // this lease's session (the count includes it)
                      j->lastBeatOk = j->lastBeatSent = Clock::now();
                      launch(*j);
                  }));
@@ -310,18 +320,174 @@ void TasTraining::launch(Job& j) {
     Log::info("TAS : entraînement de {} lancé ({} fils{})", j.pair.key(), settings_.threadsPerJob, j.hasSeed ? ", depuis la meilleure course" : "");
 }
 
+TasTraining::CurveSend TasTraining::curveSend(const TasCurveVersion& v, const std::string& leaseId, int64_t nowMs) {
+    CurveSend out;
+    for (const TasCurvePoint& p : v.points) {
+        if (p.share != TasShare::Pending || p.leaseId != leaseId || !p.best()) continue;
+        if (out.pointIds.size() >= kSendPoints) break;
+        out.points.push_back({{"kind", tasCurveKindId(p.kind)},
+                              {"time_ms", p.timeMs},
+                              {"age_ms", std::clamp<int64_t>(nowMs - p.foundAtMs, 0, 86400000)},
+                              {"explored", p.sessionExplored}});
+        out.pointIds.push_back(p.foundAtMs);
+    }
+    // The windows: their runs of the same round and section, then the smallest neighbours
+    // merged until kSendWindows are left (a summary: this computer keeps the fine ones).
+    struct Group {
+        TasCurveWindow w;
+        int64_t endAt = 0;
+    };
+    std::vector<Group> groups;
+    for (const TasCurveWindow& w : v.windows) {
+        if (w.share != TasShare::Pending || w.leaseId != leaseId) continue;
+        out.windowIds.push_back(w.stats.id);
+        if (!groups.empty() && groups.back().w.stats.round == w.stats.round && groups.back().w.stats.section == w.stats.section) {
+            Group& g = groups.back();
+            g.w.stats = TasAttemptWindow::merged(g.w.stats, w.stats);
+            g.w.fromMs = std::min(g.w.fromMs, w.fromMs);
+            g.w.toMs = std::max(g.w.toMs, w.toMs);
+            g.endAt = std::max(g.endAt, w.endAtMs);
+        } else {
+            groups.push_back({w, w.endAtMs});
+        }
+    }
+    while (groups.size() > kSendWindows) {
+        size_t at = 0;
+        int64_t least = -1;
+        for (size_t i = 0; i + 1 < groups.size(); ++i)
+            if (const int64_t n = groups[i].w.stats.attempts + groups[i + 1].w.stats.attempts; least < 0 || n < least) least = n, at = i;
+        Group& a = groups[at];
+        const Group& b = groups[at + 1];
+        a.w.stats = TasAttemptWindow::merged(a.w.stats, b.w.stats);
+        a.w.fromMs = std::min(a.w.fromMs, b.w.fromMs);
+        a.w.toMs = std::max(a.w.toMs, b.w.toMs);
+        a.endAt = std::max(a.endAt, b.endAt);
+        groups.erase(groups.begin() + static_cast<std::ptrdiff_t>(at) + 1);
+    }
+    for (const Group& g : groups) {
+        const TasAttemptWindow& s = g.w.stats;
+        out.windows.push_back({{"age_ms", std::clamp<int64_t>(nowMs - g.endAt, 0, 86400000)},
+                               {"duration_ms", std::clamp<int64_t>(g.w.toMs - g.w.fromMs, 1, 600000)},
+                               {"round", std::max(1, s.round)},
+                               {"section", s.section},
+                               {"sections", s.sections},
+                               {"attempts", s.attempts},
+                               {"finished", s.finished},
+                               {"best_ms", s.bestMs},
+                               {"median_ms", s.medianMs},
+                               {"worst_ms", s.worstMs},
+                               {"route_median", s.routeMedian},
+                               {"route_max", s.routeMax},
+                               {"stopped", s.stopped},
+                               {"broken", s.broken}});
+    }
+    return out;
+}
+
+void TasTraining::noteCurve(Job& j) {
+    if (!j.progress || j.levelHash.empty()) return;
+    const TasProgress& p = *j.progress;
+    TasCurve& curve = curves_.at(j.pair.levelId, j.pair.category);
+    const int64_t now = tasNowMs(), total = j.trainingTotalMs();
+    const TasShare share = j.leaseId.empty() ? TasShare::Unshared : TasShare::Pending;
+    bool changed = false, point = false;
+    // A new best time: where cosmic_tas verified it (its elapsed time then), never in between.
+    if (p.bestMs > 0 && (j.lastBest == 0 || p.bestMs < j.lastBest)) {
+        j.lastBest = p.bestMs;
+        const int64_t age = p.bestElapsedMs > 0 ? std::max<int64_t>(0, p.elapsedMs - p.bestElapsedMs) : 0;
+        TasCurvePoint pt;
+        pt.kind = p.improvements == 0 && p.bestMs == p.seedMs ? TasCurveKind::Start : TasCurveKind::Improvement;
+        pt.timeMs = p.bestMs;
+        pt.trainingMs = std::max<int64_t>(0, total - age);
+        pt.explored = j.exploredAt(p.bestExplored);
+        pt.at = tasIsoUtc(now - age);
+        pt.by = online_.username();
+        pt.session = j.session;
+        pt.share = share;
+        pt.leaseId = j.leaseId;
+        pt.foundAtMs = now - age;
+        pt.sessionExplored = p.bestExplored;
+        point = curve.addBest(j.levelHash, kSimulationVersion, pt);
+        changed = changed || point;
+    }
+    // The new windows of attempts.
+    for (const TasAttemptWindow& w : p.windows) {
+        if (w.id <= j.lastWindow) continue;
+        j.lastWindow = w.id;
+        const int64_t age = std::max<int64_t>(0, p.elapsedMs - w.endMs);
+        TasCurveWindow cw;
+        cw.stats = w;
+        cw.toMs = std::max<int64_t>(0, total - age);
+        cw.fromMs = std::max<int64_t>(0, cw.toMs - (w.endMs - w.startMs));
+        cw.session = j.session;
+        cw.by = online_.username();
+        cw.at = tasIsoUtc(now - age);
+        cw.local = true;
+        cw.share = share;
+        cw.leaseId = j.leaseId;
+        cw.endAtMs = now - age;
+        curve.addWindow(j.levelHash, kSimulationVersion, std::move(cw));
+        changed = true;
+    }
+    if (changed) curves_.changed(j.pair.levelId, j.pair.category, point);
+}
+
+void TasTraining::curveAnswer(const TasPair& p, const std::string& hash, const std::string& lease, const CurveSend& sent, const ApiResult& r) {
+    if (sent.pointIds.empty() && sent.windowIds.empty()) return;
+    TasCurve& curve = curves_.at(p.levelId, p.category);
+    if (r.ok) {
+        std::vector<TasCurvePoint> added;
+        const Json pts = jfield(jfield(r.data, "curve", Json::object()), "points", Json::array());
+        if (pts.is_array())
+            for (const Json& x : pts)
+                if (auto pt = TasCurvePoint::fromServer(x)) added.push_back(std::move(*pt));
+        curve.acknowledge(hash, kSimulationVersion, lease, sent.pointIds, added, sent.windowIds);
+    } else if (!r.networkFailure()) {
+        curve.abandon(lease);  // the lease is gone: they stay on this computer only
+    } else {
+        return;  // sent again with the next heartbeat (a release: they stay pending, then unshared at the next start)
+    }
+    curves_.changed(p.levelId, p.category, true);
+}
+
+bool TasTraining::curveRefused(const CurveSend& sent, const ApiResult& r) {
+    if (r.ok || r.status != 400 || r.code != "VALIDATION_ERROR" || (sent.pointIds.empty() && sent.windowIds.empty())) return false;
+    // A server that does not take the curve (not updated yet): the lease goes on without it.
+    if (!curveUnsupported_) Log::warn("TAS : le serveur refuse la courbe d'entraînement ({}) ; elle reste sur cet ordinateur", r.message);
+    curveUnsupported_ = true;
+    return true;
+}
+
+TasTraining::CurveSend TasTraining::pendingCurve(const TasPair& p, const std::string& hash, const std::string& lease) const {
+    if (curveUnsupported_) return {};
+    if (const TasCurve* c = curves_.find(p.levelId, p.category))
+        if (const TasCurveVersion* v = c->find(hash, kSimulationVersion)) return curveSend(*v, lease, tasNowMs());
+    return {};
+}
+
 void TasTraining::heartbeat(Job& j) {
     if (j.leaseId.empty() || j.releasing) return;
     j.lastBeatSent = Clock::now();
     const TasPair p = j.pair;
-    const std::string lease = j.leaseId;
+    const std::string lease = j.leaseId, hash = j.levelHash;
     const int64_t explored = j.progress ? j.progress->explored : 0;
-    online_.send("POST", leasePath(p) + "/heartbeat", {{"lease_id", lease}, {"explored", explored}},
-                 OnlineService::guard(life_, [this, p, lease, explored](const ApiResult& r) {
+    const CurveSend sent = pendingCurve(p, hash, lease);
+    Json body = {{"lease_id", lease}, {"explored", explored}};
+    if (!sent.pointIds.empty()) body["curve"] = sent.points;
+    if (!sent.windowIds.empty()) body["attempts"] = sent.windows;
+    online_.send("POST", leasePath(p) + "/heartbeat", body,
+                 OnlineService::guard(life_, [this, p, lease, hash, explored, sent](const ApiResult& r) {
+                     const bool refused = curveRefused(sent, r);
+                     if (refused) curves_.at(p.levelId, p.category).abandon(lease);
+                     else curveAnswer(p, hash, lease, sent, r);
                      Job* j = nullptr;
                      for (auto& x : jobs_)
                          if (x->pair == p && x->leaseId == lease) j = x.get();
                      if (!j) return;
+                     if (refused) {
+                         j->lastBeatSent = Clock::now() - kBeatEvery;  // again at once, without the curve
+                         return;
+                     }
                      if (r.ok) {
                          j->lastBeatOk = Clock::now();
                          j->exploredReported = explored;
@@ -362,12 +528,24 @@ void TasTraining::release(Job& j) {
     if (j.leaseId.empty() || j.releasing) return;
     j.releasing = true;
     ++releasesPending_;
-    const TasPair p = j.pair;
-    const std::string lease = j.leaseId;
-    const int64_t explored = j.progress ? j.progress->explored : 0;
-    online_.send("POST", leasePath(p) + "/release", {{"lease_id", lease}, {"explored", explored}},
-                 OnlineService::guard(life_, [this, p, lease](const ApiResult& r) {
+    sendRelease(j.pair, j.leaseId, j.levelHash, j.progress ? j.progress->explored : 0, true);
+}
+
+void TasTraining::sendRelease(const TasPair& p, const std::string& lease, const std::string& hash, int64_t explored, bool withCurve) {
+    const CurveSend sent = withCurve ? pendingCurve(p, hash, lease) : CurveSend{};
+    Json body = {{"lease_id", lease}, {"explored", explored}};
+    if (!sent.pointIds.empty()) body["curve"] = sent.points;
+    if (!sent.windowIds.empty()) body["attempts"] = sent.windows;
+    online_.send("POST", leasePath(p) + "/release", body,
+                 OnlineService::guard(life_, [this, p, lease, hash, explored, sent](const ApiResult& r) {
+                     // No later call of this lease: what it did not take stays on this computer.
+                     if (curveRefused(sent, r)) {
+                         curves_.at(p.levelId, p.category).abandon(lease);
+                         return sendRelease(p, lease, hash, explored, false);  // the lease given back all the same
+                     }
                      --releasesPending_;
+                     curveAnswer(p, hash, lease, sent, r);
+                     if (!r.ok && r.networkFailure()) curves_.at(p.levelId, p.category).abandon(lease);
                      for (auto& x : jobs_)
                          if (x->pair == p && x->leaseId == lease) {
                              x->leaseId.clear();
@@ -386,7 +564,10 @@ void TasTraining::readProgress(Job& j) {
     auto text = FileUtil::readText(j.progressFile);
     if (!text) return;
     auto p = TasProgress::parse(*text);
-    if (p && p->levelId == j.pair.levelId && p->category == j.pair.category && (!j.progress || p->sequence >= j.progress->sequence)) j.progress = std::move(p);
+    if (p && p->levelId == j.pair.levelId && p->category == j.pair.category && (!j.progress || p->sequence >= j.progress->sequence)) {
+        j.progress = std::move(p);
+        noteCurve(j);
+    }
 }
 
 void TasTraining::ended(Job& j) {
@@ -432,10 +613,11 @@ void TasTraining::update(float dt) {
             }
             if (settings_.budgetMinutes > 0 && j.sessionMs() >= int64_t(settings_.budgetMinutes) * 60000 && j.state == JobState::Running) {
                 j.budgetReached = true;
-                requestStop(j);
-                release(j);
+                requestStop(j);  // its lease given back once cosmic_tas has exited (below, ended)
             }
         }
+        // Stopping: the lease given back when the child has exited (ended), at the latest after kReleaseGrace.
+        if (j.state == JobState::Stopping && now - j.stopAsked >= kReleaseGrace) release(j);
         if (j.state == JobState::Stopping && j.process && now - j.stopAsked >= kStopGrace) SDL_KillProcess(j.process, true);
         int code = 0;
         if (poll && j.process && SDL_WaitProcess(j.process, false, &code)) ended(j);
@@ -449,6 +631,7 @@ void TasTraining::update(float dt) {
                                }),
                 jobs_.end());
     startNext();
+    curves_.update(dt);
 }
 
 void TasTraining::shutdown(int waitMs) {
@@ -471,6 +654,7 @@ void TasTraining::shutdown(int waitMs) {
             j->process = nullptr;
         }
     jobs_.clear();
+    curves_.flush();
 }
 
 }  // namespace cosmic

@@ -27,6 +27,7 @@
 #include "game/online/OnlineService.h"
 #include "game/online/Replay.h"
 #include "game/planets/PlanetData.h"
+#include "game/tas/TasCurve.h"
 #include "game/tas/TasFile.h"
 #include "game/tas/TasOnline.h"
 #include "game/tas/TasProgress.h"
@@ -144,12 +145,21 @@ TEST_CASE("tas training: cosmic_tas, launched as a child, reports its progress a
     CHECK(p != nullptr);
     if (!p) return;
     std::optional<TasProgress> seen;
-    for (int i = 0; i < 1200 && !(seen && seen->phase == TasPhase::Searching && seen->explored > 0); ++i) {
+    // Searching, and its first window of attempts counted (every 5 s): the real counts of the search.
+    for (int i = 0; i < 1200 && !(seen && seen->phase == TasPhase::Searching && seen->explored > 0 && !seen->windows.empty()); ++i) {
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         if (auto t = FileUtil::readText(progress)) seen = TasProgress::parse(*t);
     }
     CHECK(seen && seen->phase == TasPhase::Searching && seen->levelId == "sylvanox_01" && seen->category == RunCategory::NoDamage);
     CHECK(seen && seen->threads == 1 && seen->round >= 1);
+    CHECK(seen && !seen->windows.empty() && seen->sections >= 1 && seen->section >= 1);
+    if (seen && !seen->windows.empty()) {
+        const TasAttemptWindow& w = seen->windows.front();
+        CHECK(w.attempts > 0 && w.attempts <= seen->explored && w.round >= 1 && w.sections == seen->sections && w.endMs > w.startMs);
+        std::printf("  première fenêtre : %lld essais, %lld finis, %lld arrêtés en section %d (%lld morts), parcours médian %d ‰\n", static_cast<long long>(w.attempts),
+                    static_cast<long long>(w.finished), static_cast<long long>(w.stopped.empty() ? 0 : w.stopped[static_cast<size_t>(std::max(0, w.section - 1))]),
+                    w.section, static_cast<long long>(w.brokenTotal()), w.routeMedian);
+    }
     // « Arrêter »: the end of its input.
     if (SDL_IOStream* in = SDL_GetProcessInput(p)) SDL_CloseIO(in);
     bool exited = false;
@@ -164,6 +174,239 @@ TEST_CASE("tas training: cosmic_tas, launched as a child, reports its progress a
     auto last = FileUtil::readText(progress);
     auto end = last ? TasProgress::parse(*last) : std::nullopt;
     CHECK(end && end->phase == TasPhase::Stopped && end->explored > 0);
+}
+
+// The attempts counted in windows (cosmic_tas --progress): exact counts, a median from a bounded
+// sample, sections that add up; refused when inconsistent; merged.
+TEST_CASE("tas curve: the windows of attempts of the progress file") {
+    TasAttemptStats st;
+    st.setSections(3);
+    for (int i = 0; i < 1000; ++i) st.addFinished(40000 + i);  // more than the sample
+    st.addStopped(0, 100, true);
+    st.addStopped(1, 500, false);
+    st.addStopped(1, 600, true);
+    st.addStopped(7, 990, false);  // beyond the last section: counted in it
+    TasAttemptWindow w = st.take();
+    CHECK(w.attempts == 1004 && w.finished == 1000 && w.bestMs == 40000 && w.worstMs == 40999);
+    CHECK(w.medianMs > 40200 && w.medianMs < 40800);  // the sample's median, close to the true one
+    CHECK(w.stopped == std::vector<int64_t>({1, 2, 1}) && w.broken == std::vector<int64_t>({1, 1, 0}));
+    CHECK(w.unfinished() == 4 && w.brokenTotal() == 2 && w.routeMax == 990);
+    CHECK(w.reached(0) == 1004 && w.reached(1) == 1003 && w.reached(2) == 1001 && w.reached(3) == 1000);
+    CHECK(st.empty() && st.take().attempts == 0);  // taken: empty again
+    // Through the JSON of the progress file.
+    w.id = 3;
+    w.startMs = 5000;
+    w.endMs = 10000;
+    w.round = 2;
+    w.section = 2;
+    auto back = TasAttemptWindow::fromJson(w.toJson());
+    CHECK(back && back->attempts == 1004 && back->round == 2 && back->section == 2 && back->stopped == w.stopped && back->medianMs == w.medianMs);
+    // Inconsistent: refused.
+    Json bad = w.toJson();
+    bad["finished"] = 2000;
+    CHECK(!TasAttemptWindow::fromJson(bad));
+    bad = w.toJson();
+    bad["stopped"] = Json::array({1, 2, 2});
+    CHECK(!TasAttemptWindow::fromJson(bad));
+    bad = w.toJson();
+    bad["broken"] = Json::array({2, 0, 0});
+    CHECK(!TasAttemptWindow::fromJson(bad));
+    bad = w.toJson();
+    bad["bestMs"] = 50000;
+    CHECK(!TasAttemptWindow::fromJson(bad));
+    bad = w.toJson();
+    bad["sections"] = 40;
+    CHECK(!TasAttemptWindow::fromJson(bad));
+    // Merged: counts added, best and worst kept, the median weighted.
+    TasAttemptWindow a = w, b = w;
+    b.finished = 0;
+    b.bestMs = b.medianMs = b.worstMs = 0;
+    b.attempts = 10;
+    b.stopped = {10, 0, 0};
+    b.broken = {5, 0, 0};
+    const TasAttemptWindow m = TasAttemptWindow::merged(a, b);
+    CHECK(m.attempts == 1014 && m.finished == 1000 && m.bestMs == 40000 && m.medianMs == a.medianMs && m.stopped[0] == 11 && m.broken[0] == 6);
+    // In the progress file: the last kMaxWindows, in order.
+    TasProgress p;
+    p.levelId = "sylvanox_01";
+    p.bestElapsedMs = 4000;
+    p.bestExplored = 1200;
+    p.elapsedMs = 9000;
+    p.explored = 3000;
+    p.section = 2;
+    p.sections = 3;
+    for (int i = 1; i <= 30; ++i) {
+        TasAttemptWindow x = w;
+        x.id = i;
+        p.windows.push_back(x);
+    }
+    auto read = TasProgress::parse(p.toJson().dump());
+    CHECK(read && read->windows.size() == TasProgress::kMaxWindows && read->windows.front().id == 7 && read->windows.back().id == 30);
+    CHECK(read && read->bestElapsedMs == 4000 && read->bestExplored == 1200 && read->section == 2 && read->sections == 3);
+}
+
+// The curve of a pair: a point only when the best time improves, per version of the level, the
+// runs published as marks, the cap; the server's points and windows taken in.
+TEST_CASE("tas curve: points only on improvement, per version, publish marks, cap, server merge") {
+    const std::string h1(64, 'a'), h2(64, 'b');
+    TasCurve c;
+    c.levelId = "sylvanox_01";
+    c.category = RunCategory::AnyPercent;
+    auto pt = [](int64_t time, int64_t training, TasCurveKind k = TasCurveKind::Improvement) {
+        TasCurvePoint p;
+        p.kind = k;
+        p.timeMs = time;
+        p.trainingMs = training;
+        return p;
+    };
+    CHECK(c.addBest(h1, kSimulationVersion, pt(90000, 1000, TasCurveKind::Start)));
+    CHECK(c.addBest(h1, kSimulationVersion, pt(89000, 5000)));
+    CHECK(!c.addBest(h1, kSimulationVersion, pt(89000, 6000)));  // not faster: never a point
+    CHECK(!c.addBest(h1, kSimulationVersion, pt(89500, 7000)));
+    CHECK(!c.addBest(h1, kSimulationVersion, pt(0, 8000)));
+    CHECK(c.addBest(h1, kSimulationVersion, pt(88000, 2000)));  // never before the last point
+    const TasCurveVersion* v = c.find(h1, kSimulationVersion);
+    CHECK(v && v->bests() == 3 && v->bestMs() == 88000 && v->points.back().trainingMs == 5000);
+    for (size_t i = 1; v && i < v->points.size(); ++i) CHECK(v->points[i].timeMs < v->points[i - 1].timeMs && v->points[i].trainingMs >= v->points[i - 1].trainingMs);
+    // Another version of the level: another curve; the old one untouched.
+    CHECK(c.addBest(h2, kSimulationVersion, pt(120000, 100)));
+    CHECK(c.versions.size() == 2 && c.find(h1, kSimulationVersion)->bests() == 3 && c.find(h2, kSimulationVersion)->bestMs() == 120000);
+    // The server's list: its points (a publication among them) replace the shared ones; a point
+    // of this computer still pending stays while it is the fastest.
+    TasCurvePoint pending = pt(87000, 9000);
+    pending.share = TasShare::Pending;
+    pending.leaseId = "lease-1";
+    pending.foundAtMs = 1234;
+    CHECK(c.addBest(h1, kSimulationVersion, pending));
+    std::vector<TasCurvePoint> server = {pt(90000, 1000, TasCurveKind::Start), pt(88500, 4000), pt(88400, 8000, TasCurveKind::Publish)};
+    server.back().revision = 2;
+    CHECK(c.mergeServerPoints(h1, kSimulationVersion, server));
+    v = c.find(h1, kSimulationVersion);
+    CHECK(v && v->points.size() == 4 && v->bestMs() == 87000);
+    CHECK(v && v->points[2].kind == TasCurveKind::Publish && v->points[2].revision == 2 && v->points.back().share == TasShare::Pending);
+    CHECK(!c.mergeServerPoints(h1, kSimulationVersion, server));  // the same again: nothing changed
+    // What a heartbeat carries, then its answer: the pending point replaced by the server's.
+    const TasTraining::CurveSend sent = TasTraining::curveSend(*v, "lease-1", 1234 + 5000);
+    CHECK(sent.points.size() == 1 && sent.pointIds.size() == 1 && sent.points[0]["age_ms"] == 5000 && sent.points[0]["time_ms"] == 87000);
+    TasCurvePoint placed = pt(87000, 9100);
+    placed.by = "ada";
+    c.acknowledge(h1, kSimulationVersion, "lease-1", sent.pointIds, {placed}, {});
+    v = c.find(h1, kSimulationVersion);
+    CHECK(v && v->points.back().share == TasShare::Shared && v->points.back().trainingMs == 9100 && v->points.back().by == "ada");
+    CHECK(TasTraining::curveSend(*v, "lease-1", 99999).points.empty());
+    // A lease that ended: its pending points stay here only.
+    TasCurvePoint lost = pt(86000, 9500);
+    lost.share = TasShare::Pending;
+    lost.leaseId = "lease-2";
+    CHECK(c.addBest(h1, kSimulationVersion, lost));
+    c.abandon("lease-2");
+    CHECK(c.find(h1, kSimulationVersion)->points.back().share == TasShare::Unshared);
+    // The cap: at kMaxPoints the last one gives way; the start and the best stay.
+    TasCurve big;
+    for (int i = 0; i < static_cast<int>(TasCurve::kMaxPoints) + 50; ++i) big.addBest(h1, kSimulationVersion, pt(200000 - i, i));
+    const TasCurveVersion* bv = big.find(h1, kSimulationVersion);
+    CHECK(bv && bv->bests() == TasCurve::kMaxPoints && bv->points.front().timeMs == 200000 && bv->bestMs() == 200000 - (static_cast<int>(TasCurve::kMaxPoints) + 49));
+    // Through the file: what was pending comes back unshared (its lease ended with the game).
+    TasCurveWindow w;
+    w.fromMs = 1000;
+    w.toMs = 6000;
+    w.session = 3;
+    w.local = true;
+    w.share = TasShare::Pending;
+    w.leaseId = "lease-3";
+    w.stats.id = 1;
+    w.stats.round = 1;
+    w.stats.section = 1;
+    w.stats.sections = 2;
+    w.stats.attempts = 100;
+    w.stats.finished = 1;
+    w.stats.bestMs = w.stats.medianMs = w.stats.worstMs = 88000;
+    w.stats.stopped = {90, 9};
+    w.stats.broken = {3, 0};
+    c.addWindow(h1, kSimulationVersion, w);
+    auto file = TasCurve::fromJson(c.toJson());
+    CHECK(file && file->versions.size() == 2);
+    const TasCurveVersion* fv = file ? file->find(h1, kSimulationVersion) : nullptr;
+    CHECK(fv && fv->bestMs() == 86000 && fv->windows.size() == 1 && fv->windows[0].share == TasShare::Unshared && fv->windows[0].stats.attempts == 100);
+    CHECK(!TasCurve::fromJson(Json::object()));
+    // The server's windows: those of a session counted here are left out (its finer ones stay).
+    TasCurveWindow mine = w, theirs = w;
+    theirs.local = false;
+    theirs.session = 4;
+    theirs.fromMs = 7000;
+    theirs.toMs = 67000;
+    CHECK(c.mergeServerWindows(h1, kSimulationVersion, {mine, theirs}));
+    const TasCurveVersion* wv = c.find(h1, kSimulationVersion);
+    CHECK(wv && wv->windows.size() == 2 && wv->windows[0].local && !wv->windows[1].local && wv->windows[1].session == 4);
+    const TasAttemptWindow total = tasAttemptTotal({&wv->windows[0], &wv->windows[1]});
+    CHECK(total.attempts == 200 && total.finished == 2 && total.stopped[0] == 180);
+    // The rounds marked along the training time.
+    const auto starts = tasadmin::roundStarts(wv->windows);
+    CHECK(starts.size() == 2 && starts[0].first == 1000 && starts[1].first == 7000);
+}
+
+TEST_CASE("tas curve: a heartbeat's summary of the windows is bounded; the book writes and reads the curves") {
+    const std::string h(64, 'c');
+    TasCurve c;
+    c.levelId = "sylvanox_02";
+    c.category = RunCategory::NoDeath;
+    for (int i = 1; i <= 12; ++i) {
+        TasCurveWindow w;
+        w.fromMs = i * 5000;
+        w.toMs = w.fromMs + 5000;
+        w.local = true;
+        w.share = TasShare::Pending;
+        w.leaseId = "L";
+        w.endAtMs = 100000 + i * 5000;
+        w.stats.id = i;
+        w.stats.round = i <= 6 ? 1 : 2;
+        w.stats.section = i % 3;
+        w.stats.sections = 3;
+        w.stats.attempts = 1000;
+        w.stats.stopped = {500, 400, 100};
+        w.stats.broken = {10, 0, 0};
+        c.addWindow(h, kSimulationVersion, w);
+    }
+    const TasCurveVersion* v = c.find(h, kSimulationVersion);
+    const auto sent = TasTraining::curveSend(*v, "L", 200000);
+    CHECK(sent.windows.size() == TasTraining::kSendWindows && sent.windowIds.size() == 12);
+    int64_t attempts = 0;
+    for (const Json& w : sent.windows) {
+        attempts += w["attempts"].get<int64_t>();
+        CHECK(w["duration_ms"].get<int64_t>() > 0 && w["stopped"].size() == 3);
+    }
+    CHECK(attempts == 12000);
+    c.acknowledge(h, kSimulationVersion, "L", {}, {}, sent.windowIds);
+    CHECK(TasTraining::curveSend(*c.find(h, kSimulationVersion), "L", 200000).windows.empty());
+    CHECK(c.find(h, kSimulationVersion)->windows.size() == 12);  // this computer keeps its fine ones
+    // The book: written on its thread, read back on another.
+    const fs::path dir = freshDir("curves");
+    {
+        TasCurveBook book;
+        book.open(dir);
+        book.at(c.levelId, c.category) = c;
+        book.changed(c.levelId, c.category, true);
+        book.update(0.0f);
+        book.flush();
+    }
+    CHECK(fs::exists(TasCurveBook::fileOf(dir, c.levelId, c.category)));
+    TasCurveBook again;
+    again.open(dir);
+    for (int i = 0; i < 200 && !again.loaded(); ++i) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        again.update(0.01f);
+    }
+    const TasCurve* read = again.find(c.levelId, c.category);
+    CHECK(again.loaded() && read && read->find(h, kSimulationVersion) && read->find(h, kSimulationVersion)->windows.size() == 12);
+    // The axes' helpers.
+    CHECK(tasadmin::durationTick(0) == "0" && tasadmin::durationTick(720000) == "12 min" && tasadmin::durationTick(5400000) == "1 h 30" && tasadmin::durationTick(7200000) == "2 h");
+    CHECK(tasadmin::compactCount(9999) == "9 999" && tasadmin::compactCount(12345) == "12,3 k" && tasadmin::compactCount(12300000) == "12,3 M");
+    CHECK(tasadmin::percentText(4, 10000) == "0,04 %" && tasadmin::percentText(1, 2) == "50 %" && tasadmin::percentText(0, 0) == "—");
+    const auto ticks = tasadmin::axisTicks(0, 3600000, 5, tasadmin::durationSteps());
+    CHECK(!ticks.empty() && ticks.size() <= 6 && ticks.front() == 0);
+    for (size_t i = 1; i < ticks.size(); ++i) CHECK(ticks[i] - ticks[i - 1] == ticks[1] - ticks[0]);
+    const auto yt = tasadmin::axisTicks(86000, 87000, 5, tasadmin::runTimeSteps());
+    CHECK(yt.size() >= 2 && yt.size() <= 6 && yt.front() >= 86000 && yt.back() <= 87000);
 }
 
 TEST_CASE("tas training: the settings share the cores between the trainings") {
@@ -480,6 +723,58 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
     g.tasTraining.enqueue({{"level_3", RunCategory::HundredPercent}});  // offline: stays in the queue
     CHECK(tasadmin::statusOf(page.rows()[4 + 2], g.tasTraining) == tasadmin::Status::Recompute);  // level_1, 100 %
 
+    // The training curve of level_0 ANY% (shipped and published: two reference lines): a start,
+    // improvements, a publication, windows of attempts on three sections over two sessions and
+    // rounds; an older version kept apart. Opened under the table, as a click on its row does.
+    {
+        TasCurve& c = g.tasTraining.curves().at("level_0", RunCategory::AnyPercent);
+        c.versions.clear();
+        auto pt = [](TasCurveKind k, int64_t t, int64_t x) {
+            TasCurvePoint p;
+            p.kind = k;
+            p.timeMs = t;
+            p.trainingMs = x;
+            p.explored = x * 40;
+            p.at = "2026-11-27T10:00:00Z";
+            p.by = "Administrateur_Tres_Long";
+            return p;
+        };
+        // Along the 11 days of training the server counts for it (987 654 321 ms).
+        CHECK(c.addBest(hash, kSimulationVersion, pt(TasCurveKind::Start, 86692, 0)));
+        CHECK(c.addBest(hash, kSimulationVersion, pt(TasCurveKind::Improvement, 86400, 100000000)));
+        CHECK(c.addBest(hash, kSimulationVersion, pt(TasCurveKind::Improvement, 85912, 300000000)));
+        CHECK(c.addBest(hash, kSimulationVersion, pt(TasCurveKind::Improvement, 85100, 900000000)));
+        std::vector<TasCurvePoint> withPublish = c.find(hash, kSimulationVersion)->points;
+        withPublish.push_back(pt(TasCurveKind::Publish, 85912, 350000000));
+        withPublish.back().revision = 12;
+        c.mergeServerPoints(hash, kSimulationVersion, withPublish);
+        for (int i = 0; i < 60; ++i) {
+            TasCurveWindow w;
+            w.fromMs = int64_t(i) * 16000000;
+            w.toMs = w.fromMs + 10000000;
+            w.session = 1 + i / 30;
+            w.local = true;
+            w.by = "Administrateur_Tres_Long";
+            w.stats.id = i + 1;
+            w.stats.round = 1 + (i / 10) % 3;
+            w.stats.section = 1 + i % 3;
+            w.stats.sections = 3;
+            w.stats.attempts = 120000;
+            w.stats.finished = 30;
+            w.stats.bestMs = 85000 + i * 10;
+            w.stats.medianMs = 88000;
+            w.stats.worstMs = 95000;
+            w.stats.routeMedian = 420;
+            w.stats.routeMax = 980;
+            w.stats.stopped = {60000, 40000, 19970};
+            w.stats.broken = {2000, 500, 0};
+            c.addWindow(hash, kSimulationVersion, w);
+        }
+        CHECK(c.addBest(std::string(64, 'b'), kSimulationVersion, pt(TasCurveKind::Improvement, 80000, 1000)));
+        page.select("level_0", RunCategory::AnyPercent);
+        CHECK(page.selected("level_0", RunCategory::AnyPercent) && page.capturesBack());
+    }
+
     for (Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}})
         for (Language lang : {Language::French, Language::English}) {
             r.app.setWindowSize(static_cast<int>(size.x), static_cast<int>(size.y));
@@ -495,8 +790,26 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             const Rect body{x0, bodyY, W, ui.screenH() - bodyY - ui.s(64)};
             const Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
             if (lang == Language::English) i18n::startAudit();
+            // The curve's plot focused with the keyboard: the tooltip of its last point.
+            ui.setFocus("tas/curve/plot");
+            ui.setUsingPointer(false);
             page.draw(inner);
+            CHECK(page.tip().show && !page.tip().title.empty() && page.tip().rows.size() >= 5);
+            const Rect tipR = charts::tipBox(ui, page.tip());
+            CHECK(tipR.x >= -0.5f && tipR.right() <= ui.screenW() + 0.5f && tipR.y >= -0.5f && tipR.bottom() <= ui.screenH() + 0.5f);
+            page.drawTooltip();
             ui.end();
+            const AdminTasLayout pointLayout = page.lastLayout();
+            // Then the strip of the sections: the tooltip of a window of attempts.
+            r.app.runFrames(1);
+            ui.begin(r.app, 1.0f / 60.0f);
+            ui.setFocus("tas/curve/strip");
+            ui.setUsingPointer(false);
+            page.draw(inner);
+            CHECK(page.tip().show && page.tip().rows.size() >= 6);
+            page.drawTooltip();
+            ui.end();
+            ui.setUsingPointer(true);
             if (lang == Language::English) {
                 // Nothing of the page left in French (the names of the administrators excepted: verbatim).
                 for (const auto& f : i18n::auditFindings()) {
@@ -507,12 +820,21 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             }
             const AdminTasLayout& L = page.lastLayout();
             const char* where = lang == Language::French ? "fr" : "en";
-            CHECK(L.rowsDrawn >= 3);  // the list keeps room for its rows
+            if (L.rowsDrawn < 3 || L.detail.empty() || L.pointsDrawn != 5 || L.windowsDrawn != 60 || L.roundsDrawn < 2 || L.referenceLines != 2)
+                std::printf("  [%s %.0f] lignes %d, courbe %.0f x %.0f, points %d, fenêtres %d, références %d, tours %d, vide %d\n", where, size.x, L.rowsDrawn,
+                            L.detail.w, L.detail.h, L.pointsDrawn, L.windowsDrawn, L.referenceLines, L.roundsDrawn, L.emptyCurve ? 1 : 0);
+            CHECK(L.rowsDrawn >= 3);  // the list keeps room for its rows, under it the curve
             CHECK(L.list.y < inner.bottom() - ui.s(150));
+            // The curve: under the table, inside the page; its plot, its strip, its counts beside.
+            CHECK(!L.detail.empty() && L.detail.y >= L.list.bottom() && L.detail.bottom() <= inner.bottom() + 0.5f);
+            CHECK(L.detail.containsRect(L.plot) && L.detail.containsRect(L.strip) && L.detail.containsRect(L.stats));
+            CHECK(L.plot.w > ui.s(400) && L.plot.h > ui.s(80) && L.strip.y > L.plot.bottom() && L.stats.x > L.plot.right());
+            CHECK(L.pointsDrawn == 5 && L.windowsDrawn == 60 && L.referenceLines == 2 && L.roundsDrawn >= 2 && !L.emptyCurve);
+            CHECK(L.sparklines >= 1);
+            CHECK(pointLayout.texts.size() == L.texts.size());  // the same page whichever tooltip shows
             int checked = 0;
             for (size_t i = 0; i < L.texts.size(); ++i) {
                 const auto& t = L.texts[i];
-                if (t.r.y >= L.list.y - 0.5f && t.r.bottom() > L.list.bottom() + 0.5f) continue;  // a row cut by the bottom of the list
                 ++checked;
                 CHECK(t.r.x >= inner.x - 0.5f && t.r.right() <= inner.right() + 0.5f && t.r.y >= inner.y - 0.5f);
                 i18n::Verbatim v(t.verbatim);
@@ -534,11 +856,24 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             CHECK(checked > 20);
             for (size_t i = 0; i < L.buttons.size(); ++i) {
                 const Rect& b = L.buttons[i];
-                if (b.y >= L.list.y - 0.5f && b.bottom() > L.list.bottom() + 0.5f) continue;
-                CHECK(b.x >= inner.x - 0.5f && b.right() <= inner.right() + 0.5f);
+                CHECK(b.x >= inner.x - 0.5f && b.right() <= inner.right() + 0.5f && b.bottom() <= inner.bottom() + 0.5f);
                 for (size_t j = i + 1; j < L.buttons.size(); ++j) CHECK(!overlaps(b, L.buttons[j]));
             }
         }
+    // The row selected again closes the curve; a pair never trained says so.
+    i18n::setLanguage(Language::French);
+    page.select("level_0", RunCategory::AnyPercent);
+    CHECK(!page.capturesBack());
+    page.select("level_3", RunCategory::NoDeath);
+    r.app.runFrames(1);
+    g.ui.begin(r.app, 1.0f / 60.0f);
+    page.draw({40, 40, 1200, 640});
+    g.ui.end();
+    CHECK(page.lastLayout().emptyCurve && !page.lastLayout().detail.empty());
+    bool said = false;
+    for (const auto& t : page.lastLayout().texts) said = said || t.text.find("jamais été entraînée") != std::string::npos;
+    CHECK(said);
+    page.select("level_3", RunCategory::NoDeath);
     i18n::setLanguage(Language::French);
     g.tasTraining.clearQueue();
 }
