@@ -1,0 +1,476 @@
+#include "game/tas/TasTraining.h"
+
+#include <SDL3/SDL.h>
+
+#include <algorithm>
+
+#include "engine/core/FileUtil.h"
+#include "engine/core/Log.h"
+#include "game/online/LevelFingerprint.h"
+#include "game/online/OnlineService.h"
+#include "game/online/Replay.h"
+
+namespace cosmic {
+
+namespace {
+
+using Clock = std::chrono::steady_clock;
+
+/// The server's rhythm (server/src/tas.ts): a heartbeat a minute, the lease lost after three
+/// minutes without one. A training stops by itself a little before, when its heartbeats fail.
+constexpr auto kBeatEvery = std::chrono::seconds(60);
+constexpr auto kBeatRetry = std::chrono::seconds(20);
+constexpr auto kLeaseSafe = std::chrono::seconds(165);
+/// A child asked to stop that is still there after this long (its last verification) is ended.
+constexpr auto kStopGrace = std::chrono::seconds(120);
+/// The length of a round of the search (cosmic_tas --round): its best run is verified and written
+/// at the end of each one.
+constexpr int kRoundMinutes = 10;
+
+int64_t msSince(Clock::time_point t) { return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - t).count(); }
+
+fs::path trainingDir() { return TasTraining::localRoot() / ".training"; }
+
+std::string fileStem(const TasPair& p) { return p.levelId + "_" + categoryId(p.category); }
+
+}  // namespace
+
+const char* tasJobStateLabel(TasTraining::JobState s) {
+    switch (s) {
+        case TasTraining::JobState::Acquiring: return "Réservation…";
+        case TasTraining::JobState::Running: return "En entraînement";
+        case TasTraining::JobState::Stopping: return "Arrêt en cours";
+        case TasTraining::JobState::Finished: return "Terminé";
+        case TasTraining::JobState::Failed: return "Échec";
+    }
+    return "";
+}
+
+int TasTrainingSettings::defaultParallel(int threadsPerJob, int cores) {
+    return std::clamp(std::max(1, cores) / std::max(1, threadsPerJob), 1, kMaxParallel);
+}
+
+Json TasTrainingSettings::toJson() const {
+    return {{"format", "cosmic.tas.training"}, {"threadsPerJob", threadsPerJob}, {"parallel", parallel}, {"budgetMinutes", budgetMinutes}};
+}
+
+TasTrainingSettings TasTrainingSettings::fromJson(const Json& j, int cores) {
+    TasTrainingSettings s;
+    s.threadsPerJob = std::clamp(jget<int>(j, "threadsPerJob", 2), 1, kMaxThreads);
+    s.parallel = std::clamp(jget<int>(j, "parallel", defaultParallel(s.threadsPerJob, cores)), 1, kMaxParallel);
+    s.budgetMinutes = std::clamp(jget<int>(j, "budgetMinutes", 30), 0, 24 * 60);
+    return s;
+}
+
+int64_t TasTraining::Job::sessionMs() const {
+    if (state == JobState::Acquiring || started == Clock::time_point{}) return 0;
+    return msSince(started);
+}
+
+TasTraining::TasTraining(OnlineService& online) : online_(online) {}
+
+TasTraining::~TasTraining() {
+    // The game normally called shutdown(): here only the processes still tracked are let go
+    // (their input closes: they stop by themselves).
+    for (auto& j : jobs_)
+        if (j->process) SDL_DestroyProcess(j->process);
+}
+
+fs::path TasTraining::toolPath() {
+#ifdef _WIN32
+    const char* name = "cosmic_tas.exe";
+#else
+    const char* name = "cosmic_tas";
+#endif
+    const char* base = SDL_GetBasePath();
+    if (!base) return {};
+    fs::path p = Paths::fromUtf8(base) / name;
+    std::error_code ec;
+    return fs::is_regular_file(p, ec) ? p : fs::path();
+}
+
+fs::path TasTraining::localRoot() { return Paths::savesDir() / "tas_local"; }
+
+int TasTraining::cores() { return std::max(1, SDL_GetNumLogicalCPUCores()); }
+
+void TasTraining::loadSettings() {
+    Json j = Json::object();
+    if (auto text = FileUtil::readText(localRoot() / "settings.json")) {
+        Json parsed = Json::parse(*text, nullptr, false);
+        if (parsed.is_object()) j = parsed;
+    }
+    settings_ = TasTrainingSettings::fromJson(j, cores());
+}
+
+void TasTraining::saveSettings() const { FileUtil::writeTextAtomic(localRoot() / "settings.json", settings_.toJson().dump(1) + "\n"); }
+
+std::string TasTraining::leasePath(const TasPair& p) { return "/api/v1/admin/tas/" + p.levelId + "/" + categoryId(p.category) + "/lease"; }
+
+const TasTraining::Job* TasTraining::jobFor(const TasPair& p) const {
+    for (const auto& j : jobs_)
+        if (j->pair == p) return j.get();
+    return nullptr;
+}
+
+std::string TasTraining::failureOf(const TasPair& p) const {
+    auto it = failures_.find(p.key());
+    return it == failures_.end() ? std::string() : it->second;
+}
+
+bool TasTraining::queued(const TasPair& p) const { return std::find(queue_.begin(), queue_.end(), p) != queue_.end(); }
+
+int TasTraining::running() const {
+    int n = 0;
+    for (const auto& j : jobs_)
+        if (j->state != JobState::Finished && j->state != JobState::Failed) ++n;
+    return n;
+}
+
+void TasTraining::say(const std::string& m, bool error) {
+    if (error) Log::warn("TAS : {}", m);
+    if (onMessage) onMessage(m, error);
+}
+
+void TasTraining::train(const TasPair& p) {
+    if (jobFor(p)) return;
+    unqueue(p);
+    queue_.push_front(p);
+    startNext();
+}
+
+int TasTraining::enqueue(const std::vector<TasPair>& pairs) {
+    int added = 0;
+    for (const TasPair& p : pairs)
+        if (!jobFor(p) && !queued(p)) {
+            queue_.push_back(p);
+            ++added;
+        }
+    startNext();
+    return added;
+}
+
+void TasTraining::unqueue(const TasPair& p) { queue_.erase(std::remove(queue_.begin(), queue_.end(), p), queue_.end()); }
+
+void TasTraining::stop(const TasPair& p) {
+    unqueue(p);
+    for (auto& j : jobs_)
+        if (j->pair == p) {
+            j->budgetReached = false;
+            requestStop(*j);
+            release(*j);
+        }
+}
+
+void TasTraining::stopAll() {
+    queue_.clear();
+    for (auto& j : jobs_) {
+        j->budgetReached = false;
+        requestStop(*j);
+        release(*j);
+    }
+}
+
+void TasTraining::startNext() {
+    if (!online_.usable() || !online_.loggedIn()) return;
+    while (running() < settings_.parallel && !queue_.empty()) {
+        const TasPair p = queue_.front();
+        queue_.pop_front();
+        if (jobFor(p)) continue;
+        failures_.erase(p.key());
+        auto j = std::make_unique<Job>();
+        j->pair = p;
+        Job& ref = *j;
+        jobs_.push_back(std::move(j));
+        acquire(ref);
+    }
+}
+
+void TasTraining::acquire(Job& j) {
+    const TasPair p = j.pair;
+    j.levelHash = hashFor ? hashFor(p.levelId) : std::string();
+    if (j.levelHash.empty()) {
+        j.state = JobState::Failed;
+        j.error = "empreinte du niveau inconnue : pas de course de la machine pour ce niveau";
+        say(p.levelId + " · " + categoryLabel(p.category) + " : " + j.error, true);
+        return;
+    }
+    // The lease of this version of the level: the fingerprint this game plays, its simulation.
+    const Json body = {{"level_hash", j.levelHash}, {"sim_version", kSimulationVersion}};
+    online_.send("POST", leasePath(p), body, OnlineService::guard(life_, [this, p](const ApiResult& r) {
+                     Job* j = nullptr;
+                     for (auto& x : jobs_)
+                         if (x->pair == p && x->state == JobState::Acquiring) j = x.get();
+                     if (!j) {
+                         // Stopped while it waited: a lease given meanwhile is given back.
+                         if (r.ok && !jstr(r.data, "lease_id").empty())
+                             online_.send("POST", leasePath(p) + "/release", {{"lease_id", jstr(r.data, "lease_id")}, {"explored", 0}}, [](const ApiResult&) {});
+                         return;
+                     }
+                     if (!r.ok) {
+                         const Json holder = jfield(r.details, "holder", Json());
+                         if (r.code == "TAS_LOCKED")
+                             say(p.levelId + " · " + categoryLabel(p.category) + " : en entraînement par " + jstr(holder, "username", "un autre administrateur") +
+                                     ", passé.",
+                                 false);
+                         else say(p.levelId + " · " + categoryLabel(p.category) + " : " + r.message, true);
+                         j->state = JobState::Failed;
+                         j->error = r.code == "TAS_LOCKED" ? std::string() : r.message;
+                         return;
+                     }
+                     j->leaseId = jstr(r.data, "lease_id");
+                     const Json& t = jfield(r.data, "training", Json::object());
+                     j->serverTotalMs = jget<int64_t>(t, "total_ms", 0);
+                     j->serverExplored = jget<int64_t>(t, "total_explored", 0);
+                     j->lastBeatOk = j->lastBeatSent = Clock::now();
+                     launch(*j);
+                 }));
+}
+
+SDL_Process* TasTraining::spawn(const std::vector<std::string>& args) {
+    std::vector<const char*> argv;
+    for (const std::string& a : args) argv.push_back(a.c_str());
+    argv.push_back(nullptr);
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, argv.data());
+    // Its input: a pipe of this game (closed when the game closes, even by a crash: the child
+    // stops). No console window, no output.
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_APP);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_SetBooleanProperty(props, SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN, true);
+    SDL_Process* p = SDL_CreateProcessWithProperties(props);
+    SDL_DestroyProperties(props);
+    return p;
+}
+
+void TasTraining::launch(Job& j) {
+    const fs::path tool = toolPath();
+    if (tool.empty()) {
+        j.error = "cosmic_tas est introuvable à côté du jeu.";
+        say(j.error, true);
+        j.state = JobState::Failed;
+        return release(j);
+    }
+    std::error_code ec;
+    fs::create_directories(trainingDir(), ec);
+    j.progressFile = trainingDir() / (fileStem(j.pair) + ".progress.json");
+    j.stopFile = trainingDir() / (fileStem(j.pair) + ".stop");
+    fs::remove(j.progressFile, ec);
+    fs::remove(j.stopFile, ec);
+    const fs::path seed = seedFor ? seedFor(j.pair) : fs::path();
+    j.hasSeed = !seed.empty();
+    std::vector<std::string> args = {Paths::toUtf8(tool),
+                                     j.pair.levelId,
+                                     categoryId(j.pair.category),
+                                     "--until-stopped",
+                                     "--round",
+                                     std::to_string(kRoundMinutes),
+                                     "--threads",
+                                     std::to_string(settings_.threadsPerJob),
+                                     "--seed",
+                                     std::to_string(SDL_GetTicksNS() % 1000000007ull),
+                                     "--out",
+                                     Paths::toUtf8(localRoot()),
+                                     "--progress",
+                                     Paths::toUtf8(j.progressFile),
+                                     "--stop-file",
+                                     Paths::toUtf8(j.stopFile),
+                                     "--stop-on-stdin",
+                                     "--user-dir",
+                                     Paths::toUtf8(Paths::userDir())};
+    if (!online_.config().serverUrl.empty()) {
+        args.push_back("--server");
+        args.push_back(online_.config().serverUrl);
+    }
+    // The run so far after each section, kept for the next training of the pair: a level whose
+    // first run takes longer than a session goes on from where the last one got to (only a run of
+    // this very version of the level: its fingerprint and simulation).
+    const fs::path partial = trainingDir() / (fileStem(j.pair) + ".partial.cprz");
+    args.push_back("--save-partial");
+    args.push_back(Paths::toUtf8(partial));
+    if (j.hasSeed) {
+        args.push_back("--seed-replay");
+        args.push_back(Paths::toUtf8(seed));
+    } else if (auto bytes = FileUtil::readBinary(partial)) {
+        auto rep = ReplayData::decode(*bytes);
+        if (rep && rep->exact() && rep->levelId == j.pair.levelId && rep->levelHash == j.levelHash && rep->simVersion == kSimulationVersion) {
+            args.push_back("--seed-replay");
+            args.push_back(Paths::toUtf8(partial));
+        }
+    }
+    j.process = spawn(args);
+    if (!j.process) {
+        j.error = std::string("cosmic_tas ne démarre pas : ") + SDL_GetError();
+        say(j.error, true);
+        j.state = JobState::Failed;
+        return release(j);
+    }
+    j.state = JobState::Running;
+    j.started = Clock::now();
+    Log::info("TAS : entraînement de {} lancé ({} fils{})", j.pair.key(), settings_.threadsPerJob, j.hasSeed ? ", depuis la meilleure course" : "");
+}
+
+void TasTraining::heartbeat(Job& j) {
+    if (j.leaseId.empty() || j.releasing) return;
+    j.lastBeatSent = Clock::now();
+    const TasPair p = j.pair;
+    const std::string lease = j.leaseId;
+    const int64_t explored = j.progress ? j.progress->explored : 0;
+    online_.send("POST", leasePath(p) + "/heartbeat", {{"lease_id", lease}, {"explored", explored}},
+                 OnlineService::guard(life_, [this, p, lease, explored](const ApiResult& r) {
+                     Job* j = nullptr;
+                     for (auto& x : jobs_)
+                         if (x->pair == p && x->leaseId == lease) j = x.get();
+                     if (!j) return;
+                     if (r.ok) {
+                         j->lastBeatOk = Clock::now();
+                         j->exploredReported = explored;
+                         const Json& t = jfield(r.data, "training", Json::object());
+                         j->serverTotalMs = jget<int64_t>(t, "total_ms", j->serverTotalMs);
+                         j->serverExplored = jget<int64_t>(t, "total_explored", j->serverExplored);
+                         return;
+                     }
+                     if (r.networkFailure()) {
+                         j->lastBeatSent = Clock::now() - kBeatEvery + kBeatRetry;  // again sooner
+                         return;
+                     }
+                     // The lease is no longer ours (expired, taken): the training stops at once.
+                     j->leaseId.clear();
+                     j->error = "verrou perdu : " + r.message;
+                     say(p.levelId + " · " + categoryLabel(p.category) + " : " + j->error, true);
+                     requestStop(*j);
+                 }));
+}
+
+void TasTraining::requestStop(Job& j) {
+    if (j.state == JobState::Acquiring) {
+        j.state = JobState::Finished;  // its lease, if it comes, is given back (acquire)
+        return;
+    }
+    if (j.state != JobState::Running) return;
+    j.state = JobState::Stopping;
+    j.stopAsked = Clock::now();
+    if (!j.stopFile.empty()) FileUtil::writeTextAtomic(j.stopFile, "stop\n");
+    if (j.process)
+        if (SDL_IOStream* in = SDL_GetProcessInput(j.process)) {
+            SDL_WriteIO(in, "stop\n", 5);
+            SDL_CloseIO(in);  // the end of its input: it stops even if it missed the line
+        }
+}
+
+void TasTraining::release(Job& j) {
+    if (j.leaseId.empty() || j.releasing) return;
+    j.releasing = true;
+    ++releasesPending_;
+    const TasPair p = j.pair;
+    const std::string lease = j.leaseId;
+    const int64_t explored = j.progress ? j.progress->explored : 0;
+    online_.send("POST", leasePath(p) + "/release", {{"lease_id", lease}, {"explored", explored}},
+                 OnlineService::guard(life_, [this, p, lease](const ApiResult& r) {
+                     --releasesPending_;
+                     for (auto& x : jobs_)
+                         if (x->pair == p && x->leaseId == lease) {
+                             x->leaseId.clear();
+                             x->releasing = false;
+                             if (r.ok) {
+                                 const Json& t = jfield(r.data, "training", Json::object());
+                                 x->serverTotalMs = jget<int64_t>(t, "total_ms", x->serverTotalMs);
+                                 x->serverExplored = jget<int64_t>(t, "total_explored", x->serverExplored);
+                             }
+                         }
+                 }));
+}
+
+void TasTraining::readProgress(Job& j) {
+    if (j.progressFile.empty()) return;
+    auto text = FileUtil::readText(j.progressFile);
+    if (!text) return;
+    auto p = TasProgress::parse(*text);
+    if (p && p->levelId == j.pair.levelId && p->category == j.pair.category && (!j.progress || p->sequence >= j.progress->sequence)) j.progress = std::move(p);
+}
+
+void TasTraining::ended(Job& j) {
+    readProgress(j);
+    if (j.process) {
+        SDL_DestroyProcess(j.process);
+        j.process = nullptr;
+    }
+    if (j.state == JobState::Running) {
+        // Ended by itself (a failure: the level, the seed...): its last words say why.
+        j.state = JobState::Failed;
+        j.error = j.progress && !j.progress->message.empty() ? j.progress->message : std::string("cosmic_tas s'est arrêté");
+        say(j.pair.levelId + " · " + categoryLabel(j.pair.category) + " : " + j.error, true);
+    } else if (j.state == JobState::Stopping) {
+        j.state = JobState::Finished;
+    }
+    release(j);
+    std::error_code ec;
+    fs::remove(j.stopFile, ec);
+    if (j.budgetReached && j.state == JobState::Finished) queue_.push_back(j.pair);  // round-robin: back later
+    if (onEnded) onEnded(j.pair);
+}
+
+void TasTraining::update(float dt) {
+    pollTimer_ += dt;
+    const bool poll = pollTimer_ >= 0.5f;
+    if (poll) pollTimer_ = 0.0f;
+    const auto now = Clock::now();
+    for (auto& jp : jobs_) {
+        Job& j = *jp;
+        if (j.state != JobState::Running && j.state != JobState::Stopping) continue;
+        if (poll) readProgress(j);
+        if (j.state == JobState::Running) {
+            if (!j.leaseId.empty() && !j.releasing) {
+                if (now - j.lastBeatSent >= kBeatEvery) heartbeat(j);
+                if (now - j.lastBeatOk >= kLeaseSafe) {
+                    // No heartbeat answered for almost the lease's life: it can no longer be ours.
+                    j.error = "connexion perdue : le verrou a expiré";
+                    say(j.pair.levelId + " · " + categoryLabel(j.pair.category) + " : " + j.error, true);
+                    j.leaseId.clear();
+                    requestStop(j);
+                }
+            }
+            if (settings_.budgetMinutes > 0 && j.sessionMs() >= int64_t(settings_.budgetMinutes) * 60000 && j.state == JobState::Running) {
+                j.budgetReached = true;
+                requestStop(j);
+                release(j);
+            }
+        }
+        if (j.state == JobState::Stopping && j.process && now - j.stopAsked >= kStopGrace) SDL_KillProcess(j.process, true);
+        int code = 0;
+        if (poll && j.process && SDL_WaitProcess(j.process, false, &code)) ended(j);
+    }
+    // The ended trainings leave the list (a failure stays said in its pair's line: failureOf).
+    for (const auto& j : jobs_)
+        if (j->state == JobState::Failed && !j->error.empty()) failures_[j->pair.key()] = j->error;
+    jobs_.erase(std::remove_if(jobs_.begin(), jobs_.end(),
+                               [](const std::unique_ptr<Job>& j) {
+                                   return (j->state == JobState::Finished || j->state == JobState::Failed) && !j->process && !j->releasing;
+                               }),
+                jobs_.end());
+    startNext();
+}
+
+void TasTraining::shutdown(int waitMs) {
+    queue_.clear();
+    for (auto& j : jobs_) {
+        j->budgetReached = false;
+        requestStop(*j);
+        release(*j);
+    }
+    // The releases answered (others see the pairs free at once), a few seconds at most.
+    const auto until = Clock::now() + std::chrono::milliseconds(waitMs);
+    while (releasesPending_ > 0 && Clock::now() < until) {
+        online_.update(0.02f);
+        SDL_Delay(20);
+    }
+    // The children finish their last verification and exit by themselves (their input closed).
+    for (auto& j : jobs_)
+        if (j->process) {
+            SDL_DestroyProcess(j->process);
+            j->process = nullptr;
+        }
+    jobs_.clear();
+}
+
+}  // namespace cosmic

@@ -60,6 +60,8 @@ export const ADMIN_ACTIONS = {
     ],
     // ADMINISTRATION › Cadeaux (gifts.ts): rewards sent to players, the unopened gifts of a send withdrawn.
     gift: ["admin_gift_sent", "admin_gift_cancelled"],
+    // ADMINISTRATION › TAS (tas.ts): a machine's run published (improved on an administrator's computer).
+    tas: ["admin_tas_published"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -87,9 +89,10 @@ const ALL_ADMIN_ACTIONS: readonly string[] = [
         ...ADMIN_ACTIONS.clan,
         ...ADMIN_ACTIONS.raid,
         ...ADMIN_ACTIONS.gift,
+        ...ADMIN_ACTIONS.tas,
     ]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account", "clan", "raid", "gift"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account", "clan", "raid", "gift", "tas"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 

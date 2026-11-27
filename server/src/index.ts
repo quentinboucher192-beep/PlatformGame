@@ -29,6 +29,7 @@ import * as raidReviews from "./raidReviews";
 import * as raidRecap from "./raidRecap";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
+import * as tas from "./tas";
 import * as challenges from "./challenges";
 import * as creations from "./creations";
 import * as creationAssets from "./creationAssets";
@@ -195,6 +196,10 @@ route("GET", `${V}/creations/{creationId}/image/{hash}`, (ctx, viewer) => creati
 // 2.46: the native entities published by an administrator (public: the games download every revision).
 route("GET", `${V}/enemies/revisions`, (ctx) => enemyRevisions.manifest(ctx), { cacheable: true });
 route("GET", `${V}/enemies/{enemyId}/revisions/{revision}/file`, (ctx) => enemyRevisions.file(ctx), { cacheable: true });
+// The machine's runs published by the administrators (tas.ts): every game reads the list now and then.
+route("GET", `${V}/tas`, (ctx) => tas.list(ctx), { cacheable: true });
+route("GET", `${V}/tas/{levelId}/{category}/{revision}/record`, (ctx) => tas.file(ctx, "record"), { cacheable: true });
+route("GET", `${V}/tas/{levelId}/{category}/{revision}/replay`, (ctx) => tas.file(ctx, "replay"), { cacheable: true });
 route("GET", `${V}/levels/{levelId}/rating`, (ctx) => campaign.getRating(ctx), { cacheable: true });
 route("PUT", `${V}/levels/{levelId}/rating`, (ctx) => campaign.putRating(ctx));
 route("DELETE", `${V}/levels/{levelId}/rating`, (ctx) => campaign.deleteRating(ctx));
@@ -465,6 +470,12 @@ route("POST", `${V}/admin/campaign/{levelId}/revert`, (ctx) => campaignRevisions
 route("GET", `${V}/admin/enemies`, (ctx) => enemyRevisions.adminList(ctx));
 route("GET", `${V}/admin/enemies/{enemyId}/revisions`, (ctx) => enemyRevisions.adminHistory(ctx));
 route("POST", `${V}/admin/enemies/{enemyId}/revisions`, (ctx) => enemyRevisions.publish(ctx));
+// ADMINISTRATION › TAS (tas.ts): the leases of the trainings run on the administrators' computers, the publications.
+route("GET", `${V}/admin/tas`, (ctx) => tas.adminList(ctx));
+route("POST", `${V}/admin/tas/{levelId}/{category}/lease`, (ctx) => tas.acquire(ctx));
+route("POST", `${V}/admin/tas/{levelId}/{category}/lease/heartbeat`, (ctx) => tas.heartbeat(ctx));
+route("POST", `${V}/admin/tas/{levelId}/{category}/lease/release`, (ctx) => tas.release(ctx));
+route("POST", `${V}/admin/tas/{levelId}/{category}/publish`, (ctx) => tas.publish(ctx));
 route("GET", `${V}/admin/challenges/levels`, (ctx) => adminChallenges.listLevels(ctx));
 route("PUT", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.setChallenge(ctx));
 route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.resetChallenge(ctx));

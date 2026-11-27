@@ -59,6 +59,12 @@
    ]
   },
   {
+   "fr": "(en ligne {0})",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "(facultatif)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -548,6 +554,12 @@
    "fr": "100 % (vaincu)",
    "where": [
     "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
+   "fr": "100 % : tous les objets ne sont pas récupérés",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -1258,6 +1270,18 @@
   },
   {
    "fr": "a ouvert une session de rattrapage de {0} ({1} jours)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a publié la course de la machine de {0} ({1}) : {2}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a publié la course de la machine de {0} ({1}) : {2} (avant : {3})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -2990,6 +3014,12 @@
    ]
   },
   {
+   "fr": "Amélioration locale non publiée",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Améthyste",
    "where": [
     "game/online/Clans.cpp",
@@ -3025,6 +3055,12 @@
    "fr": "ancienne",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "ancienne version, non comparable",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -4237,8 +4273,21 @@
    ]
   },
   {
+   "fr": "Arrêt : vérification de la meilleure course…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "Arrêt en cours",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "Arrêter",
    "where": [
+    "ui/screens/AdminTas.cpp",
     "ui/widgets/AssetPreview.cpp"
    ]
   },
@@ -4246,6 +4295,12 @@
    "fr": "arrêtée",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Arrêt…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -6292,6 +6347,12 @@
    ]
   },
   {
+   "fr": "Aucun niveau du jeu.",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Aucun niveau en ligne publié ne correspond.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -6837,6 +6898,12 @@
    ]
   },
   {
+   "fr": "aucune course encore",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Aucune course enregistrée.",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -7022,6 +7089,12 @@
    "fr": "Aucune notification pour l'instant. Suivez des créateurs, ajoutez des niveaux à vos favoris et commentez : leurs nouveautés apparaîtront ici.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune paire ne correspond.",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -8470,6 +8543,12 @@
    "fr": "Basculer",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "base64 invalide",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -10084,6 +10163,12 @@
    ]
   },
   {
+   "fr": "Budget par paire",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Bulgarie",
    "where": [
     "data/online/countries.json",
@@ -11219,6 +11304,12 @@
    ]
   },
   {
+   "fr": "catégorie attendue : {0}",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Catégorie du TAS",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -11227,7 +11318,8 @@
   {
    "fr": "catégorie inconnue",
    "where": [
-    "game/tas/TasFile.cpp"
+    "game/tas/TasFile.cpp",
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -11705,6 +11797,12 @@
    "fr": "ce n'est pas une définition d'ennemi",
    "where": [
     "game/online/EnemyRevisions.cpp"
+   ]
+  },
+  {
+   "fr": "Ce niveau a changé : sa version en ligne est la révision {0}. Mettez le jeu à jour, puis recalculez la course pour cette version.",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -12303,6 +12401,12 @@
    "fr": "Ce titre existe déjà : choisissez-le dans la liste des titres.",
    "where": [
     "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "Ce verrou n'est plus le vôtre (expiré ou repris).",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -16318,6 +16422,12 @@
    ]
   },
   {
+   "fr": "computedAt invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Comète",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -16891,6 +17001,12 @@
    ]
   },
   {
+   "fr": "connexion perdue : le verrou a expiré",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "Connexion refusée depuis un autre ordinateur",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -16920,6 +17036,12 @@
     "server/src/coop.ts",
     "server/src/raidTests.ts",
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Connexion à Cosmic Online nécessaire : chaque entraînement réserve son niveau auprès du serveur.",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -17762,6 +17884,30 @@
    ]
   },
   {
+   "fr": "cosmic_tas est introuvable à côté du jeu : l'entraînement est impossible sur cet ordinateur.",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "cosmic_tas est introuvable à côté du jeu.",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
+   "fr": "cosmic_tas ne démarre pas : {0}",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
+   "fr": "cosmic_tas s'est arrêté",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "Cosmos",
    "where": [
     "game/online/Gifts.cpp"
@@ -18380,6 +18526,12 @@
    ]
   },
   {
+   "fr": "course d'une autre version du niveau",
+   "where": [
+    "game/tas/TasOnline.cpp"
+   ]
+  },
+  {
    "fr": "Course du vendredi",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -18394,13 +18546,26 @@
   {
    "fr": "Course introuvable.",
    "where": [
-    "server/src/race.ts"
+    "server/src/race.ts",
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "Course locale illisible : {0} · {1}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
    "fr": "Course non terminée.",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Course publiée : {0} en {1}.",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -20518,6 +20683,12 @@
    "fr": "DEPUIS UNE STARTPOS",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "depuis {0}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -24041,6 +24212,12 @@
    ]
   },
   {
+   "fr": "démarrage de cosmic_tas…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Démarre quand on monte dessus",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -24917,6 +25094,18 @@
    ]
   },
   {
+   "fr": "empreinte du niveau inconnue",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "empreinte du niveau inconnue : pas de course de la machine pour ce niveau",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "empreinte du niveau invalide",
    "where": [
     "game/tas/TasFile.cpp"
@@ -25181,6 +25370,12 @@
    ]
   },
   {
+   "fr": "En cours et en file ({0})",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "En cours · fin prévue dans",
    "where": [
     "game/online/Raids.cpp"
@@ -25279,6 +25474,48 @@
    ]
   },
   {
+   "fr": "En entraînement",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
+   "fr": "En entraînement ici",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "En entraînement par",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "En entraînement par un autre administrateur",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "En entraînement par vous sur un autre ordinateur",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "En entraînement par {0}.",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "En file d'attente",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "En haut de l'écran",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -25344,6 +25581,7 @@
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/MainMenuScene.cpp",
@@ -25384,6 +25622,12 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "en ligne {0}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -26442,6 +26686,7 @@
    "where": [
     "engine/input/InputTypes.cpp",
     "game/ghost/PersonalBests.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
@@ -26566,6 +26811,18 @@
    "fr": "entraînement, compté à part : {0}",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînements en parallèle",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "Entraîner",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -27474,6 +27731,12 @@
    ]
   },
   {
+   "fr": "explored invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Explorer",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -28209,6 +28472,12 @@
    ]
   },
   {
+   "fr": "fiche différente de celle du serveur",
+   "where": [
+    "game/tas/TasOnline.cpp"
+   ]
+  },
+  {
    "fr": "Fiche du clan indisponible.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -28254,6 +28523,18 @@
    ]
   },
   {
+   "fr": "fiche illisible",
+   "where": [
+    "game/tas/TasOnline.cpp"
+   ]
+  },
+  {
+   "fr": "fiche illisible : {0}",
+   "where": [
+    "game/tas/TasOnline.cpp"
+   ]
+  },
+  {
    "fr": "Fiche provisoire : en attente de validation",
    "where": [
     "game/online/RaidRecap.cpp"
@@ -28264,6 +28545,12 @@
    "where": [
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche trop volumineuse.",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -29356,6 +29643,9 @@
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidCatalog.cpp",
     "game/tas/TasFile.cpp",
+    "game/tas/TasOnline.cpp",
+    "game/tas/TasProgress.cpp",
+    "game/tas/TasTraining.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
@@ -29369,7 +29659,8 @@
   {
    "fr": "format inconnu",
    "where": [
-    "game/tas/TasFile.cpp"
+    "game/tas/TasFile.cpp",
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -29383,6 +29674,12 @@
    "where": [
     "game/levels/LevelData.cpp",
     "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "format inconnu (attendu cosmic.tas)",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -35034,6 +35331,18 @@
    ]
   },
   {
+   "fr": "jamais entraîné",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "jamais entraîné pour cette version",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Jamaïque",
    "where": [
     "data/online/countries.json",
@@ -35779,10 +36088,12 @@
    "where": [
     "game/online/LevelFingerprint.cpp",
     "game/tas/TasFile.cpp",
+    "game/tas/TasProgress.cpp",
     "server/src/campaignRevisions.ts",
     "server/src/enemyRevisions.ts",
     "server/src/live.ts",
-    "server/src/projects.ts"
+    "server/src/projects.ts",
+    "server/src/tas.ts"
    ]
   },
   {
@@ -37047,6 +37358,30 @@
    ]
   },
   {
+   "fr": "la course contient des dégâts",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "la course contient des morts",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "la course ne remplit pas la catégorie {0}",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
+   "fr": "La course publiée pour cette version est déjà aussi rapide.",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "La Crevasse Hurlante",
    "where": [
     "data/levels/glacior_04.json"
@@ -37165,6 +37500,24 @@
    "fr": "La fiche de chaque Gigaboss : son sprite dans chacune de ses trois phases, sa difficulté de 1 à 10 étoiles, ses phases avec leurs attaques et leurs mécanismes, et chaque attaque ou mécanisme qui se déplie avec un exemple animé (ses attaques jouées par le moteur du jeu, ses mécanismes dessinés avec les sprites du combat) et la façon de l'éviter.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "La fiche de la course n'est pas valide.",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "La fiche ne correspond pas à la révision en ligne du niveau.",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "la fiche ne dit pas ce que dit la liste",
+   "where": [
+    "game/tas/TasOnline.cpp"
    ]
   },
   {
@@ -41112,15 +41465,69 @@
    ]
   },
   {
+   "fr": "le replay est plus court que le temps annoncé",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "le replay n'annonce pas le temps de la course",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
+   "fr": "le replay n'annonce pas le temps de la fiche",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "le replay n'est pas de la version de simulation de la fiche",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Le replay ne correspond pas à ce record.",
    "where": [
     "game/ghost/GhostStore.cpp"
    ]
   },
   {
+   "fr": "Le replay ne correspond pas à la fiche.",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "le replay ne donne pas le temps annoncé",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
+   "fr": "le replay ne refait pas la même course",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
+   "fr": "le replay ne termine pas le niveau",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
    "fr": "le replay s'arrête avant l'arrivée",
    "where": [
     "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "le replay se désynchronise au pas {0}",
+   "where": [
+    "game/tas/TasVerify.cpp"
    ]
   },
   {
@@ -41804,6 +42211,7 @@
   {
    "fr": "Lecture des niveaux…",
    "where": [
+    "ui/screens/AdminTas.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -43530,6 +43938,24 @@
    ]
   },
   {
+   "fr": "levelHash invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "levelVersion attendue : {0}",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "levelVersion invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Levier",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -43655,7 +44081,8 @@
    "fr": "Libre",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
-    "game/raid/bots/BotTypes.cpp"
+    "game/raid/bots/BotTypes.cpp",
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -44198,6 +44625,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Livrée",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -45493,6 +45926,12 @@
    ]
   },
   {
+   "fr": "meilleur {0}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "meilleur − somme",
    "where": [
     "ui/screens/ChainTrainingScene.cpp"
@@ -45912,6 +46351,7 @@
     "game/online/OnlineService.cpp",
     "game/online/OnlineTypes.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/tas/TasProgress.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -48102,6 +48542,7 @@
     "game/content/AssetCatalog.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ProjectsScene.cpp"
@@ -48123,7 +48564,8 @@
   {
    "fr": "niveau absent",
    "where": [
-    "game/tas/TasFile.cpp"
+    "game/tas/TasFile.cpp",
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -48148,6 +48590,12 @@
    "fr": "niveau attendu (objet JSON)",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "niveau attendu : {0}",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -48411,6 +48859,12 @@
    ]
   },
   {
+   "fr": "niveau introuvable dans ce jeu",
+   "where": [
+    "game/tas/TasOnline.cpp"
+   ]
+  },
+  {
    "fr": "Niveau introuvable.",
    "where": [
     "server/src/community.ts",
@@ -48472,6 +48926,12 @@
    "fr": "Niveau non installé : replay illisible ici.",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau ou catégorie inconnus.",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -50151,6 +50611,12 @@
    ]
   },
   {
+   "fr": "n° {0} de la file",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "n°{0}",
    "where": [
     "game/online/Clans.cpp",
@@ -50417,7 +50883,8 @@
    "where": [
     "server/src/campaignRevisions.ts",
     "server/src/devices.ts",
-    "server/src/enemyRevisions.ts"
+    "server/src/enemyRevisions.ts",
+    "server/src/tas.ts"
    ]
   },
   {
@@ -53208,6 +53675,12 @@
    ]
   },
   {
+   "fr": "pas le niveau de la course",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
    "fr": "Pas meilleur que votre temps déjà envoyé : gardé sur ce PC.",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -53241,13 +53714,26 @@
   {
    "fr": "pas un objet JSON",
    "where": [
-    "game/tas/TasFile.cpp"
+    "game/tas/TasFile.cpp",
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
    "fr": "Pas un PNG transparent : ignorée",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "pas un replay exact (entrées absentes)",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "pas une course seule, touches par emplacement",
+   "where": [
+    "game/tas/TasVerify.cpp"
    ]
   },
   {
@@ -54457,6 +54943,7 @@
     "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/planets/PlanetData.cpp",
+    "game/tas/TasProgress.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -54506,6 +54993,12 @@
    "fr": "Phase de départ",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "phase inconnue",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -55194,6 +55687,12 @@
    ]
   },
   {
+   "fr": "Planète : {0}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Planète : {0}  ·  {1} objets",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -55770,6 +56269,12 @@
    "where": [
     "game/online/Spectate.cpp",
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "plus d'objets récupérés que le niveau n'en a",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -58485,6 +58990,7 @@
   {
    "fr": "Publier",
    "where": [
+    "ui/screens/AdminTas.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp"
    ]
@@ -58541,6 +59047,12 @@
    "fr": "Publier la révision… (Ctrl+S)",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Publier toutes les améliorations ({0})",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -60796,6 +61308,7 @@
    "fr": "record",
    "where": [
     "game/progression/NewsCenter.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
@@ -62257,6 +62770,7 @@
     "game/online/DailyChallenges.cpp",
     "game/tas/TasFile.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/CommunityPublishScene.cpp"
    ]
   },
@@ -62273,6 +62787,12 @@
    ]
   },
   {
+   "fr": "replay attendu : {0}.cprz",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Replay choisi",
    "where": [
     "game/ghost/Ghost.cpp"
@@ -62286,15 +62806,46 @@
    ]
   },
   {
+   "fr": "replay d'un autre niveau",
+   "where": [
+    "game/tas/TasVerify.cpp",
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "replay d'un autre niveau.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
    ]
   },
   {
+   "fr": "replay d'un défi",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "replay d'une autre empreinte du niveau",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "replay d'une autre version de la simulation",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
    "fr": "replay d'une autre version du niveau",
    "where": [
     "game/tas/TasFile.cpp"
+   ]
+  },
+  {
+   "fr": "replay d'une équipe",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -62320,6 +62871,12 @@
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "replay différent de celui du serveur",
+   "where": [
+    "game/tas/TasOnline.cpp"
    ]
   },
   {
@@ -62362,6 +62919,13 @@
     "ui/screens/RaceScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "replay illisible : {0}",
+   "where": [
+    "game/tas/TasOnline.cpp",
+    "server/src/tas.ts"
    ]
   },
   {
@@ -62513,6 +63077,12 @@
    ]
   },
   {
+   "fr": "replay sans les touches des emplacements",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Replay sans niveau.",
    "where": [
     "game/ghost/ReplayLibrary.cpp"
@@ -62531,9 +63101,16 @@
    ]
   },
   {
+   "fr": "replay trop long",
+   "where": [
+    "game/tas/TasVerify.cpp"
+   ]
+  },
+  {
    "fr": "Replay trop volumineux.",
    "where": [
-    "game/ghost/ReplayLibrary.cpp"
+    "game/ghost/ReplayLibrary.cpp",
+    "server/src/tas.ts"
    ]
   },
   {
@@ -62939,6 +63516,7 @@
     "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminGifts.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -63876,6 +64454,24 @@
    ]
   },
   {
+   "fr": "route invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "route trop longue",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "routeIntervalMs invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Royaume-Uni",
    "where": [
     "data/online/countries.json",
@@ -63989,6 +64585,7 @@
     "game/online/Spectate.cpp",
     "game/records/PlayStats.cpp",
     "game/records/PlayStatsViews.cpp",
+    "game/tas/TasOnline.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/StatisticsLevels.cpp"
    ]
@@ -65042,6 +65639,18 @@
    "fr": "RÉSEAU · Liaison rétablie : retour dans l'instance",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réservation du verrou…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "Réservation…",
+   "where": [
+    "game/tas/TasTraining.cpp"
    ]
   },
   {
@@ -66113,7 +66722,8 @@
   {
    "fr": "Sans limite",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -67759,7 +68369,8 @@
   {
    "fr": "sessions",
    "where": [
-    "game/online/OnlineService.cpp"
+    "game/online/OnlineService.cpp",
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -68183,6 +68794,12 @@
    "fr": "simultané",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "simVersion invalide",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -69422,6 +70039,18 @@
    "where": [
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "splits : liste de 512 points de passage au plus",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "splits[{0}] invalide",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -71664,6 +72293,7 @@
   {
    "fr": "TAS",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -72761,6 +73391,7 @@
    "fr": "Terminé",
    "where": [
     "game/online/Raids.cpp",
+    "game/tas/TasTraining.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -73380,6 +74011,12 @@
    ]
   },
   {
+   "fr": "Threads par entraînement",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Thème principal",
    "where": [
     "data/music/tracks.json"
@@ -73420,6 +74057,12 @@
    "fr": "tige",
    "where": [
     "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "timeMs invalide",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -73929,6 +74572,12 @@
    ]
   },
   {
+   "fr": "tool invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Top N",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -74010,6 +74659,12 @@
    "fr": "Total cumulé, jour par jour · {0} étoiles (+{1} sur la période)",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "totalCollectibles différent du niveau",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -74400,6 +75055,12 @@
    ]
   },
   {
+   "fr": "Tout arrêter",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Tout cocher",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -74434,6 +75095,12 @@
    "fr": "Tout en or",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Tout entraîner ({0})",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -74593,6 +75260,7 @@
   {
    "fr": "Toutes",
    "where": [
+    "ui/screens/AdminTas.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
@@ -74601,6 +75269,12 @@
    "fr": "Toutes les actions",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les catégories",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -76005,6 +76679,12 @@
    ]
   },
   {
+   "fr": "un autre administrateur",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "Un autre groupe doit accomplir celui-ci : votre groupe a déjà fait l'autre.",
    "where": [
     "game/raid/RaidRun.cpp"
@@ -77014,6 +77694,12 @@
    ]
   },
   {
+   "fr": "Une autre course vient d'être publiée pour ce niveau : rechargez la liste.",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Une autre révision vient d'être publiée : rouvrez le niveau.",
    "where": [
     "server/src/campaignRevisions.ts"
@@ -77180,6 +77866,18 @@
    "fr": "Une couronne de lauriers dorée.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Une course d'une version plus récente de la simulation est déjà publiée.",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "Une course d'une version plus récente de la simulation est publiée : mettez le jeu à jour.",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -79104,6 +79802,12 @@
    ]
   },
   {
+   "fr": "verrou perdu : {0}",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "Verrouillage des inscriptions",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -79776,6 +80480,12 @@
    "fr": "Vide cette image (à redessiner ou « Compléter avec Nova »).",
    "where": [
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Vider la file",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -81874,6 +82584,12 @@
    ]
   },
   {
+   "fr": "v{0} · {1}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Végétation au sommet",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -81938,6 +82654,12 @@
    "fr": "Vérification impossible pour l'instant",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "vérification interrompue",
+   "where": [
+    "game/tas/TasVerify.cpp"
    ]
   },
   {
@@ -83857,6 +84579,12 @@
    ]
   },
   {
+   "fr": "{0} amélioration(s)",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "{0} assets",
    "where": [
     "ui/screens/AdminAssets.cpp"
@@ -84243,6 +84971,12 @@
    ]
   },
   {
+   "fr": "{0} course(s) publiée(s), {1} refusée(s).",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "{0} créé sur Cosmic Online · récompense de ce défi",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -84294,6 +85028,12 @@
     "ui/screens/GameScene.cpp",
     "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœurs · {1} en cours · {2} en file",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -84682,6 +85422,7 @@
   {
    "fr": "{0} essais",
    "where": [
+    "ui/screens/AdminTas.cpp",
     "ui/screens/TrainingSession.cpp"
    ]
   },
@@ -84996,6 +85737,7 @@
     "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/progression/Progression.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
@@ -85117,6 +85859,12 @@
    "fr": "{0} introuvable ou illisible",
    "where": [
     "game/content/BossStories.cpp"
+   ]
+  },
+  {
+   "fr": "{0} invalide",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -85532,6 +86280,7 @@
     "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/progression/Progression.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/OnlineMigration.cpp",
@@ -85554,6 +86303,7 @@
    "fr": "{0} min {1} s",
    "where": [
     "game/online/Raids.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/FilmCatalog.cpp"
    ]
@@ -85974,6 +86724,12 @@
    "fr": "{0} ou Retour",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} paire(s) ajoutée(s) à la file d'entraînement.",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -87305,6 +88061,12 @@
    ]
   },
   {
+   "fr": "{0} · {1} : en entraînement par {2}, passé.",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "{0} · {1} : {2} groupe sur {3}, un renfort est attendu",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
@@ -88490,6 +89252,12 @@
    ]
   },
   {
+   "fr": "À recalculer (niveau modifié)",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "À rencontrer d'abord dans son niveau",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -88957,6 +89725,12 @@
    ]
   },
   {
+   "fr": "Échec",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "Échec de l'enregistrement",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
@@ -88973,6 +89747,12 @@
    "fr": "Échec de l'enregistrement des parties",
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Échec de l'entraînement",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -89636,7 +90416,8 @@
    "fr": "écriture impossible",
    "where": [
     "game/online/CampaignRevisions.cpp",
-    "game/online/EnemyRevisions.cpp"
+    "game/online/EnemyRevisions.cpp",
+    "game/tas/TasOnline.cpp"
    ]
   },
   {
@@ -90260,6 +91041,7 @@
    "fr": "État",
    "where": [
     "ui/screens/AdminBackups.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/RaidEventScene.cpp"
    ]

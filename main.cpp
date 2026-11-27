@@ -1078,6 +1078,8 @@ int main(int argc, char** argv) {
     game.progression.save();
     game.records.save();
     game.presenceOffline();  // friends see « hors ligne » at once (else after 150 s)
+    // ADMINISTRATION › TAS: every training stopped, every lease given back (others see the pairs free at once).
+    game.tasTraining.shutdown();
     game.online.shutdown();
     app.shutdown();
     if (i18n::auditing()) Log::info("Vérification des langues : {} texte(s) relevé(s)", i18n::auditFindings().size());

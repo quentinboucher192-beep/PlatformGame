@@ -10,6 +10,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/levels/LevelData.h"
 #include "game/online/OnlineRecord.h"
+#include "game/tas/TasVerify.h"
 #include "tools/tas/Search.h"
 
 namespace cosmic::tas {
@@ -91,7 +92,9 @@ Verified recordAndVerify(const ContentDatabase& content, const LevelData& level,
         return v;
     }
 
-    // 2. The replay as it is written, played again by the normal replay playback.
+    // 2. The replay as it is written, played again by the normal replay playback; 3. the
+    // category, by the rules of the records (game/tas/TasVerify.h, as every game checks a run
+    // downloaded from Cosmic Online).
     const std::vector<uint8_t> bytes = replay.encode();
     std::string err;
     auto back = ReplayData::decode(bytes, &err);
@@ -99,47 +102,6 @@ Verified recordAndVerify(const ContentDatabase& content, const LevelData& level,
         v.why = "replay illisible : " + err;
         return v;
     }
-    PlainWorld again(content, level, back->keysPerSlot);
-    ReplaySimulator sim(*back, *again.world);
-    while (sim.step()) {
-    }
-    if (sim.desynced()) {
-        v.why = "le replay se désynchronise au pas " + std::to_string(sim.desyncTick());
-        return v;
-    }
-    const GameWorld& g = *again.world;
-    if (!sim.finished() || g.state() != WorldState::Completed) {
-        v.why = "le replay ne termine pas le niveau";
-        return v;
-    }
-    if (ms(g.timer().elapsed()) != timeMs || back->durationMs != static_cast<uint32_t>(timeMs)) {
-        v.why = "le replay ne donne pas le temps annoncé";
-        return v;
-    }
-    // 3. The category, by the rules of the records.
-    RunCandidate run;
-    run.levelId = level.id;
-    run.levelVersion = fp.version;
-    run.levelHash = fp.hash;
-    run.timeMs = timeMs;
-    run.deaths = g.stats().deaths;
-    run.damageTaken = g.stats().damageTaken;
-    run.collectibles = g.stats().collectibles();
-    run.totalCollectibles = g.stats().totalCollectibles();
-    run.kills = g.stats().kills;
-    run.fromStart = true;
-    run.hasReplay = true;
-    bool eligible = false;
-    for (RunCategory c : eligibleCategories(run)) eligible = eligible || c == category;
-    if (!eligible) {
-        v.why = std::string("la course ne remplit pas la catégorie ") + categoryLabel(category);
-        return v;
-    }
-    if (g.stats().deaths != stats.deaths || g.stats().damageTaken != stats.damageTaken || g.stats().collectibles() != stats.collectibles()) {
-        v.why = "le replay ne refait pas la même course";
-        return v;
-    }
-
     TasRecord& r = v.record;
     r.levelId = level.id;
     r.levelVersion = fp.version;
@@ -152,11 +114,16 @@ Verified recordAndVerify(const ContentDatabase& content, const LevelData& level,
     r.computedAt = FileUtil::nowString().substr(0, 10);
     r.tool = toolVersion();
     r.route = std::move(route);
-    r.deaths = run.deaths;
-    r.damageTaken = run.damageTaken;
-    r.collectibles = run.collectibles;
-    r.totalCollectibles = run.totalCollectibles;
+    r.deaths = stats.deaths;
+    r.damageTaken = stats.damageTaken;
+    r.collectibles = stats.collectibles();
+    r.totalCollectibles = stats.totalCollectibles();
     r.replay = tasReplayFileName(category);
+    const TasCheck check = verifyTasReplay(content, level, r, *back);
+    if (!check.ok) {
+        v.why = check.why;
+        return v;
+    }
     v.replay = std::move(*back);
     v.bytes = bytes;
     v.ok = true;

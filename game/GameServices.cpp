@@ -206,10 +206,27 @@ void GameServices::startCampaignRevisions(bool fetch) {
     campaignFetch_ = fetch;
     campaignTimer_ = 0.0f;
     if (fetch) refreshCampaignRevisions();
+    // The machine's runs published online and verified here before: visible at once, offline too.
+    tasOnline.start(Paths::savesDir() / "tas_online", fetch);
+    tasTraining.loadSettings();
+    tasTraining.seedFor = [this](const TasPair& p) { return tasSeedFor(p); };
+    tasTraining.hashFor = [this](const std::string& levelId) {
+        const LevelFingerprint* fp = online.fingerprints().get(content, levelId);
+        return fp ? fp->hash : std::string();
+    };
+}
+
+fs::path GameServices::tasSeedFor(const TasPair& p) {
+    const LevelFingerprint* fp = online.fingerprints().get(content, p.levelId);
+    if (!fp) return {};
+    auto best = bestTasAmong(p.levelId, p.category, fp->hash, {TasTraining::localRoot(), tasRoot(), tasDownloadedRoot()});
+    return best ? tasReplayPath(*best) : fs::path();
 }
 
 void GameServices::updateCampaignRevisions(float dt) {
     if (campaignApplyPending_ && news.scanned()) applyCampaignRevisions();
+    tasOnline.update(dt);
+    tasTraining.update(dt);
     if (!campaignFetch_ || campaignRefreshing_ || !online.usable()) return;
     campaignTimer_ += dt;
     if (campaignTimer_ >= 30.0f * 60.0f) refreshCampaignRevisions();

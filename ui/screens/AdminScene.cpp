@@ -51,6 +51,7 @@
 #include "ui/screens/AdminCreations.h"
 #include "ui/screens/AdminEnemies.h"
 #include "ui/screens/AdminGifts.h"
+#include "ui/screens/AdminTas.h"
 #include "ui/screens/GiftArt.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
@@ -117,9 +118,10 @@ const char* kFilters[] = {"all", "admins", "online"};
 const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "clan", "raid", "gift", "refused"};
 
 /// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.44), Créations (2.45), Ennemis (2.46),
-/// Clans (2.66), Assets (2.63), Raids (the world events of the clan raids, phase 1), Films (2.81), Cadeaux (rewards given to players).
+/// Clans (2.66), Assets (2.63), Raids (the world events of the clan raids, phase 1), Films (2.81), Cadeaux (rewards given to players),
+/// TAS (the machine's runs improved on this computer, AdminTas.cpp).
 constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5, kTabEnemies = 6,
-              kTabClans = 7, kTabAssets = 8, kTabRaids = 9, kTabFilms = 10, kTabGifts = 11;
+              kTabClans = 7, kTabAssets = 8, kTabRaids = 9, kTabFilms = 10, kTabGifts = 11, kTabTas = 12;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -147,7 +149,9 @@ public:
           assets_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const std::string& id) { showEnemy(id); }),
           raids_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           films_(g, false),
-          gifts_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+          gifts_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          tas_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+        if (open.rfind("tas", 0) == 0) tab_ = kTabTas;
         if (open.rfind("gifts", 0) == 0) tab_ = kTabGifts;
         if (open.rfind("raids", 0) == 0) tab_ = kTabRaids;
         if (open.rfind("films", 0) == 0) tab_ = kTabFilms;  // 2.81 (the way back from the tutorial's replay)
@@ -242,7 +246,7 @@ public:
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
         static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis",
-                                                       "Clans", "Assets", "Raids", "Films", "Cadeaux"};
+                                                       "Clans", "Assets", "Raids", "Films", "Cadeaux", "TAS"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -314,6 +318,7 @@ public:
             }
             if (tab_ == kTabFilms && ui.featureSeen && ui.isNew("admin.tab.films")) ui.featureSeen("admin.tab.films");
             if (tab_ == kTabGifts) gifts_.enter();
+            if (tab_ == kTabTas) tas_.enter();
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
         if (tab_ == kTabCalendar) {
@@ -332,6 +337,7 @@ public:
             else if (tab_ == kTabRaids) raids_.draw(inner);
             else if (tab_ == kTabFilms) films_.draw(inner);  // 2.81
             else if (tab_ == kTabGifts) gifts_.draw(inner);
+            else if (tab_ == kTabTas) tas_.draw(inner);
             else drawLog(inner);
         }
         drawStatus();
@@ -390,6 +396,7 @@ private:
         if (tab_ == kTabAssets) assets_.enter();
         if (tab_ == kTabRaids) raids_.enter(true);
         if (tab_ == kTabGifts) gifts_.enter(true);
+        if (tab_ == kTabTas) tas_.enter(true);
     }
 
     /// ADMINISTRATION › Assets › « Fiche » of a native enemy: its page in « Ennemis ».
@@ -1165,6 +1172,17 @@ private:
                         "a retiré " + std::to_string(c) + (c > 1 ? " cadeaux non ouverts (" : " cadeau non ouvert (") + what + ")"};
             }
         }
+        // ADMINISTRATION › TAS: a machine's run published (improved on an administrator's computer).
+        if (const Json tas = jfield(e, "tas", Json()); tas.is_object() && action == "admin_tas_published") {
+            const std::string levelId = jstr(tas, "level_id");
+            const LevelEntry* level = g_.content.level(levelId);
+            RunCategory cat = RunCategory::AnyPercent;
+            const std::string catText = categoryFromId(jstr(tas, "category"), cat) ? std::string(categoryLabel(cat)) : jstr(tas, "category");
+            const int64_t prev = jget<int64_t>(tas, "previous_ms", 0);
+            return {"TAS", ui.theme().success,
+                    "a publié la course de la machine de " + (level && !level->name.empty() ? level->name : levelId) + " (" + catText + ") : " +
+                        formatRunTime(jget<int64_t>(tas, "time_ms", 0)) + (prev > 0 ? " (avant : " + formatRunTime(prev) + ")" : std::string())};
+        }
         // ADMINISTRATION › Raids: a world event created, edited, published or cancelled.
         if (const Json raid = jfield(e, "raid", Json()); raid.is_object()) {
             std::string what = "l'événement mondial " + jstr(raid, "name", "Asterion");
@@ -1539,6 +1557,7 @@ private:
     AdminRaids raids_;      // « Raids » (clan raids, phase 1)
     FilmList films_;  // 2.81: ADMINISTRATION › Films
     AdminGifts gifts_;  // « Cadeaux »: rewards given to players
+    AdminTas tas_;      // « TAS »: the machine's runs improved on this computer
     cframe::Backdrop bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

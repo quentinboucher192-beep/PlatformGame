@@ -78,6 +78,10 @@ struct TasRecord {
     int collectibles = 0;
     int totalCollectibles = 0;
     std::string replay;  // file name of the replay, in the folder of the JSON
+    /// Not in the JSON: the folder of the files the record was read from by tasFor() (data/tas,
+    /// or the runs downloaded from Cosmic Online and verified on this computer, TasOnline.h).
+    /// tasReplayPath() and loadTasReplay() find its replay there; empty: the `root` they are given.
+    fs::path sourceRoot;
 
     Json toJson() const;
     /// Nullopt (and why, in `error`) for anything that is not a complete, coherent record:
@@ -91,7 +95,7 @@ fs::path tasRoot();
 fs::path tasFilePath(const std::string& levelId, RunCategory c, const fs::path& root = tasRoot());
 /// The replay's usual file name: "<CATEGORY_ID>.cprz".
 std::string tasReplayFileName(RunCategory c);
-/// Where the replay of `r` is (next to its JSON in <root>/<levelId>/).
+/// Where the replay of `r` is (next to its JSON in <root>/<levelId>/; in r.sourceRoot when set).
 fs::path tasReplayPath(const TasRecord& r, const fs::path& root = tasRoot());
 
 std::optional<TasRecord> readTasFile(const fs::path& file, std::string* error = nullptr);
@@ -102,8 +106,17 @@ bool writeTasFile(const fs::path& file, const TasRecord& r);
 /// and reads, it is for that level and category, its levelHash is `levelHash` (the level's
 /// ranked fingerprint now) and its simVersion is kSimulationVersion, and its replay file is
 /// there. Otherwise nothing: hidden until it is computed again.
+/// With the default `root` (data/tas), the runs downloaded from Cosmic Online and verified on
+/// this computer (tasDownloadedRoot()) count too: the fastest valid run of the two is returned.
 std::optional<TasRecord> tasFor(const std::string& levelId, RunCategory c, const std::string& levelHash,
                                 const fs::path& root = tasRoot());
+/// The fastest valid run (the rule of tasFor) among the folders `roots` (the first one wins a tie).
+std::optional<TasRecord> bestTasAmong(const std::string& levelId, RunCategory c, const std::string& levelHash,
+                                      const std::vector<fs::path>& roots);
+/// The folder of the runs published on Cosmic Online, downloaded and verified on this computer
+/// (game/tas/TasOnline.h: the game sets it at startup); empty: none.
+void setTasDownloadedRoot(const fs::path& root);
+fs::path tasDownloadedRoot();
 /// The same, the fingerprint taken from `fingerprints` (the rankings' cache: only the levels
 /// shipped with the game have one, so a level of the workshop never has a machine's run).
 std::optional<TasRecord> tasFor(const ContentDatabase& content, LevelFingerprints& fingerprints, const std::string& levelId,
