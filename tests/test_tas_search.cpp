@@ -136,6 +136,9 @@ TEST_CASE("tas search: a section searched after a divergence is offered the best
     o.seed = 3;
     o.seedRun = S.best;
     o.refine = false;
+    // The best run's frames alone: they reach section 3's end in about 73 generations, just within
+    // its share of 25 s; the planner's work (its own test: test_tas_planner.cpp) costs more than that.
+    o.planner = false;
     // A run that has left the best run in section 3.
     o.startRun.assign(S.best.begin(), S.best.begin() + static_cast<std::ptrdiff_t>(ends[1]));
     for (int i = 0; i < 3; ++i) {
