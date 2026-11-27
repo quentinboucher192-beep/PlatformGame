@@ -137,28 +137,106 @@ std::vector<Vec2> monotonePath(const std::vector<Vec2>& p, int per) {
 
 // ------------------------------------------------------------------ tooltip
 
-void drawTip(UIContext& ui, const Tip& t) {
-    if (!t.show) return;
-    const float pad = ui.s(10), tf = fz(ui, 12), rf = fz(ui, 13);
-    const float th = t.title.empty() ? 0.0f : lineH(ui, FontFace::Body, tf) + ui.s(3);
-    const float rh = lineH(ui, FontFace::Body, rf) + ui.s(3);
-    const float sw = ui.s(8), swGap = ui.s(7);
+namespace {
+
+/// The part of `r` the clip in force lets show (the page's scroll region): empty when scrolled out of sight.
+Rect visiblePart(UIContext& ui, const Rect& r) {
+    SDL_Renderer* sr = ui.r().sdl();
+    if (!sr || !SDL_RenderClipEnabled(sr)) return r;
+    SDL_Rect c{};
+    if (!SDL_GetRenderClipRect(sr, &c)) return r;
+    return r.intersection({static_cast<float>(c.x), static_cast<float>(c.y), static_cast<float>(c.w), static_cast<float>(c.h)});
+}
+
+/// The tooltip's measures: the width of its text, its title's and rows' line heights.
+struct TipMetrics {
+    float pad, tf, rf, th, rh, sw, swGap, w, bw, bh;
+};
+TipMetrics tipMetrics(UIContext& ui, const Tip& t) {
+    TipMetrics k{};
+    k.pad = ui.s(10);
+    k.tf = fz(ui, 12);
+    k.rf = fz(ui, 13);
+    k.th = t.title.empty() ? 0.0f : lineH(ui, FontFace::Body, k.tf) + ui.s(3);
+    k.rh = lineH(ui, FontFace::Body, k.rf) + ui.s(3);
+    k.sw = ui.s(8);
+    k.swGap = ui.s(7);
     // The widest row (its swatch, its label, a gap, its value) sets the width.
-    float w = t.title.empty() ? 0.0f : textW(ui, t.title, FontFace::Body, tf);
+    float w = t.title.empty() ? 0.0f : textW(ui, t.title, FontFace::Body, k.tf);
     for (const auto& r : t.rows) {
-        float rw = (r.swatch.a ? sw + swGap : 0.0f) + textW(ui, r.label, FontFace::Body, rf) + (r.value.empty() ? 0.0f : ui.s(14) + textW(ui, r.value, FontFace::Bold, rf));
+        float rw = (r.swatch.a ? k.sw + k.swGap : 0.0f) + textW(ui, r.label, FontFace::Body, k.rf) +
+                   (r.value.empty() ? 0.0f : ui.s(14) + textW(ui, r.value, FontFace::Bold, k.rf));
         w = std::max(w, rw);
     }
     const float maxW = ui.screenW() * 0.45f;
-    w = std::min(w + ui.s(2), maxW);  // a little slack: the measured widths are rounded
-    const float bw = w + 2 * pad, bh = 2 * pad + th + rh * static_cast<float>(t.rows.size());
+    k.w = std::min(w + ui.s(2), maxW);  // a little slack: the measured widths are rounded
+    k.bw = k.w + 2 * k.pad;
+    k.bh = 2 * k.pad + k.th + k.rh * static_cast<float>(t.rows.size());
+    return k;
+}
+
+}  // namespace
+
+Pointing pointing(UIContext& ui, const std::string& id, const Rect& r) {
+    bool hovered = false;
+    ui.hotspot(id, r, &hovered);
+    Pointing p;
+    if (!ui.acceptsInput()) return p;  // under a dialog: nothing
+    p.mouse = hovered && ui.usingPointer();
+    p.keys = !ui.usingPointer() && ui.focused(id);
+    return p;
+}
+
+bool showTip(UIContext& ui, Tip& tip, Vec2 anchor, const Rect& item) {
+    const Rect shown = visiblePart(ui, item);
+    if (shown.empty()) return false;
+    tip = Tip{};
+    tip.show = true;
+    tip.item = shown;
+    tip.anchor = {std::clamp(anchor.x, shown.x, shown.right()), std::clamp(anchor.y, shown.y, shown.bottom())};
+    return true;
+}
+
+Rect tipBox(UIContext& ui, const Tip& t) {
+    if (!t.show) return {};
+    const TipMetrics k = tipMetrics(ui, t);
+    const float bw = k.bw, bh = k.bh, mg = ui.s(8), gap = ui.s(10);
+    const Rect screen{0.0f, 0.0f, ui.screenW(), ui.screenH()};
+    const Rect b = t.bounds.empty() ? screen : t.bounds.intersection(screen);
+    const Rect lim{b.x + mg, b.y + mg, std::max(0.0f, b.w - 2 * mg), std::max(0.0f, b.h - 2 * mg)};
+    const Rect item = t.item.empty() ? Rect{t.anchor.x, t.anchor.y, 0.0f, 0.0f} : t.item;
+    auto clampX = [&](float x) { return std::clamp(x, lim.x, std::max(lim.x, lim.right() - bw)); };
+    auto clampY = [&](float y) { return std::clamp(y, lim.y, std::max(lim.y, lim.bottom() - bh)); };
+    // Its left from the anchor (at its right, else at its left), inside.
     float x = t.anchor.x + ui.s(14);
-    if (x + bw > ui.screenW() - ui.s(8)) x = t.anchor.x - ui.s(14) - bw;
-    x = std::clamp(x, ui.s(8), std::max(ui.s(8), ui.screenW() - ui.s(8) - bw));
-    float y = t.anchor.y - bh - ui.s(10);
-    if (y < ui.s(8)) y = t.anchor.y + ui.s(16);
-    y = std::clamp(y, ui.s(8), std::max(ui.s(8), ui.screenH() - ui.s(8) - bh));
-    Rect box{x, y, bw, bh};
+    if (x + bw > lim.right()) x = t.anchor.x - ui.s(14) - bw;
+    x = clampX(x);
+    // Above the item, else under it.
+    const float above = item.y - gap - bh, below = t.item.empty() ? t.anchor.y + ui.s(16) : item.bottom() + gap;
+    if (above >= lim.y) return {x, above, bw, bh};
+    if (below + bh <= lim.bottom()) return {x, below, bw, bh};
+    // Beside it (at its right, else at its left), at the anchor's height.
+    const float y = clampY(t.anchor.y - bh * 0.5f);
+    if (item.right() + gap + bw <= lim.right()) return {item.right() + gap, y, bw, bh};
+    if (item.x - gap - bw >= lim.x) return {item.x - gap - bw, y, bw, bh};
+    // No room around it (a box taller than the room left): where it covers the least of it.
+    const Rect cand[4] = {{x, clampY(above), bw, bh}, {x, clampY(below), bw, bh}, {clampX(item.right() + gap), y, bw, bh}, {clampX(item.x - gap - bw), y, bw, bh}};
+    Rect best = cand[0];
+    float least = 1e30f;
+    for (const Rect& c : cand) {
+        const Rect o = c.intersection(item);
+        const float a = o.w * o.h;
+        if (a < least) least = a, best = c;
+    }
+    return best;
+}
+
+Rect drawTip(UIContext& ui, const Tip& t) {
+    if (!t.show) return {};
+    const TipMetrics k = tipMetrics(ui, t);
+    const float pad = k.pad, tf = k.tf, rf = k.rf, th = k.th, rh = k.rh, sw = k.sw, swGap = k.swGap, w = k.w;
+    const Rect box = tipBox(ui, t);
+    const float x = box.x, y = box.y;
     ui.r().fillRoundedRect(box, ui.s(10), Color{11, 17, 32, 244});
     ui.r().drawRoundedRect(box, ui.s(10), Color{39, 50, 77, 255}, std::max(1.0f, ui.s(1.0f)));
     float cy = y + pad;
@@ -179,6 +257,7 @@ void drawTip(UIContext& ui, const Tip& t) {
         if (!r.value.empty()) ui.label(r.value, {x + pad + w, mid}, rf, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
         cy += rh;
     }
+    return box;
 }
 
 // ------------------------------------------------------------------ curves
@@ -189,9 +268,7 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
         for (const auto& p : se.pts) xs.push_back(p.x);
     std::sort(xs.begin(), xs.end());
     xs.erase(std::unique(xs.begin(), xs.end()), xs.end());
-    bool hovered = false;
-    ui.hotspot(id, r, &hovered);
-    const bool focused = ui.focused(id);
+    const Pointing pt = pointing(ui, id, r);
     if (xs.empty()) return;
     const float af = fz(ui, 13), lf = fz(ui, 13);
     const float lh = lineH(ui, FontFace::Body, af);
@@ -361,14 +438,12 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
             ui.label(endText(*l.se), {l.box.x, l.box.y}, lf, kText2, Align::Left, FontFace::Bold, VAlign::Top);
         }
     }
-    // The cursor: the mouse, or ← → when the chart has the focus.
-    if (focused) {
-        moveCursor(ui, cursor, static_cast<int>(xs.size()));
-        focusFrame(ui, r);
-    }
+    // The cursor: the mouse over the chart, or ← → when it has the focus (keyboard, gamepad).
+    if (pt.keys) moveCursor(ui, cursor, static_cast<int>(xs.size()));
+    if (pt.any()) focusFrame(ui, r);
     int at = -1;
     const Vec2 m = ui.input().mousePos();
-    if (hovered && m.x >= plot.x - ui.s(12) && m.x <= plot.right() + ui.s(12)) {
+    if (pt.mouse && m.x >= plot.x - ui.s(12) && m.x <= plot.right() + ui.s(12)) {
         float bestD = 1e9f;
         for (size_t i = 0; i < xs.size(); ++i)
             if (float d = std::abs(X(xs[i]) - m.x); d < bestD) {
@@ -376,14 +451,14 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
                 at = static_cast<int>(i);
             }
         cursor = at;
-    } else if (focused) {
+    } else if (pt.keys) {
         at = std::clamp(cursor, 0, static_cast<int>(xs.size()) - 1);
     }
     if (at < 0 || !s.tip) return;
     const float xv = xs[static_cast<size_t>(at)];
     const float px = X(xv);
     dashedV(ui, px, plot.y, plot.bottom(), kText2.withAlpha(150));
-    float topY = plot.bottom();
+    float topY = plot.bottom(), lowY = plot.y;
     for (const auto& se : s.series) {
         if (se.kind == Series::Kind::Dots) continue;
         const Vec2* hit = nullptr;
@@ -396,11 +471,12 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
         ui.r().fillCircle(c, ui.s(5), kSurface);
         ui.r().fillCircle(c, ui.s(3.6f), se.color);
         topY = std::min(topY, c.y);
+        lowY = std::max(lowY, c.y);
     }
-    tip = Tip{};
-    tip.show = true;
-    tip.anchor = {px, topY};
-    s.tip(xv, tip);
+    // The cursor's points: the box keeps clear of them.
+    if (lowY < topY) lowY = topY;
+    const Rect item{px - ui.s(7), topY - ui.s(7), ui.s(14), lowY - topY + ui.s(14)};
+    if (showTip(ui, tip, {px, topY}, item)) s.tip(xv, tip);
 }
 
 // ------------------------------------------------------------------ bars
@@ -408,9 +484,7 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
 float hBarsHeight(const UIContext& ui, size_t n) { return ui.s(30) * static_cast<float>(n); }
 
 void hBars(UIContext& ui, const std::string& id, const Rect& r, const std::vector<Bar>& bars, float maxValue, int& cursor, Tip& tip) {
-    bool hovered = false;
-    ui.hotspot(id, r, &hovered);
-    const bool focused = ui.focused(id);
+    const Pointing pt = pointing(ui, id, r);
     if (bars.empty()) return;
     const float f = fz(ui, 14), rowH = ui.s(30);
     float lw = 0.0f, vw = 0.0f;
@@ -433,30 +507,24 @@ void hBars(UIContext& ui, const std::string& id, const Rect& r, const std::vecto
         }
         ui.label(b.valueText, {r.right(), mid}, f, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
     }
-    if (focused) {
-        moveCursor(ui, cursor, static_cast<int>(bars.size()));
-        focusFrame(ui, r);
-    }
+    if (pt.keys) moveCursor(ui, cursor, static_cast<int>(bars.size()));
+    if (pt.any()) focusFrame(ui, r);
     int at = -1;
     const Vec2 m = ui.input().mousePos();
-    if (hovered) at = std::clamp(static_cast<int>((m.y - r.y) / rowH), 0, static_cast<int>(bars.size()) - 1), cursor = at;
-    else if (focused) at = std::clamp(cursor, 0, static_cast<int>(bars.size()) - 1);
+    if (pt.mouse) at = std::clamp(static_cast<int>((m.y - r.y) / rowH), 0, static_cast<int>(bars.size()) - 1), cursor = at;
+    else if (pt.keys) at = std::clamp(cursor, 0, static_cast<int>(bars.size()) - 1);
     if (at < 0) return;
     const Bar& b = bars[static_cast<size_t>(at)];
     Rect row{r.x - ui.s(4), r.y + rowH * static_cast<float>(at), r.w + ui.s(8), rowH};
     ui.r().drawRoundedRect(row, ui.s(6), kText2.withAlpha(90), 1.0f);
-    tip = Tip{};
-    tip.show = true;
-    tip.anchor = {hovered ? m.x : x0 + (x1 - x0) * std::clamp(b.value / max, 0.0f, 1.0f), row.y};
+    if (!showTip(ui, tip, {pt.mouse ? m.x : x0 + (x1 - x0) * std::clamp(b.value / max, 0.0f, 1.0f), row.y}, row)) return;
     tip.title = b.tipTitle.empty() ? b.label : b.tipTitle;
     tip.rows = b.tipRows;
 }
 
 void vBars(UIContext& ui, const std::string& id, const Rect& r, const std::vector<Bar>& bars, int& cursor, Tip& tip,
            const std::function<std::string(float)>& yLabel) {
-    bool hovered = false;
-    ui.hotspot(id, r, &hovered);
-    const bool focused = ui.focused(id);
+    const Pointing pt = pointing(ui, id, r);
     if (bars.empty()) return;
     const float af = fz(ui, 13), lh = lineH(ui, FontFace::Body, af);
     float vmax = 0.0f;
@@ -512,21 +580,20 @@ void vBars(UIContext& ui, const std::string& id, const Rect& r, const std::vecto
         }
     }
     ui.r().drawLine({plot.x, plot.bottom()}, {plot.right(), plot.bottom()}, kAxis, 1.0f);
-    if (focused) {
-        moveCursor(ui, cursor, static_cast<int>(bars.size()));
-        focusFrame(ui, r);
-    }
+    if (pt.keys) moveCursor(ui, cursor, static_cast<int>(bars.size()));
+    if (pt.any()) focusFrame(ui, r);
     int at = -1;
     const Vec2 m = ui.input().mousePos();
-    if (hovered && m.x >= plot.x) at = std::clamp(static_cast<int>((m.x - plot.x) / slot), 0, static_cast<int>(bars.size()) - 1), cursor = at;
-    else if (focused) at = std::clamp(cursor, 0, static_cast<int>(bars.size()) - 1);
+    if (pt.mouse && m.x >= plot.x) at = std::clamp(static_cast<int>((m.x - plot.x) / slot), 0, static_cast<int>(bars.size()) - 1), cursor = at;
+    else if (pt.keys) at = std::clamp(cursor, 0, static_cast<int>(bars.size()) - 1);
     if (at < 0) return;
     const Bar& b = bars[static_cast<size_t>(at)];
     Rect col{plot.x + slot * static_cast<float>(at), plot.y, slot, plot.h};
     ui.r().drawRoundedRect(col, ui.s(6), kText2.withAlpha(90), 1.0f);
-    tip = Tip{};
-    tip.show = true;
-    tip.anchor = {col.center().x, Y(b.value)};
+    // The column lit (its bar, the words above it): the box keeps clear of it.
+    const float itemTop = std::min(col.y, Y(b.value) - (tops ? th + ui.s(8) : 0.0f));
+    const Rect item{col.x, itemTop, col.w, col.bottom() - itemTop};
+    if (!showTip(ui, tip, {col.center().x, Y(b.value)}, item)) return;
     tip.title = b.tipTitle.empty() ? b.label : b.tipTitle;
     tip.rows = b.tipRows;
 }
@@ -541,9 +608,7 @@ Color heatColor(float t) {
 }
 
 void heatBand(UIContext& ui, const std::string& id, const Rect& r, const Heat& h, int& cursor, Tip& tip) {
-    bool hovered = false;
-    ui.hotspot(id, r, &hovered);
-    const bool focused = ui.focused(id);
+    const Pointing pt = pointing(ui, id, r);
     const float af = fz(ui, 13), lh = lineH(ui, FontFace::Body, af);
     const float bandH = ui.s(30);
     const float reliefTop = r.y + ui.s(4);
@@ -595,20 +660,16 @@ void heatBand(UIContext& ui, const std::string& id, const Rect& r, const Heat& h
         ui.label("Départ", {r.x, ly}, af, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Top);
         ui.label("Arrivée", {r.right(), ly}, af, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Top);
     }
-    if (focused) {
-        moveCursor(ui, cursor, Heat::kCells);
-        focusFrame(ui, r);
-    }
+    if (pt.keys) moveCursor(ui, cursor, Heat::kCells);
+    if (pt.any()) focusFrame(ui, r);
     int at = -1;
     const Vec2 m = ui.input().mousePos();
-    if (hovered && m.y <= band.bottom()) at = std::clamp(static_cast<int>((m.x - r.x) / cw), 0, Heat::kCells - 1), cursor = at;
-    else if (focused) at = std::clamp(cursor, 0, Heat::kCells - 1);
+    if (pt.mouse && m.y <= band.bottom()) at = std::clamp(static_cast<int>((m.x - r.x) / cw), 0, Heat::kCells - 1), cursor = at;
+    else if (pt.keys) at = std::clamp(cursor, 0, Heat::kCells - 1);
     if (at < 0) return;
     Rect c{r.x + cw * static_cast<float>(at), band.y - ui.s(2), cw, band.h + ui.s(4)};
     ui.r().drawRoundedRect(c, ui.s(3), ui.theme().text, std::max(1.0f, ui.s(1.5f)));
-    tip = Tip{};
-    tip.show = true;
-    tip.anchor = {c.center().x, band.y};
+    if (!showTip(ui, tip, {c.center().x, band.y}, c)) return;
     const int a = static_cast<int>(std::lround(at * 2.5f)), b = static_cast<int>(std::lround((at + 1) * 2.5f));
     tip.title = "Tranche " + std::to_string(a) + "–" + std::to_string(b) + " %";
     const size_t k = static_cast<size_t>(at);
@@ -711,9 +772,7 @@ float iconBarsHeight(const UIContext& ui, size_t n, const IconBarsStyle& st) { r
 
 void iconBars(UIContext& ui, const std::string& id, const Rect& r, const std::vector<IconBar>& bars, float maxValue, int& cursor, Tip& tip,
               const IconBarsStyle& st) {
-    bool hovered = false;
-    ui.hotspot(id, r, &hovered);
-    const bool focused = ui.focused(id);
+    const Pointing pt = pointing(ui, id, r);
     if (bars.empty()) return;
     const float rowH = ui.s(st.rowH), iw = ui.s(st.iconW), ih = std::min(ui.s(st.iconH), rowH - ui.s(4));
     const float nf = fz(ui, 15), vf = fz(ui, 17), cf = fz(ui, 13);
@@ -730,10 +789,10 @@ void iconBars(UIContext& ui, const std::string& id, const Rect& r, const std::ve
     const float max = maxValue > 0.0f ? maxValue : 1.0f;
     const float nh = lineH(ui, FontFace::Body, nf);
     int at = -1;
-    if (focused) moveCursor(ui, cursor, static_cast<int>(bars.size()));
+    if (pt.keys) moveCursor(ui, cursor, static_cast<int>(bars.size()));
     const Vec2 m = ui.input().mousePos();
-    if (hovered) at = std::clamp(static_cast<int>((m.y - r.y) / rowH), 0, static_cast<int>(bars.size()) - 1), cursor = at;
-    else if (focused) at = std::clamp(cursor, 0, static_cast<int>(bars.size()) - 1);
+    if (pt.mouse) at = std::clamp(static_cast<int>((m.y - r.y) / rowH), 0, static_cast<int>(bars.size()) - 1), cursor = at;
+    else if (pt.keys) at = std::clamp(cursor, 0, static_cast<int>(bars.size()) - 1);
     for (size_t i = 0; i < bars.size(); ++i) {
         const IconBar& b = bars[i];
         const Rect row{r.x, r.y + rowH * static_cast<float>(i), r.w, rowH};
@@ -763,20 +822,17 @@ void iconBars(UIContext& ui, const std::string& id, const Rect& r, const std::ve
         ui.label(b.valueText, {valueX, row.center().y}, vf, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
         if (!b.countText.empty()) ui.label(b.countText, {countX, row.center().y}, cf, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
     }
-    if (focused) focusFrame(ui, r);
+    if (pt.any()) focusFrame(ui, r);
     if (at < 0) return;
     const IconBar& b = bars[static_cast<size_t>(at)];
-    tip = Tip{};
-    tip.show = true;
-    tip.anchor = {hovered ? m.x : barL + (barR - barL) * std::clamp(b.value / max, 0.0f, 1.0f), r.y + rowH * static_cast<float>(at)};
+    const Rect row{r.x, r.y + rowH * static_cast<float>(at), r.w, rowH};
+    if (!showTip(ui, tip, {pt.mouse ? m.x : barL + (barR - barL) * std::clamp(b.value / max, 0.0f, 1.0f), row.y}, row.expanded(ui.s(3)))) return;
     tip.title = b.tipTitle.empty() ? b.label : b.tipTitle;
     tip.rows = b.tipRows;
 }
 
 void stackedBar(UIContext& ui, const std::string& id, const Rect& r, const std::vector<Part>& parts, int& cursor, Tip& tip) {
-    bool hovered = false;
-    ui.hotspot(id, r, &hovered);
-    const bool focused = ui.focused(id);
+    const Pointing pt = pointing(ui, id, r);
     float total = 0.0f;
     for (const auto& p : parts) total += std::max(0.0f, p.value);
     if (parts.empty() || total <= 0.0f) {
@@ -816,25 +872,21 @@ void stackedBar(UIContext& ui, const std::string& id, const Rect& r, const std::
         }
     }
     ui.r().popClip();
-    if (focused) {
-        moveCursor(ui, cursor, static_cast<int>(parts.size()));
-        focusFrame(ui, r);
-    }
+    if (pt.keys) moveCursor(ui, cursor, static_cast<int>(parts.size()));
+    if (pt.any()) focusFrame(ui, r);
     int at = -1;
     const Vec2 m = ui.input().mousePos();
-    if (hovered) {
+    if (pt.mouse) {
         for (size_t i = 0; i < cells.size(); ++i)
             if (m.x >= cells[i].x && m.x < cells[i].right() + 0.5f) at = static_cast<int>(i);
         if (at >= 0) cursor = at;
-    } else if (focused) {
+    } else if (pt.keys) {
         at = std::clamp(cursor, 0, static_cast<int>(parts.size()) - 1);
     }
     if (at < 0) return;
     const Rect& c = cells[static_cast<size_t>(at)];
     ui.r().drawRoundedRect(c.expanded(ui.s(2)), ui.s(5), ui.theme().text, std::max(1.0f, ui.s(1.5f)));
-    tip = Tip{};
-    tip.show = true;
-    tip.anchor = {c.center().x, c.y};
+    if (!showTip(ui, tip, {c.center().x, c.y}, c.expanded(ui.s(2)))) return;
     tip.title = parts[static_cast<size_t>(at)].tipTitle;
     tip.rows = parts[static_cast<size_t>(at)].tipRows;
 }

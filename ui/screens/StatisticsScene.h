@@ -73,6 +73,20 @@ public:
     static constexpr int kTabCount = 6;
     static constexpr int kTabOverview = 0, kTabCombat = 1, kTabBoss = 2, kTabLevels = 3, kTabHard = 4, kTabData = 5;
 
+    /// 2.92.1 (tests): what the last frame showed, in screen pixels.
+    struct Shown {
+        int tab = 0;
+        Rect view;    // the page's scroll region
+        Rect footer;  // the band of the hints at the bottom of the screen (what they really cover)
+        Rect page;    // what the page drew, as it shows (cut by its clips): never under the footer
+        Rect reach;   // where the page's shapes go, not cut by the view (scrolled to its end: inside it)
+        float content = 0.0f, offset = 0.0f;  // the page's height, its scroll
+        bool tip = false;
+        Rect tipBox, tipItem;  // the tooltip's box, the item it tells about
+        std::string tipTitle;
+    };
+    const Shown& shown() const { return shown_; }
+
 private:
     using Tip = charts::Tip;
 
@@ -141,6 +155,10 @@ private:
     float sectionTitle(float x, float y, float w, const std::string& title, const std::string& remark, const std::string& feature,
                        const std::string& badgeWidget);
     float drawEmpty(float x, float y, float w);
+    /// 2.92.1: the footer — how to move around at the left, what the charts answer at the right —,
+    /// drawn before the page and measured: returns its band (the width of the screen, from the top of
+    /// what its hints really cover to the bottom), the page ends above it.
+    Rect drawFooter();
 
     // ------------------------------------------------------------------ the tabs
     float drawOverview(float x, float y, float w);
@@ -184,6 +202,7 @@ private:
     int today_ = 0;
     float contentH_[kTabCount] = {};
     Tip tip_;
+    Shown shown_;
     std::map<std::string, bool> tables_;
     std::map<std::string, int> pages_, cursors_;
     /// The keyboard cursor of a chart: -1 until it moves (the chart then starts on its last point).
