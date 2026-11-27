@@ -28231,6 +28231,12 @@
    ]
   },
   {
+   "fr": "exploration",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "explored invalide",
    "where": [
     "server/src/tas.ts"
@@ -73514,6 +73520,12 @@
    ]
   },
   {
+   "fr": "TAS : l'entraînement s'appuie sur vos courses (votre PB guide la recherche, assemblage des meilleurs segments, tracé des courses d'une ancienne version), chaque course plus rapide est vérifiée et publiable en quelques secondes, et la courbe dit dans quel segment est chaque gain.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "TAS : les états sauvegardés de la recherche (cosmic_tas) sont vérifiés pas à pas et sans dépendre de la mémoire inutilisée, sous Windows comme sous Linux.",
    "where": [
     "data/news/changelog.json"
@@ -73523,6 +73535,18 @@
    "fr": "TAS : meilleur trouvé par la machine, hors classement",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "TAS : portefeuille de stratégies (exploration Go-Explore, polissage image par image, séparation et évaluation) qui donne le temps de calcul à ce qui gagne ; la courbe dit qui a trouvé chaque gain. Courbe : liste des sections dépliable, boutons « ▶ TAS » de la fiche toujours lisibles.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "TAS : un planificateur prévoit dashs, sauts longs, sauts muraux et sauts tamponnés selon les pouvoirs et l'énergie disponibles et propose ses plans à la recherche, qui les juge dans le vrai jeu.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

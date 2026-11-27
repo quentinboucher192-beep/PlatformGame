@@ -1,4 +1,9 @@
 {
+  "2.99.0": [
+    "TAS : l'entraînement s'appuie sur vos courses (votre PB guide la recherche, assemblage des meilleurs segments, tracé des courses d'une ancienne version), chaque course plus rapide est vérifiée et publiable en quelques secondes, et la courbe dit dans quel segment est chaque gain.",
+    "TAS : un planificateur prévoit dashs, sauts longs, sauts muraux et sauts tamponnés selon les pouvoirs et l'énergie disponibles et propose ses plans à la recherche, qui les juge dans le vrai jeu.",
+    "TAS : portefeuille de stratégies (exploration Go-Explore, polissage image par image, séparation et évaluation) qui donne le temps de calcul à ce qui gagne ; la courbe dit qui a trouvé chaque gain. Courbe : liste des sections dépliable, boutons « ▶ TAS » de la fiche toujours lisibles."
+  ],
   "2.98.0": [
     "TAS : chaque tour s'appuie sur la meilleure course — chaque section est guidée par elle et s'y raccorde, et dès le tour 2 l'entraînement creuse une fenêtre d'une ou deux sections au lieu de tout recommencer.",
     "Courbe d'entraînement TAS : nuages de tous les essais finis et des temps à chaque point de passage (onglets TOUT, CP1…), zoom profond sur les deux axes, tours étiquetés avec leur fenêtre et leur session."
