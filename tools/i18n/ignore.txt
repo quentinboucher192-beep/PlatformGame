@@ -379,3 +379,5 @@ threads
 training
 archive
 splits
+# 2.95: the raids' HUD element of the chat (its id in the settings), never shown
+chat

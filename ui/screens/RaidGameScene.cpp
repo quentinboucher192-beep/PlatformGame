@@ -48,6 +48,10 @@
 // changed from the pause); an invited player who accepted joins it (RaidTestJoin), catches up, then
 // plays on the seat of a simulated player. Every computer steps the same test (raid::stepRelayed: the
 // relay's frames and its places at each step, the simulated players computed alike); never reported.
+// 2.95 (docs/RAIDS.md §39): the raid's chat, as in Minecraft (ui/online/RaidChatUi, its place in the raids' HUD):
+// « Groupe » through the instance's relay, « Raid » through the event's room on the server; a local test keeps
+// it here (« TEST LOCAL — rien n'est envoyé ») with the simulated players' thoughts as lines « IA ». This player's
+// inputs are neutral while they type (raidmenu::Hold::chat); down or eliminated, they still read and write.
 
 #include <algorithm>
 #include <array>
@@ -61,6 +65,7 @@
 #include <set>
 #include <thread>
 
+#include "engine/core/I18n.h"
 #include "engine/input/InputScript.h"
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
@@ -72,6 +77,7 @@
 #include "game/online/Clans.h"
 #include "game/powers/PowerKeys.h"
 #include "game/raid/RaidCatalog.h"
+#include "game/raid/RaidChat.h"
 #include "game/raid/RaidRun.h"
 #include "game/raid/AsterionHeartRoutine.h"
 #include "ui/screens/AsterionFilm.h"
@@ -89,6 +95,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "saves/Settings.h"
 #include "ui/online/RaidBotsUi.h"
+#include "ui/online/RaidChatUi.h"
 #include "ui/online/RaidHud.h"
 #include "ui/online/ContribTable.h"
 #include "ui/online/RaidMenu.h"
@@ -305,6 +312,7 @@ public:
     }
 
     void onExit() override {
+        if (chat_.open) g_.ui.stopEditing();  // 2.95: the text input never outlives the screen
         g_.app.input().clearPowerSlotKeys();
         g_.app.input().setBindings(g_.settings.input);
     }
@@ -443,12 +451,12 @@ public:
     void updateWheel(float dt) {
         if (!test_ || !run_) return;
         GameWorld& w = run_->world();
-        const bool allowed = !ended_ && !paused_ && !overlay_.menu.isOpen() && !bigMap_ && g_.app.topScene() == this && simPanel_ < 0 &&
+        const bool allowed = !ended_ && !paused_ && !overlay_.menu.isOpen() && !chat_.open && !bigMap_ && g_.app.topScene() == this && simPanel_ < 0 &&
                              orderedSession() != nullptr && !(!scripts_.empty() && scripts_[0].active());
         const Vec2 me = local_ >= 0 && local_ < w.teamSize() ? w.playerAt(local_).feet() : w.level().bounds.center();
         const botsui::WheelResult r = botsui::handleWheel(g_.ui, g_.app.input(), wheel_, allowed, g_.settings.gameplay.raidHud.thoughts, view_, me, dt);
         // The thoughts' key: in a test, watching a group of the full raid too (no order then: no place in it).
-        const bool thoughtsKey = !wheel_.open && !ended_ && !paused_ && g_.app.topScene() == this && shownSession() != nullptr &&
+        const bool thoughtsKey = !wheel_.open && !ended_ && !paused_ && !chat_.open && g_.app.topScene() == this && shownSession() != nullptr &&
                                  g_.app.input().menuPressed(Action::BotThoughts);
         if (r.toggleThoughts || thoughtsKey) {
             g_.settings.gameplay.raidHud.thoughts = !g_.settings.gameplay.raidHud.thoughts;
@@ -1128,6 +1136,12 @@ public:
     void update(float dt) override {
         clock_ += dt;
         overlay_.notices.update(clock_);  // 2.75.5: each notification goes by itself
+        pollChat();                       // 2.95: the lines the relay gave, the simulated players' thoughts
+        if (chat_.open && (!run_ || catching_)) {  // the world is not shown (a catch-up): the chat with it
+            chat_.open = false;
+            overlay_.chatOpen = false;
+            g_.ui.stopEditing();
+        }
         // 2.77.4: the pointer stays hidden while playing (the mouse can aim, click a power): it comes
         // back only when the mouse moves to the HUD's menu button (a mouse-only click zone), or while
         // watching a group of the full raid's simulation (its buttons).
@@ -1179,12 +1193,21 @@ public:
             g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
         // 2.75.5: the raid's menu, opened and closed by the player (its key, the HUD's button), as the pause:
         // the game goes on, this player's inputs are neutral while it is open; Échap or B close it.
+        const bool waitingRelay = relay_.on && !relay_.started;  // 2.80: the waiting card is shown, not the game
+        // 2.95: the raid's chat (T, Partage; Échap, B close it): opened, it closes the menu and the large map.
+        {
+            const bool allowed = !ended_ && !paused_ && !wheel_.open && simPanel_ < 0 && !guestsOpen() && !waitingRelay && !contribOpen_ &&
+                                 g_.app.topScene() == this;
+            const raidchatui::Keys ck = raidchatui::handleKeys(g_.ui, g_.app.input(), chat_, chatView_, allowed, dt);
+            if (ck.opened) openedChat();
+            chatBack_ = ck.back;
+            overlay_.chatOpen = chat_.open;
+        }
         const bool wheelWasOpen = wheel_.open;  // its « Retour » never pauses with the same press
         updateWheel(dt);  // 2.79: a test's order wheel and the thoughts' key
         const bool menuWasOpen = overlay_.menu.isOpen();
-        const bool waitingRelay = relay_.on && !relay_.started;  // 2.80: the waiting card is shown, not the game
         const bool menuAllowed = !ended_ && !paused_ && !wheel_.open && !wheelWasOpen && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0 &&
-                                 !guestsOpen() && !waitingRelay;
+                                 !guestsOpen() && !waitingRelay && !chat_.open && !chatBack_;
         bool menuBack = false;
         if (contribOpen_ && overlay_.menu.isOpen() && menuAllowed) {
             // 2.78: the table's keys while it is open over the menu (Échap / B back to the menu, never the pause).
@@ -1196,7 +1219,7 @@ public:
         }
         if (overlay_.menu.isOpen()) bigMap_ = false;
         if (!menuWasOpen && !menuBack && !wheelWasOpen && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ && !guestsOpen() &&
-            !waitingRelay &&
+            !waitingRelay && !chat_.open && !chatBack_ &&  // 2.95: Échap closes the chat first
             g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
@@ -1204,7 +1227,7 @@ public:
             g_.ui.setFocus("raidgame/pause/resume");
         }
         // 2.72: the large map (display only: the group, and this player, keep playing).
-        if (!ended_ && !paused_ && simPanel_ < 0 && !guestsOpen() && !waitingRelay && g_.app.input().menuPressed(Action::RaidMap)) {
+        if (!ended_ && !paused_ && simPanel_ < 0 && !guestsOpen() && !waitingRelay && !chat_.open && g_.app.input().menuPressed(Action::RaidMap)) {
             bigMap_ = !bigMap_;
             mapPan_ = 0.0f;
             if (bigMap_) overlay_.menu.close();
@@ -1451,8 +1474,9 @@ public:
         ++simWanted_;
         if (simSpent_ > kSimBudgetMs) return;
         const auto t0 = std::chrono::steady_clock::now();
-        InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
-        if (paused_ || wheel_.open || simPanel_ >= 0 || g_.app.topScene() != this || !sim_->seated()) f = InputFrame{};
+        // 2.95: neutral too while the raid's menu or its chat is open (raidmenu::Hold), as in the other modes.
+        InputFrame f = overlay_.frame(g_.app.input().consumePlayerInput(), paused_ || wheel_.open || simPanel_ >= 0 || !sim_->seated(),
+                                      g_.app.topScene() != this, false);
         if (sim_->seated()) withPendingOrder(f);  // 2.79: an order of the wheel rides on this frame (the group played)
         if (const auto& offer = run_->world().powerOffer(); offer && offer->player == 0 && sim_->seated() && pendingChoice_ != 0) {
             f.choice = pendingChoice_;  // the armory's choice window, through the frame
@@ -1523,7 +1547,7 @@ public:
             return;
         }
         // Watching a group: the previous / next of its players in play (Q / E, LB / RB).
-        if (local_ < 0 && !paused_ && !bigMap_ && run_ && g_.app.topScene() == this) {
+        if (local_ < 0 && !paused_ && !bigMap_ && !chat_.open && run_ && g_.app.topScene() == this) {
             if (in.menuPressed(Action::MenuTabNext)) watchNext(+1);
             if (in.menuPressed(Action::MenuTabPrev)) watchNext(-1);
         }
@@ -2046,7 +2070,7 @@ public:
         }
         if (!test_ && clock_ - spec_.fetchedAt > 10.0f) fetchTargets();
         InputManager& in = g_.app.input();
-        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || g_.app.topScene() != this) return;  // 2.75.5: its keys are the menu's
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || chat_.open || g_.app.topScene() != this) return;  // 2.75.5: its keys are the menu's
         if (in.menuPressed(Action::MenuTabNext)) watchStep(+1);
         if (in.menuPressed(Action::MenuTabPrev)) watchStep(-1);
         if (in.menuPressed(Action::MenuConfirm) && !spec_.free) freeCamera();  // 2.77.2: Entrée, A (the banner says it)
@@ -2137,7 +2161,8 @@ public:
         if (!down) return;
         // The player watched left the game (down too, away): back to the soul.
         if (downWatch_ >= 0 && (downWatch_ >= w.teamSize() || w.member(downWatch_).presence != GameWorld::Presence::Playing)) watchSeatDown(-1);
-        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || simPanel_ >= 0 || wheel_.open || g_.app.topScene() != this) return;  // their keys (2.79: not the order wheel's)
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || chat_.open || simPanel_ >= 0 || wheel_.open || g_.app.topScene() != this)
+            return;  // their keys (2.79: not the order wheel's; 2.95: nor the chat's)
         InputManager& in = g_.app.input();
         if (in.menuPressed(Action::MenuTabNext)) watchDown(+1);
         if (in.menuPressed(Action::MenuTabPrev)) watchDown(-1);
@@ -2411,6 +2436,7 @@ public:
             }
         // 2.74 (phase 6): the Cœur d'Asterion: its shared health in its arena, what the branches did to
         // it at its door (before it wakes, the first seconds of the zone).
+        drawChat();           // 2.95: the raid's chat (its place kept clear: the banner and the arrows keep off it)
         placeBanner(w);       // 2.77.2: this player down / the group wiped (the notifications under it)
         placePassageWait(w);  // 2.80: a passage waiting for the players of this zone (under the banner)
         drawNoticesHud(w);    // 2.75.5
@@ -3155,6 +3181,152 @@ public:
         return actionKey(in, Action::RaidMenu);
     }
 
+    // ------------------------------------------------------------------ 2.95: the raid's chat
+
+    /// The name of a chat's key as the device in use names it (« T », « Partage »), "" when it has none.
+    std::string chatKeyName(Action a) {
+        InputManager& in = g_.app.input();
+        if (in.lastDevice() == InputDevice::Gamepad) {
+            const PadBinding p = in.bindings().padOf(a);
+            if (p.kind != PadBinding::Kind::None) return padBindingName(p, in.gamepadStyle());
+        }
+        return actionKey(in, a);
+    }
+
+    /// A local test or simulation (no relay): nothing of the chat leaves this computer.
+    bool chatLocal() const { return test_ && !relay_.on; }
+
+    /// Where this player is, for who may write where (raidchat::access).
+    raidchat::Where chatWhere() const {
+        raidchat::Where w;
+        w.local = chatLocal();
+        w.relayed = !w.local;
+        w.connected = link_ && link_->connected() && !reconnect_.active() && !fresh_;
+        w.serverChat = link_ && link_->chatSupported();
+        // 2.75: a spectator watching another group of the branch: that group's « Groupe » is not theirs.
+        w.watchingOther = !test_ && !ownInstance_.empty() && ownInstance_ != entry_.instanceId;
+        w.eliminated = run_ && run_->wiped();
+        return w;
+    }
+
+    /// The chat was opened (its key, the menu, its button): the menu, the large map and the wheel give way; a local
+    /// test says once that nothing leaves this computer.
+    void openedChat() {
+        overlay_.menu.close();
+        bigMap_ = false;
+        wheel_.open = false;
+        if (chatLocal() && !chatLocalSaid_) {
+            chatLocalSaid_ = true;
+            chat_.notice(raidchat::Channel::Group, "TEST LOCAL — rien n'est envoyé : vos messages et les pensées des joueurs simulés restent sur cet ordinateur.",
+                         clock_);
+        }
+    }
+
+    /// The lines the relay gave (never trusted: cleaned again, bounded), and « pour le moment » the thoughts of the
+    /// simulated players shown (a test: each computer computes the same; never sent).
+    void pollChat() {
+        if (link_)
+            for (coopnet::ChatLineMsg& m : link_->takeChat()) {
+                raidchat::Line l;
+                l.channel = m.channel == 1 ? raidchat::Channel::Raid : raidchat::Channel::Group;
+                l.kind = (m.flags & coopnet::kChatNotice) ? raidchat::Kind::Server : raidchat::Kind::Player;
+                l.playerId = m.account.substr(0, 36);
+                l.name = raidchat::clean(m.name).substr(0, 64);
+                l.label = raidchat::clean(m.label).substr(0, 64);
+                l.text = raidchat::clean(m.text);
+                l.at = m.at;
+                l.mine = !l.playerId.empty() && l.playerId == g_.online.playerId();
+                l.clock = clock_;
+                if (l.text.empty()) continue;
+                if (m.flags & coopnet::kChatHistory) chat_.log.pushHistory(std::move(l));
+                else chat_.log.push(std::move(l));
+            }
+        feedAiThoughts();
+    }
+
+    void feedAiThoughts() {
+        const raid::TestSession* ts = test_ && run_ && !catching_ ? shownSession() : nullptr;
+        if (ts != aiSession_) {  // another group shown (the full raid), or none: its simulated players afresh
+            chat_.ai.reset();
+            aiSession_ = ts;
+        }
+        // The thoughts follow the setting of the bubbles (V, the wheel, Paramètres › HUD › « Raids »).
+        if (!ts || !g_.settings.gameplay.raidHud.thoughts) return;
+        std::vector<raidchat::Thought> now;
+        const uint32_t seats = ts->bots().seats();
+        for (int i = 0; i < raid::kMaxInstancePlayers && i < 32; ++i) {
+            if (!((seats >> i) & 1u)) continue;
+            const raid::bots::Thought& t = ts->bots().thought(i);
+            now.push_back({i, seatName(i), raid::bots::roleName(t.role), t.intent});
+        }
+        for (const raidchat::Thought& t : chat_.ai.update(clock_, now)) chat_.aiLine(t, clock_);
+    }
+
+    raidchatui::Look chatLook() {
+        raidchatui::Look look;
+        InputManager& in = g_.app.input();
+        look.openKey = chatKeyName(Action::ChatOpen);
+        if (in.lastDevice() == InputDevice::Gamepad) {
+            const GamepadStyle st = in.gamepadStyle();
+            const std::string a = padBindingName(PadBinding::button(SDL_GAMEPAD_BUTTON_SOUTH), st);
+            const std::string b = padBindingName(PadBinding::button(SDL_GAMEPAD_BUTTON_EAST), st);
+            const std::string lb = padBindingName(PadBinding::button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER), st);
+            const std::string rb = padBindingName(PadBinding::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER), st);
+            look.hints = a + " : envoyer · " + lb + " / " + rb + " : canal · " + b + " : fermer · stick droit : défiler";
+        } else {
+            const std::string chan = actionKey(in, Action::ChatChannel);
+            look.hints = chan.empty() ? std::string("Entrée : envoyer · Échap : fermer · /g, /r : canal")
+                                      : "Entrée : envoyer · " + chan + " : canal · Échap : fermer · /g, /r";
+        }
+        if (chatLocal()) look.header = "TEST LOCAL — rien n'est envoyé";
+        look.nameColor = [this](const raidchat::Line& l) {
+            if (l.mine) return kMe;
+            if (l.kind == raidchat::Kind::Ai && l.seat >= 0) return seatColor(l.seat, local_);
+            return kSky;
+        };
+        return look;
+    }
+
+    /// The chat at its place of the raids' HUD (closed: its recent lines; open: its history and its field), and
+    /// what the player sent this frame.
+    void drawChat() {
+        UIContext& ui = g_.ui;
+        const RaidHudLayout& l = g_.settings.gameplay.raidHud;
+        const bool shown = l[RaidHudElement::Chat].visible;
+        if (!shown && !chat_.open) {
+            chatView_.pill = {};
+            return;
+        }
+        const Rect r = raidhud::area(ui, l, RaidHudElement::Chat, hudAreas_);
+        const raidchatui::Sent sent = raidchatui::draw(ui, chat_, chatView_, r, raidhud::scaleOf(l, RaidHudElement::Chat), l.chat, chatLook(), clock_, shown);
+        hudRects_.push_back(r);
+        if (chat_.open && !overlay_.chatOpen) openedChat();  // opened by its button (the mouse)
+        if (sent.any) submitChat(sent);
+        overlay_.chatOpen = chat_.open;
+    }
+
+    /// The field (or a quick message) sent: « /g », « /r », who may write where, the pace; carried by the relay (it
+    /// comes back to everyone concerned, this computer included), or shown here in a local test.
+    void submitChat(const raidchatui::Sent& sent) {
+        const auto send = [this](raidchat::Channel c, const std::string& t) {
+            if (link_) link_->sendChat(static_cast<uint8_t>(c), t);
+        };
+        const std::string me = g_.online.username().empty() ? i18n::tr("Vous") : g_.online.username();  // a local test without an account
+        using R = raidchat::Chat::Result;
+        const R res = chat_.submit(sent.text, chatWhere(), clock_, send, me, g_.online.playerId());
+        if (res == R::Sent || res == R::Shown || (res == R::Empty && !sent.quick)) {
+            if (!sent.quick) chat_.draft.clear();
+            chat_.open = false;  // as in Minecraft: Entrée sends and closes
+            g_.ui.stopEditing();
+        } else if (res == R::Switched) {
+            chat_.draft.clear();
+            chatView_.focusPending = raidchatui::View::Focus::Field;
+        } else if (!sent.quick) {
+            chatView_.focusPending = raidchatui::View::Focus::Field;  // refused or too fast: the draft stays, to send again
+        }
+        chatView_.follow = true;
+    }
+
     /// 2.75.5: the menu's button and the notifications (RaidHudElement::Notices), never under a card, the
     /// large map, the menu or a big message of the level (they wait their turn: their time starts when
     /// they are drawn).
@@ -3188,6 +3360,14 @@ public:
         // 2.78: the table open over the menu takes the whole screen (the menu's buttons under it never answer).
         const raidmenu::MenuAction act = contribOpen_ ? raidmenu::MenuAction{} : raidmenu::drawMenu(g_.ui, overlay_.menu, menuData(w));
         if (act.close) overlay_.menu.close();
+        if (act.chat && !contribOpen_) {
+            // 2.95: « Chat du raid » from the menu's « Groupe » (a gamepad without Partage: A there).
+            overlay_.menu.close();
+            chat_.open = true;
+            chatView_.focusPending = g_.app.input().lastDevice() == InputDevice::Gamepad ? raidchatui::View::Focus::Quick : raidchatui::View::Focus::Field;
+            openedChat();
+            overlay_.chatOpen = true;
+        }
         if (act.table && !contribOpen_) {
             contribOpen_ = true;
             contribView_ = contrib::View{};
@@ -3322,6 +3502,8 @@ public:
         raidmenu::MenuData d;
         d.title = "MENU DU RAID · " + std::string(branch_->name);
         d.keyName = menuKeyName();
+        d.chat = true;  // 2.95: « Chat du raid » in « Groupe » (Entrée, A, its button)
+        d.chatKey = chatKeyName(Action::ChatOpen);
         const raid::ZoneInfo* z = branch_->zone(run_->zone());
         d.remainingTitle = "CE QU'IL RESTE À FAIRE · " + std::string(z ? z->name : "?");
         d.remaining = remainingLines(w);
@@ -3820,6 +4002,11 @@ public:
     size_t shapeGroups_ = 0;
     std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
     raidmenu::Overlay overlay_;  // 2.75.5: the notifications and the raid's menu (no card opens by itself)
+    raidchat::Chat chat_;              // 2.95: the raid's chat (docs/RAIDS.md §39)
+    raidchatui::View chatView_;        // its drawing's state (focus, scroll, the history wrapped)
+    bool chatBack_ = false;            // 2.95: this frame's Échap / B / Start closed the chat: no pause with that press
+    bool chatLocalSaid_ = false;       // the local test's word written once in the chat
+    const raid::TestSession* aiSession_ = nullptr;  // 2.95: whose simulated players' thoughts the chat follows
     botsui::OrderWheel wheel_;   // 2.79: the order wheel of a test (its orders ride on this player's frame)
     std::optional<std::pair<raid::bots::OrderKind, Vec2>> pendingOrder_;  // 2.79: given with the next frame
     contrib::View contribView_;  // 2.78: the « Tableau des contributions » over the menu (tabs, sort, details)
@@ -3836,6 +4023,11 @@ public:
     /// zone while playing) or while watching a group of the full raid's simulation (its ◀ ▶ buttons).
     bool pointerWanted() const {
         if (sim_ && local_ < 0) return true;
+        if (chatView_.pill.w > 0.0f) {  // 2.95: near the closed chat's « Chat · T »
+            const float m = g_.ui.s(40);
+            const Rect p = chatView_.pill;
+            if (Rect{p.x - m, p.y - m, p.w + 2 * m, p.h + 2 * m}.contains(g_.app.input().mousePos())) return true;
+        }
         if (menuButtonRect_.w <= 0.0f) return false;
         const float m = g_.ui.s(40);
         const Rect near{menuButtonRect_.x - m, menuButtonRect_.y - m, menuButtonRect_.w + 2 * m, menuButtonRect_.h + 2 * m};

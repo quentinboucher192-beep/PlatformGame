@@ -159,10 +159,15 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
             float y = defaultArea(ui, l, RaidHudElement::Timer, hud).bottom() + ui.s(10);
             const Rect hb = defaultArea(ui, l, RaidHudElement::Heart, hud);
             if (hb.x <= m + 0.5f) y = std::max(y, hb.bottom() + ui.s(10));
-            const float bottom = defaultArea(ui, l, RaidHudElement::Status, hud).y - ui.s(10);
+            float bottom = defaultArea(ui, l, RaidHudElement::Status, hud).y - ui.s(10);
             // Never under the danger band (centred), on the small screens too.
             const float w =
                 std::max(ui.s(120), std::min({ui.s(500) * k, W * 0.28f, defaultArea(ui, l, RaidHudElement::Danger, hud).x - ui.s(10) - m}));
+            // 2.95: nor down to the chat (bottom left by default) when it is shown in this column.
+            if (l[RaidHudElement::Chat].visible) {
+                const Rect c = area(ui, l, RaidHudElement::Chat, hud);
+                if (c.x < m + w && c.right() > m && c.y > y) bottom = std::min(bottom, c.y - ui.s(10));
+            }
             return Rect{m, y, w, std::max(ui.s(80), std::min(ui.s(320) * k, bottom - y))};
         }
         case RaidHudElement::LairPassage: {
@@ -185,6 +190,13 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
                 else y = d.bottom() + ui.s(10);  // a short screen: under the band
             }
             return Rect{x, y, w, std::max(ui.s(40), std::min(ui.s(300) * k, bottom - y))};
+        }
+        case RaidHudElement::Chat: {
+            // 2.95: at the bottom left, over the network line (as in Minecraft), its width and lines its settings'.
+            const Vec2 sz = chatSize(ui, l.chat, k);
+            const float w = std::min(sz.x, W - m * 2.0f);
+            const float bottom = defaultArea(ui, l, RaidHudElement::Status, hud).y - ui.s(10);
+            return Rect{m, bottom - sz.y, w, sz.y};
         }
         case RaidHudElement::Notices: {
             // 2.75.5: between the two columns, under the minimap and the heart's bar when they are at the
@@ -211,6 +223,23 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
 }  // namespace
 
 float scaleOf(const RaidHudLayout& l, RaidHudElement e) { return std::clamp(l[e].scale, HudLayout::kMinScale, HudLayout::kMaxScale); }
+
+ChatMetrics chatMetrics(UIContext& ui, float k) {
+    ChatMetrics c;
+    c.pad = ui.s(6) * k;
+    c.lineH = ui.s(22) * k;
+    c.font = 15.0f * k;
+    c.rowH = ui.s(34) * k;
+    c.gap = ui.s(6) * k;
+    return c;
+}
+
+Vec2 chatSize(UIContext& ui, const RaidChatSettings& s, float k) {
+    const ChatMetrics c = chatMetrics(ui, k);
+    const int lines = std::clamp(s.lines, RaidChatSettings::kMinLines, RaidChatSettings::kMaxLines);
+    const float width = std::clamp(s.width, RaidChatSettings::kMinWidth, RaidChatSettings::kMaxWidth);
+    return {ui.s(440) * width * k, c.pad * 2.0f + static_cast<float>(lines) * c.lineH + c.gap + c.rowH};
+}
 
 Rect area(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const HudAreas& hud) {
     Rect r = defaultArea(ui, l, e, hud);

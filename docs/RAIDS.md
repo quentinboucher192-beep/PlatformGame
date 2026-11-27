@@ -24,6 +24,7 @@
 # joueurs simulés contre les Gigaboss : mesure sur plusieurs départs, carapaces tenues ensemble (2.84, §36) ;
 # titan 13 : décomptes, plateformes, Gigaboss à leur mesure et difficulté réelle (2.84.1, §37)
 # titan 15 : Titanus allégé, un peu (§38)
+# le chat des raids, « Groupe » et « Raid » (2.95, §39)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -819,7 +820,8 @@ combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas su
 
 * **Disposition à part** (`GameplaySettings::raidHud`, Paramètres › HUD › onglet « Raids ») : vie et énergie, pouvoirs,
   minimap, panneau du groupe (8), objectifs et progression de la branche, alertes, barre du gigaboss, bandeau de danger,
-  contributions, ligne du réseau / badge « TEST ADMIN », **chronomètre du raid** ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
+  contributions, ligne du réseau / badge « TEST ADMIN », **chronomètre du raid**, **chat** (2.95 : sa largeur, ses lignes,
+  sa disparition et son opacité, §39) ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
   danger, le réseau et, depuis la 2.76.1, les notifications avec le bouton du menu du raid, §21). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
   deux éléments ne peuvent jamais se chevaucher (l'enregistrement est refusé sinon). Chaque élément est dessiné dans sa
   boîte : textes mesurés, coupés, « … et N lignes de plus ».
@@ -3575,6 +3577,104 @@ qu'elles tiennent : 34 % ôtés le plus souvent) : ce qui leur manque est leur s
 l'empreinte des zones du titan dans `tests/test_raid_titan.cpp`) : une instance ne réunit que des jeux aux mêmes règles.
 `kSimulationVersion` et `kRankingGeneration` restent (le moteur ne change pas, rien en solo ni en coopération, aucun record
 effacé). Aucun texte nouveau.
+
+## 39. Le chat des raids : « Groupe » et « Raid » (2.95)
+
+Comme dans Minecraft : les derniers messages s'affichent **en bas à gauche, par-dessus le jeu**, et disparaissent au bout de
+quelques secondes ; ouvert, le chat montre tout l'historique et un champ. Deux canaux, chaque ligne avec son étiquette et sa
+couleur : **[Groupe]** (cyan) — les joueurs de votre instance — et **[Raid]** (orange) — tous les joueurs de l'événement, tous
+groupes confondus, chaque ligne avec le clan et le groupe de son auteur (« [AUBE]·2 Nova : … »).
+
+### À l'écran (`ui/online/RaidChatUi`, modèle `game/raid/RaidChat`)
+
+* **Fermé** : les lignes récentes, la plus récente en bas, chacune sur un bandeau translucide, qui s'effacent après le délai
+  choisi ; sous elles, un petit « Chat · T » que la souris clique (jamais une touche ni le focus pris au jeu).
+* **Ouvrir** : `Action::ChatOpen` (**T** au clavier, **Partage** à la manette — le bouton du mode concentré, jamais lu en
+  raid), ce petit bouton à la souris, ou **menu du raid › Groupe › « Chat du raid »** (Entrée / A : une manette sans bouton
+  Partage y arrive toujours). Le clavier écrit aussitôt dans le champ ; ouvert à la manette, le chat se place sur les
+  messages rapides.
+* **Ouvert** : sa ligne de titre (ce que font les touches, ou « TEST LOCAL — rien n'est envoyé »), l'historique (molette,
+  barre tenue à la souris, Page précédente / suivante, stick droit ; il suit les nouvelles lignes tant qu'on est en bas), les
+  **messages rapides** (◀ ▶ ou Gauche / Droite pour choisir, A, Entrée ou un clic pour envoyer : « Prêt ! », « Besoin d'aide
+  ici ! », « Réanimez-moi ! »…, envoyés dans la langue affichée), puis sa rangée : le **canal** (pastille cliquable), le
+  champ, « Envoyer ». À la manette, le champ ouvre la saisie du système là où il en a une (clavier à l'écran du Steam Deck,
+  de Big Picture) ; sinon les messages rapides.
+* **Changer de canal** : `Action::ChatChannel` (**Tab**, **RB** ; LB aussi), la pastille, ou un préfixe : « /g texte » (ou
+  /groupe) envoie sur Groupe, « /r texte » (ou /raid) sur Raid, ce message seulement ; « /g » ou « /r » seul change de canal.
+  Une autre commande « /… » n'est jamais envoyée (le chat rappelle les deux qui existent).
+* **Entrée** ou « Envoyer » envoie et ferme (Entrée sur un champ vide ferme) ; **Échap**, **B** ou **Start** ferment (le
+  brouillon reste, la pause ne s'ouvre pas avec cette pression). 200 caractères au plus (le compteur s'affiche à partir
+  de 160).
+* Chaque ligne est mesurée dans la boîte : coupée mot après mot (un mot plus long que la boîte, entre ses caractères),
+  l'étiquette, le clan, le nom et le texte chacun dans sa couleur ; les mots des joueurs tels qu'ils les ont écrits
+  (`i18n::Verbatim`), le reste traduit.
+* **À terre, groupe éliminé, spectateur** : on lit et on écrit toujours. Un spectateur qui regarde **un autre groupe** n'a
+  que le canal Raid (le Groupe de cette instance n'est pas le sien : le chat le dit, le serveur le refuse aussi).
+
+### Rien dans la simulation
+
+Pendant que le chat est ouvert, les entrées de ce joueur sont **neutres** (`raidmenu::Hold::chat`, comme sous le menu du
+raid : on parle, on ne joue pas ; le groupe continue). Ses deux touches ne sont **jamais** des bits de l'`InputFrame` ; le
+chat ne passe jamais par une trame : les replays et la simulation restent exacts (`kSimulationVersion` ne change pas). Le
+menu, la grande carte et la roue des ordres s'effacent quand il s'ouvre ; leurs touches (M, Tab, C, V, Q / E du spectateur
+ou du joueur à terre) ne sont pas lues tant qu'il est ouvert.
+
+### Dans l'éditeur du HUD (Paramètres › HUD › « Raids » › Chat)
+
+`RaidHudElement::Chat` se place, se redimensionne et se masque comme les autres éléments ; **« Réglages du chat… »** règle
+sa **largeur** (60 à 160 %), ses **lignes** (3 à 12), la **disparition** des messages (3 à 30 s) et l'**opacité** du fond (10 à
+100 %), enregistrés avec la disposition (`RaidChatSettings`, bloc `"chat"` de `raidHud`). Par défaut : en bas à gauche,
+au-dessus de la ligne du réseau, à gauche de la barre du gigaboss ; « Effets des branches sur le Cœur » s'arrête au-dessus
+de lui. Il ne se pose jamais sur un autre élément (l'éditeur refuse comme pour les autres ; `tests/test_raid_chat.cpp` le
+vérifie en 1280 × 720, 1920 × 1080, 1366 × 768, 2560 × 1440 et 1024 × 768). Masqué, il n'affiche rien tant qu'on ne
+l'ouvre pas. La liste des éléments des raids défile quand elle n'a plus la place (17 éléments).
+
+### Le serveur (`server/src/raidChat.ts`, `coop.ts`)
+
+* **Groupe** : la salle de l'instance (son relais, `CoopRoom`) le porte elle-même ; ses spectateurs (groupe éliminé) en sont.
+* **Raid** : une salle par événement, `RaidChatRoom` (**nouveau Durable Object** : aucun objet par événement n'existait).
+  La salle d'une instance la rejoint quand un jeu s'y connecte et lui donne ses lignes Raid ; elle redonne chaque ligne à
+  toutes les salles qui l'ont rejointe (chacune à ses sockets). Une salle où plus personne n'est la quitte à la ligne
+  suivante. La liste des salles est gardée dans son stockage (elle survit à une éviction), ses lignes en mémoire.
+* **Messages** (jamais un pas du jeu) : `CHAT_SEND` (21, jeu → relais : canal, texte) et `CHAT_LINE` (22, relais → jeu :
+  canal, drapeaux « avis du relais » et « historique », heure, compte, nom, étiquette, texte). Le relais dit qu'il porte le
+  chat dans `WELCOME` (4e octet) : un jeu n'envoie rien à un relais d'avant 2.95 (qui y verrait une faute de protocole) et le
+  dit (« Ce serveur ne transporte pas encore le chat des raids : rien n'est envoyé. ») ; un jeu d'avant ignore ces messages.
+* **Rien de ce qu'envoie un jeu n'est cru** : l'auteur est le compte et le nom **de la session** (en-têtes posés par le
+  Worker, jamais ceux du jeu, ni un identifiant du message) ; le texte est nettoyé comme les messages des discussions
+  (`cleanMessage` : ni caractère de contrôle ni marque de direction), mis sur une ligne, 200 caractères au plus ; **3
+  messages d'un coup puis un par seconde** par joueur (dans sa salle, et encore par la salle de l'événement), **20 puis 5
+  par seconde pour tout le raid** ; un message mal formé ferme sa socket comme toute autre faute. Ce qui est refusé est dit
+  à son auteur seul. Les **blocages** des discussions (`player_blocks`, dans les deux sens, lus à chaque connexion) : on ne
+  reçoit jamais les lignes d'un joueur bloqué. Les discussions n'ont pas de filtre de mots : il n'y en a pas à reprendre.
+* **Historique court** : les 50 dernières lignes de chaque canal, en mémoire, redonnées (marquées « historique », gardées une
+  fois) à un jeu qui se connecte ou revient. **Aucune table D1**, aucune migration.
+* **Coût** : une ligne Groupe = un message de WebSocket ; une ligne Raid = une requête de la salle vers celle de
+  l'événement, puis une par salle de l'événement où quelqu'un est connecté, plafonnées par le rythme du raid entier. Aucune
+  boucle d'attente : rien ne tourne quand personne n'écrit.
+* **Test avec joueurs invités** (2.80, §30) : la salle du test seule ; Groupe = le groupe du test où chacun est placé (un
+  joueur qui n'est placé nulle part écrit sur Raid), Raid = tout le test.
+
+### Tests locaux, et l'IA « pour le moment »
+
+* **Test local ou raid complet simulé** (sans joueurs invités) : le chat marche sur cet ordinateur seul et le dit (« TEST
+  LOCAL — rien n'est envoyé », dans son titre et une ligne à la première ouverture) : vos lignes et celles de l'IA, rien
+  d'autre ; jamais un faux envoi réussi.
+* **Test avec joueurs invités** : par le relais du test, comme un vrai raid.
+* **Les pensées des joueurs simulés** deviennent des lignes du canal Groupe, marquées **« IA »** (« [Groupe] IA Joueur simulé
+  3 : Réanimateur → réanime Joueur simulé 5 ») : seulement **quand elles changent**, une fois tenues 1,5 s, chaque joueur
+  simulé au plus toutes les 10 s, l'IA entière au plus toutes les 2,5 s (`raidchat::AiFeed`). Elles suivent le réglage des
+  pensées (V, la roue, Paramètres › HUD) ; les bulles au-dessus des joueurs simulés restent. Chaque ordinateur d'un test les
+  calcule pareil : elles ne sont jamais envoyées.
+
+### Tests et déploiement
+
+`tests/test_raid_chat.cpp` (canaux, « /g » et « /r », texte, rythme, qui écrit où — à terre, éliminé, spectateur, test
+local —, pensées de l'IA dédoublonnées et espacées, trames neutres, messages du relais, élément du HUD et ses réglages,
+place par défaut et lignes mesurées) ; `server/test/raidChat.test.ts` (canaux entre deux instances d'un événement, auteur de
+la session, nettoyage, longueur, rythme, message mal formé, blocages, historique, spectateur d'un autre groupe, salle vide
+qui quitte l'événement, salle d'un test). **Déploiement** : `wrangler deploy` (migration de Durable Object `v4` :
+`RaidChatRoom`) ; aucune migration D1.
 
 ---
 

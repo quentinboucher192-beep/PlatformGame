@@ -48,6 +48,9 @@ niveau, « Recommencer » et celles de « Partout » comprises.
 | Afficher / masquer les fantômes | course aux fantômes | G | L3 | Déjà |
 | Startpos : poser, précédente, suivante ; point de mesure | entraînement (le point aussi en replay) | F5, F6, F7, F8 | bouton de « Recommencer » maintenu + croix | Déjà ; l'accord suit le bouton de « Recommencer » |
 | Carte, menu du raid, ordres et pensées des joueurs simulés | raid | M, Tab, C, V | Vue, L3, R3 | Déjà |
+| **Ouvrir le chat** (docs/RAIDS.md §39) | raid | T | Partage (sinon : menu du raid › Groupe › « Chat du raid ») | **Oui (2.95)** |
+| **Changer de canal du chat** | chat du raid ouvert | Tab | RB (LB aussi, fixe) | **Oui (2.95)** : lue seulement chat ouvert, elle ne prend la touche d'aucune autre commande |
+| Chat ouvert : envoyer, fermer, défiler, messages rapides | chat du raid ouvert | Entrée, Échap, Page préc. / suiv. | A, B ou Start, stick droit, croix | Non : touches des menus et du champ de texte |
 | Touches des pouvoirs | niveau | par niveau | par niveau | Déjà, ailleurs : éditeur, choix du niveau › Touches…, pause › Touches de ce niveau |
 
 ### Replays et montage « Regarder »

@@ -48,14 +48,17 @@
   // keeps the run being played in memory only; nothing of it is ever written.
   // Cooperation (2.62): one Durable Object per team room (CoopRoom), the relay of its game
   // over WebSockets, in memory only.
+  // The raids' chat (2.95): one Durable Object per raid event (RaidChatRoom), its « Raid » channel
+  // given to the rooms of its instances; its last lines in memory only (no D1 table).
   "durable_objects": {
     "bindings": [
       { "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" },
       { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" },
-          { "name": "COOP_ROOMS", "class_name": "CoopRoom" }
+          { "name": "COOP_ROOMS", "class_name": "CoopRoom" },
+          { "name": "RAID_CHAT_ROOMS", "class_name": "RaidChatRoom" }
     ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }],
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }, { "tag": "v4", "new_sqlite_classes": ["RaidChatRoom"] }],
   "env": {
     "staging": {
       "name": "cosmic-online-staging",
@@ -84,10 +87,11 @@
         "bindings": [
           { "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" },
           { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" },
-          { "name": "COOP_ROOMS", "class_name": "CoopRoom" }
+          { "name": "COOP_ROOMS", "class_name": "CoopRoom" },
+          { "name": "RAID_CHAT_ROOMS", "class_name": "RaidChatRoom" }
         ]
       },
-      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }]
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }, { "tag": "v4", "new_sqlite_classes": ["RaidChatRoom"] }]
     },
     "dev": {
       "name": "cosmic-online-dev",
@@ -113,10 +117,11 @@
         "bindings": [
           { "name": "PROJECT_ROOMS", "class_name": "ProjectRoom" },
           { "name": "SPECTATE_ROOMS", "class_name": "SpectateRoom" },
-          { "name": "COOP_ROOMS", "class_name": "CoopRoom" }
+          { "name": "COOP_ROOMS", "class_name": "CoopRoom" },
+          { "name": "RAID_CHAT_ROOMS", "class_name": "RaidChatRoom" }
         ]
       },
-      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }]
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ProjectRoom"] }, { "tag": "v2", "new_sqlite_classes": ["SpectateRoom"] }, { "tag": "v3", "new_sqlite_classes": ["CoopRoom"] }, { "tag": "v4", "new_sqlite_classes": ["RaidChatRoom"] }]
     }
   },
   "dev": { "ip": "127.0.0.1", "port": 8787 }

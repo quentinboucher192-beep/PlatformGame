@@ -136,6 +136,9 @@ public:
     void setFocus(const std::string& name) { focus_ = id(name); }
     /// Focuses a text field and starts editing it (e.g. the chat input after sending).
     void editText(const std::string& name);
+    /// 2.95: ends the edit of the text field being typed in, if any (a panel closed by a key while its field was
+    /// edited: the text input stops, the game's keys count again).
+    void stopEditing();
     bool hasFocus() const { return focus_ != 0; }
     /// Whether a widget of that name (full id path) is one of the keyboard / gamepad stops of the
     /// frame drawn last (tests: a button that must be there).

@@ -127,9 +127,11 @@ private:
 /// Whether this computer's player is held (neutral inputs) at a step: in the pause or the raid's menu
 /// (their own choice), under a screen over the combat (a film, the results, a power's choice), or out
 /// of the game (their group eliminated: spectators). A notification is never one of these.
+/// 2.95: and while they type in the raid's chat (its field, its quick messages): they talk, they do not play.
 struct Hold {
     bool paused = false, menu = false, covered = false, wiped = false;
-    bool any() const { return paused || menu || covered || wiped; }
+    bool chat = false;
+    bool any() const { return paused || menu || covered || wiped || chat; }
 };
 /// The frame this computer sends for its player: the input as read, neutral while held.
 InputFrame playerFrame(const PlayerInput& in, const Hold& h);
@@ -138,10 +140,12 @@ InputFrame playerFrame(const PlayerInput& in, const Hold& h);
 struct Overlay {
     Notices notices;
     Menu menu;
-    Hold hold(bool paused, bool covered, bool wiped) const { return {paused, menu.isOpen(), covered, wiped}; }
+    /// 2.95: the raid's chat is open on this screen (ui/online/RaidChatUi; set by the screen each frame).
+    bool chatOpen = false;
+    Hold hold(bool paused, bool covered, bool wiped) const { return {paused, menu.isOpen(), covered, wiped, chatOpen}; }
     InputFrame frame(const PlayerInput& in, bool paused, bool covered, bool wiped) const { return playerFrame(in, hold(paused, covered, wiped)); }
-    /// The pointer is shown while the menu is open (its tabs, its bar, its buttons).
-    bool wantsPointer() const { return menu.isOpen(); }
+    /// The pointer is shown while the menu or the chat is open (its tabs, its bar, its buttons).
+    bool wantsPointer() const { return menu.isOpen() || chatOpen; }
 };
 
 // ------------------------------------------------------------------------------- the menu's pages
@@ -172,10 +176,15 @@ struct MenuData {
     std::vector<raidhud::Line> groupStates;  // 2.77.2: « À TERRE » and « GROUPE ÉLIMINÉ » (mark: the state's name), explained
     std::vector<raidhud::Line> titan;  // its gigaboss, its parts, its links
     bool results = false;              // « Résultats du raid »: a gigaboss fell (never in a test)
+    /// 2.95: « Chat du raid » at the top of « Groupe » (Entrée / A there, its button): the chat opens (a gamepad
+    /// without the chat's own button reaches it here); `chatKey` its key in the hint (« T »), "" none.
+    bool chat = false;
+    std::string chatKey;
 };
 
 struct MenuAction {
     bool close = false, results = false;
+    bool chat = false;   // 2.95: « Chat du raid » asked (its button, Entrée / A in « Groupe »)
     bool table = false;  // 2.78: « Tableau des contributions » asked (its button, Entrée / A in « Zones terminées »)
 };
 

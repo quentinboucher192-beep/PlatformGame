@@ -302,7 +302,7 @@ void member(Pen& p, const Member& m) {
 
 /// A section's content (measured with `p.draw` false, drawn with it true); `results`: set when its
 /// « Résultats du raid » button was clicked.
-void sectionBody(Pen& p, const MenuData& d, Section s, bool* results, bool* tableAsked = nullptr) {
+void sectionBody(Pen& p, const MenuData& d, Section s, bool* results, bool* tableAsked = nullptr, bool* chatAsked = nullptr) {
     switch (s) {
         case Section::Remaining:
             heading(p, d.remainingTitle, kGold);
@@ -343,6 +343,19 @@ void sectionBody(Pen& p, const MenuData& d, Section s, bool* results, bool* tabl
             break;
         }
         case Section::Group:
+            // 2.95: the raid's chat, from here too (a gamepad without its own button: Entrée / A).
+            if (d.chat) {
+                const float bw = std::min(p.ui.s(380), p.w), bh = p.ui.s(48);
+                if (p.draw) {
+                    UIContext::ButtonStyle bs;
+                    bs.primary = true;
+                    if (p.ui.button("chat", {p.x, p.y, bw, bh}, "Chat du raid", bs) && chatAsked) *chatAsked = true;
+                }
+                p.y += bh + p.ui.s(8);
+                paragraph(p, d.chatKey.empty() ? std::string("Entrée ou A : écrire à votre groupe ou à tout le raid.")
+                                               : "Entrée ou A : écrire à votre groupe ou à tout le raid (aussi " + d.chatKey + " pendant le combat).",
+                          kDim, 3);
+            }
             heading(p, d.groupTitle, kText);
             for (const Member& m : d.group) member(p, m);
             p.y += p.ui.s(6);
@@ -471,11 +484,12 @@ MenuAction drawMenu(UIContext& ui, Menu& m, const MenuData& d) {
     if (m.scrollBy != 0.0f) ui.setScroll("content" + std::to_string(si), off + ui.s(m.scrollBy));  // the next frame clamps it
     m.scrollBy = 0.0f;
     Pen p{ui, L.view.x + pad, L.view.y + pad - off, cw, true};
-    bool results = false, table = false;
-    sectionBody(p, d, s, &results, &table);
+    bool results = false, table = false, chat = false;
+    sectionBody(p, d, s, &results, &table, &chat);
     ui.endScroll();
     if (results || (m.confirm && s == Section::Titan && d.results)) act.results = true;
     if (table || (m.confirm && s == Section::Zones && d.tableAvailable)) act.table = true;  // 2.78
+    if (chat || (m.confirm && s == Section::Group && d.chat)) act.chat = true;              // 2.95
     m.confirm = false;
     drawLines(ui, L.keyLines, {L.keys.x, L.keys.y}, 13, ui.s(18), kDim);
     ui.popId();

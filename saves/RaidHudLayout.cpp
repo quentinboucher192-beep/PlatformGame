@@ -23,6 +23,7 @@ const char* RaidHudLayout::id(RaidHudElement e) {
         case RaidHudElement::Remaining: return "remaining";
         case RaidHudElement::Notices: return "notices";
         case RaidHudElement::LairPassage: return "lair_passage";
+        case RaidHudElement::Chat: return "chat";
         default: return "";
     }
 }
@@ -45,6 +46,7 @@ const char* RaidHudLayout::label(RaidHudElement e) {
         case RaidHudElement::Remaining: return "Ce qu'il reste à faire";
         case RaidHudElement::Notices: return "Notifications et menu du raid";
         case RaidHudElement::LairPassage: return "Distance au passage de l'antre";
+        case RaidHudElement::Chat: return "Chat";
         default: return "";
     }
 }
@@ -66,6 +68,12 @@ Json RaidHudLayout::toJson() const {
         if (p.custom) {
             e["x"] = p.x;
             e["y"] = p.y;
+        }
+        if (static_cast<RaidHudElement>(i) == RaidHudElement::Chat) {  // 2.95: its own settings
+            e["width"] = chat.width;
+            e["lines"] = chat.lines;
+            e["fade"] = chat.fade;
+            e["opacity"] = chat.opacity;
         }
         j[id(static_cast<RaidHudElement>(i))] = e;
     }
@@ -90,6 +98,14 @@ RaidHudLayout RaidHudLayout::fromJson(const Json& j) {
             p.custom = true;
             p.x = finite(o["x"].get<float>(), 0.0f, 1.0f, 0.0f);
             p.y = finite(o["y"].get<float>(), 0.0f, 1.0f, 0.0f);
+        }
+        if (e == RaidHudElement::Chat) {  // 2.95
+            using C = RaidChatSettings;
+            const C def;
+            l.chat.width = finite(jget<float>(o, "width", def.width), C::kMinWidth, C::kMaxWidth, def.width);
+            l.chat.lines = std::clamp(jget<int>(o, "lines", def.lines), C::kMinLines, C::kMaxLines);
+            l.chat.fade = finite(jget<float>(o, "fade", def.fade), C::kMinFade, C::kMaxFade, def.fade);
+            l.chat.opacity = finite(jget<float>(o, "opacity", def.opacity), C::kMinOpacity, C::kMaxOpacity, def.opacity);
         }
     }
     l.arrows = jget<bool>(j, "arrows", true);

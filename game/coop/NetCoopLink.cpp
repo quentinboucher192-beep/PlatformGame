@@ -102,6 +102,8 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
         case Msg::Welcome: {
             const uint8_t seat = r.u8();
             r.u8();
+            // 2.95: the relay's features (none before 2.95).
+            chatSupported_ = r.ok && r.p != r.end && (r.u8() & kFeatureChat) != 0;
             if (r.ok && seat == kWatcherSeat) {  // 2.75: a spectator's socket (no seat, no input)
                 seat_ = -1;
                 watcher_ = true;
@@ -188,6 +190,13 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             testOrders_.emplace_back(tick, packed);
             break;
         }
+        case Msg::ChatLine: {
+            // 2.95: a line of the raid's chat (never trusted: bounded here, shown as the player's words).
+            ChatLineMsg m;
+            if (!readChatLine(msg.data() + 1, msg.size() - 1, m)) return;
+            if (chat_.size() < 400) chat_.push_back(std::move(m));
+            break;
+        }
         case Msg::Pong: {
             const uint32_t clock = r.u32();
             if (r.ok) rttMs_ = static_cast<int>(static_cast<uint32_t>(SDL_GetTicks()) - clock);
@@ -225,6 +234,16 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
 }
 
 void NetCoopLink::setReady(bool on) { post(coopnet::ready(on)); }
+
+void NetCoopLink::sendChat(uint8_t channel, const std::string& text) {
+    if (connected_ && chatSupported_ && channel <= 1 && !text.empty()) post(coopnet::chatSend(channel, text));
+}
+
+std::vector<coopnet::ChatLineMsg> NetCoopLink::takeChat() {
+    std::vector<coopnet::ChatLineMsg> out;
+    out.swap(chat_);
+    return out;
+}
 void NetCoopLink::startGame(int players) { post(coopnet::start(static_cast<uint8_t>(players))); }
 
 void NetCoopLink::requestPackage() {

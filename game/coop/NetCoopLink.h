@@ -88,6 +88,15 @@ public:
     /// administrator of a test cancelled this player's invitation.
     int endCode() const { return endCode_; }
 
+    /// 2.95 (docs/RAIDS.md §39): the relay carries the raid's chat (its WELCOME said so; a relay before 2.95
+    /// would take a chat message for a protocol error: nothing is sent to it).
+    bool chatSupported() const { return chatSupported_; }
+    /// A message of this player on `channel` (0 « Groupe », 1 « Raid »): the relay gives it back to everyone
+    /// concerned, this game included (nothing is shown before), or says why it refused it.
+    void sendChat(uint8_t channel, const std::string& text);
+    /// The lines the relay gave since the last call (main thread).
+    std::vector<coopnet::ChatLineMsg> takeChat();
+
 private:
     void run();
     void post(std::vector<uint8_t> msg);
@@ -131,6 +140,8 @@ private:
     std::vector<uint32_t> raidHearts_;                       // 2.72: the heart's state of each, 0 when none
     std::vector<std::pair<uint32_t, coopnet::TestSeats>> testSeats_;  // 2.80: (step, places), in order (framesMutex_)
     int endCode_ = -1;                                       // 2.80
+    bool chatSupported_ = false;                             // 2.95
+    std::vector<coopnet::ChatLineMsg> chat_;                 // 2.95: lines not taken yet (main thread)
     std::vector<std::pair<uint32_t, uint32_t>> testOrders_;  // 2.80: (step, order), in order (framesMutex_)
 };
 

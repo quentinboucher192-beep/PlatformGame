@@ -947,6 +947,12 @@
    ]
   },
   {
+   "fr": "[EXEMPLE]·2",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "[{0}] est déjà invité.",
    "where": [
     "server/src/raids.ts"
@@ -5391,6 +5397,12 @@
    ]
   },
   {
+   "fr": "Attendez-moi !",
+   "where": [
+    "game/raid/RaidChat.cpp"
+   ]
+  },
+  {
    "fr": "Attendre la fin avant l'étape suivante",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -6307,6 +6319,12 @@
    "fr": "Aucun message non lu",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun message pour l'instant.",
+   "where": [
+    "ui/online/RaidChatUi.cpp"
    ]
   },
   {
@@ -8814,6 +8832,12 @@
    ]
   },
   {
+   "fr": "Besoin d'aide ici !",
+   "where": [
+    "game/raid/RaidChat.cpp"
+   ]
+  },
+  {
    "fr": "Bestiaire",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -8874,6 +8898,12 @@
    "fr": "Bien",
    "where": [
     "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Bien joué !",
+   "where": [
+    "game/raid/RaidChat.cpp"
    ]
   },
   {
@@ -12350,6 +12380,12 @@
    ]
   },
   {
+   "fr": "Ce serveur ne transporte pas encore le chat des raids : rien n'est envoyé.",
+   "where": [
+    "game/raid/RaidChat.cpp"
+   ]
+  },
+  {
    "fr": "Ce sol fissuré cédera sous une Frappe sismique (Bas + Attaque en l'air).",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -13172,6 +13208,12 @@
    ]
   },
   {
+   "fr": "Changer de canal du chat",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Changer de musique",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -13764,9 +13806,28 @@
    ]
   },
   {
+   "fr": "Chat",
+   "where": [
+    "saves/RaidHudLayout.cpp",
+    "ui/online/RaidChatUi.cpp"
+   ]
+  },
+  {
+   "fr": "Chat du raid",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Chat lunaire",
    "where": [
     "data/online/avatars.json"
+   ]
+  },
+  {
+   "fr": "Chat · {0}",
+   "where": [
+    "ui/online/RaidChatUi.cpp"
    ]
   },
   {
@@ -15897,6 +15958,12 @@
    "fr": "Commandes de J{0}…",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du chat : /g (canal Groupe) et /r (canal Raid), suivies du message.",
+   "where": [
+    "game/raid/RaidChat.cpp"
    ]
   },
   {
@@ -21913,6 +21980,12 @@
    ]
   },
   {
+   "fr": "Disparition des messages après",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Dispersion",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
@@ -26978,6 +27051,18 @@
    ]
   },
   {
+   "fr": "Entrée : envoyer · {0} : canal · Échap : fermer · /g, /r",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entrée : envoyer · Échap : fermer · /g, /r : canal",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Entrée : voir",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -27027,6 +27112,18 @@
   },
   {
    "fr": "Entrée ou A : les résultats validés par le serveur, tous les groupes comptés.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Entrée ou A : écrire à votre groupe ou à tout le raid (aussi {0} pendant le combat).",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Entrée ou A : écrire à votre groupe ou à tout le raid.",
    "where": [
     "ui/online/RaidMenu.cpp"
    ]
@@ -27248,6 +27345,7 @@
    "fr": "Envoyer",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
+    "ui/online/RaidChatUi.cpp",
     "ui/screens/AdminGifts.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -27724,6 +27822,12 @@
    "fr": "Exclusives et accordées une seule fois par le serveur, à partir des résultats validés. Les sessions de rattrapage donnent des versions argentées et ne changent pas le résultat officiel.",
    "where": [
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Exemple : on attaque le golem ensemble ?",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -31898,6 +32002,7 @@
     "editors/level_editor/LevelEditorLayout.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
     "game/online/RaidRecap.cpp",
+    "game/raid/RaidChat.cpp",
     "ui/online/RaidHud.cpp",
     "ui/online/RaidMenu.cpp",
     "ui/screens/RaidGameScene.cpp",
@@ -33270,7 +33375,8 @@
   {
    "fr": "IA",
    "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
+    "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "ui/online/RaidChatUi.cpp"
    ]
   },
   {
@@ -35769,6 +35875,12 @@
    ]
   },
   {
+   "fr": "Joueur 7",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Joueur bloqué : il ne peut plus vous écrire, vous suivre ni réagir à vos commentaires.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -35867,6 +35979,12 @@
    "fr": "Joueur précédent",
    "where": [
     "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Joueur simulé 3",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -37997,6 +38115,12 @@
    ]
   },
   {
+   "fr": "La Main est ouverte, on vous attend !",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "La Main est éteinte",
    "where": [
     "game/raid/RaidBranch.h"
@@ -38976,7 +39100,8 @@
    "where": [
     "data/raids/asterion_sheets.json",
     "editors/level_editor/LevelEditorPanels.cpp",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -39288,6 +39413,18 @@
    ]
   },
   {
+   "fr": "Le canal Raid est très actif : attendez un instant.",
+   "where": [
+    "server/src/raidChat.ts"
+   ]
+  },
+  {
+   "fr": "Le canal Raid n'est pas disponible pour l'instant.",
+   "where": [
+    "server/src/raidChat.ts"
+   ]
+  },
+  {
    "fr": "Le catalogue des succès est introuvable (data/achievements).",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -39303,6 +39440,12 @@
    "fr": "Le champignon-mère qui relie toutes les racines de Sylvanox. Elle s'enfonce sous terre et ressurgit là où on ne l'attend pas.",
    "where": [
     "data/enemies/mycelia.json"
+   ]
+  },
+  {
+   "fr": "Le chat n'est ouvert que pendant un raid.",
+   "where": [
+    "game/raid/RaidChat.cpp"
    ]
   },
   {
@@ -44395,6 +44538,12 @@
    ]
   },
   {
+   "fr": "Lignes affichées",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Lignes {0}–{1} sur {2}",
    "where": [
     "ui/widgets/Charts.cpp"
@@ -46332,6 +46481,12 @@
    ]
   },
   {
+   "fr": "Merci !",
+   "where": [
+    "game/raid/RaidChat.cpp"
+   ]
+  },
+  {
    "fr": "Merci : votre avis est publié.",
    "where": [
     "ui/online/RaidReviewsPanel.cpp"
@@ -46484,6 +46639,12 @@
    ]
   },
   {
+   "fr": "Message rapide : {0}",
+   "where": [
+    "ui/online/RaidChatUi.cpp"
+   ]
+  },
+  {
    "fr": "Message signalé. Merci.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -46509,9 +46670,27 @@
    ]
   },
   {
+   "fr": "Message trop long : 200 caractères au plus.",
+   "where": [
+    "server/src/raidChat.ts"
+   ]
+  },
+  {
    "fr": "Message à la découverte",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Message à tout le raid…",
+   "where": [
+    "ui/online/RaidChatUi.cpp"
+   ]
+  },
+  {
+   "fr": "Message à votre groupe…",
+   "where": [
+    "ui/online/RaidChatUi.cpp"
    ]
   },
   {
@@ -51401,6 +51580,12 @@
    ]
   },
   {
+   "fr": "On y va !",
+   "where": [
+    "game/raid/RaidChat.cpp"
+   ]
+  },
+  {
    "fr": "Onde",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -51637,6 +51822,12 @@
    "where": [
     "game/levels/ObjectTypes.cpp",
     "ui/screens/GhostOptionsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Opacité du fond",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -52264,6 +52455,12 @@
    "fr": "Ouvrir le cadeau",
    "where": [
     "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir le chat",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -53447,6 +53644,12 @@
     "data/enemies/echo_nyxara.json",
     "data/enemies/nyxara.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de liaison avec le relais pour l'instant : rien n'est envoyé.",
+   "where": [
+    "game/raid/RaidChat.cpp"
    ]
   },
   {
@@ -58914,6 +59117,12 @@
    ]
   },
   {
+   "fr": "Prêt !",
+   "where": [
+    "game/raid/RaidChat.cpp"
+   ]
+  },
+  {
    "fr": "Prêt : cliquez pour lancer l'installation (le jeu se ferme).",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -60160,6 +60369,7 @@
   {
    "fr": "Raid",
    "where": [
+    "game/raid/RaidChat.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp"
@@ -62196,6 +62406,12 @@
    ]
   },
   {
+   "fr": "Regroupons-nous !",
+   "where": [
+    "game/raid/RaidChat.cpp"
+   ]
+  },
+  {
    "fr": "regroupées",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -63808,6 +64024,12 @@
    ]
   },
   {
+   "fr": "Retour aux éléments",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Retour dans la partie",
    "where": [
     "ui/screens/CoopGameScene.cpp"
@@ -64908,7 +65130,8 @@
   {
    "fr": "Réanimateur",
    "where": [
-    "game/raid/bots/BotTypes.cpp"
+    "game/raid/bots/BotTypes.cpp",
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -64990,6 +65213,12 @@
    ]
   },
   {
+   "fr": "réanime Joueur 5",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "réanime {0}",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -65006,6 +65235,12 @@
    "where": [
     "game/raid/bots/BotTypes.cpp",
     "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimez-moi !",
+   "where": [
+    "game/raid/RaidChat.cpp"
    ]
   },
   {
@@ -65418,6 +65653,18 @@
    ]
   },
   {
+   "fr": "Réglages du chat",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réglages du chat…",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Réglages du niveau : {0}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -65427,6 +65674,12 @@
    "fr": "Réglages du projet enregistrés.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réglages par défaut du chat",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -66447,6 +66700,12 @@
    "fr": "Sa partie ne peut pas être rejouée à l'identique ici : mettez le jeu à jour ({0} joue en {1}).",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa place et sa taille se règlent dans la liste, comme les autres éléments. Le chat ne se pose jamais sur un autre élément du HUD.",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -67918,6 +68177,7 @@
   {
    "fr": "Serveur",
    "where": [
+    "ui/online/RaidChatUi.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -73910,9 +74170,21 @@
    ]
   },
   {
+   "fr": "TEST LOCAL — rien n'est envoyé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "TEST LOCAL — rien n'est envoyé : aucun appel réseau, aucun résultat, aucune récompense.",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "TEST LOCAL — rien n'est envoyé : vos messages et les pensées des joueurs simulés restent sur cet ordinateur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -76183,6 +76455,13 @@
    "fr": "trop de joueurs dans le tableau",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Trop de messages à la suite : attendez une seconde.",
+   "where": [
+    "game/raid/RaidChat.cpp",
+    "server/src/raidChat.ts"
    ]
   },
   {
@@ -82231,6 +82510,12 @@
    ]
   },
   {
+   "fr": "Vous n'êtes placé dans aucun groupe du test : écrivez sur le canal Raid.",
+   "where": [
+    "server/src/raidChat.ts"
+   ]
+  },
+  {
    "fr": "Vous n'êtes plus amis avec ce joueur.",
    "where": [
     "server/src/social.ts"
@@ -82451,6 +82736,13 @@
    "fr": "vous regardez",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous regardez un autre groupe : écrivez sur le canal Raid.",
+   "where": [
+    "game/raid/RaidChat.cpp",
+    "server/src/raidChat.ts"
    ]
   },
   {
@@ -84154,6 +84446,12 @@
    "fr": "{0} : entier de {1} à {2} attendu",
    "where": [
     "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "{0} : envoyer · {1} / {2} : canal · {3} : fermer · stick droit : défiler",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

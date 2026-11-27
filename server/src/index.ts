@@ -43,6 +43,7 @@ import { liveRoute } from "./live";
 export { ProjectRoom } from "./live";
 export { SpectateRoom } from "./spectate";
 export { CoopRoom } from "./coop";
+export { RaidChatRoom } from "./raidChat";  // 2.95: the « Raid » channel of each event
 import * as coop from "./coop";
 import * as coopRace from "./coopRace";
 import * as spectate from "./spectate";

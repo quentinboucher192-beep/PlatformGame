@@ -44,6 +44,13 @@ struct HudAreas {
 Rect area(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const HudAreas& hud);
 /// The scale an element is drawn at (0.5 to 2).
 float scaleOf(const RaidHudLayout& l, RaidHudElement e);
+/// 2.95: the chat's measures at scale `k`: its padding, the height and font of a line, the field's row and the gap
+/// above it. Its box (chatSize): `lines` rows of lines then the field's row, its settings' width.
+struct ChatMetrics {
+    float pad = 0.0f, lineH = 0.0f, font = 15.0f, rowH = 0.0f, gap = 0.0f;
+};
+ChatMetrics chatMetrics(UIContext& ui, float k);
+Vec2 chatSize(UIContext& ui, const RaidChatSettings& s, float k);
 /// The settings the game's HUD (Hud) is drawn with in a raid: its vitals, powers and gigaboss bar
 /// at the raid layout's places (shown or not), the focus mode off (the raids have their own layout).
 GameplaySettings hudSettings(const GameplaySettings& base);
