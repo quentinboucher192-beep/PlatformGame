@@ -235,6 +235,47 @@ std::vector<uint8_t> testOrder(uint8_t kind, uint16_t x, uint16_t y) {
     return o;
 }
 
+std::vector<uint8_t> chatSend(uint8_t channel, const std::string& text) {
+    auto o = msg(Msg::ChatSend);
+    Writer w{o};
+    w.u8(channel);
+    size_t n = std::min(text.size(), kChatMaxBytes);
+    while (n > 0 && n < text.size() && (static_cast<unsigned char>(text[n]) & 0xC0) == 0x80) --n;  // whole characters
+    w.u16(static_cast<uint16_t>(n));
+    o.insert(o.end(), text.begin(), text.begin() + static_cast<std::ptrdiff_t>(n));
+    return o;
+}
+
+bool readChatLine(const uint8_t* data, size_t size, ChatLineMsg& out) {
+    Reader r{data, data + size};
+    out.channel = r.u8();
+    out.flags = r.u8();
+    out.at = r.u32();
+    out.account = r.str(64);
+    out.name = r.str(64);
+    out.label = r.str(64);
+    const uint16_t n = r.u16();
+    if (!r.ok || n > kChatMaxBytes || !r.need(n)) return false;
+    out.text.assign(reinterpret_cast<const char*>(r.p), n);
+    r.p += n;
+    return r.done() && out.channel <= 1 && (out.flags & ~(kChatNotice | kChatHistory)) == 0;
+}
+
+std::vector<uint8_t> chatLine(const ChatLineMsg& m) {
+    auto o = msg(Msg::ChatLine);
+    Writer w{o};
+    w.u8(m.channel);
+    w.u8(m.flags);
+    w.u32(m.at);
+    w.str(m.account, 64);
+    w.str(m.name, 64);
+    w.str(m.label, 64);
+    const size_t n = std::min(m.text.size(), kChatMaxBytes);
+    w.u16(static_cast<uint16_t>(n));
+    o.insert(o.end(), m.text.begin(), m.text.begin() + static_cast<std::ptrdiff_t>(n));
+    return o;
+}
+
 bool readTestOrder(const uint8_t* data, size_t size, uint32_t& tick, uint32_t& packed) {
     Reader r{data, data + size};
     tick = r.u32();

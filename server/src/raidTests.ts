@@ -25,6 +25,7 @@ import { requireAuth } from "./auth";
 import { requireAdminRole } from "./adminRoles";
 import { MAX_RAID_PLAYERS, TEST_NONE, ask, stub } from "./coop";
 import { PRESENCE_TIMEOUT_MS, presenceOf } from "./friends";
+import { setChatHeaders } from "./raidChat";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
@@ -600,6 +601,7 @@ export async function socket(ctx: Ctx): Promise<Response> {
     headers.set("x-player-id", me);
     headers.set("x-player-name", auth.player.username);
     headers.delete("x-raid-watch");
+    setChatHeaders(headers, { label: "", member: true }); // 2.95: a test's chat (its « Groupe »: the group placed in)
     const res = await stub(ctx.env, t.id).fetch(new Request("https://coop/socket", { headers }));
     if (res.status === 403 || res.status === 404) throw Errors.notFound("RAID_TEST_NOT_FOUND", "Test introuvable.");
     return res;

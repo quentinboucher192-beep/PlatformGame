@@ -13,13 +13,14 @@ interface __BaseEnv_Env {
 	PROJECT_ROOMS: DurableObjectNamespace /* ProjectRoom */;
 	SPECTATE_ROOMS: DurableObjectNamespace /* SpectateRoom */;
 	COOP_ROOMS: DurableObjectNamespace /* CoopRoom */;
+	RAID_CHAT_ROOMS: DurableObjectNamespace /* RaidChatRoom */;
 	RATE_LIMIT_SCALE?: "50";
 	ADMIN_TOKEN?: string;
 }
 declare namespace Cloudflare {
 	interface GlobalProps {
 		mainModule: typeof import("./src/index");
-		durableNamespaces: "ProjectRoom" | "SpectateRoom" | "CoopRoom";
+		durableNamespaces: "ProjectRoom" | "SpectateRoom" | "CoopRoom" | "RaidChatRoom";
 	}
 	interface StagingEnv {
 		STORAGE: R2Bucket;
@@ -33,6 +34,7 @@ declare namespace Cloudflare {
 		PROJECT_ROOMS: DurableObjectNamespace /* ProjectRoom */;
 		SPECTATE_ROOMS: DurableObjectNamespace /* SpectateRoom */;
 	COOP_ROOMS: DurableObjectNamespace /* CoopRoom */;
+		RAID_CHAT_ROOMS: DurableObjectNamespace /* RaidChatRoom */;
 	}
 	interface DevEnv {
 		STORAGE: R2Bucket;
@@ -48,6 +50,7 @@ declare namespace Cloudflare {
 		PROJECT_ROOMS: DurableObjectNamespace /* ProjectRoom */;
 		SPECTATE_ROOMS: DurableObjectNamespace /* SpectateRoom */;
 	COOP_ROOMS: DurableObjectNamespace /* CoopRoom */;
+		RAID_CHAT_ROOMS: DurableObjectNamespace /* RaidChatRoom */;
 	}
 	interface Env extends __BaseEnv_Env {}
 }

@@ -48,7 +48,7 @@ enum class Msg : uint8_t {
     CatchupDone = 6,  // game → relay: u32 last step simulated
     Leave = 7,        // game → relay
     PackageAsk = 9,   // game → relay (lobby, 2.63.5): u32 offset in the level's package
-    Welcome = 10,     // relay → game: u8 seat, u8 protocol
+    Welcome = 10,     // relay → game: u8 seat, u8 protocol, [u8 features (2.95): kFeatureChat]
     Lobby = 11,       // relay → game: JSON text
     Go = 12,          // relay → game: u64 seed, u8 players, u8 delay, str level, str hash, str attempt
     Frames = 13,      // relay → game: u32 first tick, u16 n, n × players frames
@@ -62,7 +62,19 @@ enum class Msg : uint8_t {
                       // from which it applies, u8 count, then per relay seat u8 group (kTestNone), u8 seat of the test, u8 flags
     TestOrder = 20,   // 2.80, a test's order to its simulated players (2.79's wheel): game → relay (its administrator only):
                       // u8 kind (1..6), u16 x, u16 y (4 px each); relay → game: u32 step, then the same
+    ChatSend = 21,    // 2.95, the raid's chat (docs/RAIDS.md §39), game → relay: u8 channel (0 « Groupe », 1 « Raid »),
+                      // u16 n, n bytes of UTF-8 (kChatMaxBytes at most). Never a step: nothing of the simulation.
+    ChatLine = 22,    // 2.95, relay → game: u8 channel, u8 flags (kChatNotice, kChatHistory), u32 Unix seconds, str account,
+                      // str name, str label (« [AUBE]·2 »), u16 n + the text. The relay decides who wrote it (the session).
 };
+
+/// 2.95: WELCOME's features (a relay before 2.95 sends none: its games never send a chat message, which it
+/// would take for a protocol error).
+constexpr uint8_t kFeatureChat = 1;
+/// 2.95: a chat message's bytes on the wire at most (200 characters), and CHAT_LINE's flags.
+constexpr size_t kChatMaxBytes = 1024;
+constexpr uint8_t kChatNotice = 1;   // the relay's own words to this player (a message refused: why)
+constexpr uint8_t kChatHistory = 2;  // given again on a (re)connection (the last lines of the channel)
 
 /// 2.63.5: the level of a room. `source` "campaign" (`id`: the level of the game) or
 /// "community" (`id`: its Cosmic Online id, `version`: its published version); `hash`: its
@@ -202,6 +214,19 @@ bool readTestSeats(const uint8_t* data, size_t size, uint32_t& tick, TestSeats& 
 /// as raid::bots::withOrder packs it (kind | x << 3 | y << 14).
 std::vector<uint8_t> testOrder(uint8_t kind, uint16_t x, uint16_t y);
 bool readTestOrder(const uint8_t* data, size_t size, uint32_t& tick, uint32_t& packed);
+
+/// 2.95, the raid's chat: a message of this player on `channel` (0 « Groupe », 1 « Raid »), its text cut to
+/// kChatMaxBytes (whole characters).
+std::vector<uint8_t> chatSend(uint8_t channel, const std::string& text);
+/// A line the relay gives (CHAT_LINE's content, after its type byte); false when malformed.
+struct ChatLineMsg {
+    uint8_t channel = 0, flags = 0;
+    uint32_t at = 0;
+    std::string account, name, label, text;
+};
+bool readChatLine(const uint8_t* data, size_t size, ChatLineMsg& out);
+/// The same, as a relay writes it (tests, the local network's relay).
+std::vector<uint8_t> chatLine(const ChatLineMsg& m);
 
 std::vector<uint8_t> packageAsk(uint32_t offset);
 /// `total` 0: this relay has no package to send (the bytes are then empty).

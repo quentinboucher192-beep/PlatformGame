@@ -24,6 +24,7 @@
 
 import { requireAuth } from "./auth";
 import { ask, stub, MAX_TICKS } from "./coop";
+import { setChatHeaders } from "./raidChat";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
 import { ambushesIn, catalogById, difficultyOf, doneOf, levelHashFor, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
@@ -437,10 +438,17 @@ export async function instanceSocket(ctx: Ctx): Promise<Response> {
     headers.set("x-player-name", auth.player.username);
     // 2.75 (raidWipe.ts): a spectator (their group wiped), a wiped instance, or a watch asked
     // (?watch=1): a socket that receives the game and never takes a seat.
-    const watch =
-        new URL(ctx.request.url).searchParams.get("watch") === "1" || inst.wiped_zone != null || !!(await spectatorOf(db, e.id, auth.player.id));
+    const spect = await spectatorOf(db, e.id, auth.player.id);
+    const watch = new URL(ctx.request.url).searchParams.get("watch") === "1" || inst.wiped_zone != null || !!spect;
     if (watch) headers.set("x-raid-watch", "1");
     else headers.delete("x-raid-watch");
+    // 2.95 (raidChat.ts): who this socket is for the chat — its clan and group on the « Raid » channel (« [AUBE]·2 »),
+    // and whether this instance's « Groupe » is its own (a seat, or its own group wiped: a spectator of another group
+    // writes on « Raid » only). From the server's rows, never from the game.
+    const clan = await db.prepare("SELECT c.tag FROM raid_registrations r JOIN clans c ON c.id = r.clan_id WHERE r.event_id = ?1 AND r.player_id = ?2")
+        .bind(e.id, auth.player.id)
+        .first<{ tag: string }>();
+    setChatHeaders(headers, { label: clan ? `[${clan.tag}]·${inst.group_no}` : "", member: !watch || spect?.instance_id === inst.id });
     const res = await stub(ctx.env, id).fetch(new Request("https://coop/socket", { headers }));
     if (res.status === 403 || res.status === 404) throw Errors.notFound("INSTANCE_NOT_FOUND", "Instance introuvable.");
     return res;

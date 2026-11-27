@@ -25,6 +25,8 @@ struct Entry {
     PadBinding pad;
 };
 const Entry kInventory[] = {
+    {Action::ChatOpen, SDL_SCANCODE_T, B::button(SDL_GAMEPAD_BUTTON_MISC1)},                // 2.95: the raid's chat
+    {Action::ChatChannel, SDL_SCANCODE_TAB, B::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER)},  // 2.95: its channel
     {Action::Restart, SDL_SCANCODE_R, B::button(SDL_GAMEPAD_BUTTON_BACK)},
     {Action::ReplayPlay, SDL_SCANCODE_K, B::button(SDL_GAMEPAD_BUTTON_WEST)},
     {Action::ReplayBack, SDL_SCANCODE_J, B::axisNeg(SDL_GAMEPAD_AXIS_RIGHTX)},
@@ -107,7 +109,7 @@ TEST_CASE("controls (2.93): every inventoried command is rebindable, listed in a
         CHECK(d.pad[at(e.action)][0] == e.pad);
         if (!actionHasPadBinding(e.action)) CHECK(e.pad.kind == PadBinding::Kind::None);
     }
-    CHECK(n == 53);
+    CHECK(n == 55);
     // The names line up with the commands (the table of InputTypes.cpp is as long as the enum).
     CHECK(std::string(actionId(Action::DebugOverlay)) == "debug_overlay");
     CHECK(std::string(actionId(Action::MenuTabNext)) == "menu_tab_next");

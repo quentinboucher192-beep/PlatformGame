@@ -585,6 +585,13 @@ void UIContext::editText(const std::string& name) {
     if (app_) input().startTextInput(app_->window());
 }
 
+void UIContext::stopEditing() {
+    if (editing_ == 0) return;
+    editing_ = 0;
+    dragSelect_ = false;
+    if (app_) input().stopTextInput(app_->window());
+}
+
 namespace {
 // UTF-8 helpers of the text fields (byte offsets that never split a code point).
 size_t utf8Prev(const std::string& s, size_t i) {

@@ -374,3 +374,5 @@ ArenaWorld: this program does not redirect its allocations to the arenas (tools/
 sp{0}
 |band|{0}|{1}
 |view|{0}|{1}|{2}|{3}
+# 2.95: the raids' HUD element of the chat (its id in the settings), never shown
+chat

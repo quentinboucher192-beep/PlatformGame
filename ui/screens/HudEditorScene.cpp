@@ -8,6 +8,9 @@
 // contributions, the network line / « TEST ADMIN » badge, and the off-screen arrows' toggle.
 // Previewed with an example of a raid of 8 players (said as such on the preview: the editor's
 // only, never in game), drawn by the raid's own code (ui/online/RaidHud).
+// 2.95: the raid's chat (its place, its size, and its own settings: width, lines, how long a line stays, the
+// opacity of its background: « Réglages du chat… », docs/RAIDS.md §39); the list of the raid's elements scrolls
+// when it is longer than its room.
 
 #include <algorithm>
 #include <chrono>
@@ -19,6 +22,7 @@
 #include <utility>
 #include <vector>
 
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameRenderer.h"
@@ -27,6 +31,7 @@
 #include "game/gameplay/LevelProgress.h"
 #include "game/powers/PowerKeys.h"
 #include "ui/screens/GhostRun.h"
+#include "ui/online/RaidChatUi.h"
 #include "ui/online/RaidHud.h"
 #include "ui/online/RaidMenu.h"
 #include "ui/online/RaidWidgets.h"
@@ -120,7 +125,8 @@ public:
         std::string conflict = firstConflict();
         primary.enabled = conflict.empty();  // never save a layout where elements overlap
         bool save = ui.button("save", {W - margin - bw, ui.s(24), bw, bh}, "Enregistrer", primary) && conflict.empty();
-        bool cancel = ui.button("cancel", {W - margin - bw * 2 - ui.s(16), ui.s(24), bw, bh}, "Annuler") || ui.backPressed();
+        // 2.95: Échap on the chat's settings goes back to the list (drawChatSettings), not out of the editor.
+        bool cancel = ui.button("cancel", {W - margin - bw * 2 - ui.s(16), ui.s(24), bw, bh}, "Annuler") || (ui.backPressed() && !chatPage_);
 
         // Preview (16:9, the left part of the screen).
         Rect P{margin, ui.s(104), W * 0.6f, W * 0.6f * H / W};
@@ -496,6 +502,7 @@ private:
             mode_ = mode;
             work_.focusMode = mode_ == 1;
             selected_ = 0;
+            chatPage_ = false;
             dragging_ = false;
         }
         y += ui.s(58);
@@ -765,6 +772,10 @@ private:
 
     void drawRaidPanel(const Rect& c) {
         UIContext& ui = g_.ui;
+        if (chatPage_) {  // 2.95: the chat's own settings, in place of the list
+            drawChatSettings(c);
+            return;
+        }
         float y = c.y;
         const std::string head = "Éléments du HUD des raids";
         ui.label(head, {c.x, y}, ui.fitFont(head, FontFace::Bold, 22, c.w), ui.theme().text, Align::Left, FontFace::Bold);
@@ -772,13 +783,19 @@ private:
         const float gap = ui.s(6);
         const float below = 2.0f * (ui.s(48) + gap) + ui.s(14) + ui.s(38) + ui.s(50) + 4.0f * ui.s(58);  // 2.79: two toggles
         // 2.74: in two columns when one does not leave rows of 40 px at least (13 elements since the
-        // Cœur d'Asterion's two), so that the settings under them stay on the screen.
+        // Cœur d'Asterion's two), so that the settings under them stay on the screen. 2.95: when two columns
+        // of 40 px do not fit either, the list scrolls in its room (its bar at the right).
         const float room = c.bottom() - y - below;
         const int cols = room / static_cast<float>(kRaidHudElements) - gap >= ui.s(40) ? 1 : 2;
         const int perCol = (kRaidHudElements + cols - 1) / cols;
-        const float colW = (c.w - gap * static_cast<float>(cols - 1)) / static_cast<float>(cols);
         const float rowH = std::clamp(room / static_cast<float>(perCol) - gap, ui.s(40), ui.s(52));
-        const float listY = y;
+        const float listH = static_cast<float>(perCol) * (rowH + gap);
+        const bool scrolled = listH > room + 0.5f;
+        const float listW = scrolled ? c.w - ui.s(14) : c.w;  // the bar's lane
+        const float colW = (listW - gap * static_cast<float>(cols - 1)) / static_cast<float>(cols);
+        const float listTop = y;
+        if (scrolled) ui.beginScroll("rellist", {c.x, listTop, c.w, room}, listH);
+        const float listY = listTop - (scrolled ? ui.scrollOffset() : 0.0f);
         selected_ = std::clamp(selected_, 0, kRaidHudElements - 1);
         for (int i = 0; i < kRaidHudElements; ++i) {
             const int col = i / perCol;
@@ -795,7 +812,8 @@ private:
                             i == selected_, sub))
                 selected_ = i;
         }
-        y = listY + static_cast<float>(perCol) * (rowH + gap);
+        if (scrolled) ui.endScroll();
+        y = scrolled ? listTop + room : listY + listH;
         ui.toggle("raidarrows", {c.x, y, c.w, ui.s(48)}, "Flèches hors écran (ennemis, embuscade, boss, alliés)", work_.raidHud.arrows);
         y += ui.s(48) + gap;
         ui.toggle("raidthoughts", {c.x, y, c.w, ui.s(48)}, "Pensées des joueurs simulés (tests)", work_.raidHud.thoughts);  // 2.79
@@ -830,12 +848,77 @@ private:
         r.y += step;
         if (ui.slider("rposy", r, "Position verticale", py, 0.0f, 100.0f, 1.0f, "%.0f %%") && shown) raidMoveTo(e, {a.x, py / 100.0f * (H - a.h)});
         r.y += step;
-        if (ui.button("rreset", r, "Place et taille par défaut")) {
+        Rect resetR = r;
+        if (e == RE::Chat) {  // 2.95: its own settings beside « Place et taille par défaut »
+            resetR.w = (r.w - gap) * 0.5f;
+            const Rect more{resetR.right() + gap, r.y, r.w - resetR.w - gap, r.h};
+            UIContext::ButtonStyle bs;
+            bs.fontSize = ui.fitFont("Réglages du chat…", FontFace::Body, 20, more.w - ui.s(24));
+            if (ui.button("rchat", more, "Réglages du chat…", bs)) {
+                chatPage_ = true;
+                ui.setFocus("hud/chatwidth");
+            }
+        }
+        UIContext::ButtonStyle rs;
+        rs.fontSize = ui.fitFont("Place et taille par défaut", FontFace::Body, 20, resetR.w - ui.s(24));
+        if (ui.button("rreset", resetR, "Place et taille par défaut", rs)) {
             GameplaySettings cand = work_;
             const bool keep = cand.raidHud[e].visible;
             cand.raidHud[e] = HudPlace{};
             cand.raidHud[e].visible = keep;
             raidTryApply(cand, e);
+        }
+    }
+
+    /// 2.95: the chat's own settings (Paramètres › HUD › « Raids » › Chat › « Réglages du chat… »): its width and its
+    /// lines (its box: never over another element), how long a new line stays, the opacity of its lines' background.
+    void drawChatSettings(const Rect& c) {
+        UIContext& ui = g_.ui;
+        float y = c.y;
+        const std::string head = "Réglages du chat";
+        ui.label(head, {c.x, y}, ui.fitFont(head, FontFace::Bold, 22, c.w), ui.theme().text, Align::Left, FontFace::Bold);
+        y += ui.s(38);
+        const Vec2 used = ui.labelWrapped("Sa place et sa taille se règlent dans la liste, comme les autres éléments. Le chat ne se pose "
+                                          "jamais sur un autre élément du HUD.",
+                                          {c.x, y}, c.w, 17, ui.theme().textDim);
+        y += used.y + ui.s(14);
+        const float step = ui.s(58);
+        Rect r{c.x, y, c.w, ui.s(50)};
+        const RaidChatSettings cs = work_.raidHud.chat;
+        float width = cs.width * 100.0f;
+        if (ui.slider("chatwidth", r, "Largeur", width, RaidChatSettings::kMinWidth * 100.0f, RaidChatSettings::kMaxWidth * 100.0f, 5.0f, "%.0f %%")) {
+            GameplaySettings cand = work_;
+            cand.raidHud.chat.width = std::clamp(width / 100.0f, RaidChatSettings::kMinWidth, RaidChatSettings::kMaxWidth);
+            raidTryApply(cand, RE::Chat);
+        }
+        r.y += step;
+        int lines = cs.lines;
+        if (ui.sliderInt("chatlines", r, "Lignes affichées", lines, RaidChatSettings::kMinLines, RaidChatSettings::kMaxLines)) {
+            GameplaySettings cand = work_;
+            cand.raidHud.chat.lines = std::clamp(lines, RaidChatSettings::kMinLines, RaidChatSettings::kMaxLines);
+            raidTryApply(cand, RE::Chat);
+        }
+        r.y += step;
+        float fade = cs.fade;
+        if (ui.slider("chatfade", r, "Disparition des messages après", fade, RaidChatSettings::kMinFade, RaidChatSettings::kMaxFade, 1.0f, "%.0f s"))
+            work_.raidHud.chat.fade = std::clamp(fade, RaidChatSettings::kMinFade, RaidChatSettings::kMaxFade);
+        r.y += step;
+        float opacity = cs.opacity * 100.0f;
+        if (ui.slider("chatopacity", r, "Opacité du fond", opacity, RaidChatSettings::kMinOpacity * 100.0f, RaidChatSettings::kMaxOpacity * 100.0f, 5.0f,
+                      "%.0f %%"))
+            work_.raidHud.chat.opacity = std::clamp(opacity / 100.0f, RaidChatSettings::kMinOpacity, RaidChatSettings::kMaxOpacity);
+        r.y += step;
+        if (ui.button("chatdefault", r, "Réglages par défaut du chat")) {
+            GameplaySettings cand = work_;
+            cand.raidHud.chat = RaidChatSettings{};
+            raidTryApply(cand, RE::Chat);
+        }
+        r.y += step;
+        UIContext::ButtonStyle bs;
+        bs.primary = true;
+        if (ui.button("chatback", r, "Retour aux éléments", bs) || ui.backPressed()) {
+            chatPage_ = false;
+            ui.setFocus("hud/rel" + std::to_string(static_cast<int>(RE::Chat)));
         }
     }
 
@@ -925,6 +1008,34 @@ private:
                                     {{"◆", "Crâne tombé : ses lances stellaires perdent leur précision", kGreen},
                                      {"!", "Torse debout : une cage d'os le garde dès sa 1re phase", Color{255, 176, 74, 255}},
                                      {"◆", "Abdomen tombé : plus d'engeances en renfort", kGreen}});
+        if (shown(RE::Chat)) {
+            // 2.95: three lines of example (the editor's only), as fresh as can be: its width, lines and opacity shown.
+            raidchat::Chat ex;
+            const float now = ui.time();
+            raidchat::Line a;
+            a.channel = raidchat::Channel::Group;
+            // The players' words are shown as written: here, written in the language shown.
+            a.name = i18n::tr("Vous");
+            a.mine = true;
+            a.text = i18n::tr("Exemple : on attaque le golem ensemble ?");
+            a.clock = now;
+            ex.log.push(a);
+            raidchat::Line b;
+            b.channel = raidchat::Channel::Raid;
+            b.label = i18n::tr("[EXEMPLE]·2");
+            b.name = i18n::tr("Joueur 7");
+            b.text = i18n::tr("La Main est ouverte, on vous attend !");
+            b.clock = now;
+            ex.log.push(b);
+            ex.aiLine({3, "Joueur simulé 3", "Réanimateur", "réanime Joueur 5"}, now);
+            raidchatui::View v;
+            raidchatui::Look look;
+            look.openKey = withKey("{0}", g_.app.input().bindings(), Action::ChatOpen);
+            look.nameColor = [](const raidchat::Line& line) {
+                return line.mine ? kSeat[0] : line.seat >= 0 ? kSeat[std::clamp(line.seat, 0, 7)] : kSky;
+            };
+            raidchatui::draw(ui, ex, v, at(RE::Chat), k(RE::Chat), l.chat, look, now, true, false);
+        }
         {
             // 2.75.5: the raid menu's button and two notifications (never hidden: placed and sized here).
             std::vector<raidmenu::Notice> ex(2);
@@ -960,6 +1071,7 @@ private:
     float previewScale_ = 0.6f;
     int selected_ = 0;
     int mode_ = 0;  // 0 the full HUD, 1 the « mode concentré », 2 (2.72) the raids
+    bool chatPage_ = false;  // 2.95: the raids' tab shows the chat's own settings
     bool savedFocus_ = false;
     bool dragging_ = false;
     bool bossShown_ = false;

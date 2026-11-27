@@ -51,6 +51,10 @@ enum class Action : int {
     RaidMenu,     // 2.75.5: the raid's menu (what is left, zones finished, journal, group, titan), never recorded
     BotOrders,    // 2.79: a raid test's order wheel for the simulated players (the order rides on the frame, not this key)
     BotThoughts,  // 2.79: show / hide what the simulated players think (display only, never recorded)
+    // 2.95 (docs/RAIDS.md §39): the raid's chat opened, and its channel changed while it is open. Never bits of
+    // the recorded actions: this player's frames are neutral while they type (raidmenu::Hold::chat).
+    ChatOpen,
+    ChatChannel,
     // 2.91, a training run (docs/GHOST_RACING.md): a StartPos placed here, the previous / next one
     // chosen, a measure point placed here (A, then B). Never bits of the recorded actions: the scene
     // sets the frame's mark flags from them (InputFrame::PlaceStartPos…), which the replay keeps.
@@ -165,6 +169,7 @@ enum BindingScope : uint32_t {
     kScopeViews = 1u << 5,        // web of the achievements, parts of the enemies, heart sheet of a raid
     kScopeLevelEditor = 1u << 6,  // the level editor
     kScopeStudio = 1u << 7,       // the Studio of the creations
+    kScopeChat = 1u << 8,         // 2.95: the raid's chat while it is open (the game's keys are not read then)
     kScopePlay = kScopeRun | kScopeRaid,  // moving and fighting: every game (alone, in a team, in a raid)
     kScopeEverywhere = 0xFFFFFFFFu,       // read by the application on every screen (F11, F12, F3)
 };

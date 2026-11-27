@@ -29,12 +29,28 @@ enum class RaidHudElement : int {
     Remaining,      // 2.75: « Ce qu'il reste à faire »: the zone's requirements ticked, the branch's zones to finish
     Notices,        // 2.75.5: the raid menu's button and the short notifications under it (ui/online/RaidMenu)
     LairPassage,    // 2.78: the distance to the lair's passage in the zone before it, its arrow and its state
+    Chat,           // 2.95: the raid's chat (its recent lines, the history and the field when open: ui/online/RaidChatUi)
     Count
 };
 constexpr int kRaidHudElements = static_cast<int>(RaidHudElement::Count);
 
+/// 2.95 (docs/RAIDS.md §39): the chat's own settings (Paramètres › HUD › « Raids » › Chat), besides its place and
+/// size: its width, the lines it shows, how long a new line stays, and the opacity of the lines' background.
+struct RaidChatSettings {
+    static constexpr float kMinWidth = 0.6f, kMaxWidth = 1.6f;      // × its default width
+    static constexpr int kMinLines = 3, kMaxLines = 12;
+    static constexpr float kMinFade = 3.0f, kMaxFade = 30.0f;       // seconds
+    static constexpr float kMinOpacity = 0.1f, kMaxOpacity = 1.0f;
+    float width = 1.0f;
+    int lines = 7;
+    float fade = 10.0f;
+    float opacity = 0.55f;
+    bool operator==(const RaidChatSettings&) const = default;
+};
+
 struct RaidHudLayout {
     std::array<HudPlace, kRaidHudElements> items{};
+    RaidChatSettings chat;  // 2.95
     /// The arrows on the screen's border toward what is out of view (enemies already met, the
     /// ambush's, the gigaboss, the allies), as in the solo levels.
     bool arrows = true;

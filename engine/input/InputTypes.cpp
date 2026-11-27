@@ -41,6 +41,9 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"raid_menu", "Menu du raid", kScopeRaid, G::Raid},
     {"bot_orders", "Ordres aux joueurs simulés", kScopeRaid, G::Raid},
     {"bot_thoughts", "Pensées des joueurs simulés", kScopeRaid, G::Raid},
+    // 2.95: the raid's chat (its channel: read only while it is open, never with the game's keys).
+    {"chat_open", "Ouvrir le chat", kScopeRaid, G::Raid},
+    {"chat_channel", "Changer de canal du chat", kScopeChat, G::Raid},
     {"startpos_place", "Poser une startpos ici", kScopeRun, G::Training},
     {"startpos_prev", "Startpos précédente", kScopeRun, G::Training},
     {"startpos_next", "Startpos suivante", kScopeRun, G::Training},
@@ -191,6 +194,8 @@ void InputBindings::resetKeyboard() {
     set(Action::RaidMenu, SDL_SCANCODE_TAB);  // 2.75.5: the raid's menu
     set(Action::BotOrders, SDL_SCANCODE_C);    // 2.79: a raid test's order wheel
     set(Action::BotThoughts, SDL_SCANCODE_V);  // 2.79: the simulated players' thoughts
+    set(Action::ChatOpen, SDL_SCANCODE_T);        // 2.95: the raid's chat (T, as in Minecraft)
+    set(Action::ChatChannel, SDL_SCANCODE_TAB);   // its channel, while it is open (the raid's menu is not read then)
     // 2.91: training's StartPos and measure points (no gameplay key uses F5 to F8; the gamepad
     // has no button of its own for them: View held + the d-pad, see GameScene).
     set(Action::StartPosPlace, SDL_SCANCODE_F5);
@@ -285,6 +290,10 @@ void InputBindings::resetGamepad() {
     // 2.79: a raid test's order wheel on the right stick's click (R3); the thoughts are shown or hidden from the
     // wheel itself (and Paramètres › HUD › « Raids »), no button of their own by default.
     set(Action::BotOrders, B::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
+    // 2.95: the raid's chat on Share / capture / microphone (the focus mode's button: never in a raid; a pad without
+    // it opens the chat from the raid's menu), its channel on RB while it is open (LB too, fixed).
+    set(Action::ChatOpen, B::button(SDL_GAMEPAD_BUTTON_MISC1));
+    set(Action::ChatChannel, B::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER));
     // 2.93: the buttons the screens had before they were rebindable. The quick restart on View
     // (in training: on its release, View held + the d-pad placing the marks); the raid's map has
     // the same button, never in the same game.

@@ -26,6 +26,10 @@
 // no member written, no branch's state, no report, nothing stored. The relay alone says, at a step
 // (TEST_SEATS), where each seat's player plays (their group and seat of the test) and whether the
 // administrator made them invincible; every computer of the test applies it at that same step.
+//
+// 2.95 (raidChat.ts, docs/RAIDS.md §39): the raid's chat. A raid instance's room (and a test's) carries its
+// « Groupe » channel itself and gives its « Raid » channel to the event's room (RaidChatRoom), which gives each
+// line back to every instance's room of the event; never a step of the game (CHAT_SEND / CHAT_LINE).
 
 import { DurableObject } from "cloudflare:workers";
 import { requireAuth } from "./auth";
@@ -35,6 +39,27 @@ import { notify } from "./notifications";
 import { branchMaskOf } from "./raidZones";
 import { heartPackFor, isHeart } from "./raidHeart";
 import { HASH_RE, LEVEL_ID_RE, Validator } from "./validate";
+import {
+    CHAT_MAX_CHARS,
+    CHAT_SEND,
+    ChatChannel,
+    ChatHistory,
+    ChatRefusal,
+    FEATURE_CHAT,
+    FLAG_HISTORY,
+    blocksOf,
+    chatLength,
+    chatPeerOf,
+    chatRoom,
+    cleanChatText,
+    decodeChatSend,
+    encodeChatLine,
+    notice,
+    setChatHeaders,
+    unixNow,
+    type ChatLine,
+    type ChatPeer,
+} from "./raidChat";
 
 export const PROTOCOL = 1;
 export const MAX_PLAYERS = 3;
@@ -76,6 +101,7 @@ export const Msg = {
     RaidState: 18,
     TestSeats: 19,
     TestOrder: 20,
+    ChatSend: CHAT_SEND, // 2.95 (raidChat.ts)
 } as const;
 /** 2.80 (2.79's orders to the simulated players): the kinds of an order (raid::bots::OrderKind, Follow .. Mark). */
 export const ORDER_KINDS = 6;
@@ -374,6 +400,11 @@ export class CoopRoom extends DurableObject<Bindings> {
     private storedSteps = 0;
     private restores = 0;
     private memberWrites: Promise<void> = Promise.resolve();
+    // 2.95 (raidChat.ts): who each socket is for the chat, the « Groupe » channel's last lines (with the test's
+    // group they belong to: 0 in a raid instance), and a test's « Raid » channel (a test is one room).
+    private chatPeers = new Map<WebSocket, ChatPeer>();
+    private groupChat = new ChatHistory<{ line: ChatLine; group: number }>();
+    private testRaidChat = new ChatHistory();
 
     constructor(ctx: DurableObjectState, env: Bindings) {
         super(ctx, env);
@@ -443,6 +474,12 @@ export class CoopRoom extends DurableObject<Bindings> {
             }
             case "/status":
                 return Response.json(this.status());
+            case "/chat-deliver": {
+                // 2.95: a line of the event's « Raid » channel (its room checked it): to each socket of this room.
+                const line = (await request.json()) as ChatLine;
+                this.deliverChat({ ...line, channel: ChatChannel.Raid, flags: 0 }, () => true);
+                return Response.json({ listeners: this.chatPeers.size });
+            }
             case "/socket":
                 return this.socket(request);
             case "/test/poll": // tests: the silences as the alarm checks them
@@ -509,6 +546,17 @@ export class CoopRoom extends DurableObject<Bindings> {
         const [client, server] = Object.values(pair) as [WebSocket, WebSocket];
         server.accept();
         server.binaryType = "arraybuffer";  // the messages are binary: never a Blob
+        // 2.95: the chat of a raid instance or of a test (who this socket is: the Worker's headers, the session's).
+        if (this.info.raid || this.info.test) {
+            const peer = chatPeerOf(request.headers, playerId, name);
+            this.chatPeers.set(server, peer);
+            void blocksOf(this.env.DB, playerId).then((b) => (peer.blocked = b));
+            const forget = () => {
+                this.chatPeers.delete(server);
+            };
+            server.addEventListener("close", forget);
+            server.addEventListener("error", forget);
+        }
         if (this.info.raid && (request.headers.get("x-raid-watch") === "1" || this.info.raid.wiped)) {
             // 2.75: a spectator (the Worker decided): it receives the game, its pings are answered, nothing else.
             let welcomed = false;
@@ -518,6 +566,10 @@ export class CoopRoom extends DurableObject<Bindings> {
                 if (!welcomed) {
                     welcomed = true;
                     this.watch(server);
+                    return;
+                }
+                if (bytes[0] === CHAT_SEND) {
+                    this.chat(server, bytes); // 2.95: a spectator still talks (a malformed one is ignored)
                     return;
                 }
                 if (bytes[0] === Msg.Ping && bytes.length >= 5) {
@@ -575,7 +627,9 @@ export class CoopRoom extends DurableObject<Bindings> {
         o.u8(Msg.Welcome);
         o.u8(WATCHER_SEAT);
         o.u8(PROTOCOL);
+        o.u8(FEATURE_CHAT); // 2.95: a raid's room carries the chat
         this.send(ws, o.done());
+        this.chatWelcome(ws);
         if (!this.started) return;
         this.send(ws, this.goMessage());
         for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h));
@@ -690,7 +744,9 @@ export class CoopRoom extends DurableObject<Bindings> {
         o.u8(Msg.Welcome);
         o.u8(seat);
         o.u8(PROTOCOL);
+        if (this.chatPeers.has(ws)) o.u8(FEATURE_CHAT); // 2.95: a raid's room (or a test's) carries the chat
         this.send(ws, o.done());
+        this.chatWelcome(ws);
         if (this.started) {
             this.send(ws, this.goMessage());
             this.flush();
@@ -731,6 +787,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             o.u8(Msg.Welcome);
             o.u8(i);
             o.u8(PROTOCOL);
+            if (s.ws && this.chatPeers.has(s.ws)) o.u8(FEATURE_CHAT); // 2.95
             this.send(s.ws, o.done());
         });
     }
@@ -831,6 +888,10 @@ export class CoopRoom extends DurableObject<Bindings> {
                 this.sendAll(msg);
                 return;
             }
+            case Msg.ChatSend:
+                // 2.95: the raid's chat (never a step); a malformed one closes the socket like any other.
+                if (!this.chat(ws, bytes)) return this.drop(ws, seat);
+                return;
             case Msg.Leave:
                 return this.drop(ws, seat);
             default:
@@ -1250,6 +1311,10 @@ export class CoopRoom extends DurableObject<Bindings> {
     /** 2.74 (raids): the instance's game is over (every seat free, nobody connected): memory and storage. */
     private async closeGame() {
         this.forget();
+        if (this.info?.raid && this.env.RAID_CHAT_ROOMS) // 2.95: its « Raid » lines go no more to this room
+            await chatRoom(this.env, this.info.raid.event_id)
+                .fetch("https://raid-chat/leave", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ room: this.info.id }) })
+                .catch(() => undefined);
         try {
             await this.ctx.storage.deleteAll();
             if (this.info) await this.ctx.storage.put("info", this.info);
@@ -1381,6 +1446,111 @@ export class CoopRoom extends DurableObject<Bindings> {
         o[0] = Msg.Lobby;
         o.set(text, 1);
         this.sendAll(o);
+    }
+
+    // ------------------------------------------------------------------ 2.95: the raid's chat (raidChat.ts)
+
+    /** The « Groupe » a socket's player belongs to here: 0 in a raid instance (its own, else none), their group of a test. */
+    private chatGroupOf(peer: ChatPeer): number | null {
+        if (this.info?.test) {
+            const p = this.testPlaces.get(peer.playerId);
+            return p && p.group >= 0 ? p.group : null;
+        }
+        return peer.member ? 0 : null;
+    }
+
+    /** Gives `line` to the sockets `to` keeps, except those of players who blocked its author (or were blocked). */
+    private deliverChat(line: ChatLine, to: (p: ChatPeer) => boolean) {
+        const bytes = encodeChatLine(line);
+        for (const [ws, p] of this.chatPeers) if (to(p) && !(line.account && p.blocked.has(line.account))) this.send(ws, bytes);
+    }
+
+    private refuse(ws: WebSocket, channel: number, text: string) {
+        this.send(ws, encodeChatLine(notice(channel, text)));
+    }
+
+    /** A socket just welcomed: the last lines of its channels (marked as history: the game keeps each one once). */
+    private chatWelcome(ws: WebSocket) {
+        const peer = this.chatPeers.get(ws);
+        if (!peer) return;
+        const group = this.chatGroupOf(peer);
+        const old = (l: ChatLine) => !(l.account && peer.blocked.has(l.account));
+        if (group !== null)
+            for (const g of this.groupChat.lines) if (g.group === group && old(g.line)) this.send(ws, encodeChatLine({ ...g.line, flags: FLAG_HISTORY }));
+        if (this.info?.test) {
+            for (const l of this.testRaidChat.lines) if (old(l)) this.send(ws, encodeChatLine({ ...l, flags: FLAG_HISTORY }));
+            return;
+        }
+        if (!this.info?.raid || !this.env.RAID_CHAT_ROOMS) return;
+        // A raid instance: it joins its event's room (its « Raid » lines come here from now on), and the last ones.
+        void chatRoom(this.env, this.info.raid.event_id)
+            .fetch("https://raid-chat/join", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ room: this.info.id }) })
+            .then(async (res) => {
+                const r = (await res.json()) as { history?: ChatLine[] };
+                if (!this.chatPeers.has(ws)) return;
+                for (const l of r.history ?? []) if (old(l)) this.send(ws, encodeChatLine({ ...l, channel: ChatChannel.Raid, flags: FLAG_HISTORY }));
+            })
+            .catch(() => undefined);
+    }
+
+    /**
+     * A CHAT_SEND of a socket: false when malformed (its socket is closed). The author is the socket's session; the
+     * text cleaned, 200 characters at most, at the pace of CHAT_BURST then one a second; « Groupe » here, « Raid »
+     * through the event's room (a test: here too). What is refused is told to its author only (a notice).
+     */
+    private chat(ws: WebSocket, bytes: Uint8Array): boolean {
+        const msg = decodeChatSend(bytes);
+        if (!msg) return false;
+        const peer = this.chatPeers.get(ws);
+        if (!peer) return true; // a room without the chat (never sent: its WELCOME did not say it)
+        const text = cleanChatText(msg.text);
+        if (!text) return true;
+        if (chatLength(text) > CHAT_MAX_CHARS) {
+            this.refuse(ws, msg.channel, ChatRefusal.TooLong);
+            return true;
+        }
+        if (msg.channel === ChatChannel.Group) {
+            const group = this.chatGroupOf(peer);
+            if (group === null) {
+                this.refuse(ws, msg.channel, this.info?.test ? ChatRefusal.NoTestGroup : ChatRefusal.NotYourGroup);
+                return true;
+            }
+            if (!peer.bucket.take()) {
+                this.refuse(ws, msg.channel, ChatRefusal.TooFast);
+                return true;
+            }
+            const line: ChatLine = { channel: ChatChannel.Group, flags: 0, at: unixNow(), account: peer.playerId, name: peer.name, label: "", text };
+            this.groupChat.push({ line, group });
+            this.deliverChat(line, (p) => this.chatGroupOf(p) === group);
+            return true;
+        }
+        if (!peer.bucket.take()) {
+            this.refuse(ws, msg.channel, ChatRefusal.TooFast);
+            return true;
+        }
+        const line: ChatLine = { channel: ChatChannel.Raid, flags: 0, at: unixNow(), account: peer.playerId, name: peer.name, label: peer.label, text };
+        if (this.info?.test) {
+            this.testRaidChat.push(line);
+            this.deliverChat(line, () => true);
+            return true;
+        }
+        if (!this.info?.raid || !this.env.RAID_CHAT_ROOMS) {
+            this.refuse(ws, msg.channel, ChatRefusal.RaidUnavailable);
+            return true;
+        }
+        void chatRoom(this.env, this.info.raid.event_id)
+            .fetch("https://raid-chat/post", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ room: this.info.id, account: line.account, name: line.name, label: line.label, text }),
+            })
+            .then(async (res) => {
+                if (res.ok) return;
+                const r = (await res.json().catch(() => ({}))) as { error?: string };
+                this.refuse(ws, msg.channel, r.error === "busy" ? ChatRefusal.RaidBusy : r.error === "too_fast" ? ChatRefusal.TooFast : ChatRefusal.RaidUnavailable);
+            })
+            .catch(() => this.refuse(ws, msg.channel, ChatRefusal.RaidUnavailable));
+        return true;
     }
 
     private async writeSession() {
@@ -1520,6 +1690,7 @@ export async function socket(ctx: Ctx): Promise<Response> {
     const headers = new Headers(ctx.request.headers);
     headers.set("x-player-id", auth.player.id);
     headers.set("x-player-name", auth.player.username);
+    setChatHeaders(headers, null); // 2.95: a team room has no chat (never the game's own headers)
     const res = await stub(ctx.env, roomId).fetch(new Request("https://coop/socket", { headers }));
     if (res.status === 403 || res.status === 404) throw Errors.notFound("ROOM_NOT_FOUND", "Salon introuvable.");
     return res;
