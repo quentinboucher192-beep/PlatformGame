@@ -61,6 +61,8 @@ niveau, « Recommencer » et celles de « Partout » comprises.
 | Ralentir / accélérer | - / = (+ pavé numérique) | — | **Oui (2.93)** |
 | Afficher / masquer les infos | I | Vue (au relâchement) | **Oui (2.93)** |
 | Caméra, trajectoires, recaler (comparaison) | C, T, R | Y, —, — | **Oui (2.93)** |
+| Hors comparaison : comparer avec le TAS, référence de l'écart (PB, SOB, TAS) | C ou T, R | Y, — | **Oui (2.94)** : les mêmes touches |
+| Fiche du TAS | F | — | **Oui (2.94)** |
 | Point de mesure | celle de l'entraînement (F8) | bouton des infos maintenu + haut | Déjà (partagée avec l'entraînement) |
 | Point précédent / suivant | onglets des menus | LB / RB | Non : touches des menus |
 

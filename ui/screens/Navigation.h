@@ -137,6 +137,8 @@ struct GhostSetupRequest {
     /// on the same range (checkpoint ids, "" = the level's start / its exit).
     bool chains = false;
     std::string chainFrom, chainTo;
+    /// The TAS of this category (« ANY_PERCENT »…) checked on arrival (« Course contre le fantôme TAS »).
+    std::string tasCategory;
 };
 
 /// 2.91: ENTRAÎNEMENT › « Segments et enchaînements » and « Startpos et mesures » (ui/screens/
@@ -202,6 +204,9 @@ struct SobMontageRequest {
     std::string levelName;
     MontagePlan plan;
     std::vector<std::string> names;  // one per segment of the plan (« Départ du niveau → Seuil I »)
+    /// A segment of the TAS (« meilleur temps trouvé par la machine », ui/screens/TasUi.h): said so, in
+    /// its colour, never as the player's Sum of Best.
+    bool tas = false;
 };
 std::unique_ptr<Scene> makeSobMontage(GameServices& g, SobMontageRequest req);
 class GameScene;

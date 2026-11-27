@@ -101,7 +101,7 @@ private:
     struct LegendItem {
         Color color;
         std::string text;
-        int kind = 0;  // 0 line, 1 dot, 2 band (a wide swatch), 3 picture (`icon`)
+        int kind = 0;  // 0 line, 1 dot, 2 band (a wide swatch), 3 picture (`icon`), 4 a remark (no swatch), 5 a hatched band
         std::function<void(const Rect&)> icon;
     };
     /// A card with its title, its subtitle and, at its right, `right` (the room it takes, its

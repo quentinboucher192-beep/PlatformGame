@@ -635,7 +635,9 @@
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/OnlineRankingScene.cpp": 1,
    "ui/screens/PlanetMapScene.cpp": 1,
+   "ui/screens/ReplayScene.cpp": 1,
    "ui/screens/SocialScene.cpp": 1,
+   "ui/screens/TasSheetScene.cpp": 1,
    "ui/studio/Studio.cpp": 2,
    "ui/widgets/UIContext.cpp": 5
   },

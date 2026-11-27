@@ -33,6 +33,7 @@
 #include "game/online/Replay.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/TasUi.h"
 
 namespace cosmic {
 
@@ -302,6 +303,7 @@ private:
     /// « Segment 2 · entraînement du 17/11 · 0:23,45 ».
     std::string segmentLine(int k) const {
         const MontageSegment& s = segs()[static_cast<size_t>(k)];
+        if (req_.tas) return "Segment du TAS · machine · " + formatGhostTime(s.duration);
         // 2.91: where its best was done (Partie, Entraînement, Enchaînement, StartPos, En ligne).
         std::string where = i18n::tr(bestSourceLabel(s.source));
         if (std::string d = dayMonth(s.date); !d.empty()) where += " · " + d;
@@ -388,7 +390,8 @@ private:
         const float m = ui.s(16), pad = ui.s(16);
         const float maxW = std::min(ui.s(420), ui.screenW() * 0.42f);
         const float tf = fz(ui, 14), cf = 34.0f, lf = fz(ui, 15);
-        const std::string title = "SOMME DES MEILLEURS";
+        const std::string title = req_.tas ? "SEGMENT DU TAS · MACHINE" : "SOMME DES MEILLEURS";
+        const Color titleColor = req_.tas ? tasui::kTas : kGold;
         const std::string clock = formatGhostTime(chrono());
         std::string line1 = req_.plan.total > 0.0f ? "sur " + formatGhostTime(req_.plan.total) : "somme incomplète";
         if (req_.plan.pbTime > 0.0f) line1 += " · record " + formatGhostTime(req_.plan.pbTime);
@@ -403,9 +406,9 @@ private:
         const float h = pad + ui.s(tf) * 1.4f + ui.s(cfit) * 1.25f + ui.s(lf) * 1.45f + (line2.empty() ? 0.0f : ui.s(lf) * 1.45f) + pad * 0.6f;
         chronoRect_ = {ui.screenW() - m - w, m, w, h};
         ui.r().fillRoundedRect(chronoRect_, ui.s(12), Color{6, 10, 22, 225});
-        ui.r().drawRoundedRect(chronoRect_, ui.s(12), kGold.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
+        ui.r().drawRoundedRect(chronoRect_, ui.s(12), titleColor.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
         float x = chronoRect_.x + pad, y = chronoRect_.y + pad;
-        ui.label(ui.elide(title, FontFace::Bold, tf, inner), {x, y}, tf, kGold, Align::Left, FontFace::Bold);
+        ui.label(ui.elide(title, FontFace::Bold, tf, inner), {x, y}, tf, titleColor, Align::Left, FontFace::Bold);
         y += ui.s(tf) * 1.4f;
         ui.label(clock, {x, y}, cfit, th.text, Align::Left, FontFace::Title);
         y += ui.s(cfit) * 1.25f;
@@ -468,9 +471,8 @@ private:
         if (cur_ >= count()) return;
         const float alpha = std::clamp(bannerT_ / 0.5f, 0.0f, 1.0f);
         const MontageSegment& s = segs()[static_cast<size_t>(cur_)];
-        drawBox({{segmentLine(cur_), FontFace::Bold, fz(ui, 22), s.training ? ui.theme().accent : kGold},
-                 {segmentName(cur_), FontFace::Body, fz(ui, 16), ui.theme().text}},
-                freeTop(), alpha, s.training ? ui.theme().accent : kGold);
+        const Color c = req_.tas ? tasui::kTas : s.training ? ui.theme().accent : kGold;
+        drawBox({{segmentLine(cur_), FontFace::Bold, fz(ui, 22), c}, {segmentName(cur_), FontFace::Body, fz(ui, 16), ui.theme().text}}, freeTop(), alpha, c);
     }
 
     void drawSeeking() {
@@ -492,6 +494,14 @@ private:
     void drawEnd() {
         UIContext& ui = g_.ui;
         const MontagePlan& p = req_.plan;
+        if (req_.tas) {
+            // A segment of the TAS: the machine's time on it, never a Sum of Best.
+            drawBox({{"Fin du segment du TAS", FontFace::Bold, fz(ui, 24), tasui::kTas},
+                     {"Temps de la machine : " + formatGhostTime(p.total), FontFace::Bold, fz(ui, 20), ui.theme().text},
+                     {"Meilleur temps trouvé par la machine, hors classement", FontFace::Body, fz(ui, 15), ui.theme().textDim}},
+                    std::max(freeTop(), ui.screenH() * 0.3f), 1.0f, tasui::kTas);
+            return;
+        }
         std::string sum = p.total > 0.0f ? "Somme des meilleurs : " + formatGhostTime(p.total) : "Somme des meilleurs incomplète : " + formatGhostTime(doneSum_);
         std::vector<Line> lines{{"Fin des meilleurs segments", FontFace::Bold, fz(ui, 24), kGold}, {sum, FontFace::Bold, fz(ui, 20), ui.theme().text}};
         if (p.pbTime > 0.0f) {

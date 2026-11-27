@@ -57,9 +57,11 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"replay_slower", "Ralentir", kScopeReplay, G::Replay},
     {"replay_faster", "Accélérer", kScopeReplay, G::Replay},
     {"replay_info", "Afficher / masquer les infos", kScopeReplay, G::Replay},
-    {"replay_camera", "Caméra (comparaison)", kScopeReplay, G::Replay},
-    {"replay_paths", "Trajectoires (comparaison)", kScopeReplay, G::Replay},
-    {"replay_align", "Recaler (comparaison)", kScopeReplay, G::Replay},
+    // 2.94: outside a comparison, the same keys serve the TAS of the level (docs/CONTROLES.md).
+    {"replay_camera", "Caméra (comparaison) / comparer au TAS", kScopeReplay, G::Replay},
+    {"replay_paths", "Trajectoires (comparaison) / comparer au TAS", kScopeReplay, G::Replay},
+    {"replay_align", "Recaler (comparaison) / référence de l'écart", kScopeReplay, G::Replay},
+    {"replay_tas_sheet", "Fiche du TAS", kScopeReplay, G::Replay},
     {"film_restart", "Revoir depuis le début", kScopeFilm, G::Film},
     {"film_mode", "Mode Film", kScopeFilm, G::Film},
     {"gift_equip", "Équiper la récompense", kScopeGifts, G::Screens},
@@ -211,6 +213,7 @@ void InputBindings::resetKeyboard() {
     set(Action::ReplayCamera, SDL_SCANCODE_C);
     set(Action::ReplayPaths, SDL_SCANCODE_T);
     set(Action::ReplayAlign, SDL_SCANCODE_R);
+    set(Action::ReplayTasSheet, SDL_SCANCODE_F);
     set(Action::FilmRestart, SDL_SCANCODE_R);
     set(Action::FilmMode, SDL_SCANCODE_F);
     set(Action::GiftEquip, SDL_SCANCODE_Y);

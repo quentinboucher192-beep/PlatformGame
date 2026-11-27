@@ -469,7 +469,7 @@ float StatisticsScene::legend(float x, float y, float w, const std::vector<Legen
     const float f = fz(13), h = lineHeight(ui, FontFace::Body, ui.s(f));
     float cx = x, cy = y;
     for (const auto& it : items) {
-        const float sw = it.kind == 1 ? ui.s(10) : it.kind == 3 ? ui.s(18) : it.kind == 4 ? 0.0f : ui.s(16);
+        const float sw = it.kind == 1 ? ui.s(10) : it.kind == 3 ? ui.s(18) : it.kind == 4 ? 0.0f : ui.s(16);  // 5: a hatched band
         const float sg = it.kind == 4 ? 0.0f : ui.s(7);  // 4: a remark, no swatch
         const float tw = ui.text().measure(it.text, FontFace::Body, ui.s(f)).x;
         const float iw = sw + sg + tw;
@@ -481,6 +481,10 @@ float StatisticsScene::legend(float x, float y, float w, const std::vector<Legen
             const float mid = cy + h * 0.5f;
             if (it.kind == 1) ui.r().fillCircle({cx + sw * 0.5f, mid}, ui.s(4), it.color);
             else if (it.kind == 2) ui.r().fillRoundedRect({cx, mid - ui.s(5), sw, ui.s(10)}, ui.s(2), it.color);
+            else if (it.kind == 5) {
+                ui.r().fillRect({cx, mid - ui.s(5), sw, ui.s(10)}, it.color.withAlpha(static_cast<uint8_t>(it.color.a / 5)));
+                charts::hatch(ui, {cx, mid - ui.s(5), sw, ui.s(10)}, it.color, ui.s(4));
+            }
             else if (it.kind == 3 && it.icon) it.icon({cx, mid - sw * 0.5f, sw, sw});
             else if (it.kind == 0) ui.r().fillRoundedRect({cx, mid - ui.s(1.5f), sw, ui.s(3)}, ui.s(1.5f), it.color);
             ui.label(ui.elide(it.text, FontFace::Body, f, x + w - (cx + sw + sg)), {cx + sw + sg, cy}, f, it.kind == 4 ? ui.theme().textDim : kText2);

@@ -7,6 +7,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/LevelProgress.h"
 #include "game/player/Player.h"
+#include "ui/screens/TasUi.h"
 #include "ui/widgets/UIContext.h"
 
 namespace cosmic {
@@ -14,6 +15,14 @@ namespace cosmic {
 namespace {
 
 bool isMine(const GhostMeta& m) { return m.mine(); }
+/// The machine's run (« TAS »): its own look and colour, never a player's.
+bool isTas(const GhostMeta& m) { return m.source == "tas"; }
+/// « TAS · ANY% »: the machine's run and its category.
+std::string tasName(const GhostMeta& m) {
+    RunCategory c = RunCategory::AnyPercent;
+    categoryFromId(m.category, c);
+    return "TAS · " + std::string(categoryLabel(c));
+}
 
 /// Mine are named by what they are (best time, last run...), the others by their player.
 std::string displayName(const GhostMeta& m) { return m.label.empty() || isMine(m) ? m.sourceLabel() : m.label; }
@@ -72,6 +81,7 @@ void GhostRun::begin(std::vector<GhostEntry> choices, const LevelData& level, co
 }
 
 Color GhostRun::colorFor(const GhostMeta& m, int sameKindBefore) const {
+    if (isTas(m)) return tasui::kTas;  // fixed: the machine's colour, outside the ghosts' palette
     int idx = isMine(m) ? settings_.colorMine : m.source == "world" ? settings_.colorWorld
             : m.source == "friend"                               ? settings_.colorFriend
                                                                  : settings_.colorOther;
@@ -95,8 +105,8 @@ void GhostRun::collect() {
         int& kind = isMine(m) ? mine : m.source == "world" ? world : m.source == "friend" ? friends : other;
         Color c = colorFor(m, kind++);
         if (race_.add(m, std::move(l.track), l.sameVersion, c) < 0) break;
-        std::string label = displayName(m);
-        if (m.timeMs > 0) label += " · " + formatGhostTime(static_cast<float>(m.timeMs) / 1000.0f);
+        std::string label = isTas(m) ? std::string("TAS") : displayName(m);  // the machine's tag: « TAS », in its frame
+        if (m.timeMs > 0 && !isTas(m)) label += " · " + formatGhostTime(static_cast<float>(m.timeMs) / 1000.0f);
         labels_.push_back(std::move(label));
     }
     anims_.resize(static_cast<size_t>(race_.size()));
@@ -177,6 +187,14 @@ void GhostRun::drawWorld(Renderer& r, const WorldView& view, const AnimationSetP
             a.play("idle");
         }
         if (!g.pose.visible || static_cast<PlayerState>(g.pose.state) == PlayerState::Hidden) continue;
+        if (isTas(g.meta)) {
+            // The machine's run: its outline, its scan lines, barely filled (the normal suit).
+            const float fade = std::clamp(1.0f - (t - g.track.duration() - 1.5f) / 0.6f, 0.0f, 1.0f);
+            if (fade <= 0.0f) continue;
+            const bool flip = (g.pose.flags & ReplayFrame::FacingLeft) != 0;
+            tasui::drawGhost(r, *set->texture, a.sourceRect(), a.destRect(g.pose.feet, flip), flip, alpha * fade, view.scale, t);
+            continue;
+        }
         // The suit of its player (2.23), still tinted with the ghost's colour below.
         if (sheets_.size() < static_cast<size_t>(race_.size())) sheets_.resize(static_cast<size_t>(race_.size()));
         auto& sheet = sheets_[static_cast<size_t>(i)];
@@ -241,8 +259,9 @@ void GhostRun::drawBox(UIContext& ui, const Rect& area, float k, bool boxShown) 
     const float y = area.y;
     float pad = S(10);
     float inner = width - 2 * pad;
-    std::string refName = ref.meta.sourceLabel();
-    if (!ref.meta.label.empty() && ref.meta.label != "Moi" && ref.meta.source != "range") refName += " · " + ref.meta.label;
+    const bool refTas = isTas(ref.meta);
+    std::string refName = refTas ? tasName(ref.meta) : ref.meta.sourceLabel();
+    if (!refTas && !ref.meta.label.empty() && ref.meta.label != "Moi" && ref.meta.source != "range") refName += " · " + ref.meta.label;
     std::string who = race_.size() > 1 ? std::to_string(race_.size()) + " FANTÔMES · RÉF. " + refName : "FANTÔME · " + refName;
     if (!ref.sameVersion) who += " (autre version)";
     // Rows of the panel (passed checkpoints, then the ghost's next ones, then the exit).
@@ -302,6 +321,7 @@ void GhostRun::drawBox(UIContext& ui, const Rect& area, float k, bool boxShown) 
         if (settings_.showDelta) h += S(42) + lineSmall;
         h += lineSmall * static_cast<float>(othersShown);
         if (settings_.showPanel) h += S(8) + lineRow * static_cast<float>(rowsShown + 1) + lineSmall;
+        if (refTas) h += lineSmall;  // « TAS : meilleur trouvé par la machine, hors classement »
         if (recordFlash_ > 0.0f) h += S(38);
         return h + pad;
     };
@@ -316,8 +336,16 @@ void GhostRun::drawBox(UIContext& ui, const Rect& area, float k, bool boxShown) 
     ui.r().drawRoundedRect(box, S(8), ref.color.withAlpha(90), S(1.5f));
     ui.r().pushClip(box);
     float x = left + pad, cy = y + pad;
-    float hf = ui.fitFont(who, FontFace::Bold, std::max(F(14), minFs), inner, 0.85f);
-    ui.label(ui.elide(who, FontFace::Bold, hf, inner), {x, cy}, hf, ref.color, Align::Left, FontFace::Bold);
+    // The machine's pill after the title, when both fit.
+    const float pillF = std::max(F(10.5f), minFs);
+    const float pillW = refTas ? tasui::pill(ui, "MACHINE", {0.0f, 0.0f}, pillF, false) + S(8) : 0.0f;
+    float hf = ui.fitFont(who, FontFace::Bold, std::max(F(14), minFs), inner - pillW, 0.85f);
+    const float pillH = ui.text().measure("MACHINE", FontFace::Bold, ui.s(pillF)).y + ui.s(pillF * 0.5f);
+    const bool pillShown = refTas && ui.text().measure(who, FontFace::Bold, ui.s(hf)).x + pillW <= inner && pillH <= lineSmall;
+    if (!pillShown) hf = ui.fitFont(who, FontFace::Bold, std::max(F(14), minFs), inner, 0.85f);
+    const std::string whoShown = ui.elide(who, FontFace::Bold, hf, inner - (pillShown ? pillW : 0.0f));
+    ui.label(whoShown, {x, cy}, hf, ref.color, Align::Left, FontFace::Bold);
+    if (pillShown) tasui::pill(ui, "MACHINE", {x + ui.text().measure(whoShown, FontFace::Bold, ui.s(hf)).x + S(8), cy + ui.s(hf) * 0.6f}, pillF);
     cy += lineSmall;
     if (settings_.showDelta) {
         bool has = ref.hasLiveDelta;
@@ -404,6 +432,13 @@ void GhostRun::drawBox(UIContext& ui, const Rect& area, float k, bool boxShown) 
             foot = ui.text().measure(both, FontFace::Body, ui.s(headFs)).x <= inner ? both : (rec.empty() ? sobText : rec);
         }
         if (!foot.empty()) ui.label(ui.elide(foot, FontFace::Body, headFs, inner), {x, cy + S(2)}, headFs, th.textDim);
+        cy += lineSmall;
+    }
+    if (refTas) {
+        // What the reference is, said plainly: the machine, never ranked.
+        const std::string what = "TAS : meilleur trouvé par la machine, hors classement";
+        const float wf = ui.fitFont(what, FontFace::Body, headFs, inner, 0.8f);
+        ui.label(ui.elide(what, FontFace::Body, wf, inner), {x, cy + S(2)}, wf, tasui::kTas);
         cy += lineSmall;
     }
     if (recordFlash_ > 0.0f) {
@@ -496,6 +531,7 @@ void GhostRun::drawNames(UIContext& ui, const WorldView& view, const Rect* keepO
         placed[n++] = box;
         float fade = std::clamp(1.0f - (t - g.track.duration() - 1.5f) / 0.6f, 0.0f, 1.0f);
         ui.r().fillRoundedRect(box, ui.s(5), Color{8, 12, 26, static_cast<uint8_t>(150 * fade)});
+        if (isTas(g.meta)) ui.r().drawRoundedRect(box, ui.s(5), tasui::kTas.withAlpha(static_cast<uint8_t>(220 * fade)), std::max(1.0f, ui.s(1.5f)));
         ui.label(label, {box.center().x, box.center().y}, fs, g.color.withAlpha(static_cast<uint8_t>(235 * fade)), Align::Center,
                  FontFace::Bold, VAlign::Middle);
     }

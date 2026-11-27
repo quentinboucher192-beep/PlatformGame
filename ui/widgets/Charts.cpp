@@ -262,6 +262,16 @@ Rect drawTip(UIContext& ui, const Tip& t) {
 
 // ------------------------------------------------------------------ curves
 
+void hatch(UIContext& ui, const Rect& r, Color c, float step) {
+    if (r.w <= 0.0f || r.h <= 0.0f || step <= 0.5f) return;
+    ui.r().pushClip(r);
+    // Lines at 45°, on a grid of the screen (not of the box): two boxes side by side join up.
+    const float w = std::max(1.0f, step * 0.36f);
+    const float start = std::floor((r.x - r.h) / step) * step;
+    for (float x = start; x < r.right(); x += step) ui.r().drawLine({x, r.bottom()}, {x + r.h, r.y}, c, w);
+    ui.r().popClip();
+}
+
 void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSpec& s, int& cursor, Tip& tip) {
     std::vector<float> xs;
     for (const auto& se : s.series)
@@ -360,7 +370,15 @@ void lineChart(UIContext& ui, const std::string& id, const Rect& r, const LineSp
             if (!valueAt(up, bx[i], yu) || !valueAt(lo, bx[i], yl)) continue;
             const float x0 = X(bx[i]), x1 = X(std::min(bx[i + 1], endX));
             const float y0 = std::min(Y(yu), Y(yl)), y1 = std::max(Y(yu), Y(yl));
-            if (x1 > x0 && y1 > y0) ui.r().fillRect({x0, y0, x1 - x0, y1 - y0}, b.fill);
+            if (x1 > x0 && y1 > y0) {
+                if (!b.hatched) ui.r().fillRect({x0, y0, x1 - x0, y1 - y0}, b.fill);
+                else {
+                    // Hatched (2.93, the gap to the machine): a faint fill, lines anchored on the plot so that
+                    // the pieces of the band join up.
+                    ui.r().fillRect({x0, y0, x1 - x0, y1 - y0}, b.fill.withAlpha(static_cast<uint8_t>(b.fill.a / 5)));
+                    hatch(ui, {x0, y0, x1 - x0, y1 - y0}, b.fill, ui.s(7));
+                }
+            }
         }
     }
     for (const auto& se : s.series) {

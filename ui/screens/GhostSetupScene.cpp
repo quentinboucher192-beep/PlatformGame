@@ -41,6 +41,7 @@
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
+#include "ui/screens/TasUi.h"
 #include "ui/widgets/FileDialogs.h"
 #include "ui/widgets/Glyphs.h"
 
@@ -85,12 +86,15 @@ public:
         }
         // The route gives the checkpoints' order (training) — off the main thread.
         route_ = std::async(std::launch::async, [l = level_, &content = g_.content] { return buildProgressTrack(l, content); });
-        // Mine first (best, previous, last), then what was downloaded or imported.
+        // The machine's run first (« TAS », its category chosen in « TAS de ce niveau »), then mine
+        // (best, previous, last), then what was downloaded or imported.
+        initTas();
         for (GhostEntry& e : g_.ghosts.localGhosts(levelId_)) addReady(std::move(e));
         for (GhostEntry& e : g_.ghosts.cachedFor(levelId_)) addReady(std::move(e));
         for (GhostEntry& e : g_.ghosts.files())
             if (e.meta.levelId == levelId_ || e.meta.levelHash == hash_) addReady(std::move(e));
-        // By default: my best time on this version.
+        // By default: my best time on this version (and the TAS when asked: « Course contre le fantôme TAS »).
+        if (tasRow_ >= 0 && !req_.tasCategory.empty()) select(static_cast<size_t>(tasRow_), true);
         for (size_t i = 0; i < rows_.size(); ++i)
             if (rows_[i].entry.meta.source == "pb" && rows_[i].sameVersion) {
                 select(i, true);
@@ -180,6 +184,7 @@ public:
         const float m = ui.s(48);
         Rect panel{m, ui.s(36), ui.screenW() - 2 * m, ui.screenH() - ui.s(72)};
         ui.panel(panel, true, 18);
+        tasui::pieces("setup").clear(panel);
         ui.pushId("gsetup");
         float x = panel.x + ui.s(30), y = panel.y + ui.s(28), w = panel.w - ui.s(60);
         ui.label("COURSE CONTRE DES FANTÔMES", {x, y + ui.s(20)}, 34, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
@@ -208,8 +213,32 @@ public:
             float room = panel.w - ui.s(60) - ui.s(540);
             ui.labelWrapped(msg_, {x, by + ui.s(6)}, room, fz(ui, 16), msgError_ ? ui.theme().danger : ui.theme().success);
         } else {
-            Glyphs::drawHint(ui, Action::MenuBack, "Annuler", {x, by + ui.s(27)}, ui.s(30));
+            float hx = x;
+            const float hh = ui.s(30), room = panel.w - ui.s(60) - ui.s(540);
+            const float backW = Glyphs::measureAction(ui, Action::MenuBack, hh) + hh * 0.3f + ui.text().measure("Annuler", FontFace::Body, hh * 0.62f).x;
+            if (tasCats_.size() > 1) {
+                // Q / E, LB / RB: the category of the TAS (the list and the block follow it).
+                const std::string t = "Catégorie du TAS";
+                const float tw = Glyphs::measureAction(ui, Action::MenuTabPrev, hh) + ui.s(4) + Glyphs::measureAction(ui, Action::MenuTabNext, hh) + hh * 0.3f +
+                                 ui.text().measure(t, FontFace::Body, hh * 0.62f).x;
+                if (tw + ui.s(28) + backW <= room) {
+                    const float x0 = hx;
+                    hx += Glyphs::drawAction(ui, Action::MenuTabPrev, {hx, by + ui.s(27)}, hh) + ui.s(4);
+                    hx += Glyphs::drawHint(ui, Action::MenuTabNext, t, {hx, by + ui.s(27)}, hh) + ui.s(28);
+                    tasui::pieces("setup").add("hint/tas", {x0, by + ui.s(12), hx - ui.s(28) - x0, hh});
+                }
+            }
+            Glyphs::drawHint(ui, Action::MenuBack, "Annuler", {hx, by + ui.s(27)}, hh);
+            tasui::pieces("setup").add("hint/back", {hx, by + ui.s(12), backW, hh});
         }
+        if (tasCats_.size() > 1 && ui.acceptsInput() && !ui.editingText()) {
+            const int n = static_cast<int>(tasCats_.size());
+            const int k = static_cast<int>(std::find(tasCats_.begin(), tasCats_.end(), tasCat_) - tasCats_.begin());
+            if (g_.app.input().menuPressed(Action::MenuTabPrev)) setTasCategory(tasCats_[static_cast<size_t>((k + n - 1) % n)]);
+            else if (g_.app.input().menuPressed(Action::MenuTabNext)) setTasCategory(tasCats_[static_cast<size_t>((k + 1) % n)]);
+        }
+        tasui::pieces("setup").add("button/launch", {panel.right() - ui.s(30) - ui.s(300), by, ui.s(300), ui.s(54)});
+        tasui::pieces("setup").add("button/cancel", {panel.right() - ui.s(30) - ui.s(300) - ui.s(16) - ui.s(200), by, ui.s(200), ui.s(54)});
         ui.popId();
         if (launch && primary.enabled) start();
         else if (cancel || ui.backPressed()) g_.app.popScene();
@@ -223,6 +252,7 @@ private:
         enum class State { Ready, Remote, Downloading, Failed } state = State::Ready;
         bool selected = false;
         bool sameVersion = true;
+        bool tas = false;  // the machine's run (« TAS »): never a player's, never ranked
         std::string error;
     };
     struct Checkpoint {
@@ -269,6 +299,47 @@ private:
         if (on) order_.push_back(i);
         else order_.erase(std::remove(order_.begin(), order_.end(), i), order_.end());
         if (on && (r.state == Row::State::Remote || r.state == Row::State::Failed)) download(i);
+    }
+
+    // -------------------------------------------------------------- the TAS
+
+    /// The level's TAS (its categories shown for this version): the row « TAS » at the head of the list.
+    void initTas() {
+        for (RunCategory c : kAllCategories)
+            if (tas::catalog().tasFor(g_, levelId_, c)) tasCats_.push_back(c);
+        if (tasCats_.empty()) return;  // no TAS for this version: nothing of it on this screen
+        tasCat_ = tasCats_.front();
+        RunCategory asked = RunCategory::AnyPercent;
+        if (!req_.tasCategory.empty() && categoryFromId(req_.tasCategory, asked) && hasTasCategory(asked)) tasCat_ = asked;
+        else if (hasTasCategory(RunCategory::AnyPercent)) tasCat_ = RunCategory::AnyPercent;
+        Row r;
+        r.tas = true;
+        tasRow_ = static_cast<int>(rows_.size());
+        rows_.push_back(std::move(r));
+        refreshTasRow();
+    }
+    bool hasTasCategory(RunCategory c) const { return std::find(tasCats_.begin(), tasCats_.end(), c) != tasCats_.end(); }
+    const tas::TasRun* tasRun() { return tasCats_.empty() ? nullptr : tas::catalog().tasFor(g_, levelId_, tasCat_); }
+    void refreshTasRow() {
+        const tas::TasRun* t = tasRun();
+        if (tasRow_ < 0 || !t) return;
+        Row& r = rows_[static_cast<size_t>(tasRow_)];
+        r.entry = t->ghost();
+        r.sameVersion = t->levelHash == hash_;
+    }
+    void setTasCategory(RunCategory c) {
+        if (!hasTasCategory(c) || c == tasCat_) return;
+        tasCat_ = c;
+        refreshTasRow();
+    }
+    /// « Fiche du TAS… »: its « Course contre le TAS » comes back here with the TAS checked.
+    void openTasSheet() {
+        auto alive = std::weak_ptr<int>(life_);
+        tasui::openSheet(g_, levelId_, tasCat_, [this, alive](RunCategory c) {
+            if (!alive.lock()) return;
+            setTasCategory(c);
+            if (tasRow_ >= 0 && !rows_[static_cast<size_t>(tasRow_)].selected) select(static_cast<size_t>(tasRow_), true);
+        });
     }
 
     // -------------------------------------------------------------- online
@@ -410,6 +481,7 @@ private:
 
     Color kindColor(const GhostMeta& m) const {
         const GhostSettings& s = g_.settings.ghosts;
+        if (m.source == "tas") return tasui::kTas;  // the machine's colour, outside the ghosts' palette
         bool mine = m.source == "pb" || m.source == "prev" || m.source == "last";
         return ghostPaletteColor(mine ? s.colorMine : m.source == "world" ? s.colorWorld : m.source == "friend" ? s.colorFriend : s.colorOther);
     }
@@ -438,6 +510,10 @@ private:
             st.selected = r.selected;
             if (ui.button("g" + std::to_string(i), row, "", st)) select(i, !r.selected);
             if (row.bottom() < list.y || row.y > list.bottom()) continue;
+            if (r.tas) {
+                drawTasRow(r, row, list);
+                continue;
+            }
             // Check box, colour, then the text.
             Rect box{row.x + ui.s(14), row.center().y - ui.s(12), ui.s(24), ui.s(24)};
             ui.r().drawRoundedRect(box, ui.s(5), r.selected ? th.accent : th.textDim, ui.s(2));
@@ -486,6 +562,193 @@ private:
                      VAlign::Middle);
     }
 
+    /// The TAS's row of the list: its own look (lime, the machine's diamond: never a ghost's colour), and
+    /// what it is said plainly.
+    void drawTasRow(const Row& r, const Rect& row, const Rect& list) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        tasui::Pieces& P = tasui::pieces("setup");
+        ui.r().fillGradientH({row.x + ui.s(2), row.y + ui.s(2), row.w * 0.5f, row.h - ui.s(4)}, tasui::kTasDeep.withAlpha(150), tasui::kTasDeep.withAlpha(0));
+        ui.r().drawRoundedRect(row, ui.s(8), tasui::kTasLine, std::max(1.0f, ui.s(1.5f)));
+        ui.r().fillRoundedRect({row.x, row.y + ui.s(8), ui.s(4), row.h - ui.s(16)}, ui.s(2), tasui::kTas);
+        const Rect box{row.x + ui.s(14), row.center().y - ui.s(12), ui.s(24), ui.s(24)};
+        ui.r().drawRoundedRect(box, ui.s(5), r.selected ? th.accent : th.textDim, ui.s(2));
+        if (r.selected) ui.r().fillRoundedRect(box.expanded(-ui.s(5)), ui.s(3), th.accent);
+        tasui::diamond(ui.r(), {box.right() + ui.s(18), row.center().y}, ui.s(17), std::max(1.5f, ui.s(2.5f)));
+        const float tx = box.right() + ui.s(36);
+        const std::string cat = tasui::categoryName(tasCat_);
+        const std::string time = formatGhostTime(static_cast<float>(r.entry.meta.timeMs) / 1000.0f);
+        const float timeW = ui.text().measure(time, FontFace::Bold, ui.s(20)).x;
+        const float room = row.right() - ui.s(16) - timeW - ui.s(16) - tx;
+        const std::string title = "TAS · " + cat + " · meilleur temps trouvé par la machine";
+        const float tf = ui.fitFont(title, FontFace::Bold, 18, room, 0.75f);
+        const std::string ts = ui.elide(title, FontFace::Bold, tf, room);
+        ui.label(ts, {tx, row.y + ui.s(24)}, tf, tasui::kTas, Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label(time, {row.right() - ui.s(16), row.y + ui.s(24)}, 20, tasui::kTas, Align::Right, FontFace::Bold, VAlign::Middle);
+        std::string info = cat;
+        if (r.entry.meta.levelVersion > 0) info += " · v" + std::to_string(r.entry.meta.levelVersion);
+        info += r.sameVersion ? " · cette version" : " · autre version";
+        info += " · calculé hors ligne, relu à l'identique par le moteur · hors classement";
+        const float iroom = row.right() - ui.s(16) - tx;
+        const float f = ui.fitFont(info, FontFace::Body, fz(ui, 15), iroom, 0.8f);
+        const std::string is = ui.elide(info, FontFace::Body, f, iroom);
+        ui.label(is, {tx, row.y + ui.s(50)}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        if (row.y >= list.y && row.bottom() <= list.bottom()) {
+            P.add("row/title", {tx, row.y + ui.s(24) - ui.s(tf) * 0.6f, ui.text().measure(ts, FontFace::Bold, ui.s(tf)).x, ui.s(tf) * 1.2f});
+            P.add("row/time", {row.right() - ui.s(16) - timeW, row.y + ui.s(24) - ui.s(12), timeW, ui.s(24)});
+            P.add("row/info", {tx, row.y + ui.s(50) - ui.s(f) * 0.6f, ui.text().measure(is, FontFace::Body, ui.s(f)).x, ui.s(f) * 1.2f});
+        }
+    }
+
+    /// « TAS de ce niveau »: a row per category (its TAS, my record, the gap), what it is, and the ways
+    /// to it. `compact`: the chosen category only (the training needs the room). Returns its height
+    /// (`draw` false: only measures).
+    float drawTasBlock(float x, float y0, float w, bool compact, bool draw) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        tasui::Pieces& P = tasui::pieces("setup");
+        float y = y0;
+        // The title and the machine's pill.
+        const std::string title = "TAS de ce niveau", pillText = "MACHINE · HORS CLASSEMENT";
+        const float pf = fz(ui, 12);
+        const float pillW = tasui::pill(ui, pillText, {0.0f, 0.0f}, pf, false);
+        const float titleF = ui.fitFont(title, FontFace::Bold, 20, std::max(ui.s(60), w - pillW - ui.s(12)), 0.7f);
+        const float titleW = ui.text().measure(title, FontFace::Bold, ui.s(titleF)).x;
+        const float titleH = ui.s(36);
+        if (draw) {
+            ui.label(title, {x, y + titleH * 0.4f}, titleF, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+            P.add("block/title", {x, y + titleH * 0.4f - ui.s(titleF) * 0.6f, titleW, ui.s(titleF) * 1.2f});
+            if (titleW + ui.s(12) + pillW <= w) {
+                tasui::pill(ui, pillText, {x + titleW + ui.s(12), y + titleH * 0.4f}, pf);
+                P.add("block/pill", {x + titleW + ui.s(12), y + titleH * 0.4f - ui.s(pf), pillW, ui.s(pf) * 2.0f});
+            }
+        }
+        y += titleH;
+        // The columns, measured: category | TAS (« = ANY% ») | my record | gap; one font for all.
+        float rf = fz(ui, 17);
+        const float hf = fz(ui, 12);
+        auto widths = [&](float f) {
+            float cat = ui.text().measure("CATÉGORIE", FontFace::Bold, ui.s(hf)).x;
+            for (RunCategory c : tasCats_) cat = std::max(cat, ui.text().measure(tasui::categoryName(c), FontFace::Bold, ui.s(f)).x);
+            const float num = std::max(ui.text().measure("10:00,000", FontFace::Bold, ui.s(f)).x, ui.text().measure("MON RECORD", FontFace::Bold, ui.s(hf)).x);
+            const float gap = std::max(ui.text().measure("+1:15,854", FontFace::Bold, ui.s(f)).x, ui.text().measure("ÉCART", FontFace::Bold, ui.s(hf)).x);
+            const float same = ui.text().measure("= ANY%", FontFace::Body, ui.s(fz(ui, 14))).x;
+            return std::array<float, 4>{cat, num, gap, same};
+        };
+        auto need = [&](const std::array<float, 4>& c) { return ui.s(16) + c[0] + ui.s(20) + c[1] + ui.s(12) + c[3] + ui.s(12) + c[1] + ui.s(20) + c[2] + ui.s(16); };
+        auto cw = widths(rf);
+        if (need(cw) > w) {
+            rf = std::max(fz(ui, 11.5f), rf * w / need(cw));
+            cw = widths(rf);
+        }
+        const bool sameCol = need(cw) <= w;  // « = ANY% » beside the time when it fits
+        const float rowW = w;
+        const float cGap = x + rowW - ui.s(16), cRec = cGap - cw[2] - ui.s(20), cTas = sameCol ? cRec - cw[1] - ui.s(12) - cw[3] - ui.s(12) : cRec - cw[1] - ui.s(20);
+        const float cCat = x + ui.s(16);
+        const float headH = ui.s(hf) * 1.3f + ui.s(6);
+        if (!compact) {
+            if (draw) {
+                auto head = [&](const std::string& s, float hx, Align al, const std::string& id) {
+                    const float hw = ui.text().measure(s, FontFace::Bold, ui.s(hf)).x;
+                    ui.label(s, {hx, y}, hf, th.textDim, al, FontFace::Bold);
+                    P.add("block/head/" + id, {al == Align::Right ? hx - hw : hx, y, hw, ui.s(hf) * 1.3f});
+                };
+                head("CATÉGORIE", cCat, Align::Left, "cat");
+                head("TAS", cTas, Align::Right, "tas");
+                head("MON RECORD", cRec, Align::Right, "rec");
+                head("ÉCART", cGap, Align::Right, "gap");
+            }
+            y += headH;
+        }
+        const float rh = std::max(ui.s(38), ui.s(rf) * 1.6f), rg = ui.s(4);
+        for (size_t i = 0; i < tasCats_.size(); ++i) {
+            const RunCategory c = tasCats_[i];
+            if (compact && c != tasCat_) continue;
+            const tas::TasRun* t = tas::catalog().tasFor(g_, levelId_, c);
+            if (!t) continue;
+            const Rect row{x, y, rowW, rh};
+            y += rh + rg;
+            if (!draw) continue;
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.selected = c == tasCat_;
+            if (ui.button("tascat" + std::to_string(i), row, "", st)) setTasCategory(c);
+            if (c == tasCat_) {
+                ui.r().fillRoundedRect(row, ui.s(8), tasui::kTasDeep.withAlpha(140));
+                ui.r().drawRoundedRect(row, ui.s(8), tasui::kTas, std::max(1.5f, ui.s(2.5f)));
+            }
+            const float cy = row.center().y;
+            const std::string id = "block/row" + std::to_string(i) + "/";
+            auto cell = [&](const std::string& s, float cx, Align al, FontFace f, float size, Color col, const std::string& name) {
+                ui.label(s, {cx, cy}, size, col, al, f, VAlign::Middle);
+                const float sw = ui.text().measure(s, f, ui.s(size)).x;
+                P.add(id + name, {al == Align::Right ? cx - sw : cx, cy - ui.s(size) * 0.6f, sw, ui.s(size) * 1.2f});
+            };
+            cell(tasui::categoryName(c), cCat, Align::Left, FontFace::Bold, rf, th.text, "cat");
+            cell(tas::timeText(t->timeMs), cTas, Align::Right, FontFace::Bold, rf, tasui::kTas, "tas");
+            if (t->sameAsAny && sameCol) cell("= ANY%", cTas + ui.s(12), Align::Left, FontFace::Body, fz(ui, 14), th.textDim, "same");
+            const float mine = tas::myRecord(g_, *t);
+            cell(mine > 0.0f ? formatGhostSeconds(mine) : std::string("—"), cRec, Align::Right, FontFace::Body, rf, mine > 0.0f ? Color{200, 211, 226, 255} : th.textDim,
+                 "rec");
+            if (mine > 0.0f) {
+                const int64_t d = static_cast<int64_t>(std::llround(static_cast<double>(mine) * 1000.0)) - t->timeMs;
+                cell(tas::gapText(d), cGap, Align::Right, FontFace::Bold, rf, d > 0 ? tasui::kBehind : th.success, "gap");
+            } else {
+                cell("—", cGap, Align::Right, FontFace::Body, rf, th.textDim, "gap");
+            }
+        }
+        // What it is, honestly (one line, when not compact).
+        if (!compact) {
+            const std::string note = "Le meilleur temps trouvé par notre recherche hors ligne, pas un optimum prouvé : il peut être battu.";
+            const float nf = ui.fitFont(note, FontFace::Body, fz(ui, 14), w, 0.8f);
+            if (draw) {
+                const std::string ns = ui.elide(note, FontFace::Body, nf, w);
+                ui.label(ns, {x, y + ui.s(2)}, nf, th.textDim, Align::Left, FontFace::Body);
+                P.add("block/note", {x, y + ui.s(2), ui.text().measure(ns, FontFace::Body, ui.s(nf)).x, ui.s(nf) * 1.3f});
+            }
+            y += ui.s(nf) * 1.3f + ui.s(10);
+        }
+        // The ways to it: watch it, race it (the row « TAS » checked), its sheet.
+        if (compact) return y - rg - y0;
+        const float bh = ui.s(46);
+        if (draw) {
+            const bool racing = tasRow_ >= 0 && rows_[static_cast<size_t>(tasRow_)].selected;
+            const std::string l0 = "▶ Regarder le TAS", l1 = "Course contre le fantôme TAS", l2 = "Fiche du TAS…";
+            const float g = ui.s(12);
+            const float w0 = ui.text().measure(l0, FontFace::Bold, ui.s(18)).x + ui.s(30), w1 = ui.text().measure(l1, FontFace::Bold, ui.s(18)).x + ui.s(30),
+                        w2 = ui.text().measure(l2, FontFace::Bold, ui.s(18)).x + ui.s(30);
+            const float k = (w - 2 * g) / (w0 + w1 + w2);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = std::min({18.0f, ui.fitFont(l0, FontFace::Bold, 18, w0 * k - ui.s(20), 0.55f), ui.fitFont(l1, FontFace::Bold, 18, w1 * k - ui.s(20), 0.55f),
+                                    ui.fitFont(l2, FontFace::Bold, 18, w2 * k - ui.s(20), 0.55f)});
+            float bx = x;
+            const Rect b0{bx, y, w0 * k, bh};
+            bx += b0.w + g;
+            const Rect b1{bx, y, w1 * k, bh};
+            bx += b1.w + g;
+            const Rect b2{bx, y, x + w - bx, bh};
+            st.primary = true;
+            const bool watch = ui.button("taswatch", b0, l0, st);
+            ui.r().drawRoundedRect(b0, ui.s(8), tasui::kTas, std::max(1.0f, ui.s(1.5f)));
+            st.primary = false;
+            st.selected = racing;
+            const bool race = ui.button("tasrace", b1, l1, st);
+            if (racing) ui.r().drawRoundedRect(b1, ui.s(8), tasui::kTas, std::max(1.0f, ui.s(1.5f)));
+            st.selected = false;
+            const bool sheet = ui.button("tassheet", b2, l2, st);
+            P.add("block/watch", b0);
+            P.add("block/race", b1);
+            P.add("block/sheet", b2);
+            if (watch)
+                if (const tas::TasRun* t = tasRun()) tasui::watch(g_, *t);
+            if (race && tasRow_ >= 0) select(static_cast<size_t>(tasRow_), !racing);
+            if (sheet) openTasSheet();
+        }
+        y += bh;
+        return y - y0;
+    }
+
     void drawSide(const Rect& area) {
         UIContext& ui = g_.ui;
         const UITheme& th = ui.theme();
@@ -509,6 +772,19 @@ private:
         y += ui.s(60);
         ui.separator({area.x, y}, area.w);
         y += ui.s(14);
+        if (!tasCats_.empty()) {
+            // « TAS de ce niveau »: whole when the training keeps its room, else the chosen category only
+            // (its row, without the buttons: the list's « TAS » row races it), else nothing (a small window).
+            const float trainingNeed = training_ ? ui.s(530) : ui.s(100);
+            const float left = area.bottom() - y - ui.s(28);
+            const float full = drawTasBlock(area.x, y, area.w, false, false);
+            const float compactH = drawTasBlock(area.x, y, area.w, true, false);
+            if (left - full >= trainingNeed || left - compactH >= trainingNeed) {
+                y += drawTasBlock(area.x, y, area.w, left - full < trainingNeed, true) + ui.s(14);
+                ui.separator({area.x, y}, area.w);
+                y += ui.s(14);
+            }
+        }
         ui.label("Entraînement", {area.x, y}, 20, th.text, Align::Left, FontFace::Bold);
         y += ui.s(32);
         bool training = training_;
@@ -1284,7 +1560,10 @@ private:
             }
             return h + ui.s(8) + lineH;
         }
-        if (!draw) return lineH * 4.0f;
+        // The TAS ANY% of this version (« meilleur temps trouvé par la machine »): one more line.
+        const tas::TasRun* machine = tas::catalog().tasFor(g_, levelId_, RunCategory::AnyPercent);
+        const float rows = machine ? 5.0f : 4.0f;
+        if (!draw) return lineH * rows;
         const float colGap = ui.s(28);
         const float colW = (area.w - colGap) * 0.5f;
         const float x0 = area.x, x1 = area.x + colW + colGap;
@@ -1304,7 +1583,13 @@ private:
         float gain = refs_.possibleGain();
         std::string gainValue = gain >= 0.0f ? formatGhostDelta(gain).substr(formatGhostDelta(gain)[0] == '+' ? 1 : 0) : refs_.pbTime > 0.0f && refs_.sob > 0.0f ? "autre parcours" : "—";
         cell(x1, y, colW, "Gain possible", gainValue, gain >= 0.0f);
-        return lineH * 4.0f;
+        if (machine) {
+            y += lineH;
+            const int64_t inTas = machine->segment(from, to);
+            cell(x0, y, colW, "Dans le TAS", inTas > 0 ? formatGhostTime(static_cast<float>(inTas) / 1000.0f) : std::string("autre parcours"), inTas > 0);
+            cell(x1, y, colW, "TAS (machine)", formatGhostTime(machine->seconds()), true);
+        }
+        return lineH * rows;
     }
 
     /// Under the references: what the training is, or why this segment has no reference.
@@ -1321,9 +1606,9 @@ private:
         ReplayCompareRequest req;
         req.levelId = levelId_;
         for (size_t i : order_) {
-            if (i >= rows_.size() || !rows_[i].selected) continue;
+            if (i >= rows_.size() || !rows_[i].selected || rows_[i].tas) continue;  // the TAS: « Comparer avec le TAS » of the viewer
             const GhostMeta& m = rows_[i].entry.meta;
-            bool mine = m.source == "pb" || m.source == "prev" || m.source == "last";
+            bool mine =m.source == "pb" || m.source == "prev" || m.source == "last";
             req.preselect.push_back(mine ? m.source : !rows_[i].recordId.empty() ? rows_[i].recordId : Paths::toUtf8(rows_[i].entry.file));
         }
         g_.app.pushScene(makeReplayCompareSetup(g_, std::move(req)));
@@ -1344,6 +1629,9 @@ private:
             }
             o.ghosts.push_back(rows_[i].entry);
         }
+        // The TAS, when chosen, is the reference of the gaps (« Course contre le fantôme TAS »).
+        auto tasIt = std::find_if(o.ghosts.begin(), o.ghosts.end(), [](const GhostEntry& e) { return e.meta.source == "tas"; });
+        if (tasIt != o.ghosts.end()) std::rotate(o.ghosts.begin(), tasIt, tasIt + 1);
         if (training_ && startIdx_ > 0 && startIdx_ <= static_cast<int>(checkpoints_.size())) {
             const Checkpoint& c = checkpoints_[static_cast<size_t>(startIdx_ - 1)];
             o.training = true;
@@ -1378,6 +1666,11 @@ private:
     int version_ = 0;
     std::vector<Row> rows_;
     std::vector<size_t> order_;
+    // The TAS (« meilleur temps trouvé par la machine »): its categories for this version, the one chosen,
+    // its row in the list (-1: the level has none).
+    std::vector<RunCategory> tasCats_;
+    RunCategory tasCat_ = RunCategory::AnyPercent;
+    int tasRow_ = -1;
     int onlineBusy_ = 0;
     std::string onlineNote_;
     int importDialog_ = -1;

@@ -74,6 +74,7 @@ enum class Action : int {
     ReplayCamera,
     ReplayPaths,
     ReplayAlign,
+    ReplayTasSheet,     // 2.94: the TAS sheet of the replay viewer
     FilmRestart,        // films and boss stories
     FilmMode,
     GiftEquip,          // a reward revealed (gifts)

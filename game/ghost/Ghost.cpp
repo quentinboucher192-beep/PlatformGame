@@ -82,6 +82,7 @@ std::string GhostMeta::sourceLabel() const {
     if (source == "record") return "Record du classement";
     if (source == "favorite") return "Replay favori";
     if (source == "file") return "Replay choisi";
+    if (source == "tas") return "TAS · machine";  // the machine's run (ui/screens/TasCatalog.h), never ranked
     return "Fantôme";
 }
 

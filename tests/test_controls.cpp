@@ -39,6 +39,7 @@ const Entry kInventory[] = {
     {Action::ReplayCamera, SDL_SCANCODE_C, B::button(SDL_GAMEPAD_BUTTON_NORTH)},
     {Action::ReplayPaths, SDL_SCANCODE_T, {}},
     {Action::ReplayAlign, SDL_SCANCODE_R, {}},
+    {Action::ReplayTasSheet, SDL_SCANCODE_F, {}},
     {Action::FilmRestart, SDL_SCANCODE_R, B::button(SDL_GAMEPAD_BUTTON_NORTH)},
     {Action::FilmMode, SDL_SCANCODE_F, {}},
     {Action::GiftEquip, SDL_SCANCODE_Y, B::button(SDL_GAMEPAD_BUTTON_NORTH)},
@@ -106,7 +107,7 @@ TEST_CASE("controls (2.93): every inventoried command is rebindable, listed in a
         CHECK(d.pad[at(e.action)][0] == e.pad);
         if (!actionHasPadBinding(e.action)) CHECK(e.pad.kind == PadBinding::Kind::None);
     }
-    CHECK(n == 52);
+    CHECK(n == 53);
     // The names line up with the commands (the table of InputTypes.cpp is as long as the enum).
     CHECK(std::string(actionId(Action::DebugOverlay)) == "debug_overlay");
     CHECK(std::string(actionId(Action::MenuTabNext)) == "menu_tab_next");

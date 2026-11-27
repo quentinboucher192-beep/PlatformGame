@@ -365,6 +365,10 @@ seg{0}
 |strip|{0}|{1}
 |s|{0}|{1}|{2}|{3}
 bests
+no
+same
+tas
+tab{0}
 ArenaWorld: this program does not redirect its allocations to the arenas (tools/tas/HeapHooks.cpp)
 sp{0}
 |band|{0}|{1}
