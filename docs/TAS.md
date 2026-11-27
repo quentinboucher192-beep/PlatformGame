@@ -91,6 +91,7 @@ cmake --build build --target cosmic_tas
 | `--progress <fichier>` | la progression, réécrite (atomiquement) toutes les demi-secondes : `game/tas/TasProgress.h` |
 | `--stop-file <fichier>` | s'arrêter proprement dès que ce fichier existe |
 | `--stop-on-stdin` | s'arrêter proprement quand l'entrée standard lit `stop` ou se ferme (le jeu fermé, même par un plantage) |
+| `--no-planner` | sans le planificateur (« Le planificateur », ci-dessous) : pour comparer |
 | `--user-dir <dossier>`, `--server <url>` | le niveau tel que le jeu le joue sur cet ordinateur : les révisions en ligne (campagne, entités) que le jeu a téléchargées |
 
 La course trouvée est **vérifiée** avant d'être écrite ; un fichier qui garde une course plus
@@ -122,9 +123,9 @@ le plus court détour, l'ordre dans chaque section cherché (plus proche voisin 
 distances du niveau). Les distances viennent du modèle de déplacement de l'analyse des niveaux
 (`LevelNavigator`, `game/levels/LevelAnalyzer.h` : la grille de 8 px, tomber partout, monter et
 aller de côté à portée d'un appui, tous les pouvoirs, les portes ouvertes) : un champ de distance
-vers chaque repère. La navigation des joueurs simulés des raids (`game/raid/nav`) n'a pas été
-reprise : elle est faite pour les zones d'un raid et des cibles qui bougent, la recherche n'a
-besoin que d'une distance le long du niveau, partout.
+vers chaque repère. La navigation des joueurs simulés des raids (`game/raid/nav`) ne sert pas à
+cette distance (elle est faite pour les zones d'un raid et des cibles qui bougent) ; sa copie des
+mouvements de Nova et du terrain sert au **planificateur** (ci-dessous).
 
 **La progression d'un état** : la distance le long des repères déjà passés moins la distance des
 pieds de Nova au suivant, plus ce que le monde a fait en route, lu de façon générique : portes et
@@ -193,6 +194,88 @@ l'affinage part d'elle si rien n'est plus rapide.
   `sylvanox_01`, des arrivées de plus d'une seconde en avance au premier point de passage ne se
   raccordent jamais (elles ont laissé derrière elles ce dont la suite a besoin), et la recherche
   d'avant s'y perdait jusqu'à la fin de son budget.
+
+### Le planificateur
+
+`tools/tas/Planner.h` : une **source de plus** de candidats pour les faisceaux, à côté des images de
+la meilleure course. Les coups tirés au hasard du faisceau enchaînent mal les dashs, les sauts
+longs, les sauts muraux et les pouvoirs ; le planificateur les **planifie**, depuis l'état réel de
+la course, vers le prochain repère (la fin de la section).
+
+* **Où il planifie** : dans la copie légère des mouvements de Nova des joueurs simulés des raids
+  (`game/raid/nav/BodySim`, vérifiée contre le vrai joueur par `tests/test_raid_nav.cpp` : la
+  course, le saut et sa hauteur tenue, le temps de coyote et le saut tamponné, le double et le
+  triple saut, la glissade et le saut mural, l'accroupi et la glissade au sol, la descente à
+  travers une plateforme, les échelles, l'eau, les courants d'air, le dash et le saut long, la
+  poussée ; **son énergie, sa régénération et ses temps de recharge**), contre une copie de la
+  physique du niveau (`game/raid/nav/Terrain` : les plateformes mobiles là où elles **seront**, les
+  plateformes qui s'effondrent, les zones). Un pas de la copie coûte environ 0,4 µs, contre 20 à
+  75 µs pour un pas du vrai moteur et 0,1 à 0,3 ms pour restaurer un état sauvegardé : un plan de
+  12 s se cherche en quelques dizaines de millisecondes.
+* **Comment** : un faisceau synchrone dans le temps, sur des manœuvres de 8 pas : courir, le saut
+  tenu (sa hauteur), relâché puis appuyé de nouveau à deux moments (le double saut, le saut mural,
+  **le saut appuyé avant l'atterrissage**, que le tampon garde), un saut bas, Bas (glissade, chute
+  rapide, descente à travers une plateforme), le dash à plat et en diagonale, **le saut long** (un
+  saut appuyé pendant le dash au sol), le dash fini par un saut en l'air, la poussée. Un dash n'est
+  proposé **que si l'énergie, la recharge et les usages en l'air le permettent** dans la manœuvre :
+  sinon le faisceau attend la régénération ou fait autre chose. Tous les états d'une génération
+  ont joué le même nombre de pas : la première arrivée est la plus rapide trouvée. Les états sont
+  classés par une estimation du temps qui reste : la distance du niveau au repère (`LevelNavigator`)
+  là où Nova est et là où son élan la portera un instant plus tard (**garder l'élan** plutôt
+  qu'arriver « près » mais lent), moins un peu pour l'énergie et les sauts gardés ; un seul état par
+  endroit, vitesse et ressources. Sans arrivée dans l'horizon (12 s), les plans les plus avancés.
+* **Validé par le vrai jeu** : la copie ne connaît ni les ennemis, ni les coups, ni les dégâts.
+  Chaque plan est joué dans le vrai monde de la recherche, morceau par morceau comme les images
+  de la meilleure course ; **chacun de ses préfixes est proposé au faisceau, qui ne le garde que
+  sur son mérite réel** (pas de place réservée, contrairement à la meilleure course) ; son
+  arrivée est une arrivée comme les autres, classée, raccordée et vérifiée de la même façon ; la
+  course finale est toujours vérifiée par la lecture normale des replays.
+* **Quand** : au début de chaque section (depuis l'état de départ) et toutes les 8 générations
+  depuis le meilleur état du faisceau (6 plans en cours au plus par fil). Les mêmes entrées
+  donnent les mêmes plans (rien d'aléatoire).
+* **La borne inférieure** (`Planner::lowerBoundSeconds`, `lowerBoundToFinish`) : un temps que Nova
+  ne peut **jamais** battre pour toucher un repère (ou la sortie, en ligne droite : une course peut
+  laisser des repères de côté), pour l'élagage des autres sources (« horloge + borne ≥ meilleur
+  temps intermédiaire connu » : inutile de continuer). Par axe, l'écart entre la boîte de Nova et
+  celle du repère divisé par la vitesse la plus grande possible sur cet axe : la course, la
+  glissade, les sauts, le saut mural, le recul d'un coup, les tremplins et les plateformes mobiles
+  du niveau, et les pouvoirs — portés, ou que le niveau peut encore donner (comptés comme portés) ;
+  **le dash et la poussée ne comptent qu'à partir du moment où l'énergie et la recharge les
+  permettent** ; une téléportation couvre sa distance d'un coup (une par recharge) ; un retour en
+  arrière (le rappel) annule la borne. Admissible par construction (lignes droites, vitesses
+  maximales), donc large : vérifiée sur la course livrée de `sylvanox_01` (une borne tous les
+  30 pas vers chaque repère encore devant, jamais au-dessus du temps réellement mis) et sous les
+  temps d'une force brute et du planificateur sur de petits mondes (`tests/test_tas_planner.cpp`).
+  Ce qu'elle suppose : aucune mort ne rapproche du repère (la réapparition se fait à un point de
+  passage déjà touché, derrière).
+* **Ce qu'il compte** (journal, `SearchOutcome::planner`) : plans proposés, plans dont un état a
+  été gardé par un faisceau, plans arrivés au bout de la section dans le vrai jeu, sections dont la
+  gagnante vient d'un plan, et **l'écart entre la copie et le vrai jeu** (les pieds de Nova, en
+  pixels, par nombre de pas joués du plan).
+* `--no-planner` l'arrête (pour comparer).
+
+**Mesure du planificateur** (`sylvanox_01` ANY%, depuis la course livrée 1:26.692, 7 min, 1 fil,
+graine 1, une recherche du niveau entier ; les deux recherches en même temps sur 4 cœurs partagés) :
+
+| Point de passage (chrono) | livrée | sans planificateur | avec |
+|---|---|---|---|
+| CP1 (Seuil des Anciens) | 11,0 s | 10,975 s | **9,167 s** |
+| CP2 (Canopée brisée) | 30,1 s | 29,525 s | **25,275 s** |
+| CP3 | 39,7 s | 45,850 s | 40,592 s |
+| CP4 | 51,4 s | 58,733 s | 55,267 s |
+| CP5 | 64,7 s | 71,458 s | 67,067 s |
+| sortie (la recherche seule) | 1:26,692 | 1:35,033 | 1:34,542 |
+
+Le planificateur gagne 1,8 s sur la première section et 2,4 s de plus sur la deuxième (le joueur
+le plus rapide : 1,8 s et 4,1 s devant la course livrée). Ces arrivées ne se raccordent pas à la
+course livrée (fin estimée) et le combat du boss, cherché de zéro en quelques minutes, reste bien
+plus lent que celui de la course livrée : la course gardée reste 1:26,692 (1:26,675 sans le
+planificateur, par un raccord après la section 1). Le gain vient des faisceaux qui partent des
+préfixes des plans (63 plans sur 144 gardés au moins une fois), aucun plan entier n'est arrivé tel
+quel au bout de sa section dans le vrai jeu. Écart copie / jeu : 8,5 px en moyenne sur les 32
+premiers pas d'un plan, 38 px jusqu'à 128 pas, 79 px au-delà (les ennemis, les coups et les
+plateformes hors de la fenêtre de la copie). Coût : 6,2 s de planification sur 3,5 min (16 M pas de
+la copie, environ 0,4 µs chacun) ; les essais par seconde ne baissent pas de façon mesurable.
 
 ### Les tours
 

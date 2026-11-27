@@ -25,6 +25,10 @@
 //   found has left it; they join the beam. At each section's end, every good arrival is played on
 //   with the rest of the seed run (realigned by a few steps): a faster finish is a faster run at
 //   once, and the arrivals are ranked by the finish they give (estimated when they cannot re-join).
+// * The planner (docs/TAS.md « Le planificateur », tools/tas/Planner.h): plans made in a light copy
+//   of Nova's movement (BodySim: dashes, long jumps, wall jumps, energy) toward the section's end,
+//   at its start and every few generations, played in the real world like the guide's frames;
+//   their states join the beam only on their merit. --no-planner turns it off.
 // * Rounds (a training, docs/TAS.md « Les tours »): the first searches the whole level; the next
 //   ones search a WINDOW of one or two sections (WindowPlanner) — the seed run's sections before
 //   kept exactly, after the window the run re-joins the seed run — in several passes, deeper each
@@ -39,6 +43,7 @@
 
 #include "game/gameplay/InputFrame.h"
 #include "game/online/OnlineTypes.h"
+#include "tools/tas/Planner.h"
 
 namespace cosmic {
 class ContentDatabase;
@@ -77,6 +82,12 @@ struct SearchOptions {
     /// seed run. 0: the whole level. Only with a seed run that finishes the category.
     int windowFirst = 0, windowLast = 0;
     bool refine = true;  // the refinement of the run found (a window round: from the window on)
+    /// The planner (docs/TAS.md « Le planificateur »): plans in BodySim offered to the beams as one
+    /// more source of candidates, at each section's start and every `plannerEvery` generations
+    /// (--no-planner: off, for A/B tests).
+    bool planner = true;
+    int plannerEvery = 8;
+    PlanBudget plannerBudget;
     /// The whole level only: the run's first frames taken as they are (it goes on from the section
     /// they end in) — a run that has already left the seed run (the tests of the guidance).
     std::vector<InputFrame> startRun;
@@ -114,6 +125,7 @@ struct SearchOutcome {
     bool rejoined = false;
     size_t rejoinAt = 0, rejoinSeedAt = 0;
     std::vector<InputFrame> beforeRefinement;  // the run kept before the refinement
+    PlanStats planner;                         // what the planner did, all threads
 };
 
 /// The windows of a training's rounds (docs/TAS.md « Les tours »): from the second round, each

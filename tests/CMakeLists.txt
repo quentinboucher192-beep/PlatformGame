@@ -7,7 +7,7 @@ if(COSMIC_EXTRA_TESTS_DIR)
 endif()
 add_executable(cosmic_tests ${COSMIC_TEST_SOURCES})
 # The search of the machine's runs without its program (test_tas_search.cpp: its rounds, its guidance).
-target_sources(cosmic_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools/tas/Search.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Course.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Output.cpp)
+target_sources(cosmic_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools/tas/Search.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Course.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Output.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Planner.cpp)
 # Arena heaps (savestates of the machine's search, docs/TAS.md): the tests redirect operator new too.
 target_link_libraries(cosmic_tests PRIVATE cosmic_game cosmic_heap_hooks)
 if(WIN32)

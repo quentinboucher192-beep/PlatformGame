@@ -347,6 +347,11 @@ void Terrain::end(Run& r) {
             if (Collider* c = phys_.get(cr.collider)) c->enabled = rc->enabled;
 }
 
+void Terrain::resume(const Run& r) {
+    for (size_t i = 0; i < crumbles_.size() && i < r.crumbles.size(); ++i)
+        if (Collider* c = phys_.get(crumbles_[i].collider)) c->enabled = r.crumbles[i].phase != 2;
+}
+
 Harm Terrain::harm(const Rect& box, int k) const {
     if (box.y > killY_) return Harm::Void;
     for (size_t i = 0; i < keepOut_.size(); ++i)

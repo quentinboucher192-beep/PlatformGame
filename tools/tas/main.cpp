@@ -68,7 +68,7 @@ bool parseCategory(std::string s, RunCategory& out) {
 
 int usage() {
     std::fprintf(stderr,
-                 "Usage : cosmic_tas <niveau> <catégorie> [--budget minutes] [--seed-replay fichier] [--threads n] [--beam n] [--seed n] [--out dossier]\n"
+                 "Usage : cosmic_tas <niveau> <catégorie> [--budget minutes] [--seed-replay fichier] [--threads n] [--beam n] [--seed n] [--out dossier] [--no-planner]\n"
                  "        [--until-stopped] [--round minutes] [--progress fichier] [--stop-file fichier] [--stop-on-stdin] [--user-dir dossier] [--server url]\n"
                  "  catégorie : ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE\n");
     return 2;
@@ -273,6 +273,7 @@ int main(int argc, char** argv) {
     opt.budgetSeconds = untilStopped ? roundSeconds : std::max(0.1, std::atof(value("--budget", "30").c_str())) * 60.0;
     opt.threads = std::clamp(std::atoi(value("--threads", "2").c_str()), 1, 64);
     opt.beam = std::clamp(std::atoi(value("--beam", "24").c_str()), 4, 4096);
+    opt.planner = !flag("--no-planner");
     const uint64_t baseSeed = static_cast<uint64_t>(std::strtoull(value("--seed", "1").c_str(), nullptr, 10));
     opt.seed = baseSeed;
     opt.log = [&](const std::string& s) { say(s); };

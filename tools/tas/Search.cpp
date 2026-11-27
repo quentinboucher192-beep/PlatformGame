@@ -20,6 +20,7 @@
 #include "game/powers/Power.h"
 #include "game/tas/ArenaWorld.h"
 #include "tools/tas/Course.h"
+#include "tools/tas/Planner.h"
 
 namespace cosmic::tas {
 
@@ -123,6 +124,7 @@ struct Arrival {
     Progress p;
     Pad pad;
     int guide = -1;  // the best run's frames that arrived (that guide), or -1
+    bool planned = false;  // a plan of the planner that arrived
 };
 
 /// The best run (the seed run): what the search keeps of it to be guided by it everywhere
@@ -231,9 +233,12 @@ public:
         world_.save(origin_);
         baseProgress_ = measure(0);
         baseNova_ = nova();
+        if (sh.opt.planner) planner_ = std::make_unique<Planner>(sh.course, &sh.content);
     }
 
     ArenaWorld& world() { return world_; }
+    /// What its planner did (none: off).
+    PlanStats planStats() const { return planner_ ? planner_->stats : PlanStats{}; }
     /// The level just loaded.
     const ArenaWorld::State& origin() const { return origin_; }
     const Progress& baseProgress() const { return baseProgress_; }
@@ -386,6 +391,7 @@ private:
     Progress baseProgress_, startProgress_;
     Nova baseNova_, startNova_;
     std::vector<std::unique_ptr<ArenaWorld::State>> pool_;
+    std::unique_ptr<Planner> planner_;
 };
 
 bool Worker::reachedTarget(int target) {
@@ -540,14 +546,24 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         Pad pad;
         Progress p;
         int tree = -1;  // its last state kept in the beam's tree
+        size_t treeAt = 0;  // its frames up to that state (a plan's states are not all kept)
         bool done = false;
     };
+    // The sequences played on and offered to the beam: the guides, then the planner's plans (from
+    // the base or from a state of the beam: `seqRoot`, its tree; their states join the beam only
+    // on their merit, docs/TAS.md « Le planificateur »).
+    std::vector<std::vector<InputFrame>> seqs = guides;
+    const size_t nGuides = guides.size();
+    std::vector<int> seqRoot(nGuides, -1);
+    std::vector<std::vector<Vec2>> seqFeet(nGuides);
+    std::vector<uint8_t> seqKept(nGuides, 0);
     std::vector<GuideRun> gr(guides.size());
     auto startGuides = [&] {
         for (size_t g = 0; g < guides.size(); ++g) {
             GuideRun& G = gr[g];
             G.at = 0;
             G.tree = -1;
+            G.treeAt = 0;
             G.done = guides[g].empty();
             G.pad = basePad_;
             G.p = baseProgress_;
@@ -558,6 +574,38 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         }
     };
     startGuides();
+    // The planner's plans from a state of the beam (null: the base), played on as the guides are.
+    auto addPlans = [&](const Node* from) {
+        if (!planner_) return;
+        int live = 0;
+        for (size_t g = nGuides; g < seqs.size(); ++g) live += gr[g].done ? 0 : 1;
+        if (live >= 6) return;
+        world_.restore(from ? *from->snap : *base_);
+        const Pad pad = from ? from->pad : basePad_;
+        std::vector<Plan> plans = planner_->propose(world_.world(), target, pad.held, sh_.opt.plannerBudget);
+        for (Plan& pl : plans) {
+            seqs.push_back(std::move(pl.frames));
+            seqRoot.push_back(from ? from->tree : -1);
+            seqFeet.push_back(std::move(pl.feet));
+            seqKept.push_back(0);
+            GuideRun G;
+            G.snap = takeSnap();
+            world_.save(*G.snap);
+            G.pad = pad;
+            G.p = from ? from->p : baseProgress_;
+            G.tree = from ? from->tree : -1;
+            gr.push_back(std::move(G));
+        }
+    };
+    auto dropPlans = [&] {
+        for (size_t g = nGuides; g < gr.size(); ++g) giveSnap(std::move(gr[g].snap));
+        seqs.resize(nGuides);
+        seqRoot.resize(nGuides);
+        seqFeet.resize(nGuides);
+        seqKept.resize(nGuides);
+        gr.resize(nGuides);
+    };
+    addPlans(nullptr);
     float bestScore = -1e30f;
     int stalled = 0, firstArrivalGen = -1, gen = 0;
     uint32_t steps = 0;
@@ -565,7 +613,9 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         for (Node& n : beam) giveSnap(std::move(n.snap));
         beam.clear();
         makeRoot();
+        dropPlans();
         startGuides();
+        addPlans(nullptr);
         ++restarts;
         tune.beam = std::min(base.beam * 4, std::max(tune.beam, base.beam) * 3 / 2);
         tune.moves = std::min(32, tune.moves + 4);
@@ -577,6 +627,9 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
     };
     while (!sh_.stopped() && Clock::now() < deadline && static_cast<int>(steps) < maxSteps) {
         if (firstArrivalGen >= 0 && gen - firstArrivalGen >= effort.settle) break;
+        for (size_t g = nGuides; g < gr.size(); ++g)
+            if (gr[g].done && gr[g].snap) giveSnap(std::move(gr[g].snap));  // a plan played to its end
+        if (gen > 0 && sh_.opt.plannerEvery > 0 && gen % sh_.opt.plannerEvery == 0 && !beam.empty()) addPlans(&beam.front());
         // Expansion: every move from every state.
         std::vector<Candidate> cands;
         std::vector<AttemptNote> notes;  // the attempts of this generation (a training's counts)
@@ -636,11 +689,11 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         }
         sh_.attempts(notes, crossings);
         // The guides' states at this generation (as many steps as the beam's moves).
-        std::vector<int> guideCand(guides.size(), -1);
-        for (size_t g = 0; g < guides.size(); ++g) {
+        std::vector<int> guideCand(seqs.size(), -1);
+        for (size_t g = 0; g < seqs.size(); ++g) {
             GuideRun& G = gr[g];
             if (G.done || !G.snap) continue;
-            if (G.at >= guides[g].size()) {
+            if (G.at >= seqs[g].size()) {
                 G.done = true;
                 continue;
             }
@@ -648,10 +701,10 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
             Candidate c;
             c.parent = -1 - static_cast<int>(g);
             c.pad = G.pad;
-            const size_t end = std::min(guides[g].size(), G.at + static_cast<size_t>(tune.len));
+            const size_t end = std::min(seqs[g].size(), G.at + static_cast<size_t>(tune.len));
             bool brokenRun = false;
             for (size_t i = G.at; i < end; ++i) {
-                const InputFrame& f = guides[g][i];
+                const InputFrame& f = seqs[g][i];
                 world_.step(f);
                 c.frames.push_back(f);
                 c.pad.held = f.held;
@@ -665,6 +718,9 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                 }
             }
             G.at += c.frames.size();
+            // A plan: how far the real game is from BodySim's prediction.
+            if (planner_ && g >= nGuides && G.at > 0 && G.at <= seqFeet[g].size())
+                planner_->stats.noteError(G.at, (world_.world().player().feet() - seqFeet[g][G.at - 1]).length());
             if (brokenRun) {
                 G.done = true;
                 continue;
@@ -695,8 +751,10 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                 a.frames = pathOf(beam[static_cast<size_t>(c.parent)].tree, &c.frames);
             } else {
                 const size_t g = static_cast<size_t>(-1 - c.parent);
-                a.frames.assign(guides[g].begin(), guides[g].begin() + static_cast<std::ptrdiff_t>(gr[g].at));
-                a.guide = static_cast<int>(g);
+                const std::vector<InputFrame> played(seqs[g].begin(), seqs[g].begin() + static_cast<std::ptrdiff_t>(gr[g].at));
+                a.frames = pathOf(seqRoot[g], &played);
+                if (g < nGuides) a.guide = static_cast<int>(g);
+                else a.planned = true, ++planner_->stats.arrivals;
             }
             const int maxHealth = world_.world().player().maxHealth();
             a.cost = static_cast<float>(a.frames.size()) + 30.0f * static_cast<float>(std::max(0, maxHealth - c.p.health));
@@ -715,7 +773,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         std::vector<int> rest;
         for (int i : order) {
             const Candidate& c = cands[static_cast<size_t>(i)];
-            if (c.arrived || c.parent < 0) continue;
+            if (c.arrived || (c.parent < 0 && static_cast<size_t>(-1 - c.parent) < nGuides)) continue;  // a plan's state: on its merit
             if (static_cast<int>(keep.size()) < tune.beam * 9 / 10 && cells.insert(c.p.cell).second) keep.push_back(i);
             else rest.push_back(i);
         }
@@ -724,8 +782,13 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
             if (cells.insert(cands[static_cast<size_t>(rest[k])].p.cell).second || rng_.chance(0.3f)) keep.push_back(rest[k]);
             rest.erase(rest.begin() + static_cast<std::ptrdiff_t>(k));
         }
-        for (int gi : guideCand)
-            if (gi >= 0 && !cands[static_cast<size_t>(gi)].arrived) keep.push_back(gi);
+        for (size_t g = 0; g < nGuides; ++g)
+            if (guideCand[g] >= 0 && !cands[static_cast<size_t>(guideCand[g])].arrived) keep.push_back(guideCand[g]);
+        for (int i : keep)
+            if (const int g = -1 - cands[static_cast<size_t>(i)].parent; g >= static_cast<int>(nGuides) && !seqKept[static_cast<size_t>(g)]) {
+                seqKept[static_cast<size_t>(g)] = 1;
+                ++planner_->stats.kept;
+            }
         // Progress and stall: the beam widens and the moves lengthen while nothing gets better.
         const float top = cands[static_cast<size_t>(order.front())].p.score;
         if (top > bestScore + 8.0f) {
@@ -753,10 +816,14 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                 parentTree = parent.tree;
                 n.steps = parent.steps + static_cast<uint32_t>(c.frames.size());
             } else {
-                const GuideRun& G = gr[static_cast<size_t>(-1 - c.parent)];
+                const size_t g = static_cast<size_t>(-1 - c.parent);
+                GuideRun& G = gr[g];
                 world_.restore(*G.snap);
                 parentTree = G.tree;
                 n.steps = static_cast<uint32_t>(G.at);
+                // Its frames since its last state kept (all of a plan's states are not).
+                c.frames.assign(seqs[g].begin() + static_cast<std::ptrdiff_t>(G.treeAt), seqs[g].begin() + static_cast<std::ptrdiff_t>(G.at));
+                G.treeAt = G.at;
             }
             n.snap = takeSnap();
             world_.save(*n.snap);
@@ -1060,8 +1127,25 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         if (opt.onBest) opt.onBest(clock);
     };
 
+    // What the planners did (all threads), in the outcome and the log.
+    auto plannerReport = [&] {
+        if (!opt.planner) return;
+        PlanStats t;
+        for (auto& w : workers) t.add(w->planStats());
+        t.wins = out.planner.wins;
+        out.planner = t;
+        char line[400];
+        auto err = [&](int b) { return t.errN[b] > 0 ? t.err[b] / static_cast<double>(t.errN[b]) : 0.0; };
+        std::snprintf(line, sizeof line,
+                      "Planificateur : %lld plans (%lld arrivent dans la copie), %lld gardés par les faisceaux, %lld arrivés dans le vrai jeu, %lld sections gagnées ; "
+                      "écart copie / jeu %.1f px (<= 32 pas), %.1f px (<= 128), %.1f px (plus) ; %.1f s de planification, %lld pas simulés",
+                      static_cast<long long>(t.proposals), static_cast<long long>(t.arriving), static_cast<long long>(t.kept), static_cast<long long>(t.arrivals),
+                      static_cast<long long>(t.wins), err(0), err(1), err(2), t.ms / 1000.0, static_cast<long long>(t.simSteps));
+        log(line);
+    };
     std::vector<InputFrame> run;  // the run so far
     auto adopt = [&](const Arrival& a) {
+        if (a.planned) ++out.planner.wins;
         std::vector<std::thread> pool;
         for (auto& w : workers) pool.emplace_back([&w, &a] { w->advanceBase(a.frames, a.pad); });
         for (auto& t : pool) t.join();
@@ -1375,6 +1459,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         }
     }
 
+    plannerReport();
     if (bestClock < 0.0f) {
         if (out.why.empty()) out.why = "la course trouvée ne termine pas la catégorie";
         out.explored = sh.explored.load();
