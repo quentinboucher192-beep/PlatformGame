@@ -6,6 +6,7 @@
 //              [--beam n] [--seed n] [--out folder] [--keep-seed-sections n] [--save-partial file]
 //              [--until-stopped] [--round minutes] [--progress file] [--stop-file file]
 //              [--stop-on-stdin] [--user-dir folder] [--server url]
+//              [--portfolio] [--arms beam,explore,timing,refine] [--slice seconds] [--no-bnb] [--bound-slack s]
 //
 // <category>: ANY_PERCENT, HUNDRED_PERCENT, NO_DEATH, NO_DAMAGE (or ANY%, 100%...). The run found
 // is verified by the normal replay playback, then written next to the levels:
@@ -29,6 +30,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -48,7 +50,9 @@
 #include "game/tas/TasVerify.h"
 #include "tools/tas/Course.h"
 #include "tools/tas/Output.h"
+#include "tools/tas/Portfolio.h"
 #include "tools/tas/Search.h"
+#include "tools/tas/Sim.h"
 
 using namespace cosmic;
 
@@ -292,6 +296,54 @@ int main(int argc, char** argv) {
         opt.onStage = [&](int section, int sections) { training.stage(section, sections); };
     }
     training.p.threads = opt.threads;
+    // The portfolio of strategies (docs/TAS.md « Le portefeuille »): --portfolio (all the arms) or
+    // --arms a,b (only those), --slice <s> (a slice's length), --no-bnb, --bound-slack <s>.
+    std::unique_ptr<tas::Portfolio> portfolio;
+    if (flag("--portfolio") || !value("--arms", "").empty()) {
+        portfolio = std::make_unique<tas::Portfolio>(content, *level, category, opt.threads, baseSeed);
+        portfolio->sliceSeconds = std::clamp(std::atof(value("--slice", "45").c_str()), 5.0, 600.0);
+        portfolio->branchAndBound = !flag("--no-bnb");
+        portfolio->boundSlack = static_cast<float>(std::max(0.0, std::atof(value("--bound-slack", "0").c_str())));
+        std::vector<std::string> arms;
+        for (std::string rest = value("--arms", ""); !rest.empty();) {
+            const size_t c = rest.find(',');
+            arms.push_back(rest.substr(0, c));
+            rest = c == std::string::npos ? std::string() : rest.substr(c + 1);
+        }
+        portfolio->only(arms);
+        opt.portfolio = portfolio.get();
+    }
+    // The splits of a run at each checkpoint (the log: where a faster run gains).
+    auto splitsLine = [&](const std::vector<InputFrame>& run) {
+        tas::Course course(*level, content, category);
+        tas::Sim sim(content, *level, course, category);
+        const tas::RunStudy g = sim.study(run);
+        std::string line = "Temps aux points de passage :";
+        for (size_t s = 0; s < g.ends.size(); ++s) {
+            char b[48];
+            if (s + 1 < course.sectionEnds().size()) std::snprintf(b, sizeof b, " CP%zu %.3f", s + 1, static_cast<double>(g.splitAt(s)));
+            else std::snprintf(b, sizeof b, " fin %.3f", static_cast<double>(g.splitAt(s)));
+            line += b;
+        }
+        return line;
+    };
+    // What each arm of the portfolio was given and found (the progress file, the curve's panel).
+    auto strategiesNow = [&] {
+        std::vector<TasStrategy> out;
+        if (!portfolio) return out;
+        const auto gains = portfolio->gains();
+        for (const auto& a : portfolio->bandit().arms()) {
+            if (a.cpu <= 0.0 && std::none_of(gains.begin(), gains.end(), [&](const tas::FoundGain& g) { return g.arm == a.id; })) continue;
+            if (out.size() >= TasStrategy::kMax) break;
+            TasStrategy t;
+            t.id = a.id;
+            t.timeMs = static_cast<int64_t>(a.cpu * 1000.0);
+            for (const tas::FoundGain& g : gains)
+                if (g.arm == a.id) ++t.wins, t.gainMs += std::max<int64_t>(0, clockMs(g.from) - clockMs(g.to));
+            out.push_back(std::move(t));
+        }
+        return out;
+    };
     if (std::string seed = value("--seed-replay", ""); !seed.empty()) {
         std::string why;
         if (!tas::readSeedReplay(seed, levelId, opt.seedRun, why)) return finish(TasPhase::Failed, "Course de départ refusée : " + why, 2);
@@ -384,6 +436,7 @@ int main(int argc, char** argv) {
             best = opt.seedRun;
             bestMs = sv.record.timeMs;
             say("Course de départ vérifiée : " + formatRunTime(bestMs));
+            if (portfolio) say(splitsLine(best));
         } else {
             say("Course de départ non vérifiée (" + sv.why + ") : la recherche part d'elle sans la garder");
         }
@@ -416,7 +469,8 @@ int main(int argc, char** argv) {
         if (!best.empty()) {
             opt.seedRun = best;
             opt.keepSeedSections = 0;
-            if (untilStopped && round > 1 && planner.sections() > 0) std::tie(focusFirst, focusLast) = planner.next(round);
+            // (with the portfolio, from the first round: its strategies need a best run and a window)
+            if (untilStopped && (round > 1 || portfolio) && planner.sections() > 0) std::tie(focusFirst, focusLast) = planner.next(round);
         } else if (round > 1 && !partialRun.empty()) {
             // No run yet: from where the last round got to (its sections kept), with a longer round.
             opt.seedRun = partialRun;
@@ -443,6 +497,19 @@ int main(int argc, char** argv) {
             else say("Tour " + std::to_string(round) + " : tout le niveau");
         }
         const tas::SearchOutcome found = tas::search(content, *level, opt);
+        if (portfolio) {
+            training.edit([&](TasProgress& p) { p.strategies = strategiesNow(); });
+            say("Portefeuille, gains trouvés : " + [&] {
+                std::string s;
+                for (const tas::FoundGain& g : portfolio->gains()) {
+                    char b[96];
+                    std::snprintf(b, sizeof b, "%s%s %.3f -> %.3f à %.0f s", s.empty() ? "" : " ; ", tas::strategyLabel(g.arm).c_str(), static_cast<double>(g.from),
+                                  static_cast<double>(g.to), static_cast<double>(g.atMs) / 1000.0);
+                    s += b;
+                }
+                return s.empty() ? std::string("aucun") : s;
+            }());
+        }
         if (!found.found) {
             lastWhy = found.why;
             say("Aucune course trouvée (" + found.why + ") après " + std::to_string(training.explored.load()) + " essais.");
@@ -462,6 +529,7 @@ int main(int argc, char** argv) {
                       formatRunTime(v.record.timeMs).c_str(), static_cast<long long>(v.record.timeMs), v.record.deaths, v.record.damageTaken,
                       v.record.collectibles, v.record.totalCollectibles, static_cast<long long>(v.record.explored));
         say(line);
+        if (portfolio) say(splitsLine(found.inputs));
         best = found.inputs;
         bestMs = v.record.timeMs;
         if (seedMs > 0) ++improvements;  // faster than the run it started from

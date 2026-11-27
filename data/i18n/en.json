@@ -15785,6 +15785,10 @@
     "échantillon de {0} temps au plus, dans la fenêtre et entre le meilleur et le pire": "sample of at most {0} times, within the window and between the best and the worst",
     "Hors de la vue : {0} plus lents": "Out of view: {0} slower",
     "Hors de la vue : {0} plus lents, {1} plus rapides": "Out of view: {0} slower, {1} faster",
-    "Hors de la vue : {0} plus rapides": "Out of view: {0} faster"
+    "Hors de la vue : {0} plus rapides": "Out of view: {0} faster",
+    "Part du temps : {0}": "Time share: {0}",
+    "Trouvé par : {0}": "Found by: {0}",
+    "affinage": "refinement",
+    "faisceau": "beam"
   }
 }

@@ -92,6 +92,10 @@ cmake --build build --target cosmic_tas
 | `--stop-file <fichier>` | s'arrêter proprement dès que ce fichier existe |
 | `--stop-on-stdin` | s'arrêter proprement quand l'entrée standard lit `stop` ou se ferme (le jeu fermé, même par un plantage) |
 | `--no-planner` | sans le planificateur (« Le planificateur », ci-dessous) : pour comparer |
+| `--portfolio` | le portefeuille de stratégies (faisceau, exploration, polissage, affinage) et la séparation et évaluation : [Le portefeuille](#le-portefeuille) |
+| `--arms <a,b,…>` | le portefeuille avec ces bras seulement (`beam`, `explore`, `timing`, `refine`, ou un bras ajouté) |
+| `--slice <secondes>` | la durée d'une tranche du portefeuille (45 ; une passe du faisceau : trois tranches au plus) |
+| `--no-bnb`, `--bound-slack <s>` | sans séparation et évaluation ; ou avec une marge sur le temps à battre |
 | `--user-dir <dossier>`, `--server <url>` | le niveau tel que le jeu le joue sur cet ordinateur : les révisions en ligne (campagne, entités) que le jeu a téléchargées |
 
 La course trouvée est **vérifiée** avant d'être écrite ; un fichier qui garde une course plus
@@ -315,6 +319,154 @@ section cherchée ; ne vont jusqu'à la sortie que les raccords et l'affinage.
 3 tours de 4 min restent à 1:26.692 (chaque tour recherchait tout le niveau, ne finissait pas la
 section 3 dans son budget et rendait la course de départ) ; après, 2 tours de 3 min donnent
 1:26.667 (tour 1 : raccords après les sections 1 et 4) puis 1:26.650 (tour 2, fenêtre 1 à 2).
+
+### Le portefeuille
+
+`--portfolio` (ou `--arms faisceau,…`) : un **portefeuille de stratégies** se partage chaque tour
+(`tools/tas/Portfolio.*`). Avec une course de départ qui finit la catégorie, chaque tour cherche
+une fenêtre dès le **premier** tour (`WindowPlanner` : d'abord les sections 1 et 2) et se découpe
+en **tranches** (`--slice`, 45 s ; une passe du faisceau : deux tranches au plus) :
+
+| Bras (`--arms`) | Stratégie | Fichiers |
+|---|---|---|
+| `beam` (faisceau) | une passe du faisceau sur la fenêtre (ci-dessus), raccords compris | `Search.cpp` |
+| `explore` (exploration) | Go-Explore, ci-dessous | `Explore.*` |
+| `timing` (polissage) | le polissage des timings, ci-dessous | `Timing.*` |
+| `refine` (affinage) | l'affinage existant (dernier sixième du tour) | `Search.cpp` |
+| autres | un bras ajouté par `Portfolio::addArm` (propositions du planificateur, raccords de guides…) | — |
+
+* **Le bandit** (`Bandit`) : chaque tranche va, avec tous les fils, au bras tiré par
+  *échantillonnage de Thompson* sur son **taux de gain** (millisecondes gagnées par seconde de
+  calcul, loi gamma ; les tranches récentes pèsent plus, ×0,9 par tranche), avec un **plancher** :
+  un bras sous 8 % du temps (moins s'ils sont nombreux) passe d'abord ; l'exploration garde
+  **20 %** quoi que gagnent les autres (ses gains sont rares, et c'est elle qui cherche au-delà des
+  routes connues, celle d'un joueur comprise). Le faisceau tourne pendant
+  les cinq premiers sixièmes du tour, l'affinage seulement dans le dernier ; l'exploration, le
+  polissage et les bras ajoutés partout.
+* **Qui a trouvé quoi** : chaque course plus rapide est créditée au bras dont la tranche tournait ;
+  le journal l'écrit (« Tranche exploration (45 s) : meilleure course … (améliorée) », puis
+  « Portefeuille : faisceau 41 % du temps, … ») et le fichier de progression les donne
+  (`strategies` : temps, gain, nombre de courses par bras). La courbe d'entraînement en fait deux
+  lignes sous les comptes (« Trouvé par : exploration 2 · polissage 1 », « Part du temps : … »).
+* **Les temps aux points de passage** de la course de départ et de chaque course écrite sont dans
+  le journal (« Temps aux points de passage : CP1 10.975 CP2 30.110 … »).
+
+**Go-Explore** (`Explore.*`) : une archive de **cellules** — l'endroit de Nova (grille de 24 px),
+sa vitesse (par 50 px/s, montée ou chute), au sol ou non, sauts en l'air et Dash restants, énergie
+(par quart), cœurs, pouvoirs portés et prêts, repère, ce que le monde a fait (jalons) — qui garde
+pour chacune **le chemin le plus rapide connu** (ses entrées depuis le chargement, en arbre partagé,
+et son état sauvegardé tant que la mémoire le permet : 140 par fil, les plus anciens oubliés et
+rejoués depuis leur ancêtre le plus proche). On tire une cellule selon sa **promesse** (son avance
+sur la meilleure course à progression égale, peu choisie, améliorée récemment), on y **revient** par
+son état sauvegardé, on **explore** quelques coups au hasard (et ceux d'un planificateur, si un
+crochet `proposals` en fournit), et chaque état **nouveau ou atteint plus tôt** devient ou améliore
+une cellule. Rien n'est jeté pour être « loin du prochain repère » : c'est ce qui laisse vivre
+d'autres routes. Une fin de section atteinte **plus tôt** que la meilleure course est jouée
+jusqu'à la sortie avec la suite de la meilleure course (raccord réaligné) ; plus rapide, elle est
+rejouée depuis le chargement puis offerte. L'exploration va **une section au-delà de la fenêtre** :
+une arrivée plus tôt qui ne se raccorde pas tout de suite peut y trouver son propre chemin. L'archive vit tant que le processus vit (tour après tour,
+une par fil : un état sauvegardé n'appartient qu'à son arène), bornée à 6 000 cellules par fil ; la
+course de chaque tour y entre comme une suite de cellules « ancres » (toutes les 0,5 s). Des
+**indices de route**, facultatifs (`GoExplore::routeHints` : des positions avec leur temps, prises
+par exemple de la trajectoire d'un fantôme), favorisent les cellules proches de ce chemin (×1,5, et
+jusqu'à ×3,5 quand elles y sont aussi tôt que l'indice ou plus tôt : ses temps aux points de
+passage sont des cibles souples). Ils ne font qu'**amorcer** l'exploration : leur faveur diminue de
+moitié toutes les 1 500 visites, et la nouveauté (cellules peu choisies, nouvelles ou améliorées)
+comme l'avance sur la meilleure course continuent de choisir, hors de ce chemin aussi : la route
+d'un joueur est un départ, pas la limite. Sans eux, l'archive trouve ses routes seule.
+
+**Le polissage des timings** (`Timing.*`) : la fenêtre de la meilleure course vue comme ses
+**événements d'entrée** (appui et relâchement de chaque touche, à leur image), puis, contre le vrai
+jeu depuis des états sauvegardés toutes les secondes :
+
+1. chaque événement **décalé de ±1 à ±3 images** (force brute image par image, comme les
+   brute-forcers de TAS), d'abord ceux qui précèdent une **perte de vitesse** (vitesse horizontale
+   qui chute, atterrissage, mur) ;
+2. des **appuis courts ajoutés** (saut, touche d'un pouvoir, direction ; 1, 6 ou 12 images, juste
+   avant ces pertes) ou **relâchés un instant**, des **appuis courts supprimés** ; puis ±4 à ±6 ;
+3. une **évolution différentielle** (population 10) sur le vecteur des décalages des 8 événements
+   les plus proches des pertes, arrondi aux images : les changements conjoints.
+
+Mesure : la progression de Nova (le score de la recherche) à l'image où la meilleure course finit la
+fenêtre ; une modification plus avancée est jouée jusqu'à la sortie avec la suite (raccord) ; plus
+rapide, elle est rejouée depuis le chargement. Les images d'avant la fenêtre, d'une cinématique,
+d'un passage de cinématique ou d'une réponse à un pouvoir ne changent jamais.
+
+### Séparation et évaluation
+
+Avec le portefeuille (`--no-bnb` pour l'enlever, `--bound-slack <s>` pour une marge), le faisceau
+et l'exploration **abandonnent un état** quand son chrono plus une **borne inférieure** du temps
+qu'il lui faut encore pour finir sa section dépasse le temps de la meilleure course à ce point de
+passage (plus le retard pris avant la section, pour ne pas condamner une course déjà en retard)
+(`Bound.*`). La borne doit rester **admissible** (jamais plus que la vérité) :
+
+* horizontalement, l'écart à la boîte du point de passage (moins ce qu'une téléportation portée
+  franchit d'un coup) sur la plus grande vitesse horizontale du jeu de pouvoirs : course, glissade,
+  saut mural, recul, chaque vitesse des pouvoirs portés (Dash, Impulsion, Grappin…), sa vitesse du
+  moment et la plus grande vitesse de la meilleure course (tremplins, vents), le tout **+25 %** ;
+* le long du parcours, la distance du champ de `LevelNavigator` (×0,7 : sa grille et sa portée
+  sont grossières) jusqu'au point de passage, ou jusqu'à la région où il compte comme dépassé, sur
+  la plus grande vitesse dans toutes les directions (chutes, sauts) ;
+* un crochet `Portfolio::lowerBound` prend une borne plus serrée d'ailleurs (le planificateur) :
+  la plus grande de deux bornes admissibles l'est encore.
+
+Le test (`tests/test_tas_portfolio.cpp`) rejoue la course livrée de `sylvanox_01` image par image :
+la borne ne dépasse **jamais** le temps qu'il lui restait vraiment, aucun de ses états n'est abandonné,
+et la même course retardée de 2 s l'est avant le premier point de passage. Les états que le
+faisceau proposait lui-même (ses images de la meilleure course) ne sont jamais abandonnés ; une
+génération entièrement abandonnée termine la section au lieu de la recommencer.
+
+### Mesure du portefeuille
+
+`sylvanox_01` ANY%, depuis la course livrée (1:26.692), entraînement en tours de 5 min, 2 fils,
+graine 1, 20 min chacun, l'un après l'autre (machine de 4 cœurs partagée avec d'autres
+compilations : les temps sont bruités). Meilleure course **vérifiée** à la fin de chaque tour :
+
+| Configuration | 5 min | 10 min | 15 min | 20 min | Essais (20 min) | Gains trouvés par |
+|---|---|---|---|---|---|---|
+| Recherche d'avant (tour 1 : tout le niveau) | 1:26.675 | 1:26.667 | 1:26.667 | 1:26.642 | 1,84 M | faisceau (raccords) |
+| Portefeuille entier (`--portfolio`) | 1:26.675 | 1:26.675 | 1:26.650 | **1:26.092** | 1,76 M | faisceau 6, exploration 0, polissage 0, affinage 0 |
+| Exploration seule (`--arms explore`) | 1:26.675 | 1:26.675 | 1:26.675 | 1:26.675 | — | exploration 1 |
+| Faisceau seul dans le portefeuille (`--arms beam,refine`) | 1:26.675 | 1:26.675 | 1:26.650 | 1:26.175 | 2,71 M | faisceau 3, affinage 1 |
+
+Temps aux points de passage de la course finale (CP1 « Seuil des Anciens », CP2 « Canopée brisée ») :
+
+| Course | CP1 | CP2 | CP3 | CP4 | CP5 | CP6 | Fin |
+|---|---|---|---|---|---|---|---|
+| Livrée | 11.025 | 30.142 | 39.658 | 51.433 | 64.667 | 83.525 | 86.692 |
+| Recherche d'avant, 20 min | 10.983 | 30.117 | 39.633 | 51.408 | 64.617 | 83.475 | 86.642 |
+| Portefeuille, 20 min | 10.983 | 30.125 | 39.642 | 51.417 | 64.625 | **82.917** | 86.092 |
+| Exploration seule, dès 3 min | **10.850** | 30.125 | 39.642 | 51.417 | 64.650 | 83.508 | 86.675 |
+| Faisceau seul dans le portefeuille, 20 min | 10.983 | 30.125 | 39.642 | 51.417 | 64.625 | 82.942 | 86.175 |
+
+Ce que cela dit, honnêtement :
+
+* **Le gain de 0,55 s du portefeuille est au segment du boss** (CP5 → CP6 : 18,29 s au lieu de
+  18,86 s), trouvé par le **faisceau** pendant le tour 4, dont la fenêtre était les sections 6 et 7 :
+  avec le portefeuille, les fenêtres commencent dès le tour 1 (sections 1-2, 2-3, 4-5, 6-7), alors
+  que la recherche d'avant passe son premier tour sur tout le niveau et n'y était pas encore au bout
+  de 20 min (1-2, 2-3, 4-5). Le faisceau seul dans le même cadre (fenêtres dès le tour 1,
+  séparation et évaluation) trouve le même gain (1:26.175) : **il vient du calendrier des fenêtres
+  et du faisceau, pas de l'exploration ni du polissage**, qui ont pris 39 % du temps sans gain ici
+  (l'écart 1:26.092 / 1:26.175 est du bruit entre deux tirages). Le portefeuille n'est donc pas
+  activé par défaut.
+* **L'exploration finit le segment 1 en 10,850 s** (0,13 s plus tôt que le faisceau, 0,18 s plus tôt
+  que la course livrée) : le gain à la fin n'est que de 17 ms, parce que **CP2 tombe à 30,125 s dans
+  toutes les courses** : quelque chose du monde (une plateforme, une porte à minuterie…) fixe ce
+  temps, et une avance au segment 1 est absorbée. Les arrivées jusqu'à 0,6 s plus tôt à CP2 que le
+  faisceau trouve ne se raccordent pas à la suite de la meilleure course (leur monde n'est plus en
+  phase) ; la séparation et évaluation les coupe à la section suivante quand elles ne peuvent plus
+  battre le temps du point de passage. Gagner des secondes aux segments 1 et 2 demande donc de
+  chercher **les sections suivantes depuis ces arrivées**, pas de rejouer la fin de la meilleure.
+* **Le polissage** n'a rien trouvé sur cette course (7 tranches, ±1 à ±6 images, ajouts, retraits,
+  évolution) : l'affinage d'avant l'a déjà beaucoup décalée image par image, et la plupart des
+  décalages n'y changent rien (98 sur 130 au segment 1) ou cassent la suite (32) : le temps y est
+  fixé plus loin. Il retrouve une image perdue quand elle compte (test).
+* **Sur le petit niveau du test** (un mur, une porte au pied qui s'ouvre à 12 s, le champ de
+  distance disant « par la porte »), l'exploration passe en 11,8 s au lieu de 16,1 s : **en
+  glissade, Nova passe la porte FERMÉE** (pieds au sol, ~230 px/s, à 5,8 s). C'est peut-être un
+  défaut du jeu (une porte fermée devrait bloquer une glissade) : à vérifier avant d'en faire une
+  technique.
 
 ## Vérification
 

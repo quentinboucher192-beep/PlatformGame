@@ -19,8 +19,10 @@
 #include "game/player/Player.h"
 #include "game/powers/Power.h"
 #include "game/tas/ArenaWorld.h"
+#include "tools/tas/Bound.h"
 #include "tools/tas/Course.h"
 #include "tools/tas/Planner.h"
+#include "tools/tas/Portfolio.h"
 
 namespace cosmic::tas {
 
@@ -192,6 +194,10 @@ struct Shared {
     const SearchOptions& opt;
     std::atomic<int64_t> explored{0};
     std::atomic<bool> stop{false};
+    /// Branch-and-bound (tools/tas/Bound.h, with a portfolio): the states that cannot reach their
+    /// section's end before the best run's split are dropped from the beam.
+    Pruner pruner;
+    std::atomic<int64_t> pruned{0};
     std::mutex logMutex;
     /// The search ends as soon as it can: asked from outside (SearchOptions::stopRequested), or by itself.
     bool stopped() const { return stop.load() || (opt.stopRequested && opt.stopRequested->load()); }
@@ -524,6 +530,9 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
     };
     const Tuning base{effort.beam, effort.moves, effort.len};
     Tuning tune = base;
+    // The section this target ends (branch-and-bound compares with the best run's split there).
+    size_t sectionIdx = 0;
+    while (sectionIdx + 1 < sh_.course.sectionEnds().size() && sh_.course.sectionEnds()[sectionIdx] < target) ++sectionIdx;
     // A death is never kept, in any category: the beam goes on with the states still alive, and
     // when none is left it starts the section again, wider (a dead end found too greedily).
     const int baseDeaths = baseProgress_.deaths;
@@ -639,6 +648,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         if (gen > 0 && sh_.opt.plannerEvery > 0 && gen % sh_.opt.plannerEvery == 0 && !beam.empty()) addPlans(&beam.front());
         // Expansion: every move from every state.
         std::vector<Candidate> cands;
+        int prunedNow = 0;               // dropped by branch-and-bound
         std::vector<AttemptNote> notes;  // the attempts of this generation (a training's counts)
         std::vector<Crossing> crossings;
         const bool noting = static_cast<bool>(sh_.opt.onAttempts);
@@ -681,6 +691,12 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                     continue;
                 }
                 if (c.p.waypoint > target) c.arrived = true;
+                if (!c.arrived && sh_.pruner.active() && sh_.pruner.prune(world_.world(), sectionIdx, target, c.p.clock, baseProgress_.clock)) {
+                    ++prunedNow;
+                    sh_.pruned.fetch_add(1, std::memory_order_relaxed);
+                    if (noting) notes.push_back(stoppedAt(c.p, false));
+                    continue;
+                }
                 if (noting) {
                     if (c.p.finished) {
                         AttemptNote f;
@@ -746,8 +762,8 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
             cands.push_back(std::move(c));
         }
         if (cands.empty()) {
-            if (arrivals.empty()) restart();
-            else break;
+            if (arrivals.empty() && prunedNow == 0) restart();
+            else break;  // (all of them pruned: nothing here can beat the best run's split)
             continue;
         }
         // Arrivals.
@@ -847,7 +863,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         for (Node& n : beam) giveSnap(std::move(n.snap));
         beam = std::move(next);
         if (beam.empty()) {
-            if (!arrivals.empty()) break;
+            if (!arrivals.empty() || prunedNow > 0) break;
             restart();
             continue;
         }
@@ -1113,6 +1129,26 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         log(line);
         if (guide.finishes() && opt.onBest) opt.onBest(guide.clock);
     }
+    // Branch-and-bound (tools/tas/Bound.h): with a portfolio and a best run, the beam drops the
+    // states that cannot reach their section's end before the best run's split.
+    std::unique_ptr<TimeBound> timeBound;
+    if (opt.portfolio && opt.portfolio->branchAndBound && guide.finishes()) {
+        timeBound = std::make_unique<TimeBound>(course, workers[0]->world().world());
+        float vx = 0.0f, v = 0.0f;
+        for (const Vec2& u : guide.vel) vx = std::max(vx, std::abs(u.x)), v = std::max(v, u.length());
+        timeBound->observe(vx, v);
+        timeBound->extra = opt.portfolio->lowerBound;
+        sh.pruner.bound = timeBound.get();
+        sh.pruner.slack = opt.portfolio->boundSlack;
+        for (size_t s = 0; s < guide.ends.size(); ++s) {
+            sh.pruner.split.push_back(guide.clockAt[std::min(guide.ends[s], guide.clockAt.size() - 1)]);
+            sh.pruner.startSplit.push_back(guide.clockAt[std::min(guide.sectionStart(s), guide.clockAt.size() - 1)]);
+        }
+    }
+    // The strategy whose slice runs now (the portfolio credits each faster run to it).
+    std::string arm = Portfolio::kBeam;
+    std::mutex offerMutex;
+
     // The best whole run of this search: the seed run, then each faster one found (verified from
     // the load before it is kept).
     std::vector<InputFrame> best;
@@ -1121,7 +1157,9 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
     bool bestJoined = false;
     size_t bestJoinAt = 0, bestJoinSeedAt = 0;
     auto offer = [&](std::vector<InputFrame> run, float clock, bool joined, size_t joinAt, size_t joinSeedAt, const std::string& how) {
+        std::lock_guard<std::mutex> offerLock(offerMutex);  // (the portfolio's strategies offer from their threads)
         if (bestClock >= 0.0f && clock + 1e-6f >= bestClock) return;
+        if (opt.portfolio) opt.portfolio->credit(arm, bestClock, clock);
         char line[200];
         if (bestClock >= 0.0f) std::snprintf(line, sizeof line, "%s : %.3f s -> %.3f s", how.c_str(), static_cast<double>(bestClock), static_cast<double>(clock));
         else std::snprintf(line, sizeof line, "%s : %.3f s", how.c_str(), static_cast<double>(clock));
@@ -1273,6 +1311,44 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
     const Effort normal{opt.beam, 10, 16, 4};
     const bool windowed = opt.windowFirst > 0 && guide.finishes() && sections > 0 && guide.ends.size() >= sections;
     size_t kept = 0;
+    // The portfolio (tools/tas/Portfolio.h): a slice of a strategy other than the beam, from the
+    // best run, within the round's window (`armFirst`..`armLast`, 0-based; -1: to the exit).
+    int armFirst = 0, armLast = -1, slices = 0;
+    auto armSlice = [&](int a, Clock::time_point until, const std::function<void()>& refineSlice) {
+        Portfolio& P = *opt.portfolio;
+        const float before = bestClock;
+        const auto t0 = Clock::now();
+        arm = P.id(a);
+        if (arm == Portfolio::kRefine) {
+            refineSlice();
+        } else {
+            Slice sl;
+            sl.best = best;
+            sl.bestClock = bestClock;
+            sl.keep = kept;
+            sl.firstSection = armFirst;
+            sl.lastSection = armLast;
+            sl.until = until;
+            sl.threads = threads;
+            sl.seed = opt.seed * 131u + static_cast<uint64_t>(++slices) * 7919u;
+            sl.pruner = sh.pruner.active() ? &sh.pruner : nullptr;
+            sl.stopped = [&] { return sh.stopped(); };
+            sl.count = [&](int64_t n) {
+                sh.explored.fetch_add(n, std::memory_order_relaxed);
+                if (opt.exploredTotal) opt.exploredTotal->fetch_add(n, std::memory_order_relaxed);
+            };
+            sl.log = log;
+            sl.offer = [&](const std::vector<InputFrame>& r, float c, const std::string& how) { offer(r, c, false, 0, 0, how); };
+            P.runSlice(a, sl);
+        }
+        arm = Portfolio::kBeam;
+        const double secs = std::chrono::duration<double>(Clock::now() - t0).count();
+        P.record(a, secs * threads, before, bestClock);
+        char line[200];
+        std::snprintf(line, sizeof line, "Tranche %s (%.0f s) : meilleure course %.3f s%s", strategyLabel(P.id(a)).c_str(), secs, static_cast<double>(bestClock),
+                      bestClock + 1e-6f < before ? " (améliorée)" : "");
+        log(line);
+    };
     if (!windowed) {
         // The whole level, section by section. Each section keeps its best arrival for every set of
         // powers carried (the answers to a power offer differ there): when a later section cannot
@@ -1406,7 +1482,24 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             log(line);
         }
         const auto windowEnd = opt.refine ? deadline - (deadline - start) / 6 : deadline;
+        armFirst = static_cast<int>(wa);
+        armLast = static_cast<int>(wb);
         for (int pass = 0; Clock::now() < windowEnd && !sh.stopped(); ++pass) {
+            // The portfolio: this slice to the beam (one pass, at most three slices long) or to another strategy.
+            auto passEnd = windowEnd;
+            int beamArm = -1;
+            if (opt.portfolio) {
+                const int a = opt.portfolio->pick(true);
+                if (a < 0) break;
+                if (opt.portfolio->id(a) != Portfolio::kBeam) {
+                    armSlice(a, std::min(windowEnd, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 1000.0))), [] {});
+                    --pass;
+                    continue;
+                }
+                beamArm = a;
+                passEnd = std::min(windowEnd, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 3000.0)));
+            }
+            const auto passStarted = Clock::now();
             if (pass > 0) {
                 std::vector<std::thread> pool;
                 for (auto& w : workers) pool.emplace_back([&w] { w->backToStart(); });
@@ -1419,13 +1512,13 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             std::string end = "interrompue";
             for (size_t s = wa; s < sections; ++s) {
                 const auto now = Clock::now();
-                if (now >= windowEnd || sh.stopped()) break;
+                if (now >= passEnd || sh.stopped()) break;
                 if (opt.onStage) opt.onStage(static_cast<int>(s) + 1, static_cast<int>(sections));
                 const size_t left = s <= wb ? wb - s + 1 : sections - s;
-                const auto share = (windowEnd - now) / static_cast<int64_t>(left);
+                const auto share = (passEnd - now) / static_cast<int64_t>(left);
                 const bool following = onGuide();
                 const auto gs = guidesFor(s);
-                std::vector<Arrival> all = searchSection(s, std::min(windowEnd, now + share * 3), e, gs);
+                std::vector<Arrival> all = searchSection(s, std::min(passEnd, now + share * 3), e, gs);
                 if (!gs.empty() && !following) {
                     ++out.guidedSections;
                     if (std::any_of(all.begin(), all.end(), [](const Arrival& a) { return a.guide >= 0; })) ++out.guideArrivals;
@@ -1459,6 +1552,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                 }
             }
             ++out.passes;
+            if (beamArm >= 0) opt.portfolio->record(beamArm, std::chrono::duration<double>(Clock::now() - passStarted).count() * threads, before, bestClock);
             char line[200];
             std::snprintf(line, sizeof line, "Passe %d (faisceau %d, coups %d) : %s ; meilleure course %.3f s%s", pass + 1, e.beam, e.moves, end.c_str(),
                           static_cast<double>(bestClock), bestClock + 1e-6f < before ? " (améliorée)" : "");
@@ -1492,6 +1586,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
     // fewer changes of input). The frames of a cinematic stay as they were; in a window round,
     // the frames before the window too.
     const size_t minFrame = std::max<size_t>(1, kept);
+    auto refineUntil = deadline;  // (a slice of the portfolio ends sooner)
     std::mutex mutex;
     int currentChanges = changes(current);
     std::atomic<uint64_t> version{0};
@@ -1523,7 +1618,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                 aw.step(mine[i]);
             }
         };
-        while (!sh.stopped() && Clock::now() < deadline) {
+        while (!sh.stopped() && Clock::now() < refineUntil) {
             if (mineVersion != version.load()) rebuild();
             if (mine.size() < minFrame + 4) break;
             const size_t i = static_cast<size_t>(rng.rangeInt(static_cast<int>(minFrame), static_cast<int>(mine.size()) - 1));
@@ -1592,7 +1687,32 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             version.fetch_add(1);
         }
     };
-    if (opt.refine) {
+    if (opt.portfolio && guide.finishes()) {
+        // The rest of the round: slices to the strategies other than the beam (the refinement one of them).
+        auto refineSlice = [&] {
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                if (bestClock + 1e-6f < currentClock) {
+                    current = best;
+                    currentClock = bestClock;
+                    currentChanges = changes(current);
+                    version.fetch_add(1);
+                }
+            }
+            std::vector<std::thread> pool;
+            for (int i = 0; i < threads; ++i) pool.emplace_back(refine, i);
+            for (auto& t : pool) t.join();
+            if (currentClock + 1e-6f < bestClock) offer(current, currentClock, false, 0, 0, "Affinage");
+        };
+        while (!sh.stopped() && Clock::now() < deadline) {
+            const int a = opt.portfolio->pick(false);
+            if (a < 0) break;
+            refineUntil = std::min(deadline, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 1000.0)));
+            armSlice(a, refineUntil, refineSlice);
+        }
+        if (bestClock + 1e-6f < currentClock) current = best, currentClock = bestClock;
+        log("Portefeuille : " + opt.portfolio->summary());
+    } else if (opt.refine) {
         std::vector<std::thread> pool;
         for (int i = 0; i < threads; ++i) pool.emplace_back(refine, i);
         for (auto& t : pool) t.join();

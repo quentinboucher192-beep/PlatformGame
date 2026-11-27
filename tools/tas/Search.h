@@ -53,6 +53,8 @@ struct LevelData;
 
 namespace cosmic::tas {
 
+class Portfolio;
+
 /// One attempt of the search, for the counts of a training (game/tas/TasProgress.h windows).
 struct AttemptNote {
     bool finished = false;  // the exit reached, the category kept
@@ -107,6 +109,11 @@ struct SearchOptions {
     /// stage: a section starts (1-based, of `sections`), or 0: whole runs refined.
     std::function<void(const AttemptNote* notes, size_t n, const Crossing* crossings, size_t m)> onAttempts;
     std::function<void(int section, int sections)> onStage;
+    /// The portfolio of strategies (tools/tas/Portfolio.h, docs/TAS.md « Le portefeuille »): with a
+    /// best run, the round is cut into slices that its bandit gives to the beam's passes, Go-Explore,
+    /// the timing polish, the refinement or an arm registered; branch-and-bound in the beam. None:
+    /// the search as before. Lives as long as the process (like WindowPlanner).
+    Portfolio* portfolio = nullptr;
 };
 
 struct SearchOutcome {
