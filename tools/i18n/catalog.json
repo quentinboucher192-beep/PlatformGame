@@ -2329,6 +2329,12 @@
    ]
   },
   {
+   "fr": "ADMINISTRATION › TAS : courbe d'entraînement de chaque niveau et catégorie — le meilleur temps au fil de l'entraînement (améliorations, publications, temps livré et en ligne), les essais en cours (finis, meilleur/médian/pire, sections atteintes, morts par section, tours) et les chiffres de tout l'entraînement et du tour, partagée entre administrateurs.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ADMINISTRATION › TAS : les administrateurs améliorent les courses de la machine sur leur propre ordinateur (plusieurs niveaux à la fois, un verrou par niveau, catégorie et version), les publient, et chaque jeu les rejoue avant de les montrer.",
    "where": [
     "data/news/changelog.json"
