@@ -15159,6 +15159,18 @@
     "Invincible (admin)": "Invincible (admin)",
     "Personnaliser le HUD du mode concentré": "Customize the focus mode HUD",
     "interrupteur|Activé": "On",
-    "interrupteur|Désactivé": "Off"
+    "interrupteur|Désactivé": "Off",
+    "Meilleur temps trouvé par la machine": "Best time found by the machine",
+    "catégorie inconnue": "unknown category",
+    "empreinte du niveau invalide": "invalid level fingerprint",
+    "fichier absent": "missing file",
+    "format inconnu": "unknown format",
+    "niveau absent": "missing level",
+    "nom du replay invalide": "invalid replay name",
+    "pas un objet JSON": "not a JSON object",
+    "replay absent": "missing replay",
+    "replay d'une autre version du niveau": "replay of another version of the level",
+    "temps absent": "missing time",
+    "version de la simulation absente": "missing simulation version"
   }
 }
