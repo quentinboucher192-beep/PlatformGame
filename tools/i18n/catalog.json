@@ -18556,6 +18556,12 @@
    ]
   },
   {
+   "fr": "Courbe d'entraînement TAS : nuages de tous les essais finis et des temps à chaque point de passage (onglets TOUT, CP1…), zoom profond sur les deux axes, tours étiquetés avec leur fenêtre et leur session.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Courbe d'entraînement · {0} · {1}",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
@@ -73297,6 +73303,12 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/StatisticsLevels.cpp",
     "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS : chaque tour s'appuie sur la meilleure course — chaque section est guidée par elle et s'y raccorde, et dès le tour 2 l'entraînement creuse une fenêtre d'une ou deux sections au lieu de tout recommencer.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
