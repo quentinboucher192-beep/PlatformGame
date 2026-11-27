@@ -371,6 +371,8 @@ TasAttemptWindow TasAttemptStats::take(int64_t startMs, int64_t endMs) {
 // ------------------------------------------------------------------ progress
 
 Json TasProgress::toJson() const {
+    Json strategiesJson = Json::array();
+    for (const TasStrategy& s : strategies) strategiesJson.push_back({{"id", s.id}, {"timeMs", s.timeMs}, {"gainMs", s.gainMs}, {"wins", s.wins}});
     Json ws = Json::array();
     for (const TasAttemptWindow& w : windows) ws.push_back(w.toJson());
     Json cps = Json::array();
@@ -396,7 +398,8 @@ Json TasProgress::toJson() const {
             {"checkpoints", cps},
             {"sequence", sequence},
             {"message", message},
-            {"windows", ws}};
+            {"windows", ws},
+            {"strategies", strategiesJson}};
 }
 
 std::optional<TasProgress> TasProgress::fromJson(const Json& j, std::string* error) {
@@ -441,6 +444,18 @@ std::optional<TasProgress> TasProgress::fromJson(const Json& j, std::string* err
         for (const Json& x : ws)
             if (auto w = TasAttemptWindow::fromJson(x); w && (p.windows.empty() || w->id > p.windows.back().id)) p.windows.push_back(std::move(*w));
     if (p.windows.size() > kMaxWindows) p.windows.erase(p.windows.begin(), p.windows.end() - static_cast<std::ptrdiff_t>(kMaxWindows));
+    // The portfolio's arms (absent before 2.99).
+    if (const Json ss = jfield(j, "strategies", Json::array()); ss.is_array())
+        for (const Json& x : ss) {
+            if (p.strategies.size() >= TasStrategy::kMax || !x.is_object()) break;
+            TasStrategy s;
+            s.id = jstr(x, "id");
+            if (s.id.empty() || s.id.size() > 32) break;
+            s.timeMs = std::max<int64_t>(0, jget<int64_t>(x, "timeMs", 0));
+            s.gainMs = std::max<int64_t>(0, jget<int64_t>(x, "gainMs", 0));
+            s.wins = std::max(0, jget<int>(x, "wins", 0));
+            p.strategies.push_back(std::move(s));
+        }
     p.message = jstr(j, "message");
     if (p.message.size() > 400) {
         size_t n = 400;  // never in the middle of a UTF-8 character
@@ -448,6 +463,33 @@ std::optional<TasProgress> TasProgress::fromJson(const Json& j, std::string* err
         p.message.resize(n);
     }
     return p;
+}
+
+std::string tasStrategyLabel(const std::string& id) {
+    if (id == "beam") return "faisceau";
+    if (id == "explore") return "exploration";
+    if (id == "timing") return "polissage";
+    if (id == "refine") return "affinage";
+    if (id == "planner") return "planificateur";
+    if (id == "guides") return "guides";
+    return id;
+}
+
+std::string tasFoundByText(const std::vector<TasStrategy>& s) {
+    std::string list;
+    for (const TasStrategy& x : s)
+        if (x.wins > 0) list += (list.empty() ? "" : " · ") + tasStrategyLabel(x.id) + " " + std::to_string(x.wins);
+    return list.empty() ? std::string() : "Trouvé par : " + list;
+}
+
+std::string tasTimeShareText(const std::vector<TasStrategy>& s) {
+    int64_t total = 0;
+    for (const TasStrategy& x : s) total += x.timeMs;
+    if (total <= 0) return {};
+    std::string list;
+    for (const TasStrategy& x : s)
+        if (x.timeMs > 0) list += (list.empty() ? "" : " · ") + tasStrategyLabel(x.id) + " " + std::to_string((x.timeMs * 100 + total / 2) / total) + " %";
+    return "Part du temps : " + list;
 }
 
 std::optional<TasProgress> TasProgress::parse(const std::string& text, std::string* error) {

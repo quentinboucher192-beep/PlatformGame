@@ -1038,6 +1038,12 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
                                "de chacune, jusqu'à la dernière et l'affinage.",
                   3, th.textDim);
     }
+    // The portfolio of strategies (cosmic_tas --portfolio): who found the faster runs, the time of each.
+    if (training && job && job->progress && !job->progress->strategies.empty()) {
+        y += ui.s(4);
+        if (const std::string found = tasFoundByText(job->progress->strategies); !found.empty()) paragraph(found, 2, th.text);
+        paragraph(tasTimeShareText(job->progress->strategies), 2, th.textDim);
+    }
     y += ui.s(8);
 
     // Where the others stopped, section by section (a bar: its share of the stops, the dead part in red).

@@ -24,7 +24,10 @@
 //     "checkpoints": [{"id": "o63", "label": "Seuil des Anciens"}, ...],  // CP1 first
 //     "sequence": 123,               // +1 at every write
 //     "message": "...",              // the last line of the search's log (French, as the tool writes it)
-//     "windows": [ { ... } ]         // the last TasAttemptWindow's (at most kMaxWindows, oldest first)
+//     "windows": [ { ... } ],        // the last TasAttemptWindow's (at most kMaxWindows, oldest first)
+//     "strategies": [{"id": "explore", "timeMs": 120000, "gainMs": 42, "wins": 2}, ...]
+//                                    // the portfolio's arms (docs/TAS.md « Le portefeuille »): the time each
+//                                    // was given, what it gained, how many faster runs it found (absent: none)
 //   }
 //
 // The attempts of the search are never listed one by one: they are counted in WINDOWS of a few
@@ -156,6 +159,22 @@ struct TasCheckpoint {
     bool operator==(const TasCheckpoint&) const = default;
 };
 
+/// A strategy of the search's portfolio (cosmic_tas, docs/TAS.md « Le portefeuille »).
+struct TasStrategy {
+    static constexpr size_t kMax = 12;
+    std::string id;       // beam, explore, timing, refine, or one registered (planner, guides...)
+    int64_t timeMs = 0;   // the time it was given (CPU: wall time x threads)
+    int64_t gainMs = 0;   // what its faster runs gained
+    int wins = 0;         // the faster runs it found
+    bool operator==(const TasStrategy&) const = default;
+};
+/// The French name of a strategy (« exploration », « polissage »...; the id itself when unknown).
+std::string tasStrategyLabel(const std::string& id);
+/// « Trouvé par : exploration 2 · polissage 1 » (empty when none found anything).
+std::string tasFoundByText(const std::vector<TasStrategy>& s);
+/// « Part du temps : faisceau 40 % · exploration 30 % … » (empty without any time).
+std::string tasTimeShareText(const std::vector<TasStrategy>& s);
+
 struct TasProgress {
     static constexpr size_t kMaxWindows = 24;  // the last two minutes
     static constexpr int64_t kWindowMs = 5000;
@@ -179,6 +198,7 @@ struct TasProgress {
     int64_t sequence = 0;
     std::string message;
     std::vector<TasAttemptWindow> windows;  // the last ones, oldest first
+    std::vector<TasStrategy> strategies;    // the portfolio's arms (empty: none)
 
     /// The process is done (stopped or failed): nothing more will be written.
     bool finished() const { return phase == TasPhase::Stopped || phase == TasPhase::Failed; }

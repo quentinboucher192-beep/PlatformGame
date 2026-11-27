@@ -2566,6 +2566,12 @@
    ]
   },
   {
+   "fr": "affinage",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Affronté {0} fois, pas encore vaincu",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -28461,6 +28467,12 @@
    ]
   },
   {
+   "fr": "faisceau",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Fait",
    "where": [
     "ui/online/RaidHud.cpp"
@@ -53658,6 +53670,12 @@
    ]
   },
   {
+   "fr": "Part du temps : {0}",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Part quand Nova se pose dessus, la porte jusqu'au bout de sa route, puis éclate et renaît à sa place.",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -77170,6 +77188,12 @@
    "fr": "Trouver une relique.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Trouvé par : {0}",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
