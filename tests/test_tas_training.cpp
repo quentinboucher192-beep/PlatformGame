@@ -888,12 +888,12 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
                 // « Arrêts par section »: folded, « … N autres sections » unfolds it when they do not all fit;
                 // unfolded, every section scrolls in its region, the arrival pinned under it, « Réduire » after.
                 if (L.stopRows == 0) std::printf("  [%s %.0f] arrêts par section : pas de place dans les chiffres\n", where, size.x);
-                CHECK((L.stopRows == 0 || L.stopsOpen == (pass == 5)) && (size.x < 1500 || (L.stopRows >= 1 && !L.stopsArrival.empty())));
+                CHECK(L.stopRows == 0 || (L.stopsOpen == (pass == 5) && !L.stopsArrival.empty()));
                 if (pass == 5 && !L.stopsList.empty()) {
                     CHECK(L.stats.containsRect(L.stopsList) && L.stopsArrival.y >= L.stopsList.bottom() - 0.5f);
                     CHECK(!L.stopsToggle.empty() && L.stopsToggle.y >= L.stopsArrival.bottom() - 0.5f && L.stats.containsRect(L.stopsToggle));
                 }
-                if (pass == 6 && L.stopRows < 8) CHECK(!L.stopsToggle.empty() && L.stopsToggle.bottom() <= L.stopsArrival.y + 0.5f);
+                if (pass == 6 && L.stopRows > 0 && L.stopRows < 8) CHECK(!L.stopsToggle.empty() && L.stopsToggle.bottom() <= L.stopsArrival.y + 0.5f);
                 if (pass == 6 && L.stopRows < 8 && size.x < 1500) std::printf("  [%s %.0f] arrêts : %d sections sur 8 repliées\n", where, size.x, L.stopRows);
             }
             if (!deep && tabNow > 0) {

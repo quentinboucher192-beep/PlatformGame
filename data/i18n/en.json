@@ -15820,6 +15820,13 @@
     "la course de {0}": "the run of {0}",
     "la course de {0} ({1})": "the run of {0} ({1})",
     "le tracé de la course de {0} (ancienne version du niveau)": "the route of the run of {0} (older version of the level)",
-    "{0} (ancienne version) {1}": "{0} (older version) {1}"
+    "{0} (ancienne version) {1}": "{0} (older version) {1}",
+    "Guidé par la course de": "Guided by the run of",
+    "Guidé par le tracé (ancienne version du niveau) de": "Guided by the route (older version of the level) of",
+    "Départ → CP{0}": "Start → CP{0}",
+    "CP{0} → CP{1}": "CP{0} → CP{1}",
+    "CP{0} → Arrivée": "CP{0} → Finish",
+    "CP{0} : TAS {1} sur": "CP{0}: TAS {1} vs",
+    "CP{0} : TAS {1} (ancienne version) sur": "CP{0}: TAS {1} (older version) vs"
   }
 }

@@ -281,7 +281,8 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
     if (v && !v->references.empty()) {
         for (const TasProgress::Reference& g : v->references) {
             const int64_t ms = tab == 0 ? g.timeMs : static_cast<size_t>(tab) <= g.splits.size() ? g.splits[static_cast<size_t>(tab - 1)] : 0;
-            if (ms > 0) refs.push_back({i18n::keep(g.player) + (g.oldVersion ? " (ancienne version) " : " ") + formatRunTime(ms), ms, th.warm});
+            if (ms > 0)
+                refs.push_back({g.oldVersion ? i18n::keep(g.player) + " (ancienne version) " + formatRunTime(ms) : i18n::keep(g.player + " " + formatRunTime(ms)), ms, th.warm});
         }
         if (const int64_t sob = tasSumOfBest(*v, tab); sob > 0) refs.push_back({"Meilleurs segments " + formatRunTime(sob), sob, th.violet});
     }
@@ -1060,8 +1061,11 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
                 std::snprintf(sec, sizeof sec, "%s%.3f s", gap > 0 ? "+" : gap < 0 ? "−" : "", static_cast<double>(gap < 0 ? -gap : gap) / 1000.0);
                 std::string t = sec;
                 std::replace(t.begin(), t.end(), '.', ',');
-                text("CP" + std::to_string(tab) + " : TAS " + t + " sur " + i18n::keep(g.player) + (g.oldVersion ? " (ancienne version)" : ""), {r.x, y, r.w, rh}, fs,
-                     gap > 0 ? th.warm : th.success);
+                // The words translated, the player's name as written (two boxes, measured).
+                const std::string lead = "CP" + std::to_string(tab) + " : TAS " + t + (g.oldVersion ? " (ancienne version) sur" : " sur");
+                const float lw = std::min(r.w * 0.75f, ui.text().measure(lead, FontFace::Body, ui.s(fs)).x + ui.s(2));
+                text(lead, {r.x, y, lw, rh}, fs, gap > 0 ? th.warm : th.success);
+                text(g.player, {r.x + lw + ui.s(5), y, std::max(0.0f, r.w - lw - ui.s(5)), rh}, fs, gap > 0 ? th.warm : th.success, FontFace::Body, Align::Left, true);
                 y += rh;
                 ++layout_.referenceGaps;
             }
@@ -1100,16 +1104,16 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
         y += rh;
     }
     // The players' runs that guide it, said (the run stays the machine's best time, never a record).
-    if (v && !v->references.empty()) {
-        std::string g;
+    if (v)
         for (const TasProgress::Reference& ref : v->references) {
-            if (!g.empty()) g += ", ";
-            g += ref.oldVersion ? "le tracé de la course de " + i18n::keep(ref.player) + " (ancienne version du niveau)"
-                                : "la course de " + i18n::keep(ref.player) + (ref.timeMs > 0 ? " (" + formatRunTime(ref.timeMs) + ")" : std::string());
+            // One line each: the words translated, the player's name as written (two boxes, measured).
+            const std::string lead = ref.oldVersion ? "Guidé par le tracé (ancienne version du niveau) de" : "Guidé par la course de";
+            const std::string who = ref.player + (!ref.oldVersion && ref.timeMs > 0 ? " (" + formatRunTime(ref.timeMs) + ")" : std::string());
+            const float lw = std::min(r.w * 0.7f, ui.text().measure(lead, FontFace::Body, ui.s(fs)).x + ui.s(2));
+            text(lead, {r.x, y, lw, rh}, fs, th.warm);
+            text(who, {r.x + lw + ui.s(5), y, std::max(0.0f, r.w - lw - ui.s(5)), rh}, fs, th.warm, FontFace::Body, Align::Left, true);
+            y += rh;
         }
-        text("Guidé par " + g, {r.x, y, r.w, rh}, fs, th.warm);
-        y += rh;
-    }
     // The round: what it searches, and why « Finis » stays low meanwhile.
     if (shownRound > 0 && knownFocus) {
         y += ui.s(4);
