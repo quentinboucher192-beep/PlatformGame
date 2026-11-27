@@ -24,6 +24,9 @@ struct StartPosEntry {
     float at = -1.0f;       // where it lies along the route (0 the start .. 1 the exit; -1: unknown)
     std::string date;       // when it was placed (FileUtil::nowString)
     int attempts = 0;       // attempts started from it
+    /// 2.92: placed from the menu (ENTRAÎNEMENT › « Startpos et mesures »): its state is the one of
+    /// a section training of its segment (segmentStartPos), not one taken in a run.
+    bool menu = false;
 };
 
 class StartPosStore {
@@ -47,7 +50,10 @@ public:
     const StartPosEntry* find(const std::string& levelKey, int id) const;
     /// A new one (made active): its id; 0 when the level already has kPerLevel of them (the
     /// oldest is not dropped behind the player's back) or the key is not valid.
-    int add(const std::string& levelKey, const StartPosState& s, float at, const std::string& date);
+    int add(const std::string& levelKey, const StartPosState& s, float at, const std::string& date, bool menu = false);
+    /// 2.92: moved from the menu: its new state and place along the route (its id, date and
+    /// attempts kept). False when it is not there.
+    bool update(const std::string& levelKey, int id, const StartPosState& s, float at);
     void setActive(const std::string& levelKey, int id);
     /// The previous (-1) or next (+1) one in list() becomes active, around the ends; from none,
     /// the last / the first. Its id (0: none placed).

@@ -1918,13 +1918,25 @@
    ]
   },
   {
-   "fr": "active · posée le {0} · {1} essai depuis",
+   "fr": "active · posée le {0} depuis ce menu · {1} essai depuis",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
-   "fr": "active · posée le {0} · {1} essais depuis",
+   "fr": "active · posée le {0} depuis ce menu · {1} essais depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "active · posée le {0} en jeu · {1} essai depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "active · posée le {0} en jeu · {1} essais depuis",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
@@ -2559,6 +2571,12 @@
    ]
   },
   {
+   "fr": "Ajouter A → B",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Ajouter aux favoris ({0})",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -2610,6 +2628,12 @@
    "fr": "Ajouter une phase",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Ajouter une startpos",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -3260,6 +3284,12 @@
    ]
   },
   {
+   "fr": "Annuler la pose",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Annuler le raid",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -3477,6 +3507,18 @@
    "fr": "APERÇU AVANT D'IMPORTER",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu choisi : croix 1 px · LB / RB maintenu + croix 8 px · B : en sortir",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu choisi : flèches 1 px · Maj + flèches 8 px · Échap : en sortir · clic : y amener le repère",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -6302,6 +6344,12 @@
    ]
   },
   {
+   "fr": "Aucun point de mesure. Ajoutez A puis B ici ou en entraînement : franchir A lance un chrono, franchir B l'arrête.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aucun point de mesure. En entraînement, posez A puis B : franchir A lance un chrono, franchir B l'arrête.",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
@@ -7050,6 +7098,12 @@
    "fr": "Aucune startpos",
    "where": [
     "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune startpos pour cette version du niveau. Ajoutez-en une ici, ou posez-en une en entraînement là où Nova se trouve ; les essais suivants partiront de là.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -13787,6 +13841,12 @@
    ]
   },
   {
+   "fr": "Choisissez l'endroit sur la bande du niveau, au-dessus.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez la couleur à remplacer.",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -13946,6 +14006,12 @@
    "fr": "Choisissez une révision à comparer, puis « Comparer ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une startpos ou une paire de mesure dans les listes (ou un repère de la bande), ou ajoutez-en une : elle apparaît ici, agrandie, à régler au pixel près.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -15127,6 +15193,7 @@
    "where": [
     "editors/level_editor/LevelEditorViewport.cpp",
     "game/gameplay/GameWorld.cpp",
+    "game/gameplay/StartPos.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelAnalyzer.cpp",
     "game/levels/ObjectTypes.cpp"
@@ -16213,6 +16280,12 @@
    "fr": "Confirmer : retirer ce niveau des NIVEAUX EN LIGNE",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Confirmer : supprimer",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -23800,6 +23873,12 @@
    ]
   },
   {
+   "fr": "Départ : l'état pris en jeu à la pose (pouvoirs, cœurs et énergie de ce moment).",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Départ : le point de contrôle avant son arène",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -23809,6 +23888,12 @@
    "fr": "Départ : point de contrôle « {0} »",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Départ comme l'entraînement de son segment : pouvoirs du départ et des tablettes d'avant, cœurs et énergie pleins.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -26090,6 +26175,12 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SettingsScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement : les bandes de « Segments et enchaînements » et de « Startpos et mesures » montrent le niveau lui-même, et l'on y pose, règle au pixel près (aperçu agrandi) et supprime startpos et points de mesure ; une startpos dans le décor est refusée.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -33170,6 +33261,12 @@
    ]
   },
   {
+   "fr": "Image du niveau en préparation…",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Image entièrement transparente : rien à découper.",
    "where": [
     "ui/studio/StudioSlicer.cpp"
@@ -37418,6 +37515,18 @@
    ]
   },
   {
+   "fr": "la porte A (puis B)",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "la porte B{0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "La première fois que le titan apparaît (CLANS › RAIDS, fiche d'un événement) · « Revoir la cinématique » sur la carte des raids",
    "where": [
     "ui/screens/FilmCatalog.cpp"
@@ -37669,6 +37778,12 @@
    "fr": "La sortie n'est pas atteignable d'après l'analyseur : vérifiez le parcours.",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "la startpos",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -49185,6 +49300,12 @@
    ]
   },
   {
+   "fr": "Nouvelle startpos",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Nouvelle touche : {0}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -55860,6 +55981,18 @@
    ]
   },
   {
+   "fr": "Porte A{0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Porte B{0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Porte d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -56017,6 +56150,12 @@
    ]
   },
   {
+   "fr": "Pose de {0} : un clic sur la bande du niveau, ou son curseur avec les flèches (la croix) puis Entrée (A). Échap (B) : annuler.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Pose une copie lumineuse de Nova : quelques secondes, ennemis et boss la visent à votre place. Elle disparaît dès qu'une attaque la touche.",
    "where": [
     "data/powers/decoy.json"
@@ -56030,6 +56169,12 @@
   },
   {
    "fr": "Poser A, puis B",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Poser B{0}",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
@@ -56114,6 +56259,12 @@
    ]
   },
   {
+   "fr": "Position valide : le corps de Nova est libre ici.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Position verticale",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -56174,13 +56325,25 @@
    ]
   },
   {
-   "fr": "posée le {0} · {1} essai depuis",
+   "fr": "posée le {0} depuis ce menu · {1} essai depuis",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
-   "fr": "posée le {0} · {1} essais depuis",
+   "fr": "posée le {0} depuis ce menu · {1} essais depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "posée le {0} en jeu · {1} essai depuis",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "posée le {0} en jeu · {1} essais depuis",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
@@ -60640,6 +60803,30 @@
    ]
   },
   {
+   "fr": "Refusée ici : hors du niveau (au-delà d'un bord, sous le bas ou au plafond). Elle reste à sa dernière place valide.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Refusée ici : hors du niveau (au-delà d'un bord, sous le bas ou au plafond). Pas encore enregistrée : amenez-la dans le niveau.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Refusée ici : le corps de Nova serait dans le décor (sol, mur ou plafond). Elle reste à sa dernière place valide.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Refusée ici : le corps de Nova serait dans le décor (sol, mur ou plafond). Pas encore enregistrée : amenez-la hors du décor.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "refusées",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -62615,6 +62802,12 @@
    ]
   },
   {
+   "fr": "Rien de choisi : une startpos ou une paire de mesure des listes, ou une nouvelle.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Rien de compté pour cette partie sur ce jeu.",
    "where": [
     "ui/online/ContribTable.cpp"
@@ -63806,6 +63999,18 @@
    "where": [
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "RÉGLAGE FIN",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "RÉGLAGE FIN · {0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -67447,6 +67652,12 @@
    "fr": "Soin",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "soit {0} m · {1} m",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -76411,6 +76622,12 @@
    ]
   },
   {
+   "fr": "Une porte se règle librement. La déplacer efface ses temps : ils ne se comparent plus.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Une poussée verticale avec onde de choc. Brise la roche fissurée et garde des golems.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -80911,6 +81128,12 @@
    ]
   },
   {
+   "fr": "x {0} px · y {1} px",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "x {0} · y {1}",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -81416,6 +81639,12 @@
    "fr": "Zoom {0} %",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Zoom ×{0}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -83056,6 +83285,12 @@
    ]
   },
   {
+   "fr": "{0} cœur · énergie {1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "{0} cœur · énergie {1} %",
    "where": [
     "ui/screens/TrainingSession.cpp"
@@ -83071,6 +83306,12 @@
     "ui/screens/GameScene.cpp",
     "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cœurs · énergie {1}",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {

@@ -168,6 +168,76 @@ Rect stretchWindow(const LevelInfo& info, float a, float b, float w, float h) {
     return fitWindow(win, aspect, info.bounds);
 }
 
+// ------------------------------------------------------------------ LevelBand (2.92)
+
+int LevelBand::column(float pictureX) const {
+    if (tops.empty()) return 0;
+    return std::clamp(static_cast<int>(std::floor(pictureX / std::max(0.001f, columnW))), 0, static_cast<int>(tops.size()) - 1);
+}
+
+Vec2 LevelBand::toPicture(Vec2 world) const {
+    const float px = (world.x - bounds.x) * scale;
+    const float top = tops.empty() ? bounds.y : tops[static_cast<size_t>(column(px))];
+    return {px, (world.y - top) * scale};
+}
+
+Vec2 LevelBand::toWorld(Vec2 picture) const {
+    const float top = tops.empty() ? bounds.y : tops[static_cast<size_t>(column(picture.x))];
+    return {bounds.x + picture.x / std::max(1e-6f, scale), top + picture.y / std::max(1e-6f, scale)};
+}
+
+LevelBand levelBand(const LevelInfo& info, int w, int h) {
+    LevelBand b;
+    b.bounds = info.bounds.w > 1.0f && info.bounds.h > 1.0f ? info.bounds : Rect{0.0f, 0.0f, 3200.0f, 1200.0f};
+    const float W = static_cast<float>(std::max(8, w)), H = static_cast<float>(std::max(8, h));
+    b.scale = W / b.bounds.w;
+    const int n = std::clamp(static_cast<int>(W / 16.0f), 1, 160);
+    b.columnW = W / static_cast<float>(n);
+    const float visH = H / b.scale;
+    if (visH >= b.bounds.h) {
+        b.tops.assign(static_cast<size_t>(n), b.bounds.y - (visH - b.bounds.h) * 0.5f);
+        return b;
+    }
+    // The route's height in each column (the level's lower part without a route).
+    std::vector<float> sum(static_cast<size_t>(n), 0.0f), count(static_cast<size_t>(n), 0.0f);
+    if (info.track.valid()) {
+        const int samples = n * 8;
+        for (int k = 0; k <= samples; ++k) {
+            const Vec2 p = pointAt(info.track, static_cast<float>(k) / static_cast<float>(samples));
+            const size_t c = static_cast<size_t>(b.column((p.x - b.bounds.x) * b.scale));
+            sum[c] += p.y;
+            count[c] += 1.0f;
+        }
+    }
+    std::vector<float> ys(static_cast<size_t>(n), b.bounds.bottom() - visH * 0.3f);
+    int last = -1;
+    for (int c = 0; c < n; ++c) {
+        if (count[static_cast<size_t>(c)] <= 0.0f) continue;
+        ys[static_cast<size_t>(c)] = sum[static_cast<size_t>(c)] / count[static_cast<size_t>(c)];
+        // The columns it does not cross in between: from one height to the other.
+        for (int k = last + 1; k < c; ++k)
+            ys[static_cast<size_t>(k)] = last < 0 ? ys[static_cast<size_t>(c)]
+                                                  : ys[static_cast<size_t>(last)] + (ys[static_cast<size_t>(c)] - ys[static_cast<size_t>(last)]) *
+                                                                                        static_cast<float>(k - last) / static_cast<float>(c - last);
+        last = c;
+    }
+    for (int k = last + 1; last >= 0 && k < n; ++k) ys[static_cast<size_t>(k)] = ys[static_cast<size_t>(last)];
+    // Smoothed: no jolt from one column to the next.
+    for (int pass = 0; pass < 2; ++pass) {
+        std::vector<float> sm(ys.size());
+        for (int c = 0; c < n; ++c) {
+            float a = 0.0f, m = 0.0f;
+            for (int k = std::max(0, c - 3); k <= std::min(n - 1, c + 3); ++k) a += ys[static_cast<size_t>(k)], m += 1.0f;
+            sm[static_cast<size_t>(c)] = a / m;
+        }
+        ys = std::move(sm);
+    }
+    // The route a little under the middle: more room above it (the jumps).
+    b.tops.resize(static_cast<size_t>(n));
+    for (int c = 0; c < n; ++c) b.tops[static_cast<size_t>(c)] = std::clamp(ys[static_cast<size_t>(c)] - visH * 0.62f, b.bounds.y, b.bounds.bottom() - visH);
+    return b;
+}
+
 // ------------------------------------------------------------------ LevelArt
 
 struct LevelArt::Loaded {
@@ -243,6 +313,32 @@ const Texture* LevelArt::sliceStrip(const std::string& levelId, int cellW, int h
     std::snprintf(k, sizeof k, "|strip|%d|%d", cellW, h);
     Picture* p = ask(levelId + k, levelId, true, 0.0f, 1.0f, cellW * playstats::kSlices, h);
     return p->ready ? p->tex.get() : nullptr;
+}
+
+const Texture* LevelArt::band(const std::string& levelId, int w, int h) {
+    if (!info(levelId)) return nullptr;
+    char k[64];
+    std::snprintf(k, sizeof k, "|band|%d|%d", w, h);
+    Picture* p = ask(levelId + k, levelId, false, 0.0f, 1.0f, w, h);
+    p->extra = 1;
+    return p->ready ? p->tex.get() : nullptr;
+}
+
+const Texture* LevelArt::view(const std::string& levelId, const Rect& window) {
+    if (!info(levelId)) return nullptr;
+    const Rect win{std::round(window.x), std::round(window.y), std::max(8.0f, std::round(window.w)), std::max(8.0f, std::round(window.h))};
+    char k[96];
+    std::snprintf(k, sizeof k, "|view|%.0f|%.0f|%.0f|%.0f", win.x, win.y, win.w, win.h);
+    Picture* p = ask(levelId + k, levelId, false, 0.0f, 1.0f, static_cast<int>(win.w), static_cast<int>(win.h));
+    p->extra = 2;
+    p->window = {win.x, win.y, static_cast<float>(p->w), static_cast<float>(p->h)};
+    return p->ready ? p->tex.get() : nullptr;
+}
+
+std::shared_ptr<const LevelData> LevelArt::level(const std::string& levelId) {
+    if (!info(levelId)) return nullptr;
+    const ReadLevel* r = readyRead(levelId);
+    return r ? r->level : nullptr;
 }
 
 void LevelArt::update() {
@@ -328,7 +424,7 @@ void LevelArt::drawSome(Picture& p) {
     Renderer& r = g_.app.renderer();
     const LevelInfo& info = loaded_->read->info;
     if (!p.tex) {
-        p.tex = r.createTarget(p.w, p.h, true);
+        p.tex = r.createTarget(p.w, p.h, p.extra != 2);  // a view: sharp, to be enlarged
         if (!p.tex) {
             failed_[p.level] = true;
             return;
@@ -339,7 +435,9 @@ void LevelArt::drawSome(Picture& p) {
         r.setTarget(nullptr);
     }
     r.setTarget(p.tex);
-    if (!p.strip) {
+    if (p.extra) {
+        drawExtra(p);
+    } else if (!p.strip) {
         drawView(p, stretchWindow(info, p.a, p.b, static_cast<float>(p.w), static_cast<float>(p.h)), {0.0f, 0.0f, static_cast<float>(p.w), static_cast<float>(p.h)});
         p.ready = true;
     } else {
@@ -362,6 +460,27 @@ void LevelArt::drawSome(Picture& p) {
         p.ready = p.done >= n;
     }
     r.setTarget(nullptr);
+}
+
+void LevelArt::drawExtra(Picture& p) {
+    if (p.extra == 2) {
+        drawView(p, p.window, {0.0f, 0.0f, static_cast<float>(p.w), static_cast<float>(p.h)});
+        p.ready = true;
+        return;
+    }
+    // The band, column by column (each its height of the route), a few milliseconds' worth.
+    const LevelBand band = levelBand(loaded_->read->info, p.w, p.h);
+    const int n = static_cast<int>(band.tops.size());
+    const auto t0 = std::chrono::steady_clock::now();
+    while (p.done < n) {
+        const int c = p.done++;
+        const float x0 = std::floor(band.columnW * static_cast<float>(c));
+        const float x1 = c + 1 == n ? static_cast<float>(p.w) : std::floor(band.columnW * static_cast<float>(c + 1));
+        const Rect dst{x0, 0.0f, x1 - x0, static_cast<float>(p.h)};
+        drawView(p, {band.bounds.x + x0 / band.scale, band.tops[static_cast<size_t>(c)], dst.w / band.scale, dst.h / band.scale}, dst);
+        if (std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count() > 3.0) break;
+    }
+    p.ready = p.done >= n;
 }
 
 // ------------------------------------------------------------------ sprites

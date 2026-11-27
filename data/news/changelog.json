@@ -1,4 +1,7 @@
 {
+  "2.92.2": [
+    "Entraînement : les bandes de « Segments et enchaînements » et de « Startpos et mesures » montrent le niveau lui-même, et l'on y pose, règle au pixel près (aperçu agrandi) et supprime startpos et points de mesure ; une startpos dans le décor est refusée."
+  ],
   "2.92.1": [
     "Statistiques : les info-bulles disparaissent dès que la souris quitte leur élément ou que le focus change, sans jamais couvrir ce qu'elles décrivent ; le bas de chaque onglet n'est plus caché sous le bandeau des raccourcis, la page défile jusqu'à sa dernière ligne."
   ],

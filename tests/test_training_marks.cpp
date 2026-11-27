@@ -2,6 +2,8 @@
 // placement through the inputs (a replay plays back the same marks, the same run), the
 // attempts from it played back exactly, the StartPos kept per level version, and the A → B
 // chronometer of the measure points along a stream of positions (training and replays).
+// 2.92: a StartPos placed from the menu (held by the terrain, refused in it, started as the
+// training of its segment, its attempts played back exactly), moved and kept with its origin.
 
 #include <cmath>
 #include <system_error>
@@ -21,6 +23,7 @@
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "game/player/Player.h"
+#include "game/player/PlayerConfig.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
@@ -388,4 +391,131 @@ TEST_CASE("startpos: F5 to F8 by default, rebindable, never taken from another c
     c.keys[static_cast<int>(Action::MeasurePlace)][0] = SDL_SCANCODE_M;
     c.keys[static_cast<int>(Action::RaidMap)] = {SDL_SCANCODE_UNKNOWN, SDL_SCANCODE_UNKNOWN};
     CHECK(InputBindings::fromJson(c.toJson()).keys[static_cast<int>(Action::MeasurePlace)][0] == SDL_SCANCODE_M);
+}
+
+TEST_CASE("startpos placed from the menu: held by the terrain, refused in it, started as its segment's training, played back exactly") {
+    LevelData level = flatLevel();
+    LevelObject wall;  // a wall after cp2 (out of the runs' way)
+    wall.id = "wall";
+    wall.type = "solid";
+    wall.layer = "terrain";
+    wall.rect = {1900, 700, 64, 100};
+    level.objects.push_back(wall);
+    LevelObject ledge;  // a one-way platform before cp1
+    ledge.id = "ledge";
+    ledge.type = "oneway";
+    ledge.layer = "terrain";
+    ledge.rect = {400, 700, 96, 16};
+    level.objects.push_back(ledge);
+    const PlayerConfig cfg = PlayerConfig::fromJson(fx().content.playerConfig());
+    const Vec2 body = cfg.size;
+    // On the ground: free; one pixel lower: in it. In the wall, against its side, out of the level.
+    CHECK(startPosProblem(level, body, {1000.0f, 800.0f}) == StartPosProblem::None);
+    CHECK(startPosProblem(level, body, {1000.0f, 801.0f}) == StartPosProblem::InSolid);
+    CHECK(startPosProblem(level, body, {1930.0f, 760.0f}) == StartPosProblem::InSolid);
+    CHECK(startPosProblem(level, body, {1900.0f - body.x * 0.5f, 800.0f}) == StartPosProblem::None);
+    CHECK(startPosProblem(level, body, {1900.0f - body.x * 0.5f + 1.0f, 800.0f}) == StartPosProblem::InSolid);
+    CHECK(startPosProblem(level, body, {2.0f, 800.0f}) == StartPosProblem::OutOfLevel);
+    CHECK(startPosProblem(level, body, {1000.0f, 1000.0f}) == StartPosProblem::OutOfLevel);
+    CHECK(startPosProblem(level, body, {1000.0f, -200.0f}) == StartPosProblem::OutOfLevel);
+    // Where Nova stands near a place: the ground under it, the ledge from above, the top of the
+    // wall from inside it.
+    auto s1 = standingSpot(level, body, {1000.0f, 500.0f});
+    CHECK(s1 && s1->x == 1000.0f && s1->y == 800.0f);
+    auto s2 = standingSpot(level, body, {440.0f, 650.0f});
+    CHECK(s2 && s2->y == 700.0f);
+    auto s3 = standingSpot(level, body, {1930.0f, 760.0f});
+    CHECK(s3 && s3->y == 700.0f);
+    CHECK(startPosProblem(level, body, *s3) == StartPosProblem::None);
+    // Its state: the training of its segment (cp1 → cp2): the start powers and the tablets
+    // before it, cp1 lit, full hearts and energy, facing right.
+    const StartPosState sp = segmentStartPos({1000.0f, 800.0f}, {"cp1"}, level.startPowers, {"glide"}, level.powerSlots(), nullptr, cfg.maxHealth,
+                                             cfg.maxEnergy);
+    CHECK((sp.powers == std::vector<std::string>{"dash", "glide"}));
+    CHECK(sp.reached == std::vector<std::string>{"cp1"});
+    CHECK(sp.health == cfg.maxHealth && sp.bonusHealth == 0);
+    CHECK(sp.energy == cfg.maxEnergy);
+    CHECK(!sp.faceLeft);
+    // The powers chosen for that segment: exactly those; more tablets than slots: the last ones.
+    const std::vector<std::string> chosen{"glide"};
+    CHECK(segmentStartPos({1000.0f, 800.0f}, {}, level.startPowers, {"boomerang"}, 4, &chosen, 5, 100.0f).powers == chosen);
+    CHECK((segmentStartPos({1000.0f, 800.0f}, {}, {}, {"boomerang", "glide", "magnet"}, 2, nullptr, 5, 100.0f).powers ==
+           std::vector<std::string>{"glide", "magnet"}));
+    // Kept with the attempt's start (its replay's), read back the same.
+    SectionTrainingStart start;
+    start.startPos = sp;
+    auto read = SectionTrainingStart::fromJson(Json::parse(start.toJson().dump()));
+    CHECK(read && read->startPos && *read->startPos == sp);
+    // Applied: Nova there with that state, cp1 lit without a split.
+    {
+        auto w = loadWorld(level);
+        applySectionTraining(*w, *read);
+        const Player& p = w->player();
+        CHECK((p.feet() - sp.feet).length() < 0.5f);
+        CHECK(p.health == p.maxHealth());
+        CHECK(std::abs(p.energy - cfg.maxEnergy) < 1e-4f);
+        CHECK(p.hasPower("dash") && p.hasPower("glide"));
+        CHECK(w->timer().splits().empty());
+        const auto* cp = dynamic_cast<const CheckpointEntity*>(w->entity("cp1"));
+        CHECK(cp && cp->activated());
+    }
+    // An attempt from it, its replay (encoded, decoded) with the same start: played back exactly.
+    const auto inputs = runRight(600);
+    const Played a = play(level, inputs, &*read);
+    CHECK(a.replay.exact());
+    auto back = ReplayData::decode(a.replay.encode());
+    CHECK(back.has_value());
+    ReplayPlayback p(fx().services(), level, *back, [s = *read](GameWorld& w) { applySectionTraining(w, s); });
+    while (p.step()) {
+    }
+    CHECK(p.finished() && !p.desynced());
+    CHECK(p.checksPassed() >= 2);
+    CHECK(p.world().checkpointId() == "cp2");
+    const Played b = play(level, inputs, &*read);
+    CHECK(a.hash == b.hash);
+}
+
+TEST_CASE("startpos placed from the menu: moved and kept, its origin with it") {
+    const fs::path file = tempFile("startpos_menu");
+    StartPosState s;
+    s.health = 5;
+    s.energy = 100.0f;
+    s.feet = {1000.0f, 800.0f};
+    int id = 0;
+    {
+        StartPosStore st(file);
+        st.load();
+        id = st.add("lv-m", s, 0.4f, "2026-11-27 10:00", true);
+        CHECK(id > 0);
+        CHECK(st.find("lv-m", id)->menu);
+        StartPosState moved = s;
+        moved.feet.x += 1.0f;
+        CHECK(st.update("lv-m", id, moved, 0.41f));
+        CHECK(!st.update("lv-m", id + 7, moved, 0.41f));
+        CHECK(!st.update("lv-other", id, moved, 0.41f));
+        const int inRun = st.add("lv-m", s, 0.2f, "2026-11-27 10:01");
+        CHECK(!st.find("lv-m", inRun)->menu);
+        st.noteAttempt("lv-m", id);
+        CHECK(st.save());
+    }
+    {
+        StartPosStore st(file);
+        st.load();
+        const StartPosEntry* e = st.find("lv-m", id);
+        CHECK(e && e->menu);
+        CHECK(e->state.feet.x == 1001.0f && e->state.feet.y == 800.0f);
+        CHECK(std::abs(e->at - 0.41f) < 1e-5f);
+        CHECK(e->date == "2026-11-27 10:00" && e->attempts == 1);  // its date and attempts kept
+        CHECK(st.list("lv-m").size() == 2);
+        CHECK(st.remove("lv-m", id));
+        CHECK(st.save());
+    }
+    {
+        StartPosStore st(file);
+        st.load();
+        CHECK(st.find("lv-m", id) == nullptr);
+        CHECK(st.list("lv-m").size() == 1);
+    }
+    std::error_code ec;
+    fs::remove(file, ec);
 }
