@@ -320,7 +320,7 @@ void TasTraining::launch(Job& j) {
     Log::info("TAS : entraînement de {} lancé ({} fils{})", j.pair.key(), settings_.threadsPerJob, j.hasSeed ? ", depuis la meilleure course" : "");
 }
 
-TasTraining::CurveSend TasTraining::curveSend(const TasCurveVersion& v, const std::string& leaseId, int64_t nowMs) {
+TasTraining::CurveSend TasTraining::curveSend(const TasCurveVersion& v, const std::string& leaseId, int64_t nowMs, bool cloud) {
     CurveSend out;
     for (const TasCurvePoint& p : v.points) {
         if (p.share != TasShare::Pending || p.leaseId != leaseId || !p.best()) continue;
@@ -364,8 +364,26 @@ TasTraining::CurveSend TasTraining::curveSend(const TasCurveVersion& v, const st
         a.endAt = std::max(a.endAt, b.endAt);
         groups.erase(groups.begin() + static_cast<std::ptrdiff_t>(at) + 1);
     }
+    // The clouds' points (2.98), bounded a window: the finished attempts (kSendFinishes, the best
+    // always) and each checkpoint's sample (kSendCheckpointSample), from the window's start.
+    auto points = [](std::vector<TasAttemptWindow::Point> pts, size_t cap, int64_t span) {
+        TasAttemptWindow::thin(pts, cap);
+        Json a = Json::array();
+        for (const auto& p : pts) a.push_back(Json::array({std::clamp<int64_t>(p.atMs, 0, span), p.timeMs}));
+        return a;
+    };
     for (const Group& g : groups) {
         const TasAttemptWindow& s = g.w.stats;
+        const int64_t span = std::clamp<int64_t>(g.w.toMs - g.w.fromMs, 1, 600000);
+        Json extra = Json::object();
+        if (cloud) {
+            extra["finishes"] = points(s.finishes, kSendFinishes, span);
+            Json cps = Json::array();
+            for (const auto& c : s.checkpoints)
+                cps.push_back({{"reached", c.reached}, {"best_ms", c.bestMs}, {"median_ms", c.medianMs}, {"worst_ms", c.worstMs}, {"sample", points(c.sample, kSendCheckpointSample, span)}});
+            extra["checkpoints"] = cps;
+            out.cloud = true;
+        }
         out.windows.push_back({{"age_ms", std::clamp<int64_t>(nowMs - g.endAt, 0, 86400000)},
                                {"duration_ms", std::clamp<int64_t>(g.w.toMs - g.w.fromMs, 1, 600000)},
                                {"round", std::max(1, s.round)},
@@ -380,6 +398,7 @@ TasTraining::CurveSend TasTraining::curveSend(const TasCurveVersion& v, const st
                                {"route_max", s.routeMax},
                                {"stopped", s.stopped},
                                {"broken", s.broken}});
+        out.windows.back().update(extra);
     }
     return out;
 }
@@ -409,6 +428,14 @@ void TasTraining::noteCurve(Job& j) {
         pt.sessionExplored = p.bestExplored;
         point = curve.addBest(j.levelHash, kSimulationVersion, pt);
         changed = changed || point;
+    }
+    // The level's checkpoints as cosmic_tas counts them (the tabs CP1, CP2… of the curve).
+    if (!p.checkpoints.empty()) {
+        TasCurveVersion& v = curve.version(j.levelHash, kSimulationVersion);
+        if (v.checkpoints != p.checkpoints) {
+            v.checkpoints = p.checkpoints;
+            changed = true;
+        }
     }
     // The new windows of attempts.
     for (const TasAttemptWindow& w : p.windows) {
@@ -450,18 +477,24 @@ void TasTraining::curveAnswer(const TasPair& p, const std::string& hash, const s
     curves_.changed(p.levelId, p.category, true);
 }
 
-bool TasTraining::curveRefused(const CurveSend& sent, const ApiResult& r) {
-    if (r.ok || r.status != 400 || r.code != "VALIDATION_ERROR" || (sent.pointIds.empty() && sent.windowIds.empty())) return false;
+TasTraining::Refusal TasTraining::curveRefused(const CurveSend& sent, const ApiResult& r) {
+    if (r.ok || r.status != 400 || r.code != "VALIDATION_ERROR" || (sent.pointIds.empty() && sent.windowIds.empty())) return Refusal::None;
+    // A server that does not take the clouds yet (before 2.98): the curve goes again without them.
+    if (sent.cloud && !cloudUnsupported_) {
+        Log::warn("TAS : le serveur refuse les nuages de points de la courbe ({}) ; ils restent sur cet ordinateur", r.message);
+        cloudUnsupported_ = true;
+        return Refusal::Cloud;
+    }
     // A server that does not take the curve (not updated yet): the lease goes on without it.
     if (!curveUnsupported_) Log::warn("TAS : le serveur refuse la courbe d'entraînement ({}) ; elle reste sur cet ordinateur", r.message);
     curveUnsupported_ = true;
-    return true;
+    return Refusal::Curve;
 }
 
 TasTraining::CurveSend TasTraining::pendingCurve(const TasPair& p, const std::string& hash, const std::string& lease) const {
     if (curveUnsupported_) return {};
     if (const TasCurve* c = curves_.find(p.levelId, p.category))
-        if (const TasCurveVersion* v = c->find(hash, kSimulationVersion)) return curveSend(*v, lease, tasNowMs());
+        if (const TasCurveVersion* v = c->find(hash, kSimulationVersion)) return curveSend(*v, lease, tasNowMs(), !cloudUnsupported_);
     return {};
 }
 
@@ -477,9 +510,10 @@ void TasTraining::heartbeat(Job& j) {
     if (!sent.windowIds.empty()) body["attempts"] = sent.windows;
     online_.send("POST", leasePath(p) + "/heartbeat", body,
                  OnlineService::guard(life_, [this, p, lease, hash, explored, sent](const ApiResult& r) {
-                     const bool refused = curveRefused(sent, r);
-                     if (refused) curves_.at(p.levelId, p.category).abandon(lease);
-                     else curveAnswer(p, hash, lease, sent, r);
+                     const Refusal why = curveRefused(sent, r);
+                     const bool refused = why != Refusal::None;
+                     if (why == Refusal::Curve) curves_.at(p.levelId, p.category).abandon(lease);
+                     else if (!refused) curveAnswer(p, hash, lease, sent, r);
                      Job* j = nullptr;
                      for (auto& x : jobs_)
                          if (x->pair == p && x->leaseId == lease) j = x.get();
@@ -539,9 +573,10 @@ void TasTraining::sendRelease(const TasPair& p, const std::string& lease, const 
     online_.send("POST", leasePath(p) + "/release", body,
                  OnlineService::guard(life_, [this, p, lease, hash, explored, sent](const ApiResult& r) {
                      // No later call of this lease: what it did not take stays on this computer.
-                     if (curveRefused(sent, r)) {
-                         curves_.at(p.levelId, p.category).abandon(lease);
-                         return sendRelease(p, lease, hash, explored, false);  // the lease given back all the same
+                     if (const Refusal why = curveRefused(sent, r); why != Refusal::None) {
+                         // Without the clouds, then without the curve: the lease given back all the same.
+                         if (why == Refusal::Curve) curves_.at(p.levelId, p.category).abandon(lease);
+                         return sendRelease(p, lease, hash, explored, why == Refusal::Cloud);
                      }
                      --releasesPending_;
                      curveAnswer(p, hash, lease, sent, r);

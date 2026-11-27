@@ -12,7 +12,9 @@
 //     bestElapsedMs, bestExplored) or given by the server — never computed in between;
 //   * the WINDOWS: the attempts of the search counted every few seconds (TasAttemptWindow: how
 //     many, how many finished and their times, where the others stopped), placed on the same
-//     training time.
+//     training time; with their CLOUDS (2.98): each finished attempt a point (400 a window at
+//     most, then a sample with its best), and a sample of the times at which the attempts reached
+//     each checkpoint of the level (CP1, CP2…: 32 a window and a checkpoint, with their best).
 //
 // Kept on this computer (<saves>/tas_local/.training/<level>_<CATEGORY>.curve.json, TasCurveBook:
 // read and written on a thread of their own) and shared: the new points and a downsampled summary
@@ -97,6 +99,9 @@ struct TasCurveVersion {
     int simVersion = 0;
     std::vector<TasCurvePoint> points;    // by training time; the best ones each strictly faster
     std::vector<TasCurveWindow> windows;  // by training time
+    /// The level's checkpoints the windows count (CP1 first), as this computer's trainings named
+    /// them (empty: never trained here; the tabs then say « CP n » only).
+    std::vector<TasCheckpoint> checkpoints;
     /// The fastest best time (0: none), the number of best points.
     int64_t bestMs() const;
     size_t bests() const;
@@ -111,6 +116,9 @@ class TasCurve {
 public:
     static constexpr size_t kMaxPoints = 1000;   // best points per version (the server keeps as many)
     static constexpr size_t kMaxWindows = 1500;  // windows per version kept here (neighbours merged beyond)
+    /// The clouds' points per version kept here: the finished attempts, and as many checkpoint
+    /// times; beyond, the oldest windows keep only their best (the curve says how many are shown).
+    static constexpr size_t kMaxCloudPoints = 30000;
     std::string levelId;
     RunCategory category = RunCategory::AnyPercent;
     std::vector<TasCurveVersion> versions;

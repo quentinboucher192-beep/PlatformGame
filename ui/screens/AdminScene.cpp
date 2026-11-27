@@ -261,6 +261,8 @@ public:
         }
         int tab = tab_;
         cframe::tabs(ui, "tabs", tabsR, kTabs, tab);
+        // 2.98: LB / RB belong to the TAS curve's own tabs while they have the focus (a click still changes tab).
+        if (tab_ == kTabTas && tas_.capturesTabs() && !ui.input().mousePressed(SDL_BUTTON_LEFT)) tab = tab_;
         // « NOUVEAU » (2.41) on « Calendrier des défis » until it is opened.
         Rect calTab{tabsR.x + tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabcal", calTab, "admin.tab.calendar", true, true);

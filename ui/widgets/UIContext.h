@@ -169,6 +169,8 @@ public:
     }
     bool backPressed() const;        // menu back (Esc / B)
     bool usingPointer() const { return pointerMode_; }
+    /// The time of this frame (UIContext::begin).
+    float dt() const { return dt_; }
     /// 2.92.1: the device in use, as if it had just been used (a screen opened on a focused chart for a
     /// screenshot, tests); the next mouse move, click or wheel, or menu key, sets it again.
     void setUsingPointer(bool on) { pointerMode_ = on; }
