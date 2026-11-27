@@ -7,7 +7,7 @@
 
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { groupsOf, parseUtc, raidState, raidTick, timesOf } from "../src/raids";
+import { MAX_IN_PLAY, MIN_CLAN_PLAYERS, RAID_GROUPS, groupsOf, parseUtc, raidState, raidTick, rosterSplit, timesOf } from "../src/raids";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
 
 beforeEach(seedAll);
@@ -96,11 +96,26 @@ describe("raids: rules computed in UTC", () => {
         expect(parseUtc("2026-11-21T21:00:00")).toBeNull();
         expect(parseUtc("2026-02-30T10:00:00Z")).toBeNull();
         expect(parseUtc("2026-03-29T24:00:00Z")).toBeNull();
+        // §41 (titan 16): seven groups, as even as possible, group k for branch k; the raid leader leads group 1.
         const roster = Array.from({ length: 10 }, (_, i) => ({ id: `p${i}` }));
         const g = groupsOf(roster, "p3");
-        expect(g.map((x) => x.members.length)).toEqual([8, 2]);
+        expect(g.map((x) => x.members.length)).toEqual([2, 2, 2, 1, 1, 1, 1]);
+        expect(g.map((x) => x.branch)).toEqual([0, 1, 2, 3, 4, 5, 6]);
         expect(g[0]!.leader.id).toBe("p3");
-        expect(g[1]!.leader.id).toBe("p8");
+        expect(g[1]!.leader.id).toBe("p1");
+        for (const n of [14, 20, 34, 56]) {
+            const sizes = groupsOf(Array.from({ length: n }, (_, i) => ({ id: `q${i}` })), null).map((x) => x.members.length);
+            expect(sizes.length).toBe(7);
+            expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
+            expect(Math.min(...sizes)).toBeGreaterThanOrEqual(2);
+            expect(Math.max(...sizes)).toBeLessThanOrEqual(8);
+        }
+        // Beyond 56: the waiting list, in the order of registration (never in a group).
+        const sixty = Array.from({ length: 60 }, (_, i) => ({ id: `r${i}` }));
+        expect(groupsOf(sixty, "r58").flatMap((x) => x.members).length).toBe(56);
+        expect(groupsOf(sixty, "r58")[0]!.leader.id).toBe("r0"); // a raid leader on the waiting list leads nothing
+        expect(rosterSplit(sixty).waiting.map((x) => x.id)).toEqual(["r56", "r57", "r58", "r59"]);
+        expect([MIN_CLAN_PLAYERS, MAX_IN_PLAY, RAID_GROUPS]).toEqual([14, 56, 7]);
     });
 });
 
@@ -181,8 +196,9 @@ describe("raids: the clan, then each member registers", () => {
         const sheet = await api("GET", `${V}/raids/events/${id}`, { token: m[1]!.token });
         expect(sheet.body.data.my.registered).toBe(true);
         expect(sheet.body.data.roster.map((p: { username: string }) => p.username)).toEqual(["AUBEMem1", "AUBEMem2"]);
-        expect(sheet.body.data.groups).toHaveLength(1);
+        expect(sheet.body.data.groups).toHaveLength(2); // §41: one player each in groups 1 and 2 (14 needed to start)
         expect(sheet.body.data.event.my_clan.players).toBe(2);
+        expect(sheet.body.data.event.my_clan.ready).toBe(false);
         // Raid leader and instructions: chief and officers only, a member of the clan only.
         expect((await api("PATCH", `${V}/raids/events/${id}/clan`, { token: m[0]!.token, body: { instructions: "Bras droit" } })).status).toBe(403);
         expect((await api("PATCH", `${V}/raids/events/${id}/clan`, { token: aube.off[0]!.token, body: { leader_id: loner.id } })).status).toBe(400);

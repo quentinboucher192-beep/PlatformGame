@@ -12,6 +12,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { canonical, scoreOf, PERFORMANCE_SCORE, type Contribution } from "../src/raidRewards";
 import { holderOf, implausible } from "../src/raidZones";
 import { api, deviceOf, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -58,6 +59,7 @@ async function runningEvent(c: Clan, endsIn = 50): Promise<string> {
         await env.DB.prepare("INSERT INTO raid_registrations (event_id, player_id, clan_id, created_at) VALUES (?1, ?2, ?3, ?4)")
             .bind(id, p.id, c.id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
             .run();
+    await raidGroups(id, c.id, { bras_droit: c.players }); // §41: the clan's seven groups (14 registered at least)
     return id;
 }
 

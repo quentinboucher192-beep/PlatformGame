@@ -83,7 +83,7 @@
    "event": "Onde sismique toutes les 75 s (grilles hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.2
   },
   {
@@ -237,7 +237,7 @@
    "id": "jd_piston_haut",
    "index": 3,
    "zone": 4,
-   "label": "Bloquer le piston haut (un groupe)",
+   "label": "Bloquer le piston haut (en même temps que le bas)",
    "optional": false,
    "role": "",
    "pair": "pistons"
@@ -246,7 +246,7 @@
    "id": "jd_piston_bas",
    "index": 4,
    "zone": 4,
-   "label": "Bloquer le piston bas (un autre groupe)",
+   "label": "Bloquer le piston bas (en même temps que le haut)",
    "optional": false,
    "role": "",
    "pair": "pistons"

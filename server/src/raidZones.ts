@@ -27,7 +27,7 @@ import { ask, stub, MAX_TICKS } from "./coop";
 import { setChatHeaders } from "./raidChat";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
-import { ambushesIn, catalogById, difficultyOf, doneOf, levelHashFor, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
+import { ambushesIn, catalogById, difficultyOf, doneOf, join as joinMyGroup, levelHashFor, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
 import { grantWorldFor, journalDuplicate, reportHalt, requireEntry } from "./raidWorld";
 import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHeart, heartFallenIn, heartOpenIn, isHeart, storeHeartDamage, wakeHeartRelays } from "./raidHeart";
@@ -74,6 +74,8 @@ export const BRANCH = catalogJson as unknown as BranchCatalog;
 export const BRANCH_LEVEL = "raid:" + BRANCH.id;
 export const INSTANCE_SIZE = 8;
 /** A report's step may be ahead of the server's clock since the start by this much (late clocks, delays). */
+/** §41 (titan 16): the two halves of a pair, done by one group at the same time: 3 s apart at most (game/raid/RaidRun kPairWindow). */
+export const PAIR_WINDOW_TICKS = 3 * 120;
 const TICK_SLACK = 120 * 60;
 /** 2.68: the zone of the branch's gigaboss and its name. */
 export const GIGABOSS_ZONE = BRANCH.zones.find((z) => z.boss)?.id ?? 0;
@@ -335,20 +337,6 @@ async function registrationOf(db: D1Database, eventId: string, playerId: string)
         .first<{ clan_id: string; tag: string }>();
 }
 
-/** My group number in my clan's roster (raids.ts groupsOf: the raid leader leads group 1). */
-async function myGroup(db: D1Database, eventId: string, clanId: string, playerId: string): Promise<number> {
-    const [entry, roster] = await db.batch([
-        db.prepare("SELECT leader_id FROM raid_clan_entries WHERE event_id = ?1 AND clan_id = ?2").bind(eventId, clanId),
-        db.prepare("SELECT p.id FROM raid_registrations r JOIN players p ON p.id = r.player_id WHERE r.event_id = ?1 AND r.clan_id = ?2 ORDER BY r.created_at, p.username").bind(eventId, clanId),
-    ]);
-    const leader = (entry!.results[0] as { leader_id: string | null } | undefined)?.leader_id ?? null;
-    const ids = (roster!.results as { id: string }[]).map((r) => r.id);
-    const li = leader ? ids.indexOf(leader) : -1;
-    if (li > 0) ids.unshift(...ids.splice(li, 1));
-    const at = ids.indexOf(playerId);
-    return at < 0 ? 0 : Math.floor(at / INSTANCE_SIZE) + 1;
-}
-
 async function journal(db: D1Database, instanceId: string, playerId: string, key: string, value: string, reason: string, once = false) {
     // 2.74: `once`: not again when this player's report of this key is already journaled (a minority
     // report that raced with the acceptance: the winning request may have journaled it already).
@@ -369,55 +357,9 @@ async function journal(db: D1Database, instanceId: string, playerId: string, key
  * A registered player only, while the event runs.
  */
 export async function joinInstance(ctx: Ctx): Promise<Response> {
-    const auth = await requireAuth(ctx);
-    const me = auth.player.id;
-    const db = ctx.env.DB;
-    const now = nowIso();
-    const e = await eventOf(db, ctx.params.eventId ?? "");
-    requireRunning(e, now);
-    const body = await readJsonObject(ctx);
-    const v = new Validator(body, ["instance_id"]);
-    const wanted = v.str("instance_id", { min: 36, max: 36, pattern: ID_RE, optional: true });
-    v.done();
-    const reg = await registrationOf(db, e.id, me);
-    if (!reg) throw Errors.forbidden("RAID_NOT_REGISTERED", "Inscrivez-vous au raid pour y combattre.");
-    await requireEntry(db, e, me); // 2.69: not while suspended; the late arrivals' rule
-    // 2.75: a player whose group was wiped only watches (a spectator link, never a seat).
-    const spect = await spectatorOf(db, e.id, me);
-    if (spect) return spectatorAnswer(ctx, e, spect, me);
-    let inst: InstanceRow | null;
-    if (wanted) {
-        inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1 AND event_id = ?2").bind(wanted, e.id).first<InstanceRow>();
-        if (!inst) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
-        if (inst.wiped_zone != null) throw Errors.conflict("INSTANCE_WIPED", "Ce groupe a été éliminé : sa zone attend un groupe qui la reprenne.");
-        if (inst.players >= INSTANCE_SIZE) throw Errors.conflict("INSTANCE_FULL", "Ce groupe a déjà 8 joueurs.");
-    } else {
-        const group = await myGroup(db, e.id, reg.clan_id, me);
-        if (group < 1) throw Errors.forbidden("RAID_NOT_REGISTERED", "Inscrivez-vous au raid pour y combattre.");
-        await db
-            .prepare(
-                `INSERT OR IGNORE INTO raid_instances (id, event_id, clan_id, group_no, branch, zone, players, created_at, updated_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?7)`,
-            )
-            .bind(crypto.randomUUID(), e.id, reg.clan_id, group, BRANCH.id, BRANCH.start_zone, now)
-            .run();
-        inst = await db
-            .prepare("SELECT * FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2 AND group_no = ?3 AND branch = ?4")
-            .bind(e.id, reg.clan_id, group, BRANCH.id)
-            .first<InstanceRow>();
-    }
-    if (!inst) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
-    // Its relay (made once: the room answers 409 when it exists).
-    await ask(ctx.env, inst.id, "/create", {
-        id: inst.id,
-        host: me,
-        level: { source: "raid", id: BRANCH_LEVEL, hash: levelHashFor(BRANCH as unknown as Catalog, e), title: "Asterion · " + BRANCH.name },
-        raid: { instance_id: inst.id, event_id: e.id, branch: BRANCH.id, revision: BRANCH.revision },
-    });
-    const tag = await db.prepare("SELECT tag FROM clans WHERE id = ?1").bind(inst.clan_id).first<{ tag: string }>();
-    return json(ctx, {
-        instance: { id: inst.id, group: inst.group_no, clan_tag: tag?.tag ?? "", zone: inst.zone, players: inst.players, branch: BRANCH.id, revision: BRANCH.revision, level: BRANCH_LEVEL },
-    });
+    // §41 (titan 16): my group's instance, never another (raidMap.join: group k plays branch k; an instance_id that is
+    // not my group's is refused). The phase-2 route of the BRAS DROIT, kept for the games that still call it.
+    return await joinMyGroup(ctx);
 }
 
 /** GET /raids/instances/{instanceId}/socket: the WebSocket of a game of the instance (a registered player). */
@@ -439,7 +381,16 @@ export async function instanceSocket(ctx: Ctx): Promise<Response> {
     // 2.75 (raidWipe.ts): a spectator (their group wiped), a wiped instance, or a watch asked
     // (?watch=1): a socket that receives the game and never takes a seat.
     const spect = await spectatorOf(db, e.id, auth.player.id);
-    const watch = new URL(ctx.request.url).searchParams.get("watch") === "1" || inst.wiped_zone != null || !!spect;
+    // §41 (titan 16): a seat only for a player of this instance's group (placed in it, or still seated in it: a player
+    // moved keeps their game until their next entry); anyone else of the event only watches (no help to another group).
+    const own = await db
+        .prepare(
+            `SELECT 1 AS x FROM raid_placements WHERE event_id = ?1 AND player_id = ?2 AND instance_id = ?3
+             UNION SELECT 1 FROM raid_instance_members WHERE instance_id = ?3 AND player_id = ?2 AND left_at IS NULL`,
+        )
+        .bind(e.id, auth.player.id, inst.id)
+        .first();
+    const watch = new URL(ctx.request.url).searchParams.get("watch") === "1" || inst.wiped_zone != null || !!spect || !own;
     if (watch) headers.set("x-raid-watch", "1");
     else headers.delete("x-raid-watch");
     // 2.95 (raidChat.ts): who this socket is for the chat — its clan and group on the « Raid » channel (« [AUBE]·2 »),
@@ -669,28 +620,43 @@ export async function report(ctx: Ctx): Promise<Response> {
             // add up to its whole health (checkHeartFall writes its objective once), never on one group's word.
             if (await checkHeartFall(db, e, id, now)) await wakeHeartRelays(ctx.env as never, e.id);
         } else if (obj) {
-            // The bellows: one per instance; the other one must come from another group.
-            const pairOwn = obj.pair
-                ? await db
-                      .prepare("SELECT objective_id FROM raid_branch_objectives WHERE event_id = ?1 AND branch = ?2 AND instance_id = ?3")
-                      .bind(e.id, inst.branch, id)
-                      .all<{ objective_id: string }>()
-                : null;
-            if (pairOwn && pairOwn.results.some((r) => r.objective_id !== obj!.id && objectiveIn(cat, r.objective_id)?.pair === obj!.pair)) {
-                for (const r of reports) await journal(db, id, r.player_id, key, r.value, "un autre groupe doit accomplir l'autre objectif de la paire");
-                return json(ctx, { status: "rejected", reason: "un autre groupe doit accomplir l'autre objectif de la paire" });
+            // §41 (titan 16): a pair (« zone à deux groupes »: the bellows, the nerves, the plates…) is done by ONE group,
+            // split in two, both halves at the same time (« à 3 s près »): a half counts for the branch only once its other
+            // half was accepted for this same instance within PAIR_WINDOW_TICKS of it (or was validated for the branch
+            // already); until then it waits. Before, an instance never did both and the second was refused to it.
+            let counting: BranchObjective[] = [obj];
+            if (obj.pair) {
+                const branchDone = (await doneOf(db, e.id)).get(inst.branch) ?? new Set<string>();
+                const open = cat.objectives.filter((o) => o.pair === obj!.pair && o.id !== obj!.id && !branchDone.has(o.id));
+                if (open.length) {
+                    const acc = (
+                        await db
+                            .prepare("SELECT report_key, value FROM raid_accepted WHERE instance_id = ?1 AND report_key IN (SELECT value FROM json_each(?2))")
+                            .bind(id, JSON.stringify(open.map((o) => `o:${o.id}`)))
+                            .all<{ report_key: string; value: string }>()
+                    ).results;
+                    const tickOf = (v: string) => Number(v.split(":")[1] ?? NaN);
+                    if (acc.length < open.length) counting = []; // its other half still to come (from this group)
+                    else if (acc.some((a) => !(Math.abs(tickOf(a.value) - tick) <= PAIR_WINDOW_TICKS))) {
+                        const why = "les deux objectifs d'une paire se font ensemble, par le même groupe, à 3 s près";
+                        for (const r of reports) await journal(db, id, r.player_id, key, r.value, why);
+                        return json(ctx, { status: "rejected", reason: why });
+                    } else counting = [obj, ...open];
+                }
             }
-            // Idempotent by objective id: two instances (or two acceptances) count it once.
-            const counted = await db
-                .prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, ?4, ?5)")
-                .bind(e.id, inst.branch, obj.id, id, now)
-                .run();
-            // 2.69: already counted by another group (or at the same moment): journaled for the administrators.
-            if (!counted.meta.changes) await journalDuplicate(db, e.id, id, inst.branch, obj.id, obj.label, now);
-            // 2.74 (phase 6): the seventh gigaboss down opens the Cœur d'Asterion (told once).
-            if (obj.role === "gigaboss") await checkHeartOpen(db, e, now);
-            // 2.75: the zone finished with this objective: written once (the raid's feed tells it).
-            await checkZoneFinished(db, e.id, cat, inst.branch, obj.zone, id, now);
+            for (const o of counting) {
+                // Idempotent by objective id: two instances (or two acceptances) count it once.
+                const counted = await db
+                    .prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, ?4, ?5)")
+                    .bind(e.id, inst.branch, o.id, id, now)
+                    .run();
+                // 2.69: already counted by another group (or at the same moment): journaled for the administrators.
+                if (!counted.meta.changes) await journalDuplicate(db, e.id, id, inst.branch, o.id, o.label, now);
+                // 2.74 (phase 6): the seventh gigaboss down opens the Cœur d'Asterion (told once).
+                if (o.role === "gigaboss") await checkHeartOpen(db, e, now);
+                // 2.75: the zone finished with this objective: written once (the raid's feed tells it).
+                await checkZoneFinished(db, e.id, cat, inst.branch, o.zone, id, now);
+            }
             // Every relay of the event gives the new state to its games (a few seconds anyway);
             // 2.68: those of the other branches too (the titan's links).
             // 2.74: all at once and after the answer (dozens of instances in a world event: before, one
@@ -928,8 +894,12 @@ export async function branchView(ctx: Ctx): Promise<Response> {
         free: Math.max(0, INSTANCE_SIZE - i.players),
         mine: !!reg && i.clan_id === reg.clan_id,
     }));
-    const myGroupNo = reg ? await myGroup(db, e.id, reg.clan_id, me) : 0;
-    const mine = reg ? instances.find((i) => i.mine && i.group === myGroupNo) : undefined;
+    // §41: my group's instance here (my placement), when my group plays this branch.
+    const placed = reg
+        ? await db.prepare("SELECT instance_id FROM raid_placements WHERE event_id = ?1 AND player_id = ?2").bind(e.id, me).first<{ instance_id: string }>()
+        : null;
+    const mine = placed ? instances.find((i) => i.id === placed.instance_id) : undefined;
+    const myGroupNo = mine?.group ?? 0;
     return json(ctx, {
         server_time: now,
         event: { id: e.id, state: raidState(e, now) },

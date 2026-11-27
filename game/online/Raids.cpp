@@ -335,6 +335,8 @@ Event parseEvent(const Json& j) {
         e.clanRegistered = jget<bool>(mine, "registered", false);
         e.clanPlayers = jget<int>(mine, "players", 0);
         e.clanGroups = jget<int>(mine, "groups", 0);
+        e.clanInPlay = jget<int>(mine, "in_play", std::min(e.clanPlayers, kMaxInPlay));  // §41
+        e.clanWaiting = jget<int>(mine, "waiting", std::max(0, e.clanPlayers - kMaxInPlay));
         e.clanLeader = jstr(mine, "leader");
     }
     e.registered = jget<bool>(j, "registered", false);
@@ -510,6 +512,8 @@ std::vector<Group> parseGroups(const Json& groups) {
         if (!g.is_object()) continue;
         Group x;
         x.number = jget<int>(g, "number", static_cast<int>(out.size()) + 1);
+        x.branch = jstr(g, "branch");  // §41
+        x.branchName = jstr(g, "branch_name");
         const Json l = jfield(g, "leader", Json());
         if (l.is_object()) x.leader = {jstr(l, "id"), jstr(l, "username")};
         const Json m = jfield(g, "members", Json::array());
@@ -519,6 +523,28 @@ std::vector<Group> parseGroups(const Json& groups) {
         if (!x.members.empty()) out.push_back(std::move(x));
     }
     return out;
+}
+
+std::vector<Waiting> parseWaitlist(const Json& list) {
+    std::vector<Waiting> out;
+    if (!list.is_array()) return out;
+    for (const Json& w : list)
+        if (w.is_object() && !jstr(w, "id").empty()) out.push_back({jstr(w, "id"), jstr(w, "username"), jget<int>(w, "rank", static_cast<int>(out.size()) + 1)});
+    return out;
+}
+
+Outcome parseOutcome(const Json& j) {
+    Outcome o;
+    const std::string id = jstr(j, "id");
+    if (id == "victoire" || id == "defaite_temps" || id == "defaite_groupes" || id == "en_cours") o.id = id;
+    return o;
+}
+
+std::string outcomeText(const std::string& id) {
+    if (id == "victoire") return "Victoire : Asterion est tombé";
+    if (id == "defaite_temps") return "Défaite : temps écoulé";
+    if (id == "defaite_groupes") return "Défaite : tous les groupes éliminés";
+    return "En cours";
 }
 
 std::vector<int> reminderPrefs(const Json& prefs) {
@@ -643,6 +669,7 @@ Results parseResults(const Json& j) {
     // 2.86: the heart's shared health (validated parts only), null while it is sealed.
     const Json heart = jfield(j, "heart", Json());
     r.heartFallen = jget<bool>(heart, "fallen", false);
+    r.outcome = parseOutcome(jfield(j, "outcome", Json()));  // §41
     r.heartHealth = std::clamp(jget<int>(heart, "health", -1), -1, 10000);
     r.heartPhase = r.heartHealth >= 0 ? std::clamp(jget<int>(heart, "phase", 0), 0, 4) : 0;
     const Json clans = jfield(j, "clans", Json());

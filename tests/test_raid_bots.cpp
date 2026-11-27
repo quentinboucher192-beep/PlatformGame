@@ -209,8 +209,7 @@ TEST_CASE("raid bots (2.77): the same steps, the same digest (2 and 8 seats); th
 TEST_CASE("raid simulation (2.77): the whole raid in local up to the Cœur's fall (reduced: from the lairs), never a report nor a network call") {
     Svc s;
     raid::SimSetup setup;
-    setup.groups = 7;
-    setup.bots = 7;
+    setup.players = 56;  // §41: seven groups of 8 (the administrator's place and 7 simulated players)
     setup.lairs = true;  // the real lairs, then the real heart
     setup.startPhase = 3;  // reduced: every gigaboss from its phase 3, the heart from its last (75 % of its shared health),
     setup.heartStartPhase = 4;
@@ -254,8 +253,7 @@ TEST_CASE("raid simulation (2.77): the whole raid in local up to the Cœur's fal
 TEST_CASE("raid simulation (2.77): the same raid twice — the same digest at every step checked (7 groups, from the lairs)") {
     Svc s;
     raid::SimSetup setup;
-    setup.groups = 7;
-    setup.bots = 3;
+    setup.players = 28;  // §41: seven groups of 4
     setup.lairs = true;
     std::vector<uint64_t> d[2];
     for (int k = 0; k < 2; ++k) {
@@ -273,8 +271,7 @@ TEST_CASE("raid simulation (2.77): the same raid twice — the same digest at ev
 TEST_CASE("raid simulation (2.77): from the armories, 7 groups of 7 leave them for their branch; the cost of a step of the whole raid") {
     Svc s;
     raid::SimSetup setup;
-    setup.groups = 7;
-    setup.bots = 7;
+    setup.players = 56;  // §41: seven groups of 8 (the administrator's place and 7 simulated players)
     raid::RaidSimulation sim(s.ws(), setup);
     CHECK(sim.begin());
     sim.watch(0);  // nobody seated: every group plays alone
@@ -296,8 +293,7 @@ TEST_CASE("raid simulation (2.77): from the armories, 7 groups of 7 leave them f
 TEST_CASE("raid simulation (2.77): the administrator takes a group's free place, watches another; the groups go on without them") {
     Svc s;
     raid::SimSetup setup;
-    setup.groups = 3;
-    setup.bots = 2;
+    setup.players = 21;  // §41: always seven groups (3 places each)
     raid::RaidSimulation sim(s.ws(), setup);
     CHECK(sim.begin());
     CHECK(sim.seated());

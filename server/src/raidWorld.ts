@@ -604,11 +604,9 @@ export async function requireEntry(db: D1Database, e: { id: string; starts_at: s
     if (x.suspended_at) throw Errors.conflict("RAID_SUSPENDED", "L'événement est suspendu par les administrateurs : aucune entrée en jeu avant la reprise.");
     if (x.late_minutes === null || x.late_minutes === undefined) return;
     if (Date.now() <= Date.parse(e.starts_at) + x.late_minutes * 60000) return;
+    // §41: every registered player has a place from the start (the seven groups): only those who entered play come back.
     const known = await db
-        .prepare(
-            `SELECT 1 AS x FROM raid_placements WHERE event_id = ?1 AND player_id = ?2
-             UNION ALL SELECT 1 AS x FROM raid_instance_members m JOIN raid_instances i ON i.id = m.instance_id WHERE i.event_id = ?1 AND m.player_id = ?2 LIMIT 1`,
-        )
+        .prepare("SELECT 1 AS x FROM raid_instance_members m JOIN raid_instances i ON i.id = m.instance_id WHERE i.event_id = ?1 AND m.player_id = ?2 LIMIT 1")
         .bind(e.id, playerId)
         .first();
     if (!known)
@@ -616,7 +614,7 @@ export async function requireEntry(db: D1Database, e: { id: string; starts_at: s
             "RAID_LATE",
             x.late_minutes === 0
                 ? "Pas d'arrivée en retard pour cet événement : seuls les joueurs entrés au début reviennent en jeu."
-                : `Arrivée en retard fermée ${x.late_minutes} min après le début : seuls les joueurs déjà placés reviennent en jeu.`,
+                : `Arrivée en retard fermée ${x.late_minutes} min après le début : seuls les joueurs déjà entrés en jeu reviennent.`,
         );
 }
 

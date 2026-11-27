@@ -13,6 +13,7 @@
 #include "game/raid/RaidBranch.h"
 #include "game/raid/RaidCatalog.h"
 #include "game/raid/RaidRun.h"
+#include "game/raid/RaidSimulation.h"
 #include "game/online/Clans.h"
 #include "game/online/Raids.h"
 #include "ui/online/RaidTestGuests.h"
@@ -245,8 +246,9 @@ void AdminRaids::guestsRow(const Rect& r, bool fullRaid) {
     UIContext& ui = g_.ui;
     std::vector<std::string> groups;
     if (fullRaid)
-        for (int k = 0; k <= simGroups_; ++k) groups.push_back("Groupe " + std::to_string(k + 1));
-    guests_->setShape(groups, fullRaid ? simBots_ + 2 : testPlayers_ + 1);
+        for (int k = 0; k < raid::SimSetup::kGroups; ++k) groups.push_back("Groupe " + std::to_string(k + 1));  // §41: always seven
+    // §41: the places of the smallest group (every group has them: 2 to 8 each).
+    guests_->setShape(groups, fullRaid ? raid::SimSetup::groupSize(raid::SimSetup::kMinPlayers + simPlayers_, raid::SimSetup::kGroups - 1) : testPlayers_ + 1);
     guests_->setDefaultGroup(0);
     const std::string n = guests_->summary();
     const std::string label = n.empty() ? std::string("Inviter des joueurs connectés… (le test passe alors par le serveur)") : "Joueurs invités · " + n;
@@ -821,24 +823,27 @@ float AdminRaids::difficultyRow(const Rect& row) {
 void AdminRaids::drawSim(const Rect& r, bool capture) {
     // 2.77: « Simuler un raid complet » — the whole clan raid in local: the seven branches (each one's
     // armory first), their zones, then the Cœur d'Asterion with every group. Nothing is ever sent.
+    // §41 (titan 16): as a real raid, always seven groups (one per branch); the raid's players (14 to 56) spread over them.
     UIContext& ui = g_.ui;
     ui.pushId("sim");
     const float x = r.x + ui.s(14), w = r.w - ui.s(28), gap = ui.s(10), rowH = ui.s(44);
     const float half = (w - gap) * 0.5f;
     float y = r.y;
-    static const std::vector<std::string> kGroups = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"};
-    static const std::vector<std::string> kBots = {"2", "3", "4", "5", "6", "7", "8"};  // 2.77.3: players per group, the administrator counted
+    static const std::vector<std::string> kPlayerCounts = [] {
+        std::vector<std::string> v;
+        for (int n = raid::SimSetup::kMinPlayers; n <= raid::SimSetup::kMaxPlayers; ++n) v.push_back(std::to_string(n));
+        return v;
+    }();
     static const std::vector<std::string> kSkills = {"Débutant", "Confirmé", "Expert"};
     static const std::vector<std::string> kSpeeds = {"×1 (temps réel)", "×2 (accéléré)", "×4 (accéléré)"};
     // Each setting on the whole width (its caption has room).
-    ui.cycle("groups", {x, y, w, rowH}, "Groupes", simGroups_, kGroups);
-    y += rowH + gap;
-    // 2.77.3: « Joueurs par groupe : N »: every group the same size (yours: you + N − 1 simulated players).
-    const int perGroup = simBots_ + 2;
-    ui.cycle("bots", {x, y, w, rowH}, "Joueurs par groupe (vous compris)", simBots_, kBots);
+    ui.cycle("players", {x, y, w, rowH}, "Joueurs du raid (vous compris)", simPlayers_, kPlayerCounts);
     y += rowH + ui.s(4);
-    fit(ui, "Votre groupe : vous + " + std::to_string(perGroup - 1) + (perGroup - 1 > 1 ? " joueurs simulés" : " joueur simulé") + " · autres groupes : " +
-                std::to_string(perGroup) + " joueurs simulés",
+    const int players = raid::SimSetup::kMinPlayers + simPlayers_;
+    const int small = raid::SimSetup::groupSize(players, raid::SimSetup::kGroups - 1), large = raid::SimSetup::groupSize(players, 0);
+    const std::string sizes = small == large ? std::to_string(large) : std::to_string(small) + " ou " + std::to_string(large);
+    fit(ui, "7 groupes de " + sizes + " joueurs, un par branche · le vôtre : vous + " + std::to_string(large - 1) +
+                (large - 1 > 1 ? " joueurs simulés" : " joueur simulé"),
         {x, y + ui.s(10)}, 14, w, kGold, FontFace::Bold);
     y += ui.s(20) + gap;
     ui.cycle("skill", {x, y, w, rowH}, "Niveau des joueurs simulés", testSkill_, kSkills);
@@ -862,8 +867,7 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     bs.fontSize = std::max(ui.fitFont("Lancer la simulation", FontFace::Bold, 17, w - ui.s(20), 0.7f), 12.0f / ui.s(1.0f));
     if (cframe::button(ui, "launch", {x, y, w, rowH}, "Lancer la simulation", bs) && !capture) {
         RaidSimSetup s;
-        s.groups = simGroups_ + 1;
-        s.bots = simBots_ + 1;  // N − 1: the administrator's place, then N − 1 simulated players
+        s.players = players;  // §41: over seven groups, the administrator's place counted
         s.fullGroups = true;
         s.skill = testSkill_;
         s.difficulty = testDifficulty_ + 1;  // titan 13
@@ -880,8 +884,8 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     const auto& cat = raid::catalog();
     const std::string heart = cat.empty() ? std::string() : cat[static_cast<size_t>(std::clamp(testRaid_, 0, static_cast<int>(cat.size()) - 1))].heartLabel;
     const std::string text = "Les " + std::to_string(raid::Branch::all().size()) + " branches et toutes leurs zones (vestiaire compris), puis " + heart +
-                             " avec tous les groupes : " + std::to_string(simGroups_ + 1) + " groupes de " + std::to_string(perGroup) +
-                             " joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme "
+                             " avec tous les groupes : " + std::to_string(players) + " joueurs en 7 groupes, un par branche, 60 min pour vaincre. "
+                             "Événements mondiaux, carte du titan, zones terminées, contributions, groupes en attente, remplacements et défaite comme "
                              "dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) "
                              "ou regardez-le.";
     const float lineH = ui.s(18);

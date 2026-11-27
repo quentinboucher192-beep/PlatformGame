@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { FLAG_VACANT, Msg, readFrames, type Frame } from "../src/coop";
 import { BRANCH, controlled, decide, lockOpen, majority, maskOf, reachable } from "../src/raidZones";
 import { api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -55,6 +56,8 @@ async function runningEvent(...clans: Clan[]): Promise<string> {
             await env.DB.prepare("INSERT INTO raid_registrations (event_id, player_id, clan_id, created_at) VALUES (?1, ?2, ?3, ?4)")
                 .bind(id, p.id, c.id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
                 .run();
+        // §41: the clan's seven groups (14 registered at least), its players in the Bras droit's group.
+        await raidGroups(id, c.id, { bras_droit: c.players });
     }
     return id;
 }
@@ -121,7 +124,7 @@ describe("raids phase 2: the branch's rules", () => {
 });
 
 describe("raids phase 2: instances and consensus", () => {
-    it("my group's instance is made once; another group's instance can be helped", async () => {
+    it("my group's instance is made once; another group's instance is never helped (§41)", async () => {
         const a = await clan("AUBE", 2);
         const b = await clan("NEBU", 1);
         const ev = await runningEvent(a, b);
@@ -129,10 +132,10 @@ describe("raids phase 2: instances and consensus", () => {
         const r2 = await api("POST", `${V}/raids/events/${ev}/instance`, { token: a.players[1]!.token, body: {} });
         expect(r1.status).toBe(200);
         expect(r2.body.data.instance.id).toBe(r1.body.data.instance.id);
-        expect(r1.body.data.instance.group).toBe(1);
+        expect(r1.body.data.instance.group).toBe(3); // the Bras droit: the third branch of the titan, group 3
         const help = await api("POST", `${V}/raids/events/${ev}/instance`, { token: b.players[0]!.token, body: { instance_id: r1.body.data.instance.id } });
-        expect(help.status).toBe(200);
-        expect(help.body.data.instance.clan_tag).toBe("AUBE");
+        expect(help.status).toBe(409);
+        expect(help.body.error.code).toBe("RAID_OTHER_GROUP");
         const outsider = await registerPlayer("Intrus");
         expect((await api("POST", `${V}/raids/events/${ev}/instance`, { token: outsider.token, body: {} })).status).toBe(403);
     });
@@ -155,7 +158,7 @@ describe("raids phase 2: instances and consensus", () => {
         expect(view.status).toBe(200);
         const z1 = view.body.data.zones.find((z: { id: number }) => z.id === 1);
         expect(z1.controlled).toBe(true);
-        expect(z1.objectives[0].by).toBe("[AUBE]·1");
+        expect(z1.objectives[0].by).toBe("[AUBE]·3");
         expect(view.body.data.my.instance_id).toBe(inst);
     });
 
@@ -217,17 +220,32 @@ describe("raids phase 2: instances and consensus", () => {
         expect((await rejections(inst)).length).toBe(4);
     });
 
-    it("the two bellows come from two groups; a zone report moves the group on the map", async () => {
+    it("§41: the two bellows by ONE group, both within 3 s; a half alone never counts, nor two groups' halves; a zone report moves the group", async () => {
         const a = await clan("AUBE", 1);
         const b = await clan("NEBU", 1);
         const ev = await runningEvent(a, b);
         const ia = await instanceOf(ev, a, a.players);
         const ib = await instanceOf(ev, b, b.players);
+        const done = async () =>
+            (await env.DB.prepare("SELECT objective_id FROM raid_branch_objectives WHERE event_id = ?1 AND objective_id LIKE 'forge_soufflet_%'").bind(ev).all<{ objective_id: string }>()).results
+                .map((r) => r.objective_id)
+                .sort();
         // Titan 9: the Épaule's guard first (an ambush: the ways on wait for it); the branch's state, for both groups.
         expect((await report(a.players[0]!, ia, { objective: "epaule_arene", zone: 1, tick: 3000 })).body.data.status).toBe("accepted");
-        expect((await report(a.players[0]!, ia, { objective: "forge_soufflet_ouest", zone: 4 })).body.data.status).toBe("accepted");
-        expect((await report(a.players[0]!, ia, { objective: "forge_soufflet_est", zone: 4 })).body.data.status).toBe("rejected");
-        expect((await report(b.players[0]!, ib, { objective: "forge_soufflet_est", zone: 4 })).body.data.status).toBe("accepted");
+        // One half by each group: neither counts (a pair is one group's, split in two).
+        expect((await report(a.players[0]!, ia, { objective: "forge_soufflet_ouest", zone: 4, tick: 6000 })).body.data.status).toBe("accepted");
+        expect((await report(b.players[0]!, ib, { objective: "forge_soufflet_est", zone: 4, tick: 6000 })).body.data.status).toBe("accepted");
+        expect(await done()).toEqual([]);
+        // The same group's other half 4 s later: too late, refused and journaled; still nothing counted.
+        const late = await report(a.players[0]!, ia, { objective: "forge_soufflet_est", zone: 4, tick: 6000 + 4 * 120 });
+        expect(late.body.data.status).toBe("rejected");
+        expect(late.body.data.reason).toContain("à 3 s près");
+        expect(await done()).toEqual([]);
+        // Group B does both halves within 3 s (2,5 s apart): both count for the branch, by B.
+        expect((await report(b.players[0]!, ib, { objective: "forge_soufflet_ouest", zone: 4, tick: 6000 + 300 })).body.data.status).toBe("accepted");
+        expect(await done()).toEqual(["forge_soufflet_est", "forge_soufflet_ouest"]);
+        const by = await env.DB.prepare("SELECT DISTINCT instance_id FROM raid_branch_objectives WHERE event_id = ?1 AND objective_id LIKE 'forge_soufflet_%'").bind(ev).all<{ instance_id: string }>();
+        expect(by.results.map((r) => r.instance_id)).toEqual([ib]);
         expect((await report(a.players[0]!, ia, { kind: "zone", zone: 4, tick: 7000 })).body.data.status).toBe("accepted");
         const view = await api("GET", `${V}/raids/events/${ev}/branch`, { token: a.players[0]!.token });
         expect(view.body.data.zones.find((z: { id: number }) => z.id === 4).controlled).toBe(true);

@@ -124,7 +124,7 @@ CosmicPlatformer --headless --coop-test confins_02:3 --spawns "1320,618;1380,618
   à la première zone terminée (les vrais chiffres du test, rien n'est envoyé ; [RAIDS.md §26](RAIDS.md#26-chacun-sa-zone-toutes-les-embuscades-avant-lantre-le-vestiaire-de-lantre-et-le-tableau-des-contributions-278)).
 * `--i18n-audit <fichier>` (2.76.2) : chaque texte dessiné resté dans l'autre langue, une ligne JSON
   par texte (avec `--lang en` : ce qui reste en français ; voir [I18N.md](I18N.md)).
-* `--raid-sim <groupes>:<joueurs simulés>[:<vitesse 1|2|4>[:<onglet 0-3>]]` (2.77) : « Simuler un raid complet »
+* `--raid-sim <joueurs 14-56>[:<vitesse 1|2|4>[:<onglet 0-3>]]` (2.77 ; §41 de RAIDS.md : toujours sept groupes) : « Simuler un raid complet »
   sans compte (en local, rien n'est envoyé), vous dans le groupe 1 ; l'onglet ouvre le panneau du raid (groupes,
   contributions, événements du monde, carte du titan). `--raid-sim-menu` : ses réglages, tels que « Tester le raid »
   les montre (rien n'est lancé).

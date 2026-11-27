@@ -504,13 +504,24 @@ private:
             y += ui.s(30);
         }
         const float cellH = ui.s(34), cellGap = ui.s(6);
+        // §41 (titan 16): fewer than 14 registered, the clan cannot start: said over the groups (measured, wrapped).
+        if (!groups.empty() && e.clanPlayers < raids::kMinClanPlayers) {
+            const auto lines = wrap(ui,
+                                    std::to_string(e.clanPlayers) + " / " + std::to_string(raids::kMinClanPlayers) +
+                                        " inscrits : il en faut au moins 14 pour que votre clan commence (sept groupes de 2 à 8 joueurs).",
+                                    FontFace::Bold, 14, w, 3);
+            if (visible(y, static_cast<float>(lines.size()) * ui.s(20))) drawLines(ui, lines, {x, y}, 14, ui.s(20), Color{255, 176, 74, 255}, FontFace::Bold);
+            y += static_cast<float>(lines.size()) * ui.s(20) + ui.s(8);
+        }
         for (const raids::Group& g : groups) {
             const float h = ui.s(44) + 2 * (cellH + cellGap) + ui.s(6);
             if (visible(y, h)) {
                 const Rect card{x, y, w, h};
                 ui.r().fillRoundedRect(card, ui.s(12), Color{22, 29, 66, 240});
-                fit(ui, "Groupe " + std::to_string(g.number) + " · chef " + g.leader.username, {card.x + ui.s(12), card.y + ui.s(22)}, 15, card.w - ui.s(24), kText,
-                    FontFace::Bold);
+                // §41: « Groupe 3 · BRAS DROIT · chef Lyra » (its branch: group k plays branch k).
+                const std::string where = g.branchName.empty() ? std::string() : " · " + g.branchName;
+                fit(ui, "Groupe " + std::to_string(g.number) + where + " · chef " + g.leader.username, {card.x + ui.s(12), card.y + ui.s(22)}, 15,
+                    card.w - ui.s(24), kText, FontFace::Bold);
                 const float cw = (card.w - ui.s(24) - 3 * cellGap) / 4.0f;
                 for (int i = 0; i < raids::kGroupSize; ++i) {
                     const Rect c{card.x + ui.s(12) + static_cast<float>(i % 4) * (cw + cellGap), card.y + ui.s(42) + static_cast<float>(i / 4) * (cellH + cellGap),
@@ -532,11 +543,25 @@ private:
             }
             y += h + ui.s(8);
         }
+        // §41: the waiting list (beyond the 56 in play), in the order of registration: its first takes the place of anyone
+        // who unregisters before the start.
+        const auto waiting = raids::parseWaitlist(at(data_, "waitlist"));
+        if (!waiting.empty()) {
+            if (visible(y, ui.s(28))) fit(ui, "LISTE D'ATTENTE · " + std::to_string(waiting.size()), {x, y + ui.s(12)}, 14, w, kSky, FontFace::Title);
+            y += ui.s(30);
+            for (const raids::Waiting& p : waiting) {
+                if (visible(y, ui.s(24))) fit(ui, std::to_string(p.rank) + ". " + p.username, {x + ui.s(8), y + ui.s(11)}, 14, w - ui.s(8), kText, FontFace::Body, Align::Left, true);
+                y += ui.s(24);
+            }
+            y += ui.s(6);
+        }
         {
             const auto lines = wrap(ui,
-                                    "Groupes de 8 dans l'ordre des inscriptions : le chef de raid mène le groupe 1, le premier inscrit de chaque autre groupe mène "
-                                    "le sien. Pendant le raid, chaque groupe joue dans sa propre instance (8 joueurs au plus).",
-                                    FontFace::Body, 13, w, 4);
+                                    "Sept groupes, un par branche du titan (le groupe 1 au Crâne, le 2 au Bras gauche… le 7 à la Jambe droite), de 2 à 8 "
+                                    "joueurs, aussi égaux que possible, dans l'ordre des inscriptions : le chef de raid mène le groupe 1. Au moins 14 inscrits "
+                                    "pour commencer, 56 en jeu au plus : les suivants attendent, et le premier d'entre eux prend la place de qui se désiste "
+                                    "avant le début. Un groupe ne joue que sa branche ; il n'en part que pour remplacer un groupe éliminé.",
+                                    FontFace::Body, 13, w, 10);
             if (visible(y, static_cast<float>(lines.size()) * ui.s(19))) drawLines(ui, lines, {x, y}, 13, ui.s(19), Color{154, 160, 200, 255});
             y += static_cast<float>(lines.size()) * ui.s(19) + ui.s(14);
         }

@@ -342,8 +342,7 @@ TEST_CASE("i18n audit: the key screens in English, nothing left in French") {
     // 2.79: « Simuler un raid complet », each tab of its panel (the one contributions table with the titan among them).
     for (int panel = 0; panel < 4; ++panel) {
         RaidSimSetup sim;
-        sim.groups = 7;
-        sim.bots = 7;
+        sim.players = 56;  // §41: seven groups of 8
         sim.capture = true;
         sim.panel = panel;
         rig.show(makeRaidSim(g, sim), 8);

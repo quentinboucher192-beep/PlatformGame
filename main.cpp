@@ -38,7 +38,7 @@
 //                           creations: a kind's list (suit, trail, frame, victory), a new one, one
 //                           creation by its id; 2.61 creations:studio[:new:<kind>|:import[:<file>]|
 //                           :<draft>]: the Studio, a new creation, the import of a PNG, a draft)
-//   --raid-sim <groups>:<bots>[:<speed>[:<panel>]]
+//   --raid-sim <players>[:<speed>[:<panel>]]
 //                           2.77, headless only: « Simuler un raid complet » (local, nothing sent)
 //   --raid-sim-menu         2.77, headless only: its settings (ADMINISTRATION › Raids › Tester Asterion)
 //   --raid-contrib          2.78, with --raid-test: the contributions table opens at the first zone finished
@@ -934,8 +934,9 @@ int main(int argc, char** argv) {
         app.pushScene(makeMainMenu(game));
         app.pushScene(makeRaidSimMenu(game));
     } else if (std::string sim = value("--raid-sim"); !sim.empty() && cfg.headless) {
-        // 2.77, captures (headless only, docs/BUILDING.md): --raid-sim <groups>:<bots>[:<speed 1|2|4>[:<panel 0-3>]] —
-        // the whole clan raid simulated in local (no account; nothing is ever sent), this computer in group 1.
+        // 2.77, captures (headless only, docs/BUILDING.md): --raid-sim <players>[:<speed 1|2|4>[:<panel 0-3>]] — the whole
+        // clan raid simulated in local (no account; nothing is ever sent), this computer in group 1. §41 (titan 16): its 14
+        // to 56 players over seven groups.
         RaidSimSetup s;
         std::vector<std::string> f;
         for (size_t a = 0, b; a <= sim.size(); a = b + 1) {
@@ -943,10 +944,9 @@ int main(int argc, char** argv) {
             if (b == std::string::npos) b = sim.size();
             f.push_back(sim.substr(a, b - a));
         }
-        s.groups = std::clamp(std::atoi(f[0].c_str()), 1, 14);
-        s.bots = f.size() > 1 ? std::clamp(std::atoi(f[1].c_str()), 1, 7) : 4;
-        s.background = f.size() > 2 ? std::clamp(std::atoi(f[2].c_str()), 1, 4) : 1;
-        s.panel = f.size() > 3 ? std::clamp(std::atoi(f[3].c_str()), -1, 3) : -1;
+        s.players = std::clamp(std::atoi(f[0].c_str()), 14, 56);
+        s.background = f.size() > 1 ? std::clamp(std::atoi(f[1].c_str()), 1, 4) : 1;
+        s.panel = f.size() > 2 ? std::clamp(std::atoi(f[2].c_str()), -1, 3) : -1;
         s.capture = true;
         app.pushScene(makeMainMenu(game));
         app.pushScene(makeRaidSim(game, s));
