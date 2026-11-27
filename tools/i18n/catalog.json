@@ -59901,6 +59901,18 @@
    ]
   },
   {
+   "fr": "Raids : quand l'IA joue votre place (pilote automatique), elle choisit elle-même sur une tablette de pouvoir, sans ouvrir la fenêtre de choix qui bloquait le jeu ; une fenêtre déjà ouverte se ferme, et vos touches reprennent la main.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : sur la carte du titan (Contributions), la partie où vous êtes porte « Vous ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
    "where": [
     "data/news/changelog.json"

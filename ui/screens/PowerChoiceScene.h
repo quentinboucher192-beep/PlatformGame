@@ -18,6 +18,9 @@ public:
     virtual GameWorld* world() = 0;
     virtual const PowerKeyMap& powerKeys() const = 0;
     virtual void answerPowerOffer(uint8_t choice) = 0;
+    /// 2.95: the AI plays this player's seat (a raid test, the administrator AFK): it answers the offer
+    /// itself, through its frame; the window closes (it never waits for a choice nobody gives).
+    virtual bool offerAnsweredByAi() const { return false; }
 };
 
 /// Shown over the level when a power tablet is touched with every power slot taken: the

@@ -176,11 +176,13 @@ Color stateFill(const Part& p) {
 }
 
 std::string groupsLine(const Part& p) {
-    if (p.groups.empty()) return "Aucun groupe";
-    if (p.groups.size() == 1) return "Groupe " + std::to_string(p.groups[0]);
+    // 2.95: « · Vous » where this computer's player is (fitted with the line on its callout).
+    const std::string you = p.mine ? std::string(" · Vous") : std::string();
+    if (p.groups.empty()) return p.mine ? std::string("Vous") : std::string("Aucun groupe");
+    if (p.groups.size() == 1) return "Groupe " + std::to_string(p.groups[0]) + you;
     std::string s = "Groupes ";
     for (size_t i = 0; i < p.groups.size(); ++i) s += (i == 0 ? "" : ", ") + std::to_string(p.groups[i]);
-    return s;
+    return s + you;
 }
 
 /// The line under the titan: what is shown.

@@ -35,8 +35,8 @@ void PowerChoiceScene::render(float /*alpha*/) {
     GameWorld* w = game_.world();
     const GameWorld::PowerOffer* offer = w && w->powerOffer() ? &*w->powerOffer() : nullptr;
     const PowerDefinition* def = offer ? g_.content.power(offer->powerId) : nullptr;
-    if (!w || !offer || !def) {
-        // Nothing to choose any more (level restarted...): just close.
+    if (!w || !offer || !def || game_.offerAnsweredByAi()) {
+        // Nothing to choose any more (level restarted...), or the AI plays this seat (2.95): just close.
         if (!answered_) {
             answered_ = true;
             g_.app.popScene();

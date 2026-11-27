@@ -199,6 +199,13 @@ public:
     GameWorld* world() override { return run_ && !catching_ ? &run_->world() : nullptr; }
     const PowerKeyMap& powerKeys() const override { return powerKeys_; }
     void answerPowerOffer(uint8_t choice) override { pendingChoice_ = choice; }
+    /// 2.95: the AI plays this computer's seat (the administrator AFK or « l'IA joue pour moi », a free seat):
+    /// a tablet it walks on is answered by the AI in its frame (TestBots::choice), never by a window that
+    /// would hold the zone's world (an offer stops it) and the player's keys (which end the AFK).
+    bool offerAnsweredByAi() const override {
+        const raid::TestSession* ts = shownSession();
+        return local_ == 0 && ts && ts->aiPlaysSeatZero();
+    }
     // 2.75.5: the pointer comes back with the raid's menu, and while the mouse moves (the HUD's button).
     bool hidesCursor() const override {
         return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !overlay_.wantsPointer() && clock_ - pointerAt_ > 2.5f && !bigMap_ &&
@@ -1166,7 +1173,8 @@ public:
         if (!sim_) updateSpectator(w, dt);  // 2.75 (the full raid's simulation has its own: updateSim)
         updateDowned(w);                    // 2.77.2: this player down: their soul, the others, the banner's keys
         // 2.75: a power tablet of the armory with every slot taken: which power to leave (the world goes on).
-        if (const auto& offer = w.powerOffer(); offer && offer->player == local_ && pendingChoice_ == 0 && !paused_ && !ended_ &&
+        if (const auto& offer = w.powerOffer(); !offer || offer->player != local_) pendingChoice_ = 0;  // 2.95: never kept for a later offer
+        if (const auto& offer = w.powerOffer(); offer && offer->player == local_ && pendingChoice_ == 0 && !paused_ && !ended_ && !offerAnsweredByAi() &&
                                                 g_.app.topScene() == this && !(test_ && !scripts_.empty() && scripts_[0].active()))
             g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
         // 2.75.5: the raid's menu, opened and closed by the player (its key, the HUD's button), as the pause:
@@ -1837,6 +1845,7 @@ public:
                 for (const auto& st : g.past) was = was || st.branch == b;
                 if (!here && !was) continue;
                 if (here && !g.wiped) part.groups.push_back(g.id);
+                if (here && shownSeated() && static_cast<int>(i) == simPlace().first) part.mine = true;  // 2.95: « Vous »
                 const int sec = static_cast<int>(part.whole.sections.size());
                 part.whole.sections.push_back(g.name + (here ? (g.wiped ? " · éliminé ici" : " · sur place") : " · parti ailleurs"));
                 for (const auto& st : g.past)
@@ -3260,6 +3269,7 @@ public:
             // this instance's simulation, in its lair only.
             if (!p.fallen) contrib::lairBoss(*run_, p.health, p.phase);
             if (entry_.group > 0) p.groups.push_back(entry_.group);
+            p.mine = !spec_.on;  // 2.95: « Vous » on the part this player is in (not a spectator)
             p.whole = m.raid;
             // Its zones' tabs: each finished zone's table (the simulation's, agreed by the group), the zone where it is.
             int number = 0;

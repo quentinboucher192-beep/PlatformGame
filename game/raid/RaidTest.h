@@ -91,6 +91,8 @@ public:
     }
     /// The administrator AFK (no key for 15 s): their seat is played by the AI until they touch one.
     bool autopilot() const { return adminSeated_ && (adminBot_ || afk_ >= kAfkSteps); }
+    /// 2.95: the AI plays seat 0 now (the administrator's autopilot, or the free seat played).
+    bool aiPlaysSeatZero() const { return seatZeroBot(); }
     TestBots& botsMut() { return botsFor(run_.zone()); }
     /// The branch's state given with each step (the full raid's simulation: every group's validated work).
     void setBranchState(uint32_t state) { state_ = state; }

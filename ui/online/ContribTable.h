@@ -117,6 +117,7 @@ struct Part {
     bool open = true;      // its numbers are on this computer (else `closed` says where they are)
     std::string closed;
     std::vector<int> groups;  // the groups there now (their numbers)
+    bool mine = false;        // 2.95: this computer's player is there now (« · Vous » on its callout)
     std::vector<Table> zones; // its zones' tables (the newest first)
     Table whole;              // the whole part: its groups, a header each
     std::vector<ZoneTab> tabs; // its zones' tabs after « Toute la branche » (empty: the tabs « Zone » / « Toute la branche »)
