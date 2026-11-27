@@ -695,6 +695,12 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
     bool farSide = false;
     for (const Rect& r : siblings)
         farSide = farSide || (r.center().x - me.center().x) * (tc.x - r.center().x) > 0.0f;
+    // 2.98 (Plan::pullX): its body far from where its plan wants it (its crown drags it toward its nearest player): its place on
+    // the side toward there, first — the way around its body (under it) found by the navigation.
+    const float pullSide = body && b.target == bossUid_ && view_.plan.pullX > 0.0f && std::fabs(view_.plan.pullX - body->center().x) > 160.0f
+                               ? view_.plan.pullX - body->center().x
+                               : 0.0f;
+    if (pullSide != 0.0f && (me.center().x - body->center().x) * pullSide < 0.0f) farSide = true;
     for (int pass = 0; pass < 2; ++pass) {
         auto ok = [&](int i) {
             const NavGraph::Node& nd = nav->node(i);
@@ -715,6 +721,7 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
                     return false;
             if (pass == 0) {
                 if (b.role == Role::Lure ? fromTarget > 210.0f : fromTarget < 130.0f) return false;
+                if (pullSide != 0.0f && (nd.feet.x - body->center().x) * pullSide < 0.0f) return false;  // 2.98: Plan::pullX
                 // 2.84: the others a good way off its body (most of its blows are near it), at the far end of a wave's
                 // reach; only a weak point bare is worth coming close.
                 if (body && b.role != Role::Lure && !(view_.exposed && b.target != bossUid_)) {
@@ -1068,6 +1075,16 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         }
     }
     // ------------------------------------------------------------------ hurt: a health orb near, out of what is coming
+    // 2.98 (Plan::orbsInReach): the place of the graph under an orb whence a single jump takes it (in a boss fight its double
+    // jump is never pressed for an orb: one higher was waited under for good), -1 none.
+    const auto orbNode = [&](const LevelEntity& e, const Player& p) {
+        if (!nav) return -1;
+        const float lift = p.config().jumpHeight - 6.0f;
+        return nav->nearest(e.box.bottomCenter(), 160.0f, [&](const NavGraph::Node& nd) {
+            return nd.mover < 0 && !nd.ladder && std::fabs(nd.feet.x - e.box.center().x) < 10.0f && e.box.bottom() <= nd.feet.y + 2.0f &&
+                   e.box.bottom() > nd.feet.y - 22.0f - lift;
+        });
+    };
     for (int s : drivers) {
         if (busy[static_cast<size_t>(s)] || ord == bots::OrderKind::Follow || ord == bots::OrderKind::Wait) continue;
         const Player& p = w.playerAt(s);
@@ -1078,7 +1095,7 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         float bd = 700.0f * 700.0f;
         for (const auto& e : w.entities())
             if (!e->removed && e->active && e->visible && e->type() == "health_orb" && (e->box.center() - p.center()).lengthSq() < bd &&
-                safeSpot(w, s, e->box.bottomCenter(), 60) &&
+                safeSpot(w, s, e->box.bottomCenter(), 60) && (!fight_ || !view_.plan.orbsInReach || orbNode(*e, p) >= 0) &&
                 !(view_.plan.elevate > 0.0f && e->box.bottom() > view_.plan.floorY - view_.plan.elevate)) {  // 2.84: not down under its waves, its acid
                 bd = (e->box.center() - p.center()).lengthSq();
                 orb = e.get();
@@ -1086,6 +1103,8 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         if (!orb) continue;
         give(s, Task::Objective, orb->box.bottomCenter(), Enter, 0, orb->id());
         bots_[static_cast<size_t>(s)].goalNode = standNode(orb->box.expanded(4.0f));
+        if (fight_ && view_.plan.orbsInReach)
+            bots_[static_cast<size_t>(s)].goalNode = orbNode(*orb, p);  // 2.98: the place a single jump takes it from
         think(bots_[static_cast<size_t>(s)], std::string("va prendre un orbe de vie"));
     }
     // ------------------------------------------------------------------ a place marked

@@ -3804,6 +3804,53 @@ attend, aucun groupe de nulle part ; avec un groupe en attente : il remplace l'�
 Cœur à trois instances : la somme des parts, la même vie et la même phase partout), `tests/test_raid_mechanisms.cpp` (la ligne
 des groupes d'une bulle : « Groupe 1 en attente », « Groupes 2, 8 (8 en attente) », « · Vous »).
 
+
+### Le Cœur d'Asterion (2.98) : joueurs simulés
+
+Le banc du §36 (`COSMIC_GOAT_BENCH=1 COSMIC_GOAT_PARTS=coeur`, les sept parties tombées, 8 joueurs simulés Experts, ni
+invincibilité ni sauvetage, difficulté 3 / 5, 15 min au plus), départs 1 à 5. Les sondes (`COSMIC_GOAT_HIST`, `_DEATHS`,
+`_TRACE`) ont montré deux pertes de temps, pas un manque de dégâts :
+
+* **le Cœur traîné sur une artère** : sa couronne le tire vers son joueur le plus proche, et le groupe, entré par l'ouest,
+  le frappait depuis son côté ouest ; il dérivait de 2 850 à 1 900 px et s'arrêtait au-dessus de l'artère du balcon ouest
+  (1 808, 720). Son joueur devenait sa cible (rayon, prisme, couronne), mourait, son réanimateur après lui : la phase 3 restait
+  bloquée de longues minutes (28 % et 38 % de sa vie jusqu'à l'élimination du groupe) ;
+* **des orbes de vie hors de portée** : dans son combat, un joueur blessé ne fait pas de double saut pour un orbe ; ceux qui
+  pendent plus haut qu'un saut au-dessus d'un rebord étaient attendus dessous pour toujours — 29 à 43 % du temps des joueurs
+  sur tout le combat (3 départs sur 5), surtout dans sa dernière phase.
+
+Maintenant (son plan de combat, `game/raid/bots/TacticHeart.cpp`, avec deux options du plan qui ne changent rien pour les
+autres Gigaboss) :
+
+* `Plan::pullX` : loin du milieu de son arène (plus de 160 px), ses frappeurs choisissent d'abord leur place du côté de son
+  corps tourné vers ce milieu (la navigation passe sous lui) ; sa couronne le ramène vers le centre, à un millier de pixels
+  des deux balcons ;
+* `Plan::orbsInReach` : un orbe de vie seulement s'il existe, sous lui, une place d'où un seul saut le prend (et le joueur y va).
+
+| Cœur d'Asterion, départs 1 à 5 | Avant | Après |
+|---|---|---|
+| Vaincu en 15 min | **1 / 5** (840 s) | **2 / 5** (531 s, 315 s) |
+| Chaque départ (V vaincu, E éliminé, D debout à 15 min ; vie restante) | E 760 s 28 % · E 801 s 38 % · V 840 s · D 900 s 1 % · D 900 s 16 % | D 900 s 5 % · V 531 s · E 365 s 56 % · V 315 s · D 900 s 30 % |
+| Vie restante (moyenne) | 16,6 % | 18,2 % |
+| Morts (moyenne) | 40 | 29 |
+| Temps à « va prendre un orbe de vie » | 4 à 43 % | moins de 0,5 % |
+
+Le but (4 départs sur 5 en 15 min pour un groupe de 8) **n'est pas atteint**. Ce qui bloque encore : le combat reste
+chaotique (un départ gagne en 5 min, un autre est éliminé en phase 2) ; le Cœur dérive encore vers un balcon quand ses joueurs
+les plus proches sont ceux des artères ou leurs réanimateurs (départs 1 et 5 : vers l'est, puis la même chaîne de morts) ;
+le rayon du cœur et les comètes sur les étages des artères (1 216, 928 et 736) restent les premières causes de mort.
+Aucun coup injuste n'a été relevé : tous sont annoncés et le bouclier les arrête. Essayés et retirés : les ancres de la
+supernova tenues entre deux supernovas (le Cœur arrêté au-dessus de l'ancre du balcon ouest : 61 morts, aucune supernova
+contenue) ; le côté du centre imposé aussi faute d'autre place (départs 1 et 2 : debout à 32 %, éliminé à 21 %).
+
+**Avec plusieurs groupes** (une seule vie pour toutes les instances, §40) : une instance ôte **1/7** de sa vie (sa part à
+7 groupes) en **50 à 70 s** de combat et **1/3** (sa part à 3 groupes) en **135 à 170 s**, avant comme après (phase 1, puis
+la première fenêtre de ses ventricules) ; c'est le combat d'un seul groupe jusqu'au bout qui reste long.
+
+**Versions** : rien ne change dans la simulation ni dans les règles (`TITAN_REVISION`, `kSimulationVersion`,
+`kCoopSimulationVersion`, `kRankingGeneration` restent) ; seuls les joueurs simulés du Cœur choisissent autrement
+(`BossView::Plan::pullX`, `orbsInReach`, lus par `game/raid/RaidBots.cpp`). Aucun texte nouveau.
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)

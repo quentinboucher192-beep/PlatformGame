@@ -82,6 +82,12 @@ struct BossView {
         bool dashOut = false;        // 2.89: out of a blow too wide to walk out of in time, dashing (Pyroclast's meteor fist)
         float bodyBothSides = 0.0f;  // 2.89: > 0: its body read on both sides of its box (it turns), this much wider (Pyroclast)
         bool bodyInNav = false;      // 2.89: its body among what the navigation's moves keep out of (it floats over the ledges)
+        /// 2.98 (the Cœur): > 0, the strikers choose their place on the side of its body toward this x while it is far from it (its
+        /// crown drags it toward its nearest player: a group that came from one side dragged it there, onto its own arteries).
+        float pullX = 0.0f;
+        /// 2.98 (the Cœur): in its fight, a health orb only where a single jump from a place of the graph takes it (one that needs
+        /// a double jump was waited under for good: a third of their time in its last phase).
+        bool orbsInReach = false;
     } plan;
 };
 
