@@ -336,7 +336,7 @@ compilations : les temps sont bruités). Meilleure course **vérifiée** à la f
 | Recherche d'avant (tour 1 : tout le niveau) | 1:26.675 | 1:26.667 | 1:26.667 | 1:26.642 | 1,84 M | faisceau (raccords) |
 | Portefeuille entier (`--portfolio`) | 1:26.675 | 1:26.675 | 1:26.650 | **1:26.092** | 1,76 M | faisceau 6, exploration 0, polissage 0, affinage 0 |
 | Exploration seule (`--arms explore`) | 1:26.675 | 1:26.675 | 1:26.675 | 1:26.675 | — | exploration 1 |
-| Faisceau seul dans le portefeuille (`--arms beam,refine`) | BEAMONLY5 | BEAMONLY10 | BEAMONLY15 | BEAMONLY20 | — | BEAMONLYBY |
+| Faisceau seul dans le portefeuille (`--arms beam,refine`) | 1:26.675 | 1:26.675 | 1:26.650 | 1:26.175 | 2,71 M | faisceau 3, affinage 1 |
 
 Temps aux points de passage de la course finale (CP1 « Seuil des Anciens », CP2 « Canopée brisée ») :
 
@@ -346,6 +346,7 @@ Temps aux points de passage de la course finale (CP1 « Seuil des Anciens », CP
 | Recherche d'avant, 20 min | 10.983 | 30.117 | 39.633 | 51.408 | 64.617 | 83.475 | 86.642 |
 | Portefeuille, 20 min | 10.983 | 30.125 | 39.642 | 51.417 | 64.625 | **82.917** | 86.092 |
 | Exploration seule, dès 3 min | **10.850** | 30.125 | 39.642 | 51.417 | 64.650 | 83.508 | 86.675 |
+| Faisceau seul dans le portefeuille, 20 min | 10.983 | 30.125 | 39.642 | 51.417 | 64.625 | 82.942 | 86.175 |
 
 Ce que cela dit, honnêtement :
 
@@ -353,8 +354,11 @@ Ce que cela dit, honnêtement :
   18,86 s), trouvé par le **faisceau** pendant le tour 4, dont la fenêtre était les sections 6 et 7 :
   avec le portefeuille, les fenêtres commencent dès le tour 1 (sections 1-2, 2-3, 4-5, 6-7), alors
   que la recherche d'avant passe son premier tour sur tout le niveau et n'y était pas encore au bout
-  de 20 min (1-2, 2-3, 4-5). La ligne « faisceau seul dans le portefeuille » sépare cet effet du
-  calendrier de celui des autres bras.
+  de 20 min (1-2, 2-3, 4-5). Le faisceau seul dans le même cadre (fenêtres dès le tour 1,
+  séparation et évaluation) trouve le même gain (1:26.175) : **il vient du calendrier des fenêtres
+  et du faisceau, pas de l'exploration ni du polissage**, qui ont pris 39 % du temps sans gain ici
+  (l'écart 1:26.092 / 1:26.175 est du bruit entre deux tirages). Le portefeuille n'est donc pas
+  activé par défaut.
 * **L'exploration finit le segment 1 en 10,850 s** (0,13 s plus tôt que le faisceau, 0,18 s plus tôt
   que la course livrée) : le gain à la fin n'est que de 17 ms, parce que **CP2 tombe à 30,125 s dans
   toutes les courses** : quelque chose du monde (une plateforme, une porte à minuterie…) fixe ce
