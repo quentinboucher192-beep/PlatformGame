@@ -707,12 +707,6 @@
    ]
   },
   {
-   "fr": "20 cœurs",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
    "fr": "20 utilisations",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -3564,7 +3558,19 @@
    ]
   },
   {
+   "fr": "Aperçu choisi : croix point du tracé avant / après · LB / RB maintenu 8 points · B : en sortir",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aperçu choisi : flèches 1 px · Maj + flèches 8 px · Échap : en sortir · clic : y amener le repère",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu choisi : flèches point du tracé avant / après · Maj 8 points · Échap : en sortir",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
@@ -6686,6 +6692,12 @@
    ]
   },
   {
+   "fr": "Aucun tracé de la SOB : terminez le niveau ou entraînez ses segments d'abord.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Aucun élément dans cette catégorie.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -7152,13 +7164,13 @@
    ]
   },
   {
-   "fr": "Aucune startpos pour cette version du niveau. Ajoutez-en une ici, ou posez-en une en entraînement là où Nova se trouve ; les essais suivants partiront de là.",
+   "fr": "Aucune startpos pour cette version du niveau. Ajoutez-en une ici sur le tracé de la SOB (en doré), ou posez-en une en entraînement là où Nova le suit ; les essais suivants partiront de là.",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
-   "fr": "Aucune startpos pour cette version du niveau. En entraînement, posez-en une là où Nova se trouve ; les essais suivants partiront de là.",
+   "fr": "Aucune startpos pour cette version du niveau. En entraînement, posez-en une sur le tracé de la SOB (en doré), là où Nova le suit ; les essais suivants partiront de là.",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
@@ -11756,6 +11768,12 @@
    ]
   },
   {
+   "fr": "Ce niveau n'a pas de version enregistrée (un test de l'éditeur).",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "ce niveau n'en donne aucun",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -12189,6 +12207,12 @@
    "fr": "CE SEGMENT",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce segment",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -14233,13 +14257,19 @@
    ]
   },
   {
+   "fr": "Chrono au départ ; chaque point traversé donne un temps de passage.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
    "fr": "Chrono {0} ({1})  état {2}",
    "where": [
     "ui/screens/GameScene.cpp"
    ]
   },
   {
-   "fr": "Chrono à l'apparition ; chaque point traversé donne un temps de passage.",
+   "fr": "Chrono à l'entrée dans {0} ; chaque point traversé donne un temps de passage.",
    "where": [
     "ui/screens/ChainTrainingScene.cpp"
    ]
@@ -16297,6 +16327,12 @@
    "fr": "Comptez les battements et sautez l'onde quand elle passe ; les plateformes sont sûres.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Compté",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -22342,6 +22378,12 @@
    ]
   },
   {
+   "fr": "du meilleur de chaque segment",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "du mois de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -22713,6 +22755,12 @@
    "fr": "Dès le départ",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "dès le segment suivant entré",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -24065,6 +24113,7 @@
     "ui/screens/StatisticsArt.cpp",
     "ui/screens/StatisticsLevels.cpp",
     "ui/screens/TasSheetScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/screens/TrainingSession.cpp",
     "ui/widgets/Charts.cpp"
    ]
@@ -24100,7 +24149,13 @@
    ]
   },
   {
-   "fr": "Départ : l'état pris en jeu à la pose (pouvoirs, cœurs et énergie de ce moment).",
+   "fr": "Départ : le meilleur de ce segment rejoué jusqu'ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Départ : le meilleur de ce segment rejoué jusqu'ici, Nova dans l'état exact de cette course (cœurs, énergie, recharges, élan, ennemis). Compté dès le segment suivant entré.",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
@@ -24118,9 +24173,15 @@
    ]
   },
   {
-   "fr": "Départ comme l'entraînement de son segment : pouvoirs du départ et des tablettes d'avant, cœurs et énergie pleins.",
+   "fr": "Départ au début du segment précédent (élan non compté), le temps part à l'entrée dans ce segment. Il n'a encore jamais été parcouru en entier : son premier essai fera sa référence.",
    "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Départ au début du segment précédent (élan non compté), le temps part à l'entrée dans ce segment. Il recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -24698,6 +24759,12 @@
    "fr": "Elle se forgea un corps de mondes brisés, et se donna un nom : ASTERION.",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Elle se pose sur le tracé de la SOB : ce passage n'a jamais été parcouru, ou Nova en est trop loin.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -26137,12 +26204,6 @@
    ]
   },
   {
-   "fr": "ennemis et mécanismes au départ",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
    "fr": "Ennemis gelés",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -26669,6 +26730,12 @@
    "fr": "entrée du répertoire central invalide",
    "where": [
     "server/src/zip.ts"
+   ]
+  },
+  {
+   "fr": "Entrée du segment non vue : essai non compté",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -27234,12 +27301,6 @@
     "game/enemies/BossAttackSheet.cpp",
     "game/raid/DreadfangRoutine.cpp",
     "ui/screens/CollectionScene.cpp"
-   ]
-  },
-  {
-   "fr": "et aussi",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -36570,6 +36631,12 @@
    ]
   },
   {
+   "fr": "l'état exact de cette course",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
    "fr": "L'étoile au centre du système s'ouvre quand ses trois mondes sont libérés. Ses gardiens y reviennent en échos de lumière, en son cœur veille l'Astrarque, et plus loin encore une étoile morte s'est éveillée.",
    "where": [
     "data/planets/noyau.json"
@@ -40263,6 +40330,18 @@
    "fr": "Le Marteau des Profondeurs s'est tu. La forge s'ouvre.",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Le meilleur de ce segment est rejoué jusqu'à elle : Nova y part avec l'état exact de cette course (cœurs, énergie, recharges, élan, ennemis).",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le meilleur de ce segment ne se rejoue plus : départ de l'entraînement",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -49929,7 +50008,7 @@
    ]
   },
   {
-   "fr": "Nova apparaît au point {0}, comme l'entraînement par segment.",
+   "fr": "Nova apparaît au point {0} : le segment d'avant sert d'élan (non compté).",
    "where": [
     "ui/screens/ChainTrainingScene.cpp"
    ]
@@ -49951,6 +50030,12 @@
    "fr": "Nova et niveaux",
    "where": [
     "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Nova part du départ du niveau, comme une course.",
+   "where": [
+    "ui/screens/ChainTrainingScene.cpp"
    ]
   },
   {
@@ -52925,6 +53010,12 @@
    "fr": "pas de réponse",
    "where": [
     "game/coop/CoopTransport.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de startpos ici",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -56221,6 +56312,7 @@
     "ui/screens/StatisticsArt.cpp",
     "ui/screens/StatisticsLevels.cpp",
     "ui/screens/TasSheetScene.cpp",
+    "ui/screens/TrainingMarksPanel.cpp",
     "ui/screens/TrainingSession.cpp"
    ]
   },
@@ -56836,21 +56928,9 @@
    ]
   },
   {
-   "fr": "Position valide : le corps de Nova est libre ici.",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
    "fr": "Position verticale",
    "where": [
     "ui/screens/HudEditorScene.cpp"
-   ]
-  },
-  {
-   "fr": "position, direction de Nova",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -57352,12 +57432,6 @@
    ]
   },
   {
-   "fr": "pouvoirs, cœurs, énergie",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
    "fr": "Premier ami",
    "where": [
     "data/achievements/achievements.json"
@@ -57515,18 +57589,6 @@
    "fr": "Principale",
    "where": [
     "ui/screens/AdminCreations.cpp"
-   ]
-  },
-  {
-   "fr": "Pris à la pose",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
-   "fr": "Pris à la pose :",
-   "where": [
-    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -58162,6 +58224,12 @@
    "fr": "Préparation de l'exemple…",
    "where": [
     "ui/screens/BossAttackPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Préparation de la startpos…",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -60545,12 +60613,6 @@
    ]
   },
   {
-   "fr": "recharges, élan (départ arrêté)",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
    "fr": "Recherche",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -61428,25 +61490,19 @@
    ]
   },
   {
-   "fr": "Refusée ici : hors du niveau (au-delà d'un bord, sous le bas ou au plafond). Elle reste à sa dernière place valide.",
+   "fr": "Refusée ici : hors du tracé de la SOB. Elle reste à sa dernière place.",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
-   "fr": "Refusée ici : hors du niveau (au-delà d'un bord, sous le bas ou au plafond). Pas encore enregistrée : amenez-la dans le niveau.",
+   "fr": "Refusée ici : pas de tracé de la SOB (passage jamais parcouru, ou trop loin du chemin des meilleurs segments). Pas encore enregistrée : amenez-la sur le tracé.",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
-   "fr": "Refusée ici : le corps de Nova serait dans le décor (sol, mur ou plafond). Elle reste à sa dernière place valide.",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
-   "fr": "Refusée ici : le corps de Nova serait dans le décor (sol, mur ou plafond). Pas encore enregistrée : amenez-la hors du décor.",
+   "fr": "Refusée ici : une autre startpos est déjà à cet endroit (une seule par endroit).",
    "where": [
     "ui/screens/TrainingMarksPanel.cpp"
    ]
@@ -61921,12 +61977,6 @@
    "fr": "Relié à",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
-   ]
-  },
-  {
-   "fr": "Remis à zéro",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -63076,6 +63126,7 @@
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ClanScene.cpp",
+    "ui/screens/GameScene.cpp",
     "ui/screens/GiftsScene.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
@@ -64662,6 +64713,12 @@
    "fr": "Réessayer en entraînement",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réessayez dans un instant.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -66956,6 +67013,7 @@
   {
    "fr": "segment",
    "where": [
+    "game/ghost/StartPosStore.cpp",
     "ui/screens/SegmentsScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
    ]
@@ -69289,9 +69347,21 @@
    ]
   },
   {
+   "fr": "SP {0} : une seule startpos par endroit.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "SP {0} active",
    "where": [
     "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "SP {0} à replacer sur le tracé de la SOB : départ de l'entraînement",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -69549,9 +69619,21 @@
    ]
   },
   {
+   "fr": "Startpos et mesures indisponibles",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "STARTPOS ET POINTS DE MESURE",
    "where": [
     "ui/screens/TrainingMarksScene.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos et points de mesure : en entraînement (ENTRAÎNEMENT › Segments et enchaînements)",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -69564,6 +69646,12 @@
    "fr": "Startpos impossible ici",
    "where": [
     "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Startpos introuvable : départ de l'entraînement",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {
@@ -70658,6 +70746,42 @@
    "fr": "Sur le nouvel ordinateur, connecté au nouveau compte : PARAMÈTRES EN LIGNE › Cet ordinateur › « Récupérer un ancien compte ».",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Sur le tracé",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "sur le tracé",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Sur le tracé de la SOB : Départ → Arrivée.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Sur le tracé de la SOB : Départ → {0}.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Sur le tracé de la SOB : {0} → Arrivée.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Sur le tracé de la SOB : {0} → {1}.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -71787,6 +71911,12 @@
    "fr": "Teinte du sprite",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "tel que dans ce replay",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
    ]
   },
   {
@@ -74844,6 +74974,12 @@
    ]
   },
   {
+   "fr": "Tracé de la SOB en préparation",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "Tracés",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -77688,6 +77824,12 @@
    "fr": "Une seule vie. Une étoile morte. Huit phases.",
    "where": [
     "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Une startpos est déjà là",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -84256,20 +84398,7 @@
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp",
-    "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "{0} cœur · énergie {1}",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
-   "fr": "{0} cœur · énergie {1} %",
-   "where": [
-    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -84280,20 +84409,7 @@
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GameScene.cpp",
-    "ui/screens/TrainingMarksPanel.cpp",
     "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "{0} cœurs · énergie {1}",
-   "where": [
-    "ui/screens/TrainingMarksPanel.cpp"
-   ]
-  },
-  {
-   "fr": "{0} cœurs · énergie {1} %",
-   "where": [
-    "ui/screens/TrainingSession.cpp"
    ]
   },
   {
@@ -88484,6 +88600,30 @@
    ]
   },
   {
+   "fr": "à replacer",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "À replacer : elle n'est pas sur le tracé de la SOB (son segment n'a plus de meilleur temps avec son replay). Amenez-la sur le tracé : flèches ou clic.",
+   "where": [
+    "ui/screens/TrainingMarksPanel.cpp"
+   ]
+  },
+  {
+   "fr": "À replacer sur le tracé de la SOB : inutilisable",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "À replacer sur le tracé de la SOB : le prochain essai part du départ de l'entraînement.",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
    "fr": "À sa dernière phase, l'arène plonge dans les ténèbres : seule la lumière de son œil, qui balaie l'arène en {0} s, révèle les plateformes qu'elle touche.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -89857,6 +89997,24 @@
    "where": [
     "game/powers/PowerStats.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "élan",
+   "where": [
+    "ui/screens/TrainingSession.cpp"
+   ]
+  },
+  {
+   "fr": "Élan (non compté)",
+   "where": [
+    "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉLAN (non compté) · {0} → {1}",
+   "where": [
+    "ui/screens/GameScene.cpp"
    ]
   },
   {

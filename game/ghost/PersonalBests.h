@@ -18,11 +18,22 @@
 // Personal only (this computer): nothing here is ever sent, and the official online records and
 // world records never count anything of it (they stay the full verified runs of the server).
 //
-// The file (saves/bests.json) replaces saves/segments.json (gold segments of the full runs) and
-// saves/training.json (best section-training times): both are read once and merged (load()),
-// their replays copied here; then the statistics' segment bests (stats.json, which travels with
-// the copy of the progression) are merged too (importStats, again after a restoration). A
-// damaged file is set aside (".corrupt"); a file written by a newer game is read, never written.
+// 2.95 — the rules of a segment (docs/GHOST_RACING.md § « Règles d'un segment ») : a segment's
+// time runs from the attempt's FIRST entry into it (the first crossing of its start boundary) to
+// the first crossing of its end, deaths and respawns included (a respawn never starts a
+// segment); it counts only when the attempt entered it by playing the whole segment before it
+// (or it is the route's first segment and the attempt began at the level's start). A training's
+// run-up (« élan », BestPassage::countFrom) never counts. The file keeps the generation of these
+// rules (`rules`, kRules): a file of an older generation loses its segment and enchaînement
+// records at once (the full runs, the PB, the whole run's record and their replays stay), then
+// the segments are taken again from the full runs kept (from the level's start: they follow the
+// rules).
+//
+// The file (saves/bests.json) replaced saves/segments.json and saves/training.json (2.91): their
+// full runs are read once (load()); their segment times, of the rules before, are not. Then the
+// statistics' segment bests (stats.json, which travels with the copy of the progression) are
+// merged too when they follow the same rules (importStats, again after a restoration). A damaged
+// file is set aside (".corrupt"); a file written by a newer game is read, never written.
 
 #include <cstdint>
 #include <map>
@@ -73,6 +84,10 @@ struct BestPassage {
     /// from the start to the exit, is matched.
     bool checkpointsKnown = true;
     std::vector<float> unknownSplits;  // then the run's splits (kept with it as they are)
+    /// 2.95: a training's run-up (« élan », the segment before the range trained, played whole
+    /// so that the range is entered as in a run): only the ranges starting at this checkpoint or
+    /// after it count. nullopt: no run-up.
+    std::optional<std::string> countFrom;
 
     /// A run's cumulative splits with the ids of their checkpoints (as many; else none is
     /// matched) and its final time (<= 0: not finished), from `from`.
@@ -130,7 +145,9 @@ public:
         bool newPb = false;
     };
 
-    static constexpr int kVersion = 1;
+    static constexpr int kVersion = 2;  // 2.95 (a game of before reads it, never writes it)
+    /// 2.95: the generation of the rules of a segment (the file's `rules`; 1: before 2.95).
+    static constexpr int kRules = 2;
     static constexpr size_t kLevelsKept = 400;
     static constexpr size_t kRangesPerLevel = 2048;  // 62 checkpoints in a row
     static constexpr size_t kRunsKept = 20;
@@ -144,17 +161,19 @@ public:
         fs::path segments, segmentReplays, training, trainingReplays;
     };
     explicit PersonalBests(fs::path file = {}, fs::path replayDir = {}, Legacy legacy = {});
-    /// Reads the file, then merges the old files not merged yet (and saves at once when it did:
-    /// the old replays are copied, then their folders removed once this file names the copies).
+    /// Reads the file, then merges the old files not merged yet (2.95: their full runs only; saves
+    /// at once when it did, then their replay folders are removed). A file of the rules before
+    /// (kRules) is reset at once (resetRules) and written again.
     void load();
     /// Writes the file, then deletes the replays no best refers to any more.
     bool save();
 
     // ------------------------------------------------------------ writing
-    /// Every range the attempt crossed whole (a passage of each; between two checkpoints that
-    /// follow each other on the route, when the route is known) — a new best when faster, to the
-    /// millisecond (a tie keeps the older one). A full run (from the start to the exit, source Run
-    /// or Online) is also kept in the runs and may be the new PB.
+    /// Every range the attempt counts (counted(): crossed whole, between boundaries that follow
+    /// each other on the route, entered by playing the segment before it whole, never in a run-up)
+    /// — a passage of each, a new best when faster, to the millisecond (a tie keeps the older
+    /// one). A full run (from the start to the exit, source Run or Online) is also kept in the
+    /// runs and may be the new PB.
     Added add(const std::string& levelKey, const BestAttempt& a);
     /// The route of the level version: its checkpoints in the order a run reaches them (from the
     /// level itself). Learned from the first full runs while it is not given.
@@ -170,7 +189,9 @@ public:
     };
     bool adoptReplay(const std::string& levelKey, const fs::path& replayFile, const std::string& date, const std::vector<Adoption>& list);
     /// The statistics' bests (stats.json: full runs and section trainings of the classic levels),
-    /// merged: a better time becomes the best (without a replay), the passages never fewer.
+    /// merged: a better time becomes the best (without a replay), the passages never fewer. 2.95:
+    /// only the segments of a level whose statistics follow these rules (LevelRuns::sobRules);
+    /// those of before are never read (the PB, a full run's time, still is).
     void importStats(const PlayStatsData& stats);
     /// importStats was done once already (the first launch merges the statistics; a restored copy
     /// of the progression merges them again).
@@ -202,16 +223,22 @@ public:
     fs::path replayPath(const std::string& levelKey, const std::string& file) const;
     /// Every level version known.
     std::vector<std::string> levels() const;
+    /// 2.95: the ranges an attempt with this passage counts, with their times on its chronometer
+    /// (what add() offers; the route of `levelKey` when known, else the order crossed). The live
+    /// « SEGMENT D'OR » of training follows it.
+    struct Span {
+        Range range;
+        float start = 0.0f, end = 0.0f;
+    };
+    std::vector<Span> counted(const std::string& levelKey, const BestPassage& p) const;
+    /// 2.95: load() found a file of the rules before: its ranges were dropped, then taken again
+    /// from the full runs kept.
+    bool rulesReset() const { return rulesReset_; }
     bool recovered() const { return recovered_; }
     bool readOnly() const { return readOnly_; }
     const fs::path& file() const { return file_; }
 
 private:
-    struct Legacy0 {  // a gold route of saves/segments.json whose checkpoints are not known yet
-        std::vector<float> best;
-        std::vector<BestReplay> replays;
-        std::string date;
-    };
     struct Level {
         std::string touched;  // date of the last change (the oldest levels go first)
         bool routeKnown = false;
@@ -223,13 +250,14 @@ private:
         std::vector<SobPoint> history;
         std::map<Range, std::vector<std::string>> powers;
         std::vector<std::string> onlineIds;
-        std::optional<Legacy0> legacy;
     };
     Level& level(const std::string& key, const std::string& date);
     /// Offers a time for a range: true when it is the new best (with `replay`).
     bool offer(Level& l, const Range& r, float seconds, BestSource source, const std::string& date, const BestReplay& replay, bool passage);
-    void resolveLegacy(Level& l);
     float sobOf(const Level& l) const;
+    /// 2.95: a file of the rules before: every range dropped, the segments taken again from the
+    /// full runs kept (the whole run's record, a full run's, kept as it was).
+    void resetRules();
     void noteHistory(Level& l, const std::string& date, float sobBefore, float pbBefore);
     void migrateSegments();
     void migrateTraining();
@@ -243,6 +271,7 @@ private:
     std::vector<fs::path> legacyDirs_;   // old replay folders to remove once this file is written
     bool recovered_ = false;
     bool readOnly_ = false;
+    bool rulesReset_ = false;
 };
 
 }  // namespace cosmic

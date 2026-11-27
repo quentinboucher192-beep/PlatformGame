@@ -516,8 +516,10 @@ Calculées à partir de **vos vraies parties**, sans compte ni Internet, et gard
   (lieux, animations, entraînement).
 * **Niveaux** (classiques, hors EXTRÊME, joués depuis le début) — la **somme des meilleurs (SOB)
   unique** du niveau (2.91, la même partout : le meilleur temps de chaque segment, qu'il ait été fait
-  en partie, à l'entraînement — segment, enchaînement, segment entier après une startpos — ou dans
-  vos courses vérifiées en ligne ; voir [Course aux fantômes](docs/GHOST_RACING.md)), avec la source
+  en partie, à l'entraînement — segment, enchaînement, segment entré après une startpos — ou dans
+  vos courses vérifiées en ligne ; 2.95 : compté depuis sa première entrée, après le segment d'avant
+  joué en entier, une startpos posée sur le tracé de la SOB ; voir
+  [Course aux fantômes](docs/GHOST_RACING.md)), avec la source
   de chaque segment ; record, temps perdu possible, arrivées, régularité ; une ligne par segment avec
   l'**aperçu du niveau** entre ses deux points de passage, ce qu'on y trouve (créatures, boss,
   tablettes, stations, dalles fragiles), son meilleur temps (« ▶ Regarder » rejoue le replay exact qui

@@ -459,7 +459,7 @@ Json PlayStatsData::toJson() const {
         for (const auto& c : r.pbRoute) route.push_back(c);
         jr[id] = {{"n", r.name}, {"v", r.version}, {"a", r.attempts}, {"f", r.finished}, {"pb", r.pb > 0.0f ? centis(r.pb) : -1},
                   {"route", route}, {"seg", segs}, {"fin0", r.finishes.empty() ? 0 : r.finishes.front().day}, {"fin", fin},
-                  {"h0", h0}, {"h", hist}, {"l", r.lastDay}};
+                  {"h0", h0}, {"h", hist}, {"l", r.lastDay}, {"sr", r.sobRules}};
     }
     return {{"names", table}, {"days", jd}, {"months", jm}, {"levels", jl}, {"bosses", jb}, {"runs", jr}, {"seq", seq}};
 }
@@ -612,6 +612,7 @@ PlayStatsData PlayStatsData::fromJson(const Json& j) {
                                          so != kNoTime && so > 0 ? fromCentis(static_cast<int>(so)) : -1.0f});
                 }
                 r.lastDay = std::max(0, field(o, "l"));
+                r.sobRules = std::clamp(field(o, "sr", 0), 0, 1000);  // 2.95 (none: the rules before)
                 out.runs[id] = std::move(r);
             }
         out.seq = std::max(0, field(j, "seq"));

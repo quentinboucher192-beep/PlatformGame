@@ -53,6 +53,11 @@ struct PlayOptions {
     bool practiceRespawn = false;
     std::string trainingCheckpoint;
     std::string trainingEnd;                 // the checkpoint ending the segment ("" = the exit)
+    /// 2.95: the attempt starts at this checkpoint ("" = the level's start), at the start of the
+    /// segment before `trainingCheckpoint`, played as its run-up (« élan », never counted): the
+    /// range is entered as in a run (docs/GHOST_RACING.md § « Règles d'un segment »). `spawn` and
+    /// `trainingPowers` are then the run-up's start. nullopt: it starts at `trainingCheckpoint`.
+    std::optional<std::string> trainingRunUp;
     std::vector<std::string> trainingPowers; // tablets picked up before the start, in route order
     /// The powers chosen in the training setup (2.30.2): exactly `trainingPowers` are carried
     /// (the level's start powers only if chosen too). False: the start powers plus the tablets.
@@ -65,6 +70,8 @@ struct PlayOptions {
     /// StartPosStore), not from `trainingCheckpoint` (still the training's own start, to go back to).
     std::optional<StartPosState> trainingStartPos;
     int trainingStartPosId = 0;
+    /// 2.95: said as the attempt starts (a StartPos that could not be used: « à replacer »).
+    std::string trainingNote;
     /// 2.91: launched from « Segments et enchaînements »: leaving goes back there.
     bool trainingFromChains = false;
     /// 2.91: the replay of the best time of the range trained (an enchaînement's record, a

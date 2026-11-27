@@ -152,6 +152,11 @@ struct BossHistory {
     float best() const;
 };
 
+/// 2.95: the generation of the rules a segment's best follows (docs/GHOST_RACING.md § « Règles d'un
+/// segment »: timed from the first entry into it, a respawn never starting one; = PersonalBests::kRules).
+/// 0: before (a level's segments read from an older file, never given to the personal Sum of Best).
+constexpr int kSegmentRules = 2;
+
 /// One segment of a classic level (from a checkpoint to the next one; "" = the start, or the exit).
 struct SegmentRec {
     std::string from, to;
@@ -184,6 +189,9 @@ struct LevelRuns {
     std::vector<FinishRec> finishes;   // the last 40 full runs, oldest first
     std::vector<SobPoint> history;
     int lastDay = 0;
+    /// 2.95: the rules its segments' bests were timed by (kSegmentRules; 0: before, from an older
+    /// file). Times of before stay (regularity), their bests are dropped at the next run.
+    int sobRules = kSegmentRules;
 
     const SegmentRec* segment(const std::string& from, const std::string& to) const;
     SegmentRec& segmentAt(const std::string& from, const std::string& to);
@@ -379,6 +387,10 @@ public:
     }
     /// The segment from `from` to `to` ("" = the start / the exit) done in `seconds` (section training).
     void noteTrainingSegment(const std::string& from, const std::string& to, float seconds);
+    /// 2.95: a segment of this run (a classic level from its start) done in `seconds`, as the
+    /// personal Sum of Best counts it (GameScene, from TrainingSession: from its first entry, a
+    /// respawn never starting one). The splits give the route only.
+    void noteSegment(const std::string& from, const std::string& to, float seconds);
     /// The route of the level (computed off the main thread): until it comes, no slice.
     void setRouteFuture(std::future<LevelProgressTrack> f) { trackFuture_ = std::move(f); }
     void setRoute(LevelProgressTrack t);
@@ -468,8 +480,6 @@ private:
     bool attemptNoted_ = false;
     bool attemptPending_ = false;
     size_t splitCount_ = 0;
-    float lastSplit_ = 0.0f;
-    std::string lastCp_;
     std::vector<std::string> cps_;
     std::vector<std::pair<std::pair<std::string, std::string>, float>> segTimes_;  // pending
     float finishTime_ = -1.0f;

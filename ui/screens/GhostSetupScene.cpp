@@ -1596,9 +1596,15 @@ private:
     std::string trainingNote(int n) const {
         if (n <= 1) return "Ce niveau n'a pas de point de sauvegarde : le segment va du départ à l'arrivée.";
         const std::string from = segFrom(startIdx_), to = segTo(startIdx_);
+        // 2.95: from the segment before (its run-up), so that this one is entered as in a run.
+        const bool runUp = startIdx_ > 0;
         if (refs_.anyRun && refs_.bestOf(from, to) < 0.0f)
-            return "Ce segment n'a encore jamais été parcouru en entier : son premier essai fera sa référence.";
-        return "Le segment recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.";
+            return runUp ? "Départ au début du segment précédent (élan non compté), le temps part à l'entrée dans ce segment. Il n'a encore jamais été "
+                           "parcouru en entier : son premier essai fera sa référence."
+                         : "Ce segment n'a encore jamais été parcouru en entier : son premier essai fera sa référence.";
+        return runUp ? "Départ au début du segment précédent (élan non compté), le temps part à l'entrée dans ce segment. Il recommence dès son "
+                       "arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne."
+                     : "Le segment recommence dès son arrivée. Aucun record, aucune progression, rien n'est envoyé en ligne.";
     }
 
     /// « Comparer deux replays »: the ghosts chosen here are offered first (A, then B).
@@ -1636,9 +1642,17 @@ private:
             const Checkpoint& c = checkpoints_[static_cast<size_t>(startIdx_ - 1)];
             o.training = true;
             o.trainingCheckpoint = c.id;
-            o.spawn = c.feet;
+            // 2.95: the attempt starts at the start of the segment before (its run-up, « élan »,
+            // never counted): this one is entered as in a run, its time from that entry.
+            if (startIdx_ >= 2) {
+                const Checkpoint& r = checkpoints_[static_cast<size_t>(startIdx_ - 2)];
+                o.trainingRunUp = r.id;
+                o.spawn = r.feet;
+            } else {
+                o.trainingRunUp = std::string{};  // the first segment is the run-up: from the level's start
+            }
             if (startIdx_ < static_cast<int>(checkpoints_.size())) o.trainingEnd = checkpoints_[static_cast<size_t>(startIdx_)].id;
-            o.trainingPowers = tabletsBefore(startIdx_);
+            o.trainingPowers = tabletsBefore(startIdx_ - 1);
         } else if (training_) {
             o.training = true;  // from the start of the level, to the first checkpoint
             if (!checkpoints_.empty()) o.trainingEnd = checkpoints_.front().id;

@@ -14,6 +14,9 @@
 
 namespace cosmic {
 
+// The statistics' segment bests follow the same rules (game/records/PlayStats.h).
+static_assert(PersonalBests::kRules == kSegmentRules, "the rules of a segment: one generation for the bests and the statistics");
+
 namespace {
 
 using Range = PersonalBests::Range;
@@ -118,6 +121,102 @@ std::optional<PersonalBests::Run> readRun(const Json& j) {
 /// The boundaries of the route: 0 = the start, k = its k-th checkpoint, n + 1 = the exit.
 Range segmentOf(const std::vector<std::string>& route, size_t k) {
     return {k == 0 ? std::string{} : route[k - 1], k >= route.size() ? std::string{} : route[k]};
+}
+
+/// A boundary an attempt crossed, with its chronometer there.
+struct Boundary {
+    std::string id;
+    float t = 0.0f;
+    int kind = 1;  // 0 the level's start, 1 a checkpoint, 2 the exit
+};
+
+/// The boundaries a passage crossed, in order: its start (the level's start, a training's
+/// checkpoint; none after a StartPos), its checkpoints, the exit. A damaged entry (a time going
+/// back, a checkpoint met twice) ends the list there.
+std::vector<Boundary> boundariesOf(const BestPassage& p) {
+    std::vector<Boundary> bs;
+    if (p.from == BestPassage::From::LevelStart) bs.push_back({{}, 0.0f, 0});
+    else if (p.from == BestPassage::From::Checkpoint) {
+        if (p.startCheckpoint.empty() || !validId(p.startCheckpoint)) return {};
+        bs.push_back({p.startCheckpoint, 0.0f, 1});
+    }
+    float prev = 0.0f;
+    bool whole = true;
+    for (const auto& [id, t] : p.checkpoints) {
+        if (id.empty() || !validId(id) || !std::isfinite(t) || t < prev || t > 7200.0f) {
+            whole = false;
+            break;
+        }
+        if (bs.size() == 1 && bs[0].kind == 1 && bs[0].id == id) continue;  // the start checkpoint itself
+        if (std::any_of(bs.begin(), bs.end(), [&](const Boundary& b) { return b.kind == 1 && b.id == id; })) {
+            whole = false;  // reached twice: not a run through the route
+            break;
+        }
+        bs.push_back({id, t, 1});
+        prev = t;
+    }
+    if (whole && validSeconds(p.exitTime) && p.exitTime >= prev) bs.push_back({{}, p.exitTime, 2});
+    return bs;
+}
+
+/// 2.95 — the ranges (i, j) of `bs` an attempt counts (docs/GHOST_RACING.md § « Règles d'un
+/// segment »):
+///  * boundaries that follow each other on the route, none skipped, in the route's order (on
+///    the order crossed while the route is not known);
+///  * entered by playing the whole segment before it in this attempt (its start boundary
+///    crossed right after the one before it on the route), or from the level's start when the
+///    attempt began there, or first entered after a StartPos (an attempt from one plays on from
+///    the real state of the SOB's replay there: the segment it lies in never counts, the next
+///    one entered does) — never from where a training appeared (its checkpoint);
+///  * never in a training's run-up (before `countFrom`);
+///  * checkpoints unknown (an old run): only the whole run, from the start to the exit.
+std::vector<std::pair<size_t, size_t>> countedSpans(const std::vector<Boundary>& bs, const BestPassage& p, const std::vector<std::string>* route) {
+    std::vector<std::pair<size_t, size_t>> out;
+    if (bs.size() < 2) return out;
+    if (!p.checkpointsKnown) {
+        if (bs.front().kind == 0 && bs.back().kind == 2) out.push_back({0, bs.size() - 1});
+        return out;
+    }
+    // Where each boundary lies: on the route (0 the start, k the k-th checkpoint, n + 1 the exit,
+    // -1 off it); without it, in the order crossed.
+    std::vector<int> pos(bs.size(), -1);
+    int first = 0;  // the first place a counted range may start from
+    if (route) {
+        const int n = static_cast<int>(route->size());
+        auto at = [&](const std::string& id) {
+            auto it = std::find(route->begin(), route->end(), id);
+            return it == route->end() ? -1 : static_cast<int>(it - route->begin()) + 1;
+        };
+        for (size_t k = 0; k < bs.size(); ++k) pos[k] = bs[k].kind == 0 ? 0 : bs[k].kind == 2 ? n + 1 : at(bs[k].id);
+        if (p.countFrom) first = p.countFrom->empty() ? 0 : at(*p.countFrom);
+    } else {
+        const int off = bs.front().kind == 0 ? 0 : 1;
+        for (size_t k = 0; k < bs.size(); ++k) pos[k] = static_cast<int>(k) + off;
+        if (p.countFrom) {
+            first = p.countFrom->empty() ? 0 : -1;
+            for (size_t k = 0; k < bs.size(); ++k)
+                if (bs[k].kind == 1 && bs[k].id == *p.countFrom) first = pos[k];
+        }
+    }
+    if (first < 0) return out;  // its run-up ends off the route: nothing to count
+    for (size_t i = 0; i + 1 < bs.size(); ++i) {
+        if (pos[i] < first) continue;
+        // Entered whole: from the level's start, right after the boundary before it, or the first
+        // one crossed after a StartPos (on the SOB path: the real state of a run there).
+        const bool entered = bs[i].kind == 0 || (i == 0 && p.from == BestPassage::From::Elsewhere) ||
+                             (i >= 1 && pos[i - 1] >= 0 && pos[i - 1] == pos[i] - 1);
+        if (!entered) continue;
+        for (size_t j = i + 1; j < bs.size(); ++j) {
+            if (pos[j] != pos[i] + static_cast<int>(j - i)) break;  // a boundary skipped (or off the route): none further
+            out.push_back({i, j});
+        }
+    }
+    return out;
+}
+
+/// The attempt started as the level does (its replay plays from the level's start as it is).
+bool levelOwnStart(const SectionTrainingStart& s) {
+    return !s.startPos && !s.hasSpawn && s.checkpointId.empty() && s.powers.empty() && !s.powersChosen;
 }
 
 }  // namespace
@@ -230,14 +329,6 @@ void PersonalBests::noteHistory(Level& l, const std::string& date, float sobBefo
     if (l.history.size() > kHistoryKept) l.history.erase(l.history.begin(), l.history.end() - kHistoryKept);
 }
 
-void PersonalBests::resolveLegacy(Level& l) {
-    if (!l.legacy || !l.routeKnown || l.legacy->best.size() != l.route.size() + 1) return;
-    const Legacy0 g = std::move(*l.legacy);
-    l.legacy.reset();
-    for (size_t k = 0; k < g.best.size(); ++k)
-        offer(l, segmentOf(l.route, k), g.best[k], BestSource::Run, g.date, k < g.replays.size() ? g.replays[k] : BestReplay{}, false);
-}
-
 std::string PersonalBests::keepReplay(const std::string& key, const std::vector<uint8_t>& bytes, const std::string& date) const {
     return keptreplays::write(replayDir_, key, bytes, date);
 }
@@ -246,34 +337,7 @@ PersonalBests::Added PersonalBests::add(const std::string& levelKey, const BestA
     Added out;
     if (levelKey.empty() || !validId(levelKey)) return out;
     const BestPassage& p = a.passage;
-    // The boundaries crossed, in order (a damaged entry ends the list there).
-    struct B {
-        std::string id;
-        float t = 0.0f;
-        int kind = 1;  // 0 the start, 1 a checkpoint, 2 the exit
-    };
-    std::vector<B> bs;
-    if (p.from == BestPassage::From::LevelStart) bs.push_back({{}, 0.0f, 0});
-    else if (p.from == BestPassage::From::Checkpoint) {
-        if (p.startCheckpoint.empty() || !validId(p.startCheckpoint)) return out;
-        bs.push_back({p.startCheckpoint, 0.0f, 1});
-    }
-    float prev = 0.0f;
-    bool whole = true;
-    for (const auto& [id, t] : p.checkpoints) {
-        if (id.empty() || !validId(id) || !std::isfinite(t) || t < prev || t > 7200.0f) {
-            whole = false;
-            break;
-        }
-        if (bs.size() == 1 && bs[0].kind == 1 && bs[0].id == id) continue;  // the start checkpoint itself
-        if (std::any_of(bs.begin(), bs.end(), [&](const B& b) { return b.kind == 1 && b.id == id; })) {
-            whole = false;  // reached twice: not a run through the route
-            break;
-        }
-        bs.push_back({id, t, 1});
-        prev = t;
-    }
-    if (whole && validSeconds(p.exitTime) && p.exitTime >= prev) bs.push_back({{}, p.exitTime, 2});
+    const std::vector<Boundary> bs = boundariesOf(p);
     if (bs.size() < 2) return out;
 
     Level& l = level(levelKey, a.date);
@@ -295,58 +359,42 @@ PersonalBests::Added PersonalBests::add(const std::string& levelKey, const BestA
                 if (ms(r.time) == ms(p.exitTime)) count = false;
     }
     std::vector<std::string> ids;
-    for (const B& b : bs)
+    for (const Boundary& b : bs)
         if (b.kind == 1) ids.push_back(b.id);
     // The route, learned from a full run while the level has not given it (the one through the
     // most checkpoints).
     if (fullRun && p.checkpointsKnown && !l.routeGiven && (!l.routeKnown || ids.size() > l.route.size())) {
         l.route = ids;
         l.routeKnown = true;
-        resolveLegacy(l);
     }
-    // Where each boundary is on the route (-1: not on it).
-    auto pos = [&](const B& b) -> int {
-        if (b.kind == 0) return 0;
-        if (b.kind == 2) return static_cast<int>(l.route.size()) + 1;
-        auto it = std::find(l.route.begin(), l.route.end(), b.id);
-        return it == l.route.end() ? -1 : static_cast<int>(it - l.route.begin()) + 1;
-    };
-    const bool onRoute = l.routeKnown && std::all_of(bs.begin(), bs.end(), [&](const B& b) { return pos(b) >= 0; });
+    // Its replay starts as the attempt did: the level's start as it is, else its setup.
+    const bool ownStart = p.from == BestPassage::From::LevelStart && levelOwnStart(a.setup);
     std::string replayName;
     bool replayWritten = false;
-    for (size_t i = 0; i + 1 < bs.size(); ++i)
-        for (size_t j = i + 1; j < bs.size(); ++j) {
-            // Unknown checkpoints: only the whole run is known (from the start to the exit).
-            if (!p.checkpointsKnown && !(bs[i].kind == 0 && bs[j].kind == 2)) continue;
-            // Segments that follow each other on the route (none skipped, none in another order).
-            if (onRoute && p.checkpointsKnown) {
-                bool straight = true;
-                for (size_t k = i; k <= j && straight; ++k) straight = pos(bs[k]) == pos(bs[i]) + static_cast<int>(k - i);
-                if (!straight) continue;
-            }
-            const float secs = bs[j].t - bs[i].t;
-            const Range r{bs[i].kind == 0 ? std::string{} : bs[i].id, bs[j].kind == 2 ? std::string{} : bs[j].id};
-            const Record* before = nullptr;
-            if (auto it = l.ranges.find(r); it != l.ranges.end()) before = &it->second;
-            const bool better = validSeconds(secs) && (!before || before->best < 0.0f || ms(secs) < ms(before->best));
-            BestReplay rep;
-            if (better && a.replay && !replayWritten) {
-                replayWritten = true;  // one copy for every best this attempt sets
-                replayName = keepReplay(levelKey, *a.replay, a.date);
-            }
-            if (better && !replayName.empty()) {
-                rep.file = replayName;
-                rep.start = bs[i].t;
-                rep.end = bs[j].t;
-                rep.fromLevelStart = p.from == BestPassage::From::LevelStart;
-                if (!rep.fromLevelStart) rep.setup = a.setup;
-            }
-            if (offer(l, r, secs, a.source, a.date, rep, count) && better) out.newBests.push_back(r);
+    for (const auto& [i, j] : countedSpans(bs, p, l.routeKnown ? &l.route : nullptr)) {
+        const float secs = bs[j].t - bs[i].t;
+        const Range r{bs[i].kind == 0 ? std::string{} : bs[i].id, bs[j].kind == 2 ? std::string{} : bs[j].id};
+        const Record* before = nullptr;
+        if (auto it = l.ranges.find(r); it != l.ranges.end()) before = &it->second;
+        const bool better = validSeconds(secs) && (!before || before->best < 0.0f || ms(secs) < ms(before->best));
+        BestReplay rep;
+        if (better && a.replay && !replayWritten) {
+            replayWritten = true;  // one copy for every best this attempt sets
+            replayName = keepReplay(levelKey, *a.replay, a.date);
         }
+        if (better && !replayName.empty()) {
+            rep.file = replayName;
+            rep.start = bs[i].t;
+            rep.end = bs[j].t;
+            rep.fromLevelStart = ownStart;
+            if (!rep.fromLevelStart) rep.setup = a.setup;
+        }
+        if (offer(l, r, secs, a.source, a.date, rep, count) && better) out.newBests.push_back(r);
+    }
     if (fullRun) {
         Run run;
         run.date = a.date.substr(0, 32);
-        for (const B& b : bs)
+        for (const Boundary& b : bs)
             if (b.kind == 1) run.splits.push_back(b.t);
         run.time = p.exitTime;
         if (p.checkpointsKnown) run.checkpoints = ids;
@@ -367,6 +415,65 @@ PersonalBests::Added PersonalBests::add(const std::string& levelKey, const BestA
     return out;
 }
 
+std::vector<PersonalBests::Span> PersonalBests::counted(const std::string& levelKey, const BestPassage& p) const {
+    std::vector<Span> out;
+    const std::vector<Boundary> bs = boundariesOf(p);
+    auto it = levels_.find(levelKey);
+    const std::vector<std::string>* route = it != levels_.end() && it->second.routeKnown ? &it->second.route : nullptr;
+    for (const auto& [i, j] : countedSpans(bs, p, route))
+        out.push_back({{bs[i].kind == 0 ? std::string{} : bs[i].id, bs[j].kind == 2 ? std::string{} : bs[j].id}, bs[i].t, bs[j].t});
+    return out;
+}
+
+void PersonalBests::resetRules() {
+    for (auto& [key, l] : levels_) {
+        const std::map<Range, Record> old = std::move(l.ranges);
+        l.ranges.clear();
+        // The Sum of Best of before is forgotten (its points; the PB's stay).
+        for (SobPoint& pt : l.history) pt.sob = -1.0f;
+        l.history.erase(std::remove_if(l.history.begin(), l.history.end(), [](const SobPoint& pt) { return pt.sob < 0.0f && pt.pb < 0.0f; }),
+                        l.history.end());
+        // The full runs kept (from the level's start: they follow the rules) give their ranges
+        // again, the oldest first (a tie keeps the older one), each run once.
+        std::vector<const Run*> list;
+        for (const Run& r : l.runs) list.push_back(&r);
+        if (l.pb && std::none_of(l.runs.begin(), l.runs.end(), [&](const Run& r) { return r.date == l.pb->date && ms(r.time) == ms(l.pb->time); }))
+            list.push_back(&*l.pb);
+        std::stable_sort(list.begin(), list.end(), [](const Run* x, const Run* y) { return x->date < y->date; });
+        for (const Run* r : list) {
+            const BestPassage p = BestPassage::ofSplits(r->splits, r->checkpoints, r->time);
+            const std::vector<Boundary> bs = boundariesOf(p);
+            for (const auto& [i, j] : countedSpans(bs, p, l.routeKnown ? &l.route : nullptr)) {
+                const Range range{bs[i].kind == 0 ? std::string{} : bs[i].id, bs[j].kind == 2 ? std::string{} : bs[j].id};
+                offer(l, range, bs[j].t - bs[i].t, r->source, r->date, {}, true);
+            }
+        }
+        // A best given again exactly as it was by a full run: its replay stays with it.
+        for (auto& [range, rec] : l.ranges) {
+            auto o = old.find(range);
+            if (o == old.end() || !o->second.replay.has() || ms(o->second.best) != ms(rec.best)) continue;
+            if (o->second.source == BestSource::Run || o->second.source == BestSource::Online) rec.replay = o->second.replay;
+        }
+        // The whole run's record is a full run's: never removed (a better one than the runs kept
+        // give, with its replay), its arrivals never fewer.
+        const Range whole{std::string{}, std::string{}};
+        if (auto o = old.find(whole); o != old.end() && validSeconds(o->second.best) &&
+                                      (o->second.source == BestSource::Run || o->second.source == BestSource::Online)) {
+            auto n = l.ranges.find(whole);
+            if (n == l.ranges.end() || ms(o->second.best) < ms(n->second.best)) {
+                const int passages = n == l.ranges.end() ? 0 : n->second.passages;
+                Record kept = o->second;
+                kept.passages = std::max(kept.passages, passages);
+                l.ranges[whole] = std::move(kept);
+            } else {
+                n->second.passages = std::max(n->second.passages, o->second.passages);
+                if (!n->second.replay.has() && ms(o->second.best) == ms(n->second.best)) n->second.replay = o->second.replay;
+            }
+        }
+    }
+    rulesReset_ = true;
+}
+
 void PersonalBests::setRoute(const std::string& levelKey, std::vector<std::string> checkpoints) {
     if (levelKey.empty() || !validId(levelKey) || checkpoints.size() > 256) return;
     std::set<std::string> seen;
@@ -378,7 +485,6 @@ void PersonalBests::setRoute(const std::string& levelKey, std::vector<std::strin
     l.route = std::move(checkpoints);
     l.routeKnown = true;
     l.routeGiven = true;
-    resolveLegacy(l);
 }
 
 void PersonalBests::setPowers(const std::string& levelKey, const Range& r, const std::vector<std::string>* powers, const std::string& date) {
@@ -422,8 +528,12 @@ void PersonalBests::importStats(const PlayStatsData& stats) {
     for (const auto& [levelId, r] : stats.runs) {
         if (r.version.empty()) continue;
         const std::string key = GhostStore::levelKey(levelId, r.version);
+        // 2.95: segments timed by the rules of before (a respawn could start one) are never taken;
+        // the PB (a full run's time) is.
+        const bool rules = r.sobRules >= kRules;
         bool any = validSeconds(r.pb);
-        for (const SegmentRec& s : r.segments) any = any || validSeconds(s.best) || validSeconds(s.trainBest);
+        if (rules)
+            for (const SegmentRec& s : r.segments) any = any || validSeconds(s.best) || validSeconds(s.trainBest);
         if (!any) continue;
         Level& l = level(key, {});
         const float sobBefore = sobOf(l), pbBefore = l.pb ? l.pb->time : -1.0f;
@@ -434,10 +544,9 @@ void PersonalBests::importStats(const PlayStatsData& stats) {
             if (ok) {
                 l.route = r.pbRoute;
                 l.routeKnown = true;
-                resolveLegacy(l);
             }
         }
-        for (const SegmentRec& s : r.segments) {
+        for (const SegmentRec& s : rules ? r.segments : std::vector<SegmentRec>{}) {
             const Range range{s.from, s.to};
             if (validSeconds(s.best)) offer(l, range, s.best, BestSource::Run, {}, {}, false);
             if (validSeconds(s.trainBest)) offer(l, range, s.trainBest, BestSource::Training, {}, {}, false);
@@ -547,6 +656,8 @@ void PersonalBests::load() {
     legacyDirs_.clear();
     recovered_ = false;
     readOnly_ = false;
+    rulesReset_ = false;
+    bool oldRules = false;
     if (file_.empty()) {
         file_ = Paths::savesDir() / "bests.json";
         if (replayDir_.empty()) replayDir_ = Paths::userDir() / "ghosts" / "bests";
@@ -578,6 +689,8 @@ void PersonalBests::load() {
             recovered_ = true;
         } else {
             readOnly_ = version > kVersion;  // a newer game's file: read what is known, never written
+            // 2.95: the generation of the rules its ranges were taken with (none: before 2.95).
+            oldRules = jget<int>(*j, "rules", 1) < kRules && !readOnly_;
             if (auto m = readIds(jfield(*j, "migrated", Json::array()), std::string::npos, 16)) migrated_ = *m;
             for (const auto& [key, lj] : (*j)["levels"].items()) {
                 if (levels_.size() >= kLevelsKept) break;
@@ -631,29 +744,23 @@ void PersonalBests::load() {
                     if (validId(r.first) && validId(r.second) && ids && l.powers.size() < kRangesPerLevel) l.powers[r] = std::move(*ids);
                 }
                 if (auto ids = readIds(jfield(lj, "online", Json::array()), std::string::npos, 64)) l.onlineIds = std::move(*ids);
-                if (const Json& gj = jfield(lj, "legacy"); gj.is_object()) {
-                    Legacy0 g;
-                    g.best = readFloats(jfield(gj, "best", Json::array()), 256);
-                    g.date = jstr(gj, "date").substr(0, 32);
-                    const Json& rs = jfield(gj, "replays", Json::array());
-                    for (size_t k = 0; k < g.best.size(); ++k) {
-                        if (!validSeconds(g.best[k])) g.best[k] = -1.0f;
-                        g.replays.push_back(rs.is_array() && k < rs.size() ? readReplay(rs[k], g.best[k]) : BestReplay{});
-                    }
-                    if (!g.best.empty()) l.legacy = std::move(g);
-                }
+                // (2.91 – 2.94 « legacy »: gold segments of segments.json waiting for their route,
+                // of the rules before: never read again.)
                 levels_[key] = std::move(l);
             }
         }
     }
     if (readOnly_) return;
-    // The old files, merged once (their replays copied here; their folders removed once this
-    // file names the copies).
+    // 2.95: the rules changed: every range of before goes, the full runs kept give theirs again
+    // (written at once: the replays no best refers to any more are then deleted).
+    if (oldRules) resetRules();
+    // The old files, merged once (their full runs; their replay folders removed once this file
+    // is written).
     const size_t before = migrated_.size();
     auto done = [&](const char* what) { return std::find(migrated_.begin(), migrated_.end(), what) != migrated_.end(); };
     if (!legacy_.segments.empty() && !done("segments.json")) migrateSegments();
     if (!legacy_.training.empty() && !done("training.json")) migrateTraining();
-    if (migrated_.size() != before && save()) {
+    if ((migrated_.size() != before || rulesReset_) && save()) {
         for (const fs::path& d : legacyDirs_) fs::remove_all(d, ec);
         legacyDirs_.clear();
     }
@@ -668,7 +775,9 @@ void PersonalBests::migrateSegments() {
     if (!legacy_.segmentReplays.empty()) legacyDirs_.push_back(legacy_.segmentReplays);
     for (const auto& [key, lj] : (*j)["levels"].items()) {
         if (key.empty() || key.size() > 96 || !validId(key) || !lj.is_object()) continue;
-        // The runs kept, oldest first (the most recent ends first in the list).
+        // The full runs kept, oldest first (the most recent ends first in the list): from the
+        // level's start, they give their segments by the rules of now. 2.95: the gold segments of
+        // that file (« best », timed by the rules of before) are not read.
         std::vector<Run> runs;
         for (const Json& rj : jfield(lj, "runs", Json::array()))
             if (auto r = readRun(rj); r && runs.size() < kRunsKept) runs.push_back(std::move(*r));
@@ -679,56 +788,6 @@ void PersonalBests::migrateSegments() {
             a.date = it->date;
             add(key, a);
         }
-        // The gold segments, with their replays (copied once each).
-        const size_t splitCount = static_cast<size_t>(std::clamp(jget<int>(lj, "best_split_count", 0), 0, 255));
-        std::vector<float> best = readFloats(jfield(lj, "best", Json::array()), 256);
-        if (best.empty()) continue;
-        best.resize(splitCount + 1, -1.0f);
-        for (float& b : best)
-            if (!validSeconds(b)) b = -1.0f;
-        std::optional<std::vector<std::string>> ids;
-        if (lj.contains("best_checkpoints")) ids = readIds(lj["best_checkpoints"], splitCount);
-        if (!ids && splitCount == 0) ids = std::vector<std::string>{};
-        const std::string touched = jstr(lj, "touched").substr(0, 32);
-        std::map<std::string, std::string> copied;  // old name → new name
-        std::vector<BestReplay> replays(best.size());
-        const Json& sj = jfield(lj, "best_sources", Json::array());
-        for (size_t i = 0; sj.is_array() && i < sj.size() && i < best.size(); ++i) {
-            BestReplay r = readReplay(Json{{"file", jstr(sj[i], "replay")}, {"start", jget<float>(sj[i], "start", -1.0f)}, {"end", jget<float>(sj[i], "end", -1.0f)}},
-                                      best[i]);
-            if (!r.has()) continue;
-            auto c = copied.find(r.file);
-            if (c == copied.end()) {
-                std::string name;
-                const fs::path from = keptreplays::levelDir(legacy_.segmentReplays, key) / r.file;
-                const uint64_t n = keptreplays::fileSize(from);
-                if (n > 0 && n <= keptreplays::kMaxFileBytes)
-                    if (auto bytes = FileUtil::readBinary(from)) name = keepReplay(key, *bytes, jstr(sj[i], "date", touched));
-                c = copied.emplace(r.file, name).first;
-            }
-            if (c->second.empty()) continue;
-            r.file = c->second;
-            replays[i] = std::move(r);
-        }
-        Level& l = level(key, touched);
-        const float sobBefore = sobOf(l), pbBefore = l.pb ? l.pb->time : -1.0f;
-        if (ids) {
-            // Its checkpoints known: each gold becomes the best of its segment when it is better.
-            std::vector<std::string> route = *ids;
-            for (size_t k = 0; k < best.size(); ++k) {
-                const std::string date = sj.is_array() && k < sj.size() && sj[k].is_object() ? jstr(sj[k], "date", touched) : touched;
-                offer(l, segmentOf(route, k), best[k], BestSource::Run, date, replays[k], false);
-            }
-            if (!l.routeKnown) {
-                l.route = route;
-                l.routeKnown = true;
-            }
-        } else {
-            // Not known yet: kept until the route tells which segment is which (setRoute).
-            l.legacy = Legacy0{best, replays, touched};
-            resolveLegacy(l);
-        }
-        noteHistory(l, touched, sobBefore, pbBefore);
     }
 }
 
@@ -739,41 +798,19 @@ void PersonalBests::migrateTraining() {
     auto j = FileUtil::loadJson(legacy_.training);
     if (!j || !j->is_object() || jstr(*j, "format") != "cosmic.training" || !(*j)["levels"].is_object()) return;
     if (!legacy_.trainingReplays.empty()) legacyDirs_.push_back(legacy_.trainingReplays);
+    // 2.95: its best times (trained from a standstill at the segment's own checkpoint, by the
+    // rules of before) are not read; only the powers chosen for a segment (a preference).
     for (const auto& [key, lj] : (*j)["levels"].items()) {
         if (key.empty() || !validId(key) || !lj.is_object()) continue;
         const std::string touched = jstr(lj, "touched").substr(0, 32);
         for (const Json& sj : jfield(lj, "segments", Json::array())) {
             if (!sj.is_object() || !sj.contains("from") || !sj.contains("to") || !sj["from"].is_string() || !sj["to"].is_string()) continue;
             const Range r{sj["from"].get<std::string>(), sj["to"].get<std::string>()};
-            if (!validId(r.first) || !validId(r.second)) continue;
-            Level& l = level(key, touched);
-            const float sobBefore = sobOf(l), pbBefore = l.pb ? l.pb->time : -1.0f;
-            const float best = jget<float>(sj, "best", -1.0f);
-            const std::string date = jstr(sj, "date", touched).substr(0, 32);
-            if (validSeconds(best)) {
-                BestReplay rep;
-                const std::string name = jstr(sj, "replay");
-                auto start = SectionTrainingStart::fromJson(jfield(sj, "start", Json()));
-                if (keptreplays::validName(name) && start && start->checkpointId == r.first) {
-                    const fs::path from = keptreplays::levelDir(legacy_.trainingReplays, key) / name;
-                    const uint64_t n = keptreplays::fileSize(from);
-                    if (n > 0 && n <= keptreplays::kMaxFileBytes)
-                        if (auto bytes = FileUtil::readBinary(from)) rep.file = keepReplay(key, *bytes, date);
-                    if (rep.has()) {
-                        // The attempt's chronometer started at its checkpoint: the segment is all of it.
-                        rep.start = 0.0f;
-                        rep.end = best;
-                        rep.fromLevelStart = r.first.empty() && !start->hasSpawn && start->powers.empty() && !start->powersChosen;
-                        if (!rep.fromLevelStart) rep.setup = *start;
-                    }
-                }
-                offer(l, r, best, BestSource::Training, date, rep, false);
-                if (auto it = l.ranges.find(r); it != l.ranges.end())
-                    it->second.passages = std::min(it->second.passages + std::clamp(jget<int>(sj, "attempts", 1), 1, 1000000) - 1, 10000000);
+            if (!validId(r.first) || !validId(r.second) || !sj.contains("powers")) continue;
+            if (auto ids = readIds(sj["powers"], std::string::npos, 8)) {
+                Level& l = level(key, touched);
+                if (l.powers.count(r) || l.powers.size() < kRangesPerLevel) l.powers[r] = std::move(*ids);
             }
-            if (sj.contains("powers"))
-                if (auto ids = readIds(sj["powers"], std::string::npos, 8)) l.powers[r] = std::move(*ids);
-            noteHistory(l, date, sobBefore, pbBefore);
         }
     }
 }
@@ -808,16 +845,11 @@ bool PersonalBests::save() {
             lj["powers"] = std::move(pw);
         }
         if (!l.onlineIds.empty()) lj["online"] = l.onlineIds;
-        if (l.legacy) {
-            Json rs = Json::array();
-            for (const BestReplay& r : l.legacy->replays) rs.push_back(r.has() ? replayJson(r) : Json(nullptr));
-            lj["legacy"] = Json{{"best", l.legacy->best}, {"date", l.legacy->date}, {"replays", rs}};
-        }
         levels[key] = std::move(lj);
     }
     std::error_code ec;
     fs::create_directories(file_.parent_path(), ec);
-    Json root{{"format", "cosmic.bests"}, {"version", kVersion}, {"migrated", migrated_}, {"levels", levels}};
+    Json root{{"format", "cosmic.bests"}, {"version", kVersion}, {"rules", kRules}, {"migrated", migrated_}, {"levels", levels}};
     const bool ok = FileUtil::writeTextAtomic(file_, root.dump(1, ' ', false, Json::error_handler_t::replace) + "\n");
     // Only once the file that names them is written: a replay is never deleted while it is named.
     if (ok) collectReplays();
@@ -834,9 +866,6 @@ void PersonalBests::collectReplays() {
         keyOf[dir] = key;
         for (const auto& [r, rec] : l.ranges)
             if (rec.replay.has()) used[dir].insert(rec.replay.file);
-        if (l.legacy)
-            for (const BestReplay& b : l.legacy->replays)
-                if (b.has()) used[dir].insert(b.file);
     }
     auto sizes = keptreplays::collect(replayDir_, used);
     // Bounded: beyond kMaxReplayBytes, the least recently changed levels lose their replays.
@@ -853,11 +882,8 @@ void PersonalBests::collectReplays() {
     for (const auto& [dir, bytes] : sizes) {
         if (total <= kMaxReplayBytes) break;
         if (auto k = keyOf.find(dir); k != keyOf.end())
-            if (auto it = levels_.find(k->second); it != levels_.end()) {
+            if (auto it = levels_.find(k->second); it != levels_.end())
                 for (auto& [r, rec] : it->second.ranges) rec.replay = BestReplay{};
-                if (it->second.legacy)
-                    for (BestReplay& b : it->second.legacy->replays) b = BestReplay{};
-            }
         std::error_code ec;
         fs::remove_all(replayDir_ / Paths::fromUtf8(dir), ec);
         total -= std::min(total, bytes);

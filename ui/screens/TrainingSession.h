@@ -7,6 +7,13 @@
 //    from a StartPos) notes the checkpoints it crosses with the chronometer; when it ends (the exit,
 //    the training's end, a fall, a restart, leaving), its passage joins PersonalBests once, with
 //    its exact replay.
+//  * 2.95 (docs/GHOST_RACING.md § « Règles d'un segment »): a boundary is the FIRST crossing of
+//    its checkpoint in the attempt. A checkpoint lit only after Nova was beyond it on the route
+//    (she passed it without lighting it, then fell further on and came back from the checkpoint
+//    before: a respawn) or behind where she appeared (the attempt's start) is not a boundary of
+//    this attempt: a respawn never starts a segment. A training of a range starting at a
+//    checkpoint starts at the segment before it, its run-up (« élan », never counted, shown so):
+//    the range is entered as in a run, its time starting at that entry.
 //  * In training: F5 to F8 (or View held + the d-pad) ask for a mark at the next step (the
 //    frame's mark flags: InputFrame::PlaceStartPos…); after the step the world gives Nova's state
 //    back (GameWorld::takeMarks) and the StartPos or the measure point is kept (StartPosStore,
@@ -21,6 +28,7 @@
 #include <future>
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -30,11 +38,13 @@
 #include "game/gameplay/LevelProgress.h"
 #include "game/ghost/MeasurePoints.h"
 #include "game/ghost/PersonalBests.h"
+#include "game/ghost/SobPath.h"
 
 namespace cosmic {
 
 class GameServices;
 class GameWorld;
+struct StartPosEntry;
 class InputManager;
 class UIContext;
 struct LevelData;
@@ -49,6 +59,10 @@ public:
         int startPosId = 0;          // the attempt starts from this StartPos (0: none)
         SectionTrainingStart start;  // how it started (its replay's start)
         int attempt = 0;             // its number this session (« ESSAI n »)
+        /// 2.95: the attempt starts at this boundary ("" = the level's start), the segment before
+        /// `from` played as its run-up (« élan », never counted). nullopt: it starts at `from` (or
+        /// at the StartPos).
+        std::optional<std::string> runUp;
     };
     void begin(GameServices& g, const LevelData& level, Setup s);
     const Setup& setup() const { return s_; }
@@ -58,8 +72,25 @@ public:
     /// An enchaînement: a training over more than one segment of the route.
     bool chain() const;
 
-    /// The run reached checkpoint `id` at chronometer `t` (the world's « checkpoint » event).
+    /// The run reached checkpoint `id` at chronometer `t` (the world's « checkpoint » event): its
+    /// first crossing, once the route tells it was not passed before (else it is no boundary).
     void onCheckpoint(const std::string& id, float t);
+    /// 2.95: the segments this attempt counts, resolved since the last call ((from, to), seconds):
+    /// the statistics' segment times (a run of a classic level), by the same rules.
+    std::vector<std::pair<PersonalBests::Range, float>> takeSegments();
+    /// 2.95: in the run-up (the segment before the range trained), the range not entered yet.
+    bool inRunUp() const;
+    /// 2.95: the run-up's start ("" the level's start); only when inRunUp() or after it.
+    std::string runUpFrom() const { return s_.runUp.value_or(std::string{}); }
+    bool hasRunUp() const { return s_.runUp.has_value() && !fromStartPos(); }
+    /// An attempt from a StartPos (2.95: on the SOB path, its replay played up to it).
+    bool fromStartPos() const { return s_.startPosId > 0 || s_.start.startPos.has_value(); }
+    /// 2.95: the chronometer when the attempt entered the range trained (0 without a run-up; -1
+    /// while not entered, or when that entry was not seen: the range then does not count).
+    float entryTime() const;
+    /// 2.95: the range trained ended at chronometer `endT`: its time from its entry (-1 when the
+    /// entry was not seen). Waits for the route when it is still computed.
+    float rangeTime(float endT);
     /// Every frame (training): the keys and the gamepad's chord (View held + the d-pad). True when
     /// View was released alone (restart the attempt).
     bool update(InputManager& in, float dt);
@@ -97,6 +128,10 @@ public:
     /// checkpoint's label (« Point n » without one).
     std::string pointName(const std::string& id, bool start) const;
     const std::vector<std::string>& route() const { return route_; }
+    /// 2.95: the SOB path of this level version (nullptr while it is read): where a StartPos lies.
+    const SobPath* sobPath() const { return path_.path(); }
+    /// 2.95: an attempt can start from it (on the path, its segment's best has its replay).
+    bool startPosUsable(const StartPosEntry& e) const;
 
 private:
     struct Toast {
@@ -106,6 +141,13 @@ private:
     };
     void toast(std::string title, std::string line, bool gold = false);
     void collectTrack();
+    /// The checkpoints lit, checked against where Nova was before (`wait`: the route computed first).
+    void resolve(bool wait);
+    /// A boundary of this attempt (a checkpoint, the exit when `id` is empty and `exit`): the
+    /// segment it ends, when it counts, for the statistics and the live gold.
+    void onCrossed(const std::string& id, float t, bool exit);
+    /// What the attempt crossed so far (its passage for PersonalBests).
+    BestPassage passage(float exitTime) const;
     /// The first free place among `candidates` (the least covered when none is free).
     static Rect placeClear(const std::vector<Rect>& candidates, const std::vector<Rect>& keep, float margin);
     void drawStartPosPanel(UIContext& ui, std::vector<Rect>& keep);
@@ -122,7 +164,19 @@ private:
     LevelProgressTrack track_;
     std::map<std::string, float> cpAt_;  // checkpoint → its place along the route (0..1)
     // The attempt.
-    std::vector<std::pair<std::string, float>> crossed_;
+    std::vector<std::pair<std::string, float>> crossed_;  // its boundaries: first crossings seen, in order
+    struct Lit {
+        std::string id;
+        float t = 0.0f;
+        size_t before = 0;  // the places of beyond_ that came before it
+    };
+    std::vector<Lit> pending_;           // lit, to be checked once the route is known
+    std::set<std::string> seen_;         // every checkpoint lit in this attempt (a boundary or not)
+    std::vector<Vec2> beyond_;           // where Nova appeared without crossing what lies behind: its start, each fall
+    bool started_ = false;
+    int deaths_ = 0;
+    float exitAt_ = -1.0f;               // the exit reached (its chronometer)
+    std::vector<std::pair<PersonalBests::Range, float>> segmentsOut_;
     bool committed_ = false;
     float sobAtStart_ = -1.0f;
     float goldGain_ = 0.0f;                         // gold segments of this attempt (seconds gained on the SOB)
@@ -141,6 +195,7 @@ private:
     bool measuresDirty_ = false;
     std::vector<Toast> toasts_;
     std::vector<Rect> drawn_;
+    SobPathCache path_;  // 2.95
     std::vector<Animator> silhouettes_;
 };
 

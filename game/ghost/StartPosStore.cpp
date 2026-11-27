@@ -18,6 +18,9 @@ bool validKey(const std::string& s) {
     return true;
 }
 
+/// A checkpoint id of a segment's end ("" the start / the exit).
+bool validId(const std::string& s) { return s.empty() || validKey(s); }
+
 bool before(const StartPosEntry& a, const StartPosEntry& b) {
     if (a.at >= 0.0f && b.at >= 0.0f && a.at != b.at) return a.at < b.at;
     if (a.state.feet.x != b.state.feet.x) return a.state.feet.x < b.state.feet.x;
@@ -51,7 +54,25 @@ void StartPosStore::load() {
         l.touched = jstr(lj, "touched").substr(0, 32);
         for (const Json& ej : jfield(lj, "list", Json::array())) {
             if (l.entries.size() >= kPerLevel) break;
-            auto st = StartPosState::fromJson(jfield(ej, "state"));
+            // 2.95: one on the SOB path is its segment and its place only.
+            const bool onPath = jget<bool>(ej, "on_path", false);
+            std::optional<StartPosState> st;
+            std::string from, to;
+            if (onPath) {
+                const Json& f = jfield(ej, "feet");
+                const Json& seg = jfield(ej, "segment");
+                if (f.is_array() && f.size() == 2 && f[0].is_number() && f[1].is_number() && seg.is_array() && seg.size() == 2 && seg[0].is_string() &&
+                    seg[1].is_string() && validId(seg[0].get<std::string>()) && validId(seg[1].get<std::string>())) {
+                    StartPosState s;
+                    s.feet = {f[0].get<float>(), f[1].get<float>()};
+                    s.health = 1;
+                    if (std::isfinite(s.feet.x) && std::isfinite(s.feet.y) && std::abs(s.feet.x) < 1e7f && std::abs(s.feet.y) < 1e7f) st = s;
+                    from = seg[0].get<std::string>();
+                    to = seg[1].get<std::string>();
+                }
+            } else {
+                st = StartPosState::fromJson(jfield(ej, "state"));
+            }
             const int id = jget<int>(ej, "id", 0);
             if (!st || id <= 0 || id > 1000000 ||
                 std::any_of(l.entries.begin(), l.entries.end(), [&](const StartPosEntry& e) { return e.id == id; }))
@@ -64,6 +85,9 @@ void StartPosStore::load() {
             e.date = jstr(ej, "date").substr(0, 32);
             e.attempts = std::clamp(jget<int>(ej, "attempts", 0), 0, 10000000);
             e.menu = jget<bool>(ej, "from_menu", false);
+            e.onPath = onPath;
+            e.from = std::move(from);
+            e.to = std::move(to);
             l.nextId = std::max(l.nextId, id + 1);
             l.entries.push_back(std::move(e));
         }
@@ -79,8 +103,13 @@ bool StartPosStore::save() {
     Json levels = Json::object();
     for (const auto& [key, l] : levels_) {
         Json list = Json::array();
-        for (const StartPosEntry& e : l.entries)  // 2.92, its menu flag: an older game reads it as one taken in a run
-            list.push_back(Json{{"id", e.id}, {"state", e.state.toJson()}, {"at", e.at}, {"date", e.date}, {"attempts", e.attempts}, {"from_menu", e.menu}});
+        for (const StartPosEntry& e : l.entries) {  // 2.92, its menu flag: an older game reads it as one taken in a run
+            if (e.onPath)  // 2.95: its segment and its place (an older game, finding no state, leaves it out)
+                list.push_back(Json{{"id", e.id}, {"on_path", true}, {"feet", {e.state.feet.x, e.state.feet.y}}, {"segment", {e.from, e.to}}, {"at", e.at},
+                                    {"date", e.date}, {"attempts", e.attempts}, {"from_menu", e.menu}});
+            else
+                list.push_back(Json{{"id", e.id}, {"state", e.state.toJson()}, {"at", e.at}, {"date", e.date}, {"attempts", e.attempts}, {"from_menu", e.menu}});
+        }
         levels[key] = Json{{"touched", l.touched}, {"active", l.active}, {"next", l.nextId}, {"list", list}};
     }
     std::error_code ec;
@@ -151,6 +180,51 @@ bool StartPosStore::update(const std::string& levelKey, int id, const StartPosSt
             return true;
         }
     return false;
+}
+
+int StartPosStore::addOnPath(const std::string& levelKey, Vec2 feet, const std::string& from, const std::string& to, float at, const std::string& date,
+                             bool menu, float same) {
+    if (!validId(from) || !validId(to) || !std::isfinite(feet.x) || !std::isfinite(feet.y) || occupied(levelKey, feet, same) != 0) return 0;
+    StartPosState s;
+    s.feet = feet;
+    s.health = 1;
+    const int id = add(levelKey, s, at, date, menu);
+    if (id == 0) return 0;
+    for (StartPosEntry& e : levels_[levelKey].entries)
+        if (e.id == id) {
+            e.onPath = true;
+            e.from = from;
+            e.to = to;
+        }
+    return id;
+}
+
+bool StartPosStore::placeOnPath(const std::string& levelKey, int id, Vec2 feet, const std::string& from, const std::string& to, float at, float same) {
+    if (!validId(from) || !validId(to) || !std::isfinite(feet.x) || !std::isfinite(feet.y) || occupied(levelKey, feet, same, id) != 0) return false;
+    auto it = levels_.find(levelKey);
+    if (it == levels_.end()) return false;
+    for (StartPosEntry& e : it->second.entries)
+        if (e.id == id) {
+            StartPosState s;
+            s.feet = feet;
+            s.faceLeft = e.state.faceLeft;
+            s.health = 1;
+            e.state = s;
+            e.onPath = true;
+            e.from = from;
+            e.to = to;
+            e.at = std::isfinite(at) && at >= 0.0f && at <= 1.0f ? at : -1.0f;
+            return true;
+        }
+    return false;
+}
+
+int StartPosStore::occupied(const std::string& levelKey, Vec2 feet, float same, int except) const {
+    auto it = levels_.find(levelKey);
+    if (it == levels_.end()) return 0;
+    for (const StartPosEntry& e : it->second.entries)
+        if (e.id != except && (e.state.feet - feet).lengthSq() <= same * same) return e.id;
+    return 0;
 }
 
 void StartPosStore::setActive(const std::string& levelKey, int id) {
