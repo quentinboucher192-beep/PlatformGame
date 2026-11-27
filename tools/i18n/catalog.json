@@ -18505,6 +18505,12 @@
    ]
   },
   {
+   "fr": "Courses de la machine : pour chaque niveau et catégorie, le meilleur temps trouvé par la machine (outil hors ligne cosmic_tas, replay ordinaire vérifié, jamais classé) ; premier résultat : Les Ruines Suspendues en ANY%, 1:26.692.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Coursives de phase",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -41406,6 +41412,12 @@
    "fr": "Le talon de Titanus, au bout de la jambe droite : un colosse de forge qui écrase tout. Trois phases : ses ondes de choc, son talon sur chacun, puis la forge à nu ; ses deux entraves se brisent ensemble pour le mettre à genou.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Le TAS de chaque niveau — le meilleur temps trouvé par la machine, hors classement — s'affiche avant la course, dans les classements (onglet NIVEAU), les statistiques, la visionneuse et en course contre son fantôme, avec sa nouvelle « Fiche du TAS » ; dans la visionneuse, hors comparaison, « Recaler » change la référence de l'écart (PB, SOB, TAS), « Caméra » ou « Trajectoires » compare avec le TAS et F ouvre sa fiche (touches réglables).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

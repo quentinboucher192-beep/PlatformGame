@@ -132,6 +132,7 @@ effect
 new
 play
 race
+compare
 rating
 revisions
 time
