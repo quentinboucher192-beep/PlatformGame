@@ -156,6 +156,16 @@ Le script configure, compile en Release, exécute les tests, prépare l'installa
 `installer\CosmicPlatformer.iss` avec Inno Setup. Résultat :
 `installer\Output\CosmicPlatformer-Setup-2.1.0.exe`.
 
+### Releases GitHub automatiques (2.93)
+
+Le job « Release GitHub (automatique) » de `.github/workflows/build.yml` publie une release GitHub
+**une fois par version** : après la compilation Windows et ses tests, pour chaque envoi sur la
+branche de développement. Il ajoute l'installateur et des notes en français et en anglais, prises
+dans `data/news/changelog.json` pour toutes les versions depuis la release précédente
+(`tools/release/notes.py`), avec le SHA-256 de l'installateur. Une version déjà publiée est
+ignorée : les envois suivants à la même version ne changent rien. Les releases sont marquées
+« pré-version » tant que le jeu n'est livré que sur le serveur de test.
+
 L'installateur :
 
 * demande d'abord la **langue** (français ou anglais, présélectionnée d'après Windows) :
