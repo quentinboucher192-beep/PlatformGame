@@ -1,4 +1,7 @@
 {
+  "2.93.1": [
+    "Joueurs simulés : Titanus tombe enfin (2 départs sur 8 à la difficulté 3/5) — la bande de son piétinement n'est plus prise pour un liquide, et ses entraves comptent les ondes déjà en vol."
+  ],
   "2.93.0": [
     "Contrôles : toutes les touches des écrans se règlent dans Paramètres (recommencer, replays, films, cadeaux, zoom, éditeur, Studio, plein écran, capture), conflits vérifiés écran par écran, inventaire dans docs/CONTROLES.md."
   ],
