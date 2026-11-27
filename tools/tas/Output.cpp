@@ -130,6 +130,33 @@ Verified recordAndVerify(const ContentDatabase& content, const LevelData& level,
     return v;
 }
 
+std::string guideRefusal(const ReplayData& r, const std::string& levelId, const std::string& levelHash) {
+    if (!r.exact()) return "pas un replay exact (entrées absentes)";
+    if (r.levelId != levelId) return "replay d'un autre niveau (" + r.levelId + ")";
+    if (!r.team.empty() || !r.challengeRules.empty()) return "pas une course seule sans règles de défi";
+    if (!r.keysPerSlot) return "replay enregistré avant les touches par emplacement";
+    if (r.levelHash != levelHash) return "replay d'une autre version du niveau (empreinte " + r.levelHash.substr(0, 12) + "…, attendue " + levelHash.substr(0, 12) + "…)";
+    if (r.simVersion != kSimulationVersion)
+        return "replay d'une autre version de la simulation (" + std::to_string(r.simVersion) + ", attendue " + std::to_string(kSimulationVersion) + ")";
+    return {};
+}
+
+bool readGuideReplay(const std::string& path, const std::string& levelId, const std::string& levelHash, std::vector<InputFrame>& out, std::string& replayId,
+                     std::string& why) {
+    auto bytes = FileUtil::readBinary(Paths::fromUtf8(path));
+    if (!bytes) {
+        why = "fichier illisible";
+        return false;
+    }
+    auto r = ReplayData::decode(*bytes, &why);
+    if (!r) return false;
+    why = guideRefusal(*r, levelId, levelHash);
+    if (!why.empty()) return false;
+    out = r->inputs;
+    replayId = r->attemptId;
+    return true;
+}
+
 bool readSeedReplay(const std::string& path, const std::string& levelId, std::vector<InputFrame>& out, std::string& why) {
     auto bytes = FileUtil::readBinary(Paths::fromUtf8(path));
     if (!bytes) {

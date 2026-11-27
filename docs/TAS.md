@@ -58,6 +58,7 @@ data/tas/<niveau>/<CATÉGORIE>.cprz
 | `route` | les pieds de Nova toutes les 0,25 s du chronomètre, pour dessiner le tracé |
 | `deaths`, `damageTaken`, `collectibles` | pour la fiche de la course |
 | `replay` | le nom du replay, dans le même dossier (format CPRZ du jeu, `game/online/Replay.h`) |
+| `guidedBy` | (2.99, absent sans guide) les courses de joueurs qui ont guidé la recherche : `player`, `timeMs` (son temps quand elle finit la catégorie, sinon 0), `replayId` ; voir « Les guides » |
 
 Lecture (`game/tas/TasFile.h`) : `tasFor(content, fingerprints, niveau, catégorie)` rend la
 course **seulement** si son fichier existe et se lit, si son `levelHash` est l'empreinte du niveau
@@ -92,6 +93,7 @@ cmake --build build --target cosmic_tas
 | `--stop-file <fichier>` | s'arrêter proprement dès que ce fichier existe |
 | `--stop-on-stdin` | s'arrêter proprement quand l'entrée standard lit `stop` ou se ferme (le jeu fermé, même par un plantage) |
 | `--user-dir <dossier>`, `--server <url>` | le niveau tel que le jeu le joue sur cet ordinateur : les révisions en ligne (campagne, entités) que le jeu a téléchargées |
+| `--guide <replay> [--guide-name <joueur>]` | (2.99, plusieurs fois, 8 au plus) une course d'un joueur qui guide la recherche : un replay exact de **cette version** du niveau et de la simulation, refusé sinon (« Guide refusé (…) : replay d'une autre version du niveau… ») ; voir « Les guides » |
 
 La course trouvée est **vérifiée** avant d'être écrite ; un fichier qui garde une course plus
 rapide (ou égale) du même niveau et de la même simulation n'est pas remplacé. Arrêtée (fichier ou
@@ -106,7 +108,9 @@ Le fichier de progression (`--progress`) :
  "improvements": 1, "round": 2, "threads": 4, "sequence": 123, "message": "…"}
 ```
 
-`phase` : `starting`, `searching`, `verifying`, `stopped`, `failed` ; `bestMs` : la meilleure course
+2.99 : `bestSplits` (les temps de `bestMs` à chaque point de passage), `bestSource`, `verifying` (un
+candidat en vérification), `guides` (les courses de joueurs qui la guident : `player`, `timeMs`,
+`splits`). `phase` : `starting`, `searching`, `verifying`, `stopped`, `failed` ; `bestMs` : la meilleure course
 vérifiée de la session (celle de départ ou une plus rapide écrite) ; `candidateMs` : une course plus
 rapide que la recherche tient, pas encore vérifiée ; `improvements` : les courses plus rapides que
 celle de départ, vérifiées et écrites.
@@ -224,6 +228,60 @@ section cherchée ; ne vont jusqu'à la sortie que les raccords et l'affinage.
 3 tours de 4 min restent à 1:26.692 (chaque tour recherchait tout le niveau, ne finissait pas la
 section 3 dans son budget et rendait la course de départ) ; après, 2 tours de 3 min donnent
 1:26.667 (tour 1 : raccords après les sections 1 et 4) puis 1:26.650 (tour 2, fenêtre 1 à 2).
+
+### Les guides (2.99)
+
+Une recherche qui reste près de sa meilleure course ne trouve pas un autre chemin ni une autre
+technique : sur `sylvanox_01`, le PB d'un joueur avait plus de 4 s d'avance avant le boss (ses
+segments 1 à 5 : 1,8 s, 4,1 s, 0,7 s, 0,7 s et 0,9 s plus rapides ; la machine, 10,6 s plus rapide
+sur le boss). **Les rounds reviennent-ils sur les points de passage déjà passés ?** Oui : les
+fenêtres tournent sur toutes les sections (`WindowPlanner`). Mais chaque fenêtre cherche **près de
+la meilleure course** : un raccourci, un autre chemin, un autre ordre ou un autre usage des
+pouvoirs restent hors de portée, sauf si un **guide** les apporte.
+
+* `--guide <replay>` (plusieurs) : des courses de joueurs, chacune un replay exact de cette version
+  du niveau (empreinte de classement, `kSimulationVersion`, touches par emplacement, course seule) ;
+  sinon refusée avec la raison. Au départ, chacune est **mesurée** : son temps quand elle finit la
+  catégorie (vérifiée comme une course de la machine), ses temps à chaque point de passage.
+* Comme la meilleure course, chaque guide est **offert à chaque section** (par l'index de la section
+  et réaligné sur la position de Nova : `Lead`, une suite d'entrées nommée par sa source, que le
+  faisceau suit et dont il part) et chaque arrivée est **raccordée** à la meilleure course **et à
+  chaque guide** qui finit (la fin la plus rapide).
+* **L'assemblage** (la première chose qu'un tour fait avec des guides, puis à chaque meilleure
+  course nouvelle) : depuis le départ, section par section, la voie de chaque source (la meilleure
+  course, chaque guide : par l'index de la section et réalignée) est jouée depuis où l'assemblage
+  en est ; les arrivées sont classées par la fin qu'elles donnent (raccordées, mesurées) et la
+  meilleure est prise : une « somme des meilleurs segments » **qui se joue vraiment** (les états
+  aux points de passage diffèrent : vitesse, énergie, santé, pouvoirs ; le raccord autour de chaque
+  point de passage les absorbe, et ce qui ne se raccorde pas n'est pas pris). Une course entière
+  plus rapide est rejouée depuis le départ puis vérifiée comme toute course ; le tour cherche
+  ensuite **à partir d'elle**.
+* **Honnêteté** : la course écrite dit qui l'a guidée (`guidedBy` : joueur, temps, replay) ; la
+  courbe le dit (« Guidé par la course de NovaRider (1:18.442) ») ; elle reste « meilleur temps
+  trouvé par la machine », jamais dans les classements ; aucun guide n'est cru : la course finale
+  est vérifiée par la lecture normale des replays.
+* **Dans le jeu** : l'entraînement d'une paire reçoit le **PB de cet ordinateur** (la tentative la
+  plus rapide de la catégorie sur cette version du niveau dont le replay est gardé, non refusée ;
+  « Guide : votre PB (oui / non) » dans les réglages, gardé dans `settings.json`).
+* **Ce qui n'est pas encore fait** : les records du monde en ligne et les replays des meilleurs
+  segments comme guides (le téléchargement des replays vérifiés existe, le lien avec
+  l'entraînement non) ; un choix guide par guide.
+
+Mesure (2.99, `sylvanox_01` ANY%, 2 fils, depuis la course livrée 1:26.692 avec comme guide une
+course 1:26.617 d'un autre entraînement) : 1:26.600 vérifiée et écrite **6 s** après le départ (un
+raccord dans le guide après la section 1), 1:26.592 à 24 s, 1:26.567 au deuxième tour (1 min 40).
+
+### Vérification au fil de l'eau (2.99)
+
+Chaque course entière plus rapide que la recherche tient (raccord, assemblage, course trouvée,
+affinage) est confiée **aussitôt** à un fil de vérification (`SearchOptions::onRun`) pendant que la
+recherche continue : vérifiée par la lecture normale des replays (ci-dessous), **écrite** si elle
+est plus rapide, sinon rien. Une plus lente en attente est oubliée au profit de la plus rapide. La
+progression le dit en quelques secondes : `candidateMs` et `verifying` (« candidat 1:26.642 ·
+vérification… »), puis `bestMs`, ses temps aux points de passage et l'origine du gain
+(`bestSplits`, `bestSource` : `beam` la recherche, `guide`, `splice` l'assemblage, `polish`
+l'affinage). Le tour suivant part de la meilleure course vérifiée. Jamais une course non vérifiée
+n'est écrite.
 
 ## Vérification
 
@@ -428,7 +486,9 @@ celles du serveur pour les sessions des autres ordinateurs. Routes : [API.md](on
 * **les chiffres**, à droite : pour **tout l'entraînement** et pour **le tour en cours** (ou le
   dernier) : essais, essais finis et leur part, meilleur / médian / pire temps des essais finis,
   morts ; puis les **arrêts par section** (une barre, la part des morts en rouge, le nombre, les
-  morts, ceux du tour), l'arrivée en dernier ; quand des essais ont été faits avant le suivi par
+  morts, ceux du tour), l'arrivée en dernier (toujours visible) ; quand toutes les sections ne
+  tiennent pas, « … N autres sections » (souris, Entrée / A) les déplie toutes dans une zone qui
+  défile (molette, barre, flèches, croix), « Réduire » les replie ; quand des essais ont été faits avant le suivi par
   fenêtre, la part détaillée est dite (« Détail de 1,2 M essais sur 12,3 M ») ;
 * une **bulle** sur chaque point (temps, gain sur le précédent, temps d'entraînement, essais, date,
   l'ordinateur de quel administrateur, en attente de partage ou non) et sur chaque fenêtre (tour et
@@ -437,6 +497,33 @@ celles du serveur pour les sessions des autres ordinateurs. Routes : [API.md](on
 * tout se met à jour **en direct** pendant que la paire s'entraîne ici ; une paire jamais entraînée
   pour cette version le dit (« Cette paire n'a jamais été entraînée pour cette version du
   niveau. ») ; « ‹ Version actuelle › » montre les anciennes versions, en lecture seule.
+
+### Où est le gain (2.99)
+
+Chaque meilleur temps vérifié garde ses **temps aux points de passage** (CP1 d'abord, la
+numérotation des onglets ; `bestSplits` de la progression, `splits` du point de la courbe), et
+d'où vient le gain (`source`). Comparés au meilleur point d'avant, ils disent **dans quel segment**
+est le gain (`tasSegmentDeltas`) :
+
+* la **bulle** d'une amélioration : « CP2 → CP3 : −16 ms », « Autres segments : = », « Trouvée par :
+  l'assemblage des guides » ;
+* la **ligne** de la paire en entraînement : « meilleur 1:26.642 · dernier gain −16 ms · CP2 → CP3 » ;
+* chaque **onglet CPk** : un point par amélioration dont le segment qui finit à ce point de
+  passage a changé (vert : plus rapide), à son temps là ; les temps des **guides** à ce point de
+  passage et la **somme des meilleurs segments** (des guides et de la meilleure course) en lignes
+  pointillées ; dans les chiffres, l'écart « CP5 : TAS +4,200 s sur NovaRider ».
+
+Les temps aux points de passage partent avec le point (battement, verrou rendu : bornés, 32 au
+plus) ; le serveur les vérifie comme le reste de la courbe (entiers, croissants, dans le temps du
+point ; `source` : un mot court) et les garde (migration `0240_tas_curve_splits.sql`). Un serveur
+qui ne les connaît pas les refuse avec les nuages : le jeu renvoie la courbe sans eux et les garde
+ici. Les fichiers d'avant se lisent toujours (sans temps aux points de passage).
+
+**Publier pendant l'entraînement** : dès que `cosmic_tas` a écrit une course plus rapide, le jeu
+relit ses courses (quelques secondes) et « Publier » devient possible ; publier n'arrête, ne met
+en pause ni ne remet à zéro l'entraînement (la courbe marque la publication). Grisé, sa bulle dit
+pourquoi : « Rien de plus rapide que la version en ligne », « Vérification en cours… », « Tenu
+par X ».
 
 ## Courses publiées en ligne
 

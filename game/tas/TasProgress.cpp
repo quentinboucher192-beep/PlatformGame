@@ -370,11 +370,48 @@ TasAttemptWindow TasAttemptStats::take(int64_t startMs, int64_t endMs) {
 
 // ------------------------------------------------------------------ progress
 
+std::optional<std::vector<int64_t>> tasSplitsFromJson(const Json& j, int64_t timeMs) {
+    if (!j.is_array() || j.size() > static_cast<size_t>(TasAttemptWindow::kMaxSections)) return std::nullopt;
+    std::vector<int64_t> out;
+    int64_t last = 0;
+    for (const Json& x : j) {
+        if (!x.is_number_integer()) return std::nullopt;
+        const int64_t v = x.get<int64_t>();
+        if (v < 0 || v > 24 * 3600 * 1000LL || (timeMs > 0 && v > timeMs) || (v > 0 && v < last)) return std::nullopt;
+        if (v > 0) last = v;
+        out.push_back(v);
+    }
+    return out;
+}
+
+std::vector<int64_t> tasSegmentDeltas(const std::vector<int64_t>& oldSplits, int64_t oldMs, const std::vector<int64_t>& newSplits, int64_t newMs) {
+    if (oldSplits.empty() || oldSplits.size() != newSplits.size() || oldMs <= 0 || newMs <= 0) return {};
+    for (size_t k = 0; k < oldSplits.size(); ++k)
+        if (oldSplits[k] <= 0 || newSplits[k] <= 0) return {};
+    std::vector<int64_t> d;
+    int64_t po = 0, pn = 0;
+    for (size_t k = 0; k <= oldSplits.size(); ++k) {
+        const int64_t o = k < oldSplits.size() ? oldSplits[k] : oldMs, n = k < newSplits.size() ? newSplits[k] : newMs;
+        d.push_back((n - pn) - (o - po));
+        po = o;
+        pn = n;
+    }
+    return d;
+}
+
+std::string tasSegmentName(size_t k, size_t checkpoints) {
+    const std::string from = k == 0 ? std::string("Départ") : "CP" + std::to_string(k);
+    const std::string to = k >= checkpoints ? std::string("Arrivée") : "CP" + std::to_string(k + 1);
+    return from + " → " + to;
+}
+
 Json TasProgress::toJson() const {
     Json ws = Json::array();
     for (const TasAttemptWindow& w : windows) ws.push_back(w.toJson());
     Json cps = Json::array();
     for (const TasCheckpoint& c : checkpoints) cps.push_back({{"id", c.id}, {"label", c.label}});
+    Json refs = Json::array();
+    for (const Reference& r : guides) refs.push_back({{"player", r.player}, {"timeMs", r.timeMs}, {"splits", r.splits}});
     return {{"format", kTasProgressFormat},
             {"phase", tasPhaseId(phase)},
             {"level", levelId},
@@ -394,6 +431,10 @@ Json TasProgress::toJson() const {
             {"focusFirst", focusFirst},
             {"focusLast", focusLast},
             {"checkpoints", cps},
+            {"bestSplits", bestSplits},
+            {"bestSource", bestSource},
+            {"verifying", verifying},
+            {"guides", refs},
             {"sequence", sequence},
             {"message", message},
             {"windows", ws}};
@@ -434,6 +475,19 @@ std::optional<TasProgress> TasProgress::fromJson(const Json& j, std::string* err
             TasCheckpoint k{jstr(c, "id"), jstr(c, "label")};
             if (k.id.size() > 64 || k.label.size() > 120) break;
             p.checkpoints.push_back(std::move(k));
+        }
+    // 2.99 (absent before: no splits, no source, no guide).
+    if (auto sp = tasSplitsFromJson(jfield(j, "bestSplits", Json::array()), p.bestMs)) p.bestSplits = std::move(*sp);
+    p.bestSource = jstr(j, "bestSource").substr(0, 16);
+    p.verifying = jget<bool>(j, "verifying", false);
+    if (const Json gs = jfield(j, "guides", Json::array()); gs.is_array())
+        for (const Json& g : gs) {
+            if (p.guides.size() >= kMaxReferences || !g.is_object()) break;
+            Reference r;
+            r.player = jstr(g, "player").substr(0, 64);
+            r.timeMs = std::max<int64_t>(0, jget<int64_t>(g, "timeMs", 0));
+            if (auto sp = tasSplitsFromJson(jfield(g, "splits", Json::array()), r.timeMs)) r.splits = std::move(*sp);
+            p.guides.push_back(std::move(r));
         }
     p.sequence = count("sequence");
     // The windows: the consistent ones, in order, the last kMaxWindows.

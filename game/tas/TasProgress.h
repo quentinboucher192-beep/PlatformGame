@@ -156,6 +156,19 @@ struct TasCheckpoint {
     bool operator==(const TasCheckpoint&) const = default;
 };
 
+/// The splits of a run at the level's checkpoints (CP1 first, as TasProgress::checkpoints numbers
+/// them): the level's clock in ms at each one, 0 where it was not reached. Read from JSON:
+/// nullopt for anything else than such a list (at most kMaxSections, each within 0..timeMs when
+/// timeMs > 0, the times reached never going back).
+std::optional<std::vector<int64_t>> tasSplitsFromJson(const Json& j, int64_t timeMs = 0);
+/// Where two runs differ, segment by segment (docs/TAS.md « Où est le gain »): for each segment
+/// (start → CP1, CP1 → CP2… CPn → exit: n + 1 of them), the new run's time in it minus the old
+/// one's (ms; negative: faster). Empty when they cannot be compared (not the same checkpoints,
+/// one not reached, a time missing).
+std::vector<int64_t> tasSegmentDeltas(const std::vector<int64_t>& oldSplits, int64_t oldMs, const std::vector<int64_t>& newSplits, int64_t newMs);
+/// The segment's name: « Départ → CP1 », « CP2 → CP3 », « CP7 → Arrivée » (k of `checkpoints`).
+std::string tasSegmentName(size_t k, size_t checkpoints);
+
 struct TasProgress {
     static constexpr size_t kMaxWindows = 24;  // the last two minutes
     static constexpr int64_t kWindowMs = 5000;
@@ -176,6 +189,22 @@ struct TasProgress {
     /// The round's window (TasAttemptWindow::focusFirst): 0 the whole level (and older files).
     int focusFirst = 0, focusLast = 0;
     std::vector<TasCheckpoint> checkpoints;  // the level's checkpoints the windows count (CP1 first)
+    /// 2.99: the splits of bestMs (tasSplitsFromJson), where its gain came from ("beam", "guide",
+    /// "splice", "polish"; empty: the seed run, or before 2.99) and whether a candidate
+    /// (candidateMs) is being verified now (cosmic_tas verifies each one at once, on a thread).
+    std::vector<int64_t> bestSplits;
+    std::string bestSource;
+    bool verifying = false;
+    /// The players' runs that guide the search (--guide): whose, their time when they finish the
+    /// category (0: not), their splits — the references of the curve's checkpoints.
+    struct Reference {
+        std::string player;
+        int64_t timeMs = 0;
+        std::vector<int64_t> splits;
+        bool operator==(const Reference&) const = default;
+    };
+    static constexpr size_t kMaxReferences = 8;
+    std::vector<Reference> guides;
     int64_t sequence = 0;
     std::string message;
     std::vector<TasAttemptWindow> windows;  // the last ones, oldest first

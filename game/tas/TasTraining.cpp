@@ -54,7 +54,7 @@ int TasTrainingSettings::defaultParallel(int threadsPerJob, int cores) {
 }
 
 Json TasTrainingSettings::toJson() const {
-    return {{"format", "cosmic.tas.training"}, {"threadsPerJob", threadsPerJob}, {"parallel", parallel}, {"budgetMinutes", budgetMinutes}};
+    return {{"format", "cosmic.tas.training"}, {"threadsPerJob", threadsPerJob}, {"parallel", parallel}, {"budgetMinutes", budgetMinutes}, {"guidePb", guidePb}};
 }
 
 TasTrainingSettings TasTrainingSettings::fromJson(const Json& j, int cores) {
@@ -62,7 +62,27 @@ TasTrainingSettings TasTrainingSettings::fromJson(const Json& j, int cores) {
     s.threadsPerJob = std::clamp(jget<int>(j, "threadsPerJob", 2), 1, kMaxThreads);
     s.parallel = std::clamp(jget<int>(j, "parallel", defaultParallel(s.threadsPerJob, cores)), 1, kMaxParallel);
     s.budgetMinutes = std::clamp(jget<int>(j, "budgetMinutes", 30), 0, 24 * 60);
+    s.guidePb = jget<bool>(j, "guidePb", true);
     return s;
+}
+
+std::vector<TasTraining::GuideRun> TasTraining::guidesOf(const TasPair& pair, const std::string& levelHash) const {
+    std::vector<GuideRun> out;
+    if (!settings_.guidePb || levelHash.empty()) return out;
+    const OnlineAttempt* pb = nullptr;
+    for (const OnlineAttempt& a : online_.attempts().all()) {
+        if (a.levelId != pair.levelId || a.levelHash != levelHash || !a.hasReplay) continue;
+        const OnlineSubmission* s = a.submission(pair.category);
+        if (!s || s->status == RecordStatus::Rejected) continue;
+        std::error_code ec;
+        if (!fs::exists(online_.attempts().replayPath(a.attemptId), ec)) continue;
+        if (!pb || a.timeMs < pb->timeMs) pb = &a;
+    }
+    if (pb) {
+        const std::string me = online_.username();
+        out.push_back({online_.attempts().replayPath(pb->attemptId), me.empty() ? std::string("Votre PB") : me, pb->timeMs, pb->attemptId});
+    }
+    return out;
 }
 
 int64_t TasTraining::Job::sessionMs() const {
@@ -308,6 +328,13 @@ void TasTraining::launch(Job& j) {
             args.push_back(Paths::toUtf8(partial));
         }
     }
+    // The players' runs that guide it (cosmic_tas checks each one: this very version of the level).
+    for (const GuideRun& g : guidesOf(j.pair, j.levelHash)) {
+        args.push_back("--guide");
+        args.push_back(Paths::toUtf8(g.file));
+        args.push_back("--guide-name");
+        args.push_back(g.player);
+    }
     j.process = spawn(args);
     if (!j.process) {
         j.error = std::string("cosmic_tas ne démarre pas : ") + SDL_GetError();
@@ -329,6 +356,9 @@ TasTraining::CurveSend TasTraining::curveSend(const TasCurveVersion& v, const st
                               {"time_ms", p.timeMs},
                               {"age_ms", std::clamp<int64_t>(nowMs - p.foundAtMs, 0, 86400000)},
                               {"explored", p.sessionExplored}});
+        // 2.99, with the clouds (a server before them refuses both: the curve goes again without).
+        if (cloud && !p.splits.empty()) out.points.back()["splits"] = p.splits;
+        if (cloud && !p.source.empty()) out.points.back()["source"] = p.source;
         out.pointIds.push_back(p.foundAtMs);
     }
     // The windows: their runs of the same round and section, then the smallest neighbours
@@ -426,6 +456,8 @@ void TasTraining::noteCurve(Job& j) {
         pt.leaseId = j.leaseId;
         pt.foundAtMs = now - age;
         pt.sessionExplored = p.bestExplored;
+        pt.splits = p.bestSplits;
+        pt.source = p.bestSource;
         point = curve.addBest(j.levelHash, kSimulationVersion, pt);
         changed = changed || point;
     }
@@ -434,6 +466,11 @@ void TasTraining::noteCurve(Job& j) {
         TasCurveVersion& v = curve.version(j.levelHash, kSimulationVersion);
         if (v.checkpoints != p.checkpoints) {
             v.checkpoints = p.checkpoints;
+            changed = true;
+        }
+        // The players' runs that guide it: the references of the checkpoints (2.99).
+        if (!p.guides.empty() && v.references != p.guides) {
+            v.references = p.guides;
             changed = true;
         }
     }

@@ -35,7 +35,7 @@ Json TasRecord::toJson() const {
     for (const TasSplit& s : splits) sp.push_back({{"checkpoint", s.checkpoint}, {"timeMs", s.timeMs}});
     Json rt = Json::array();
     for (Vec2 p : route) rt.push_back(Json::array({tenth(p.x), tenth(p.y)}));
-    return {{"format", kTasFormat},
+    Json j = {{"format", kTasFormat},
             {"level", levelId},
             {"levelVersion", levelVersion},
             {"levelHash", levelHash},
@@ -53,6 +53,12 @@ Json TasRecord::toJson() const {
             {"collectibles", collectibles},
             {"totalCollectibles", totalCollectibles},
             {"replay", replay}};
+    if (!guidedBy.empty()) {
+        Json g = Json::array();
+        for (const TasGuide& x : guidedBy) g.push_back({{"player", x.player}, {"timeMs", x.timeMs}, {"replayId", x.replayId}});
+        j["guidedBy"] = g;
+    }
+    return j;
 }
 
 std::optional<TasRecord> TasRecord::fromJson(const Json& j, std::string* error) {
@@ -90,6 +96,14 @@ std::optional<TasRecord> TasRecord::fromJson(const Json& j, std::string* error) 
     r.totalCollectibles = std::max(0, jget<int>(j, "totalCollectibles", 0));
     r.replay = jstr(j, "replay");
     if (!plainFileName(r.replay)) return fail("nom du replay invalide");
+    for (const Json& g : jfield(j, "guidedBy", Json::array())) {
+        if (!g.is_object() || r.guidedBy.size() >= TasGuide::kMax) continue;
+        TasGuide x;
+        x.player = jstr(g, "player").substr(0, 64);
+        x.timeMs = std::max<int64_t>(0, jget<int64_t>(g, "timeMs", 0));
+        x.replayId = jstr(g, "replayId").substr(0, 128);
+        r.guidedBy.push_back(std::move(x));
+    }
     return r;
 }
 

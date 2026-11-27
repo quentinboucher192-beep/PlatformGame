@@ -38,6 +38,14 @@ std::string toolVersion();
 Verified recordAndVerify(const ContentDatabase& content, const LevelData& level, const LevelFingerprint& fp, RunCategory category,
                          const std::vector<InputFrame>& inputs, int64_t explored);
 
+/// Why `r` cannot GUIDE a search of this level (--guide, docs/TAS.md « Les guides »), in French;
+/// empty when it can: an exact replay of a run alone of this level, of this very version (its
+/// level hash) and simulation (kSimulationVersion), recorded with the keys per slot.
+std::string guideRefusal(const ReplayData& r, const std::string& levelId, const std::string& levelHash);
+/// A guide's file read and checked (guideRefusal): its inputs and its replay's id.
+bool readGuideReplay(const std::string& path, const std::string& levelId, const std::string& levelHash, std::vector<InputFrame>& out, std::string& replayId,
+                     std::string& why);
+
 /// The inputs of a replay file (an exact replay of this level), for --seed-replay.
 bool readSeedReplay(const std::string& path, const std::string& levelId, std::vector<InputFrame>& out, std::string& why);
 

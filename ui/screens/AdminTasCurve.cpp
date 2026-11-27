@@ -33,6 +33,7 @@
 #include "game/tas/TasTraining.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AdminTas.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/widgets/UIContext.h"
 
 namespace cosmic {
@@ -120,7 +121,10 @@ charts::ChartView& AdminTas::curveView(int tab) {
     return views_[i];
 }
 
-void AdminTas::drawTooltip() { charts::drawTip(g_.ui, tip_); }
+void AdminTas::drawTooltip() {
+    if (rowTip_.show) charts::drawTip(g_.ui, rowTip_);
+    else charts::drawTip(g_.ui, tip_);
+}
 
 void AdminTas::drawDetail(const Row& row, const Rect& area) {
     UIContext& ui = g_.ui;
@@ -271,6 +275,16 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
         if (row.local.shippedMs > 0) refs.push_back({"Livrée " + formatRunTime(row.local.shippedMs), row.local.shippedMs, th.textDim});
         if (row.server.publishedMs > 0) refs.push_back({"En ligne " + formatRunTime(row.server.publishedMs), row.server.publishedMs, th.success});
     }
+    // The players' runs that guide the training (docs/TAS.md « Les guides »): their time at the
+    // exit (« TOUT ») or at the checkpoint (CPk), and the sum of the best segments of them and of
+    // the machine's best run — where the machine loses shows at once.
+    if (v && !v->references.empty()) {
+        for (const TasProgress::Reference& g : v->references) {
+            const int64_t ms = tab == 0 ? g.timeMs : static_cast<size_t>(tab) <= g.splits.size() ? g.splits[static_cast<size_t>(tab - 1)] : 0;
+            if (ms > 0) refs.push_back({i18n::keep(g.player) + " " + formatRunTime(ms), ms, th.warm});
+        }
+        if (const int64_t sob = tasSumOfBest(*v, tab); sob > 0) refs.push_back({"Meilleurs segments " + formatRunTime(sob), sob, th.violet});
+    }
     // The cloud: the finished attempts (« TOUT »), or the times at checkpoint `tab`.
     std::vector<CloudPt> cloud;
     int64_t cloudStands = 0;  // the attempts the cloud stands for (finished, or that reached the checkpoint)
@@ -306,6 +320,11 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
         for (const Ref& r : refs) take(r.ms);
         for (const TasCurveWindow* w : wins)
             if (w->stats.finished > 0 && w->stats.finishes.empty()) take(w->stats.bestMs), take(w->stats.medianMs);
+    } else {
+        // A CP tab: the references there, and the best runs' times at it (the improvements marked).
+        for (const Ref& r : refs) take(r.ms);
+        for (const TasCurvePoint* p : marks)
+            if (p->best() && static_cast<size_t>(tab) <= p->splits.size()) take(p->splits[static_cast<size_t>(tab - 1)]);
     }
     for (const auto& [x, t] : line) take(t);
     if (!cloud.empty()) {
@@ -656,6 +675,25 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
             }
             ++layout_.pointsDrawn;
         }
+    else if (v)
+        // A CP tab: each improvement whose segment ending at this checkpoint changed (its splits
+        // against the best point before it), at its time there — where the gain is.
+        for (size_t i = 0; i < marks.size(); ++i) {
+            const TasCurvePoint& p = *marks[i];
+            const size_t vi = static_cast<size_t>(marks[i] - v->points.data());
+            if (p.kind != TasCurveKind::Improvement || vi >= v->points.size() || static_cast<size_t>(tab) > p.splits.size()) continue;
+            const TasCurvePoint* prev = v->previousBest(vi);
+            const std::vector<int64_t> d = prev ? tasSegmentDeltas(prev->splits, prev->timeMs, p.splits, p.timeMs) : std::vector<int64_t>{};
+            if (d.empty() || d[static_cast<size_t>(tab - 1)] == 0) continue;
+            const Vec2 c{X(static_cast<double>(p.trainingMs)), Y(static_cast<double>(p.splits[static_cast<size_t>(tab - 1)]))};
+            at[i] = c;
+            if (!plot.expanded(ui.s(1)).contains(c)) continue;
+            visible[i] = true;
+            R.fillCircle(c, ui.s(4.6f), kSurface);
+            R.fillCircle(c, ui.s(3.4f), d[static_cast<size_t>(tab - 1)] < 0 ? th.success : th.danger);
+            ++layout_.pointsDrawn;
+            ++layout_.gainMarks;
+        }
     // What the plot does not show, said in its top-left corner (one line each, never over another).
     {
         float ny = plot.y + ui.s(4);
@@ -788,6 +826,22 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
         else tip_.title = "Amélioration n° " + std::to_string(n + 1);
         tip_.rows.push_back({charts::kNoSwatch, "Temps", formatRunTime(p.timeMs)});
         tip_.rows.push_back({charts::kNoSwatch, "Gain", prev > 0 && p.timeMs < prev ? gainText(prev - p.timeMs) : std::string("—")});
+        // Where the gain is: each segment against the best run before it (2.99: their splits).
+        if (v && p.kind == TasCurveKind::Improvement) {
+            const size_t vi = static_cast<size_t>(marks[i] - v->points.data());
+            const TasCurvePoint* before = vi < v->points.size() ? v->previousBest(vi) : nullptr;
+            const std::vector<int64_t> d = before ? tasSegmentDeltas(before->splits, before->timeMs, p.splits, p.timeMs) : std::vector<int64_t>{};
+            int same = 0;
+            for (size_t k = 0; k < d.size(); ++k) {
+                if (d[k] == 0) {
+                    ++same;
+                    continue;
+                }
+                tip_.rows.push_back({charts::kNoSwatch, tasSegmentName(k, d.size() - 1), (d[k] < 0 ? "−" : "+") + std::to_string(d[k] < 0 ? -d[k] : d[k]) + " ms"});
+            }
+            if (!d.empty() && same > 0) tip_.rows.push_back({charts::kNoSwatch, "Autres segments", "="});
+            if (!p.source.empty()) tip_.rows.push_back({charts::kNoSwatch, "Trouvée par", tasSourceLabel(p.source)});
+        }
         tip_.rows.push_back({charts::kNoSwatch, "Entraînement", durationText(p.trainingMs)});
         tip_.rows.push_back({charts::kNoSwatch, "Essais", countText(p.explored)});
         tip_.rows.push_back({charts::kNoSwatch, "Date", stamp(p.at)});
@@ -994,6 +1048,23 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
         line("Meilleur", timeOr(a.bestMs), timeOr(b.bestMs));
         line("Médian", timeOr(a.medianMs), timeOr(b.medianMs));
         line("Pire", timeOr(a.worstMs), timeOr(b.worstMs));
+        // The gap at this checkpoint: the machine's best run against each guide (a player's run).
+        if (v) {
+            const TasCurvePoint* bp = nullptr;
+            for (const TasCurvePoint& p : v->points)
+                if (p.best() && k < p.splits.size() && p.splits[k] > 0 && (!bp || p.timeMs < bp->timeMs)) bp = &p;
+            for (const TasProgress::Reference& g : v->references) {
+                if (!bp || k >= g.splits.size() || g.splits[k] <= 0) continue;
+                const int64_t gap = bp->splits[k] - g.splits[k];
+                char sec[32];
+                std::snprintf(sec, sizeof sec, "%s%.3f s", gap > 0 ? "+" : gap < 0 ? "−" : "", static_cast<double>(gap < 0 ? -gap : gap) / 1000.0);
+                std::string t = sec;
+                std::replace(t.begin(), t.end(), '.', ',');
+                text("CP" + std::to_string(tab) + " : TAS " + t + " sur " + i18n::keep(g.player), {r.x, y, r.w, rh}, fs, gap > 0 ? th.warm : th.success);
+                y += rh;
+                ++layout_.referenceGaps;
+            }
+        }
         int64_t kept = 0;
         for (const TasCurveWindow* w : all)
             if (k < w->stats.checkpoints.size()) kept += static_cast<int64_t>(w->stats.checkpoints[k].sample.size());
@@ -1027,6 +1098,16 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
              th.textDim);
         y += rh;
     }
+    // The players' runs that guide it, said (the run stays the machine's best time, never a record).
+    if (v && !v->references.empty()) {
+        std::string g;
+        for (const TasProgress::Reference& ref : v->references) {
+            if (!g.empty()) g += ", ";
+            g += i18n::keep(ref.player) + (ref.timeMs > 0 ? " (" + formatRunTime(ref.timeMs) + ")" : std::string());
+        }
+        text("Guidé par la course de " + g, {r.x, y, r.w, rh}, fs, th.warm);
+        y += rh;
+    }
     // The round: what it searches, and why « Finis » stays low meanwhile.
     if (shownRound > 0 && knownFocus) {
         y += ui.s(4);
@@ -1036,6 +1117,10 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
                                "ne finissent que les raccords avec la meilleure course et l'affinage."
                              : "Finis : seuls les essais qui atteignent la sortie ; la recherche avance section par section et ses essais s'arrêtent à la fin "
                                "de chacune, jusqu'à la dernière et l'affinage.",
+                  3, th.textDim);
+        // Do the rounds go back over the checkpoints already passed? Yes, but near the best run only.
+        paragraph("Les tours reviennent sur chaque section (les fenêtres tournent sur tout le niveau), mais cherchent près de la meilleure course : "
+                  "un autre chemin ou une autre technique (un raccourci, un autre ordre des pouvoirs) n'est trouvé que si un guide l'apporte.",
                   3, th.textDim);
     }
     y += ui.s(8);
@@ -1054,18 +1139,6 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
     text("Ce tour", scell(3, y), fs, th.textDim, FontFace::Bold);
     y += rh + ui.s(2);
     ui.r().drawLine({r.x, y - ui.s(1)}, {r.right(), y - ui.s(1)}, kGrid, 1.0f);
-    // The rows that fit (the exit included): the sections with the most stops when not all of them do.
-    const int room = std::max(1, static_cast<int>((r.bottom() - y) / rh));
-    std::vector<int> secs(static_cast<size_t>(n));
-    for (int k = 0; k < n; ++k) secs[static_cast<size_t>(k)] = k;
-    int hidden = 0;
-    if (n + 1 > room) {
-        const int keep = std::max(0, room - 2);  // the exit, and « … autres »
-        std::stable_sort(secs.begin(), secs.end(), [&](int a, int b) { return T.stopped[static_cast<size_t>(a)] > T.stopped[static_cast<size_t>(b)]; });
-        hidden = n - keep;
-        secs.resize(static_cast<size_t>(keep));
-        std::sort(secs.begin(), secs.end());
-    }
     int64_t most = 1;
     for (int64_t s : T.stopped) most = std::max(most, s);
     most = std::max(most, T.finished);
@@ -1079,24 +1152,74 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
         if (dead > 0 && value > 0) ui.r().fillRect({track.x, track.y, std::max(1.0f, w * static_cast<float>(dead) / static_cast<float>(value)), track.h}, th.danger.withAlpha(210));
         return Rect{c.x + bw + ui.s(6), c.y, std::max(0.0f, c.w - bw - ui.s(6)), c.h};
     };
-    for (int k : secs) {
-        if (y + rh > r.bottom() + 0.5f) break;
+    auto sectionRow = [&](int k, float yy) {
         const size_t i = static_cast<size_t>(k);
-        text("Section " + std::to_string(k + 1), scell(0, y), fs, th.textDim);
-        text(compactCount(T.stopped[i]), bar(scell(1, y), T.stopped[i], T.broken[i], th.accent), 13, th.text);
-        text(compactCount(T.broken[i]), scell(2, y), 13, th.text);
-        text(hasRound && i < Rr.stopped.size() ? compactCount(Rr.stopped[i]) : std::string("—"), scell(3, y), 13, th.text);
-        y += rh;
+        text("Section " + std::to_string(k + 1), scell(0, yy), fs, th.textDim);
+        text(compactCount(T.stopped[i]), bar(scell(1, yy), T.stopped[i], T.broken[i], th.accent), 13, th.text);
+        text(compactCount(T.broken[i]), scell(2, yy), 13, th.text);
+        text(hasRound && i < Rr.stopped.size() ? compactCount(Rr.stopped[i]) : std::string("—"), scell(3, yy), 13, th.text);
+        ++layout_.stopRows;
+    };
+    // The control that unfolds or folds the sections (click, Entrée / A), measured on its line.
+    auto toggle = [&](const std::string& label, float yy) {
+        const float w = std::min(r.w, ui.text().measure(label, FontFace::Bold, ui.s(12)).x + ui.s(24));
+        const Rect b{r.x, yy + ui.s(1), w, rh - ui.s(2)};
+        layout_.stopsToggle = b;
+        layout_.buttons.push_back(b);
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = 12.0f;
+        if (cframe::button(ui, "stops_toggle", b, label, st)) stopsOpen_ = !stopsOpen_;
+    };
+    const int room = std::max(1, static_cast<int>((r.bottom() - y) / rh));
+    layout_.stopsOpen = stopsOpen_;
+    if (stopsOpen_ && n + 1 > room - 1 && room >= 3) {
+        // Unfolded: every section in a scroll region (the wheel, its bar, the focus of its rows with
+        // the arrows or the d-pad), the arrival pinned under it, then « Réduire ».
+        const Rect lr{r.x, y, r.w, rh * static_cast<float>(room - 2)};
+        layout_.stopsList = lr;
+        ui.beginScroll("stops", lr, rh * static_cast<float>(n));
+        textClip_ = lr;
+        float yy = lr.y - ui.scrollOffset();
+        for (int k = 0; k < n; ++k, yy += rh) {
+            ui.hotspot("stops_row" + std::to_string(k), {r.x, yy, r.w - ui.s(14), rh});  // a focus stop: the scroll follows it
+            if (yy + rh < lr.y || yy > lr.bottom()) continue;
+            sectionRow(k, yy);
+        }
+        textClip_ = Rect{};
+        ui.endScroll();
+        y = lr.bottom();
+    } else {
+        // Folded (or all of them fit): the sections with the most stops, « … N autres sections » to unfold.
+        std::vector<int> secs(static_cast<size_t>(n));
+        for (int k = 0; k < n; ++k) secs[static_cast<size_t>(k)] = k;
+        int hidden = 0;
+        if (n + 1 > room) {
+            const int keep = std::max(0, room - 2);  // the exit, and « … autres »
+            std::stable_sort(secs.begin(), secs.end(), [&](int a, int b) { return T.stopped[static_cast<size_t>(a)] > T.stopped[static_cast<size_t>(b)]; });
+            hidden = n - keep;
+            secs.resize(static_cast<size_t>(keep));
+            std::sort(secs.begin(), secs.end());
+        }
+        for (int k : secs) {
+            if (y + rh > r.bottom() + 0.5f) break;
+            sectionRow(k, y);
+            y += rh;
+        }
+        if (hidden > 0 && y + rh <= r.bottom() + 0.5f) {
+            toggle("… " + std::to_string(hidden) + " autres sections", y);
+            y += rh;
+        }
     }
-    if (hidden > 0 && y + rh <= r.bottom() + 0.5f) {
-        text("… " + std::to_string(hidden) + " autres sections", scell(0, y), fs, th.textDim);
-        y += rh;
-    }
+    if (y + rh > r.bottom() + 0.5f) return;
+    layout_.stopsArrival = {r.x, y, r.w, rh};
     if (y + rh > r.bottom() + 0.5f) return;
     text("Arrivée", scell(0, y), fs, th.textDim);
     text(compactCount(T.finished), bar(scell(1, y), T.finished, 0, th.success), 13, th.text);
     text("—", scell(2, y), 13, th.textDim);
     text(hasRound ? compactCount(Rr.finished) : std::string("—"), scell(3, y), 13, th.text);
+    y += rh;
+    if (stopsOpen_ && !layout_.stopsList.empty() && y + rh <= r.bottom() + 0.5f) toggle("Réduire", y);
 }
 
 }  // namespace cosmic

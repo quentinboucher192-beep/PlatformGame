@@ -94,6 +94,20 @@ struct SearchOptions {
     /// stage: a section starts (1-based, of `sections`), or 0: whole runs refined.
     std::function<void(const AttemptNote* notes, size_t n, const Crossing* crossings, size_t m)> onAttempts;
     std::function<void(int section, int sections)> onStage;
+    /// Each faster whole run the search holds (played from the load, before its verification), from
+    /// the search's threads: cosmic_tas verifies it at once on a thread of its own (docs/TAS.md
+    /// « Vérification au fil de l'eau »). Keep it short: copy and return.
+    /// `source`: where the gain came from ("beam", "guide", "splice", "polish": the refinement).
+    std::function<void(const std::vector<InputFrame>& run, float clock, const std::string& source)> onRun;
+    /// Other runs of this level that GUIDE the search (docs/TAS.md « Les guides »): a player's
+    /// runs (the PB of this computer, records of Cosmic Online), exact replays of this version of
+    /// the level, their inputs from the load. Like the best run, each one's frames are offered to
+    /// every section (by the section's index and realigned on Nova's position), every arrival is
+    /// re-joined into each of them, and — `splice` — a run is first assembled section by section
+    /// from the fastest way among the best run and the guides (a « somme des meilleurs segments »
+    /// that really plays), kept when it finishes faster.
+    std::vector<std::vector<InputFrame>> guides;
+    bool splice = true;
 };
 
 struct SearchOutcome {
@@ -109,6 +123,11 @@ struct SearchOutcome {
     int guidedSections = 0;               // sections searched with the seed run's frames offered while the run differed from it
     int guideArrivals = 0;                // ... and where they reached the section's end
     int rejoins = 0;                      // arrivals played on with the rest of the seed run that finished the category
+    int guideSources = 0;                 // the guides studied (besides the best run)
+    int splicedSections = 0;              // the splice: its sections taken from a guide (not the best run)
+    int spliceWays = 0, spliceArrivals = 0, spliceJoined = 0;  // the splice: ways played, those that reached their section's end, those re-joined (measured)
+    float spliceClock = -1.0f;            // the splice's run at the exit (negative: it did not finish)
+    std::string bestSource;               // where the best run kept came from ("beam", "guide", "splice", "polish"; empty: the seed run)
     /// Before the refinement, the run kept ended with the seed run's rest: inputs[rejoinAt..] are
     /// seedRun[rejoinSeedAt..] (the first one's presses and releases recomputed).
     bool rejoined = false;

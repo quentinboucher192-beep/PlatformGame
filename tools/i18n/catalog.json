@@ -361,6 +361,12 @@
    ]
   },
   {
+   "fr": "+{0} ms",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "+{0} s",
    "where": [
     "game/levels/EventSystem.cpp",
@@ -4254,6 +4260,7 @@
   {
    "fr": "Arrivée",
    "where": [
+    "game/tas/TasProgress.cpp",
     "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostRun.cpp",
@@ -4347,6 +4354,12 @@
   },
   {
    "fr": "Arrêt : vérification de la meilleure course…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "Arrêt de l'entraînement en cours…",
    "where": [
     "ui/screens/AdminTas.cpp"
    ]
@@ -7746,6 +7759,12 @@
    ]
   },
   {
+   "fr": "Autres segments",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Autres sons",
    "where": [
     "game/content/AssetCatalog.cpp"
@@ -11114,6 +11133,18 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "candidat {0}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "candidat {0} · vérification…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -17277,6 +17308,12 @@
    ]
   },
   {
+   "fr": "Connexion à Cosmic Online nécessaire",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Connexion à Cosmic Online nécessaire : chaque entraînement réserve son niveau auprès du serveur.",
    "where": [
     "ui/screens/AdminTas.cpp"
@@ -18975,6 +19012,13 @@
   },
   {
    "fr": "CP{0}",
+   "where": [
+    "game/tas/TasProgress.cpp",
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "CP{0} : TAS {1} sur {2}",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
    ]
@@ -21018,6 +21062,12 @@
    "fr": "Dernier fouet",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "dernier gain −{0} ms",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -24549,6 +24599,7 @@
   {
    "fr": "Départ",
    "where": [
+    "game/tas/TasProgress.cpp",
     "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/StatisticsArt.cpp",
@@ -32746,6 +32797,18 @@
    ]
   },
   {
+   "fr": "Guide : votre PB (non)",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "Guide : votre PB (oui)",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "GUIDE DES POUVOIRS",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
@@ -32774,6 +32837,30 @@
    "fr": "Guide stellaire",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "guidedBy : liste de 8 guides au plus",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "guidedBy[{0}] invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "guides",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "Guidé par la course de {0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -36871,6 +36958,12 @@
    ]
   },
   {
+   "fr": "l'affinage image par image",
+   "where": [
+    "game/tas/TasCurve.cpp"
+   ]
+  },
+  {
    "fr": "l'Aimant",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -37032,6 +37125,12 @@
    "fr": "L'ascenseur démarre quand vous montez dessus.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "l'assemblage des guides",
+   "where": [
+    "game/tas/TasCurve.cpp"
    ]
   },
   {
@@ -38842,6 +38941,12 @@
    "fr": "La Pépinière d'étoiles : herbes rondes, champignons rebondissants et bulles qui portent Nova. Bip, un petit robot, y présente chaque nouveauté avant l'aventure.",
    "where": [
     "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
+   "fr": "la recherche (faisceau)",
+   "where": [
+    "game/tas/TasCurve.cpp"
    ]
   },
   {
@@ -44324,6 +44429,12 @@
    ]
   },
   {
+   "fr": "Les tours reviennent sur chaque section (les fenêtres tournent sur tout le niveau), mais cherchent près de la meilleure course : un autre chemin ou une autre technique (un raccourci, un autre ordre des pouvoirs) n'est trouvé que si un guide l'apporte.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Les trois couleurs d'une combinaison",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -45159,6 +45270,12 @@
    "fr": "liste de {0} récompenses au plus attendue",
    "where": [
     "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "liste de {0} temps au plus, croissants, dans le temps du point",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -46578,6 +46695,12 @@
    ]
   },
   {
+   "fr": "meilleur {0} · {1}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur · médian · pire",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
@@ -46694,6 +46817,7 @@
   {
    "fr": "Meilleurs segments {0}",
    "where": [
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/GhostRun.cpp"
    ]
   },
@@ -48508,6 +48632,12 @@
    "fr": "Morts · dégâts subis",
    "where": [
     "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "mot court en minuscules attendu",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -59759,6 +59889,12 @@
    ]
   },
   {
+   "fr": "Publication en cours…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Publication impossible.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp",
@@ -64888,6 +65024,12 @@
    "fr": "Rien de nouveau pour l'instant. Les nouveaux niveaux, pouvoirs, monstres et boss, les records à refaire après une modification et les nouvelles versions du jeu apparaîtront ici.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rien de plus rapide que la version en ligne",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -74027,6 +74169,12 @@
    ]
   },
   {
+   "fr": "Tenu par {0}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "Tenue",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -77173,6 +77321,12 @@
    ]
   },
   {
+   "fr": "Trouvée par",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Très bien",
    "where": [
     "game/online/RaidReviews.cpp"
@@ -78202,6 +78356,12 @@
    "fr": "Un groupe ne réunit que vos amis.",
    "where": [
     "server/src/social.ts"
+   ]
+  },
+  {
+   "fr": "un guide (course d'un joueur)",
+   "where": [
+    "game/tas/TasCurve.cpp"
    ]
   },
   {
@@ -82802,6 +82962,12 @@
    ]
   },
   {
+   "fr": "Votre PB",
+   "where": [
+    "game/tas/TasTraining.cpp"
+   ]
+  },
+  {
    "fr": "Votre place : {0} · {1}. Chaque groupe compte 8 joueurs au plus.",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
@@ -83760,6 +83926,12 @@
    "fr": "Vérification du fichier…",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Vérification en cours…",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -92999,12 +93171,6 @@
    ]
   },
   {
-   "fr": "… {0} autres sections",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
    "fr": "‰ du parcours attendus (médian ≤ max)",
    "where": [
     "server/src/tas.ts"
@@ -93105,6 +93271,12 @@
    "fr": "−{0} % de sa vie",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "−{0} ms",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {

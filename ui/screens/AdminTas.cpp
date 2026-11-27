@@ -282,6 +282,30 @@ std::vector<Local> scanLocal(const fs::path& userDir, const std::string& server)
     return out;
 }
 
+std::string lastGainText(const TasCurve* curve, const std::string& hash) {
+    const TasCurveVersion* v = curve && !hash.empty() ? curve->find(hash, kSimulationVersion) : nullptr;
+    if (!v) return {};
+    for (size_t i = v->points.size(); i-- > 0;) {
+        const TasCurvePoint& p = v->points[i];
+        if (!p.best()) continue;
+        if (p.kind != TasCurveKind::Improvement) return {};
+        const TasCurvePoint* prev = v->previousBest(i);
+        if (!prev) return {};
+        const std::vector<int64_t> d = tasSegmentDeltas(prev->splits, prev->timeMs, p.splits, p.timeMs);
+        if (d.empty()) return "dernier gain −" + std::to_string(prev->timeMs - p.timeMs) + " ms";
+        // The segments that gained, the biggest gain first (two at most named).
+        std::vector<size_t> k;
+        for (size_t s = 0; s < d.size(); ++s)
+            if (d[s] < 0) k.push_back(s);
+        std::stable_sort(k.begin(), k.end(), [&](size_t a, size_t b) { return d[a] < d[b]; });
+        std::string out = "dernier gain −" + std::to_string(prev->timeMs - p.timeMs) + " ms";
+        for (size_t n = 0; n < k.size() && n < 2; ++n) out += (n == 0 ? " · " : ", ") + tasSegmentName(k[n], d.size() - 1);
+        if (k.size() > 2) out += "…";
+        return out;
+    }
+    return {};
+}
+
 std::string stamp(const std::string& iso) {
     auto t = parseIsoUtc(iso);
     if (!t) return "—";
@@ -476,7 +500,8 @@ void AdminTas::text(const std::string& t, const Rect& box, float size, Color c, 
     const float x = a == Align::Left ? box.x : a == Align::Right ? box.right() : box.center().x;
     ui.label(shownText, {x, box.center().y}, f, c, a, face, VAlign::Middle);
     // What the list's scroll region cuts is not on screen: not placed (the fit tests).
-    if (!inList_ || layout_.list.expanded(0.5f).containsRect(box)) layout_.texts.push_back({box, shownText, f, face, verbatim});
+    if ((!inList_ || layout_.list.expanded(0.5f).containsRect(box)) && (textClip_.empty() || textClip_.expanded(0.5f).containsRect(box)))
+        layout_.texts.push_back({box, shownText, f, face, verbatim});
 }
 
 bool AdminTas::button(const std::string& id, const Rect& r, const std::string& label, bool enabled, bool primary, bool danger) {
@@ -485,7 +510,7 @@ bool AdminTas::button(const std::string& id, const Rect& r, const std::string& l
     st.enabled = enabled;
     st.primary = primary;
     st.danger = danger;
-    if (!inList_ || layout_.list.expanded(0.5f).containsRect(r)) layout_.buttons.push_back(r);
+    if ((!inList_ || layout_.list.expanded(0.5f).containsRect(r)) && (textClip_.empty() || textClip_.expanded(0.5f).containsRect(r))) layout_.buttons.push_back(r);
     return cframe::button(g_.ui, id, r, label, st);
 }
 
@@ -652,6 +677,16 @@ void AdminTas::drawToolbar(float& y) {
         if (kBudgets[i] == st.budgetMinutes) budgetIndex = static_cast<int>(i);
     stepper("budget", "Budget par paire", budgetText(st.budgetMinutes), "Sans limite", budgetIndex, 0, static_cast<int>(std::size(kBudgets)) - 1);
     st.budgetMinutes = kBudgets[static_cast<size_t>(std::clamp(budgetIndex, 0, static_cast<int>(std::size(kBudgets)) - 1))];
+    {
+        // The player's PB of this computer guides each training (docs/TAS.md « Les guides »): on / off.
+        const std::string label = st.guidePb ? "Guide : votre PB (oui)" : "Guide : votre PB (non)";
+        const float w = std::max(ui.text().measure("Guide : votre PB (oui)", FontFace::Bold, ui.s(15)).x,
+                                 ui.text().measure("Guide : votre PB (non)", FontFace::Bold, ui.s(15)).x) + ui.s(30);
+        if (button("guide_pb", place(w), label, true, st.guidePb)) {
+            st.guidePb = !st.guidePb;
+            changed = true;
+        }
+    }
     if (changed) g_.tasTraining.saveSettings();
     {
         const std::string info = std::to_string(TasTraining::cores()) + " cœurs · " + std::to_string(g_.tasTraining.running()) + " en cours · " +
@@ -676,6 +711,16 @@ void AdminTas::draw(const Rect& in) {
     layout_ = AdminTasLayout{};
     layout_.inner = in;
     if (scan_.valid() && scan_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) setLocal(scan_.get());
+    // A training that verified (and wrote) a faster run: this computer's runs read again, so that
+    // « Publier » is there within seconds while the training goes on.
+    for (const auto& j : g_.tasTraining.jobs())
+        if (j->progress && j->progress->bestMs > 0) {
+            int64_t& seen = seenBest_[j->pair.key()];
+            if (seen != j->progress->bestMs) {
+                seen = j->progress->bestMs;
+                rescan_ = true;
+            }
+        }
     if (rescan_ && !scan_.valid()) {
         rescan_ = false;
         scan_ = std::async(std::launch::async, [dir = Paths::userDir(), server = g_.online.config().serverUrl] { return scanLocal(dir, server); });
@@ -683,6 +728,7 @@ void AdminTas::draw(const Rect& in) {
     // The server's list again every 30 s (the other administrators' leases), after a training ended.
     if (g_.online.usable() && g_.online.loggedIn() && ui.time() - serverT_ > 30.0f) loadServer();
     ui.pushId("tas");
+    rowTip_ = charts::Tip{};
     float y = in.y;
     drawToolbar(y);
     y += ui.s(6);
@@ -775,7 +821,20 @@ void AdminTas::drawRow(const Row& row, const Rect& r, float actionsW) {
         bx -= bw(pub);
         const bool canPublish = online && unpublished(row) && (row.server.holder.empty() || row.server.mine) && !publishing_ &&
                                 (!job || job->state != TasTraining::JobState::Stopping);
-        if (button("pub_" + id, {bx, by, bw(pub), bh}, pub, canPublish, true)) {
+        const Rect pr{bx, by, bw(pub), bh};
+        // Grey: why, in its tooltip (publishing never stops nor pauses the training).
+        if (!canPublish && ui.acceptsInput() && ui.usingPointer() && pr.contains(ui.input().mousePos())) {
+            const TasProgress* p = job && job->progress ? &*job->progress : nullptr;
+            std::string why;
+            if (!online) why = "Connexion à Cosmic Online nécessaire";
+            else if (!row.server.holder.empty() && !row.server.mine) why = "Tenu par " + row.server.holder;
+            else if (p && p->candidateMs > 0) why = "Vérification en cours…";
+            else if (publishing_) why = "Publication en cours…";
+            else if (job && job->state == TasTraining::JobState::Stopping) why = "Arrêt de l'entraînement en cours…";
+            else why = "Rien de plus rapide que la version en ligne";
+            if (charts::showTip(ui, rowTip_, {pr.center().x, pr.y}, pr)) rowTip_.title = why;
+        }
+        if (button("pub_" + id, pr, pub, canPublish, true)) {
             publishing_ = true;
             published_ = publishFailed_ = 0;
             publishQueue_ = {{row.local.levelId, row.local.category}};
@@ -899,11 +958,19 @@ void AdminTas::drawRow(const Row& row, const Rect& r, float actionsW) {
             line1 += " · " + durationText(job ? job->sessionMs() : 0);
             if (job && job->progress) {
                 const TasProgress& p = *job->progress;
-                const int64_t best = p.bestMs > 0 ? p.bestMs : p.candidateMs;
-                line2 = best > 0 ? "meilleur " + formatRunTime(best) : std::string("aucune course encore");
-                const int64_t ref = row.server.publishedMs > 0 ? row.server.publishedMs : std::max(row.local.shippedMs, row.local.downloadedMs);
-                if (ref > 0) line2 += " · en ligne " + formatRunTime(ref);
-                line2 += " · " + std::to_string(p.improvements) + " amélioration(s)";
+                const std::string gain = lastGainText(g_.tasTraining.curves().find(row.local.levelId, row.local.category), row.local.hash);
+                if (p.candidateMs > 0) {
+                    // A faster run held by the search, verified at once (cosmic_tas, on a thread).
+                    line2 = "candidat " + formatRunTime(p.candidateMs) + (p.verifying ? " · vérification…" : "");
+                    if (p.bestMs > 0) line2 += " · meilleur " + formatRunTime(p.bestMs);
+                } else if (p.bestMs > 0 && !gain.empty()) {
+                    line2 = "meilleur " + formatRunTime(p.bestMs) + " · " + gain;
+                } else {
+                    line2 = p.bestMs > 0 ? "meilleur " + formatRunTime(p.bestMs) : std::string("aucune course encore");
+                    const int64_t ref = row.server.publishedMs > 0 ? row.server.publishedMs : std::max(row.local.shippedMs, row.local.downloadedMs);
+                    if (ref > 0) line2 += " · en ligne " + formatRunTime(ref);
+                    line2 += " · " + std::to_string(p.improvements) + " amélioration(s)";
+                }
             } else line2 = "démarrage de cosmic_tas…";
             break;
         }

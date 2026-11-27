@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <thread>
 #include <unordered_set>
 
@@ -122,7 +123,18 @@ struct Arrival {
     float cost = 0.0f;               // steps, a lost heart counting as time lost
     Progress p;
     Pad pad;
-    int guide = -1;  // the best run's frames that arrived (that guide), or -1
+    int guide = -1;  // the lead that arrived (its index in the section's leads), or -1: the beam's own
+    std::string source = "beam";  // where its way comes from: "beam", or its lead's source
+};
+
+/// A way through a section offered to the beam besides its own moves (Worker::section): played on
+/// from the section's start while it has not arrived, its state joining the beam at every
+/// generation (the beam branches from it), its arrival an arrival like the others. The best run's
+/// frames, a guide's (a player's run), or any other source that proposes inputs — each named
+/// (`source`: "best", "guide", ...), so that a gain says where it came from.
+struct Lead {
+    std::string source;
+    std::vector<InputFrame> frames;
 };
 
 /// The best run (the seed run): what the search keeps of it to be guided by it everywhere
@@ -173,6 +185,7 @@ struct JoinResult {
     float finish = 0.0f;
     size_t seedAt = 0, played = 0;  // the best run's frames from seedAt, `played` of them
     int tried = 0;
+    size_t src = 0;  // the run re-joined: 0 the best run, k the guide k (SearchOptions::guides[k - 1])
 };
 
 /// An arrival with the finish it gives: measured (played on with the rest of the best run,
@@ -270,6 +283,29 @@ public:
         return a;
     }
 
+    /// `frames` played from the base until the waypoint `target` is reached (a source's way through
+    /// a section, for the splice): the arrival, or nothing (the rules broken, or out of frames).
+    std::optional<Arrival> playTo(const std::vector<InputFrame>& frames, int target) {
+        world_.restore(*base_);
+        Arrival a;
+        bool reached = false;
+        for (const InputFrame& f : frames) {
+            world_.step(f);
+            a.frames.push_back(f);
+            if (broken(baseProgress_.deaths)) return std::nullopt;
+            if (reachedTarget(target)) {
+                reached = true;
+                break;
+            }
+        }
+        a.p = measure(baseProgress_.waypoint);
+        if (a.p.rejected || !(reached || a.p.waypoint > target)) return std::nullopt;
+        a.pad.held = a.frames.empty() ? basePad_.held : a.frames.back().held;
+        const int maxHealth = world_.world().player().maxHealth();
+        a.cost = static_cast<float>(a.frames.size()) + 30.0f * static_cast<float>(std::max(0, maxHealth - a.p.health));
+        return a;
+    }
+
     /// The base: `frames` played from the load (going back to an earlier section).
     void resetBase(const std::vector<InputFrame>& frames, const Pad& pad) {
         world_.restore(origin_);
@@ -303,7 +339,7 @@ public:
 
     /// The beam from the base to the waypoint `target` (reached: arrivals), until `deadline`.
     /// `guides`: the best run's frames for this section (each is played on and joins the beam).
-    std::vector<Arrival> section(int target, Clock::time_point deadline, int maxSteps, const std::vector<std::vector<InputFrame>>& guides, const Effort& effort);
+    std::vector<Arrival> section(int target, Clock::time_point deadline, int maxSteps, const std::vector<Lead>& guides, const Effort& effort);
 
     /// `a` (from the base) played on with the rest of the best run after its section `s`, realigned
     /// by a few steps: the fastest finish under `clockLimit` (none: it does not re-join). An arrival
@@ -500,7 +536,7 @@ Guide Worker::study(const std::vector<InputFrame>& frames) {
     return g;
 }
 
-std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int maxSteps, const std::vector<std::vector<InputFrame>>& guides, const Effort& effort) {
+std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int maxSteps, const std::vector<Lead>& guides, const Effort& effort) {
     std::vector<Arrival> arrivals;
     // The path of every state kept, as a tree (parent, frames of its move).
     std::vector<int> treeParent;
@@ -548,7 +584,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
             GuideRun& G = gr[g];
             G.at = 0;
             G.tree = -1;
-            G.done = guides[g].empty();
+            G.done = guides[g].frames.empty();
             G.pad = basePad_;
             G.p = baseProgress_;
             if (G.done) continue;
@@ -640,7 +676,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         for (size_t g = 0; g < guides.size(); ++g) {
             GuideRun& G = gr[g];
             if (G.done || !G.snap) continue;
-            if (G.at >= guides[g].size()) {
+            if (G.at >= guides[g].frames.size()) {
                 G.done = true;
                 continue;
             }
@@ -648,10 +684,10 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
             Candidate c;
             c.parent = -1 - static_cast<int>(g);
             c.pad = G.pad;
-            const size_t end = std::min(guides[g].size(), G.at + static_cast<size_t>(tune.len));
+            const size_t end = std::min(guides[g].frames.size(), G.at + static_cast<size_t>(tune.len));
             bool brokenRun = false;
             for (size_t i = G.at; i < end; ++i) {
-                const InputFrame& f = guides[g][i];
+                const InputFrame& f = guides[g].frames[i];
                 world_.step(f);
                 c.frames.push_back(f);
                 c.pad.held = f.held;
@@ -695,8 +731,9 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                 a.frames = pathOf(beam[static_cast<size_t>(c.parent)].tree, &c.frames);
             } else {
                 const size_t g = static_cast<size_t>(-1 - c.parent);
-                a.frames.assign(guides[g].begin(), guides[g].begin() + static_cast<std::ptrdiff_t>(gr[g].at));
+                a.frames.assign(guides[g].frames.begin(), guides[g].frames.begin() + static_cast<std::ptrdiff_t>(gr[g].at));
                 a.guide = static_cast<int>(g);
+                a.source = guides[g].source;
             }
             const int maxHealth = world_.world().player().maxHealth();
             a.cost = static_cast<float>(a.frames.size()) + 30.0f * static_cast<float>(std::max(0, maxHealth - c.p.health));
@@ -1039,6 +1076,23 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         log(line);
         if (guide.finishes() && opt.onBest) opt.onBest(guide.clock);
     }
+    // The guides (SearchOptions::guides: a player's runs), studied the same way: the sources of the
+    // search besides the best run (sourceOf(0) is the best run, sourceOf(k) the guide k).
+    std::vector<Guide> extra;
+    for (const std::vector<InputFrame>& g : opt.guides) {
+        if (g.empty()) continue;
+        extra.push_back(workers[0]->study(g));
+        const Guide& x = extra.back();
+        char line[200];
+        if (x.finishes())
+            std::snprintf(line, sizeof line, "Guide %zu : termine la catégorie en %.3f s, %zu section(s) atteinte(s)", extra.size(), static_cast<double>(x.clock),
+                          x.ends.size());
+        else std::snprintf(line, sizeof line, "Guide %zu : ne termine pas la catégorie (utilisé jusqu'où il va : %zu section(s))", extra.size(), x.ends.size());
+        log(line);
+    }
+    out.guideSources = static_cast<int>(extra.size());
+    const size_t nsrc = 1 + extra.size();
+    auto sourceOf = [&](size_t k) -> const Guide& { return k == 0 ? guide : extra[k - 1]; };
     // The best whole run of this search: the seed run, then each faster one found (verified from
     // the load before it is kept).
     std::vector<InputFrame> best;
@@ -1046,7 +1100,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
     if (guide.finishes()) best = opt.seedRun, bestClock = guide.clock;
     bool bestJoined = false;
     size_t bestJoinAt = 0, bestJoinSeedAt = 0;
-    auto offer = [&](std::vector<InputFrame> run, float clock, bool joined, size_t joinAt, size_t joinSeedAt, const std::string& how) {
+    auto offer = [&](std::vector<InputFrame> run, float clock, bool joined, size_t joinAt, size_t joinSeedAt, const std::string& how, const std::string& source) {
         if (bestClock >= 0.0f && clock + 1e-6f >= bestClock) return;
         char line[200];
         if (bestClock >= 0.0f) std::snprintf(line, sizeof line, "%s : %.3f s -> %.3f s", how.c_str(), static_cast<double>(bestClock), static_cast<double>(clock));
@@ -1058,9 +1112,12 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         bestJoinAt = joinAt;
         bestJoinSeedAt = joinSeedAt;
         if (opt.onBest) opt.onBest(clock);
+        out.bestSource = source;
+        if (opt.onRun) opt.onRun(best, clock, source);
     };
 
     std::vector<InputFrame> run;  // the run so far
+    bool splicing = false;        // the splice under way (its gains are the splice's)
     auto adopt = [&](const Arrival& a) {
         std::vector<std::thread> pool;
         for (auto& w : workers) pool.emplace_back([&w, &a] { w->advanceBase(a.frames, a.pad); });
@@ -1080,23 +1137,28 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
     // its next frames; else its frames of that section by the section's index, and from where
     // Nova was nearest to her state now (realigned).
     auto guidesFor = [&](size_t s) {
-        std::vector<std::vector<InputFrame>> gs;
-        const size_t from = guide.sectionStart(s);
-        if (guide.frames.empty() || from == Guide::kNone || from >= guide.exitAt) return gs;
-        const size_t to = std::min(guide.frames.size(), (s < guide.ends.size() ? guide.ends[s] : guide.exitAt) + 240);
-        if (onGuide()) {
-            if (run.size() < to) gs.emplace_back(guide.frames.begin() + static_cast<std::ptrdiff_t>(run.size()), guide.frames.begin() + static_cast<std::ptrdiff_t>(to));
-            return gs;
-        }
+        std::vector<Lead> gs;
         const uint32_t held = workers[0]->basePad().held;
-        gs.push_back(seamed(guide.frames, from, to - from, held));
         const Worker::Nova n = workers[0]->baseNova();
-        for (size_t j : guide.nearest(n.feet, n.vel, from, 120, 1))
-            if (j != from) gs.push_back(seamed(guide.frames, j, to - from, held));
+        for (size_t k = 0; k < nsrc; ++k) {
+            const std::string name = k == 0 ? "best" : "guide";
+            const Guide& g = sourceOf(k);
+            const size_t from = g.sectionStart(s);
+            if (g.frames.empty() || from == Guide::kNone || from >= g.exitAt) continue;
+            const size_t to = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+            if (k == 0 && onGuide()) {
+                if (run.size() < to)
+                    gs.push_back({name, std::vector<InputFrame>(g.frames.begin() + static_cast<std::ptrdiff_t>(run.size()), g.frames.begin() + static_cast<std::ptrdiff_t>(to))});
+                continue;
+            }
+            gs.push_back({name, seamed(g.frames, from, to - from, held)});
+            for (size_t j : g.nearest(n.feet, n.vel, from, 120, 1))
+                if (j != from) gs.push_back({name, seamed(g.frames, j, to - from, held)});
+        }
         return gs;
     };
     // A section searched by every thread from the base: the arrivals, each way once.
-    auto searchSection = [&](size_t s, Clock::time_point until, const Effort& e, const std::vector<std::vector<InputFrame>>& gs) {
+    auto searchSection = [&](size_t s, Clock::time_point until, const Effort& e, const std::vector<Lead>& gs) {
         std::vector<std::vector<Arrival>> found(workers.size());
         {
             std::vector<std::thread> pool;
@@ -1118,12 +1180,19 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
     auto rank = [&](size_t s, std::vector<Arrival> all) {
         std::vector<Ranked> r(all.size());
         for (size_t i = 0; i < all.size(); ++i) r[i].a = std::move(all[i]);
-        const bool canJoin = guide.finishes() && s < guide.ends.size();
+        // The sources an arrival can re-join here: the best run and every guide that finishes.
+        std::vector<size_t> joinable;
+        for (size_t k = 0; k < nsrc; ++k)
+            if (sourceOf(k).finishes() && s < sourceOf(k).ends.size()) joinable.push_back(k);
+        const bool canJoin = !joinable.empty();
         std::vector<size_t> tried;
         const size_t first = std::max<size_t>(8, 2 * workers.size());
         for (size_t i = 0; i < r.size(); ++i)
             if (r[i].a.p.finished || (canJoin && (i < first || r[i].a.guide >= 0))) tried.push_back(i);
-        const float limit = (bestClock >= 0.0f ? bestClock : guide.clock) + 5.0f;
+        float refClock = bestClock;
+        for (size_t k : joinable)
+            if (refClock < 0.0f || sourceOf(k).clock < refClock) refClock = sourceOf(k).clock;
+        const float limit = refClock + 5.0f;
         {
             std::vector<std::thread> pool;
             for (size_t wi = 0; wi < workers.size(); ++wi)
@@ -1133,13 +1202,27 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                     const bool noting = static_cast<bool>(opt.onAttempts);
                     for (size_t k = wi; k < tried.size(); k += workers.size()) {
                         Ranked& x = r[tried[k]];
-                        x.j = workers[wi]->rejoin(guide, s, x.a, limit, noting ? &notes : nullptr, noting ? &crossings : nullptr);
+                        // Into each source: the fastest finish (an arrival at the exit is its own).
+                        for (size_t src : joinable) {
+                            JoinResult j = workers[wi]->rejoin(sourceOf(src), s, x.a, x.j.measured ? std::min(limit, x.j.finish) : limit,
+                                                               noting ? &notes : nullptr, noting ? &crossings : nullptr);
+                            j.src = src;
+                            j.tried += x.j.tried;
+                            if (j.measured && (!x.j.measured || j.finish < x.j.finish)) x.j = j;
+                            else x.j.tried = j.tried;
+                            if (x.a.p.finished) break;
+                        }
                     }
                     sh.attempts(notes, crossings);
                 });
             for (auto& t : pool) t.join();
         }
-        const float rest = canJoin ? guide.clock - guide.clockAt[std::min(guide.ends[s], guide.clockAt.size() - 1)] : 0.0f;
+        float rest = 0.0f;
+        for (size_t k : joinable) {
+            const Guide& g = sourceOf(k);
+            const float left = g.clock - g.clockAt[std::min(g.ends[s], g.clockAt.size() - 1)];
+            if (k == joinable.front() || left < rest) rest = left;
+        }
         for (Ranked& x : r) {
             if (x.j.measured) continue;
             // As if the best run's rest followed from here (a heart lost counted as time), with a
@@ -1163,10 +1246,13 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             std::vector<InputFrame> whole = run;
             whole.insert(whole.end(), top->a.frames.begin(), top->a.frames.end());
             const size_t joinAt = whole.size();
-            const std::vector<InputFrame> tail = seamed(guide.frames, top->j.seedAt, top->j.played, top->a.pad.held);
+            const std::vector<InputFrame> tail = seamed(sourceOf(top->j.src).frames, top->j.seedAt, top->j.played, top->a.pad.held);
             whole.insert(whole.end(), tail.begin(), tail.end());
             const float c = workers[0]->evaluate(whole, 0, workers[0]->origin(), 0, static_cast<uint32_t>(whole.size()));
-            if (c >= 0.0f) offer(std::move(whole), c, top->j.played > 0, joinAt, top->j.seedAt, "Raccord après la section " + std::to_string(s + 1));
+            const std::string into = top->j.src == 0 ? std::string() : " (dans le guide " + std::to_string(top->j.src) + ")";
+            if (c >= 0.0f)
+                offer(std::move(whole), c, top->j.played > 0 && top->j.src == 0, joinAt, top->j.seedAt, "Raccord après la section " + std::to_string(s + 1) + into,
+                      splicing ? std::string("splice") : top->a.source == "best" ? std::string("beam") : top->a.source);
             else log("Raccord après la section " + std::to_string(s + 1) + " non reproduit depuis le départ : ignoré");
         }
         return r;
@@ -1178,6 +1264,98 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                       static_cast<double>(how ? how->finish() : 0.0f), static_cast<long long>(sh.explored.load()));
         log(line);
     };
+
+    // The splice (docs/TAS.md « Les guides »): from the load, section by section, every source's
+    // way through the section (the best run's and each guide's, by the section's index and
+    // realigned on Nova's position) is played from where the splice is; the arrivals are ranked by
+    // the finish they give (re-joined into every source, measured) and the best one is taken — a
+    // sum of the best segments that really plays. A faster whole run is offered at once (played
+    // from the load, then verified like any run); the round then builds on the best run so far.
+    auto resetAll = [&](const std::vector<InputFrame>& frames, Pad pad) {
+        std::vector<std::thread> pool;
+        for (auto& w : workers) pool.emplace_back([&w, &frames, pad] { w->resetBase(frames, pad); });
+        for (auto& t : pool) t.join();
+    };
+    if (opt.splice && !extra.empty() && sections > 0 && opt.startRun.empty() && !sh.stopped() && Clock::now() < deadline) {
+        splicing = true;
+        log("Assemblage : la meilleure course et " + std::to_string(extra.size()) + " guide(s), section par section");
+        run.clear();
+        resetAll(run, Pad{});
+        for (size_t s = 0; s < sections && !sh.stopped() && Clock::now() < deadline; ++s) {
+            if (opt.onStage) opt.onStage(static_cast<int>(s) + 1, static_cast<int>(sections));
+            const uint32_t held = workers[0]->basePad().held;
+            const Worker::Nova n = workers[0]->baseNova();
+            std::vector<std::pair<size_t, std::vector<InputFrame>>> ways;  // (source, its frames from the base)
+            for (size_t k = 0; k < nsrc; ++k) {
+                const Guide& g = sourceOf(k);
+                const size_t from = g.sectionStart(s);
+                if (g.frames.empty() || from == Guide::kNone || from >= g.exitAt) continue;
+                const size_t to = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+                std::vector<size_t> starts = {from};
+                if (s > 0)
+                    for (size_t j : g.nearest(n.feet, n.vel, from, 120, 2))
+                        if (std::find(starts.begin(), starts.end(), j) == starts.end()) starts.push_back(j);
+                for (size_t j : starts)
+                    if (j < to) ways.emplace_back(k, seamed(g.frames, j, to - j, held));
+            }
+            std::vector<std::optional<Arrival>> got(ways.size());
+            {
+                std::vector<std::thread> pool;
+                for (size_t wi = 0; wi < workers.size(); ++wi)
+                    pool.emplace_back([&, wi] {
+                        for (size_t k = wi; k < ways.size(); k += workers.size()) {
+                            got[k] = workers[wi]->playTo(ways[k].second, course.sectionEnds()[s]);
+                            sh.count();
+                        }
+                    });
+                for (auto& t : pool) t.join();
+            }
+            std::vector<Arrival> all;
+            for (size_t k = 0; k < got.size(); ++k)
+                if (got[k]) {
+                    got[k]->guide = static_cast<int>(k);
+                    got[k]->source = ways[k].first == 0 ? "best" : "guide";
+                    all.push_back(std::move(*got[k]));
+                }
+            out.spliceWays += static_cast<int>(ways.size());
+            out.spliceArrivals += static_cast<int>(all.size());
+            if (all.empty()) {
+                log("Assemblage : aucune source ne passe la section " + std::to_string(s + 1) + " depuis là");
+                break;
+            }
+            std::vector<Ranked> ranked = rank(s, std::move(all));
+            for (const Ranked& x : ranked) out.spliceJoined += x.j.measured ? 1 : 0;
+            const Ranked top = ranked.front();
+            const size_t src = ways[static_cast<size_t>(top.a.guide)].first;
+            adopt(top.a);
+            if (!sameWorlds()) {
+                out.why = "les mondes des fils de la recherche divergent (non-déterminisme)";
+                return out;
+            }
+            if (src != 0) ++out.splicedSections;
+            const std::string from = src == 0 ? std::string("la meilleure course") : "le guide " + std::to_string(src);
+            char line[240];
+            std::snprintf(line, sizeof line, "Assemblage, section %zu/%zu : %s, %.3f s au chrono, fin %s %.3f s", s + 1, sections, from.c_str(),
+                          static_cast<double>(top.a.p.clock), top.j.measured ? "mesurée" : "estimée", static_cast<double>(top.finish()));
+            log(line);
+            if (top.a.p.finished) break;
+        }
+        if (!run.empty()) {
+            const float c = workers[0]->evaluate(run, 0, workers[0]->origin(), 0, static_cast<uint32_t>(run.size()));
+            out.spliceClock = c;
+            if (c >= 0.0f) offer(run, c, false, 0, 0, "Assemblage des guides", "splice");
+        }
+        // The round builds on the best run so far (the splice's, or a re-join's, when faster).
+        if (bestClock >= 0.0f && (!guide.finishes() || bestClock + 1e-6f < guide.clock)) {
+            guide = workers[0]->study(best);
+            char line[160];
+            std::snprintf(line, sizeof line, "La recherche part de la meilleure course assemblée : %.3f s", static_cast<double>(guide.clock));
+            log(line);
+        }
+        run.clear();
+        resetAll(run, Pad{});
+        splicing = false;
+    }
 
     const Effort normal{opt.beam, 10, 16, 4};
     const bool windowed = opt.windowFirst > 0 && guide.finishes() && sections > 0 && guide.ends.size() >= sections;
@@ -1285,7 +1463,7 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
         // The run found, played again from the load.
         if (out.why.empty() && !run.empty()) {
             const float c = workers[0]->evaluate(run, 0, workers[0]->origin(), 0, static_cast<uint32_t>(run.size()));
-            if (c >= 0.0f) offer(run, c, false, 0, 0, "Course entière trouvée");
+            if (c >= 0.0f) offer(run, c, false, 0, 0, "Course entière trouvée", "beam");
             else if (bestClock < 0.0f) out.why = "la course trouvée ne termine pas la catégorie";
         }
     } else {
@@ -1495,6 +1673,8 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             }
             current = std::move(edited);
             if (clock + 1e-6f < currentClock && opt.onBest) opt.onBest(clock);
+            if (clock + 1e-6f < currentClock) out.bestSource = "polish";
+            if (clock + 1e-6f < currentClock && opt.onRun) opt.onRun(current, clock, "polish");
             currentClock = clock;
             currentChanges = changes(current);
             version.fetch_add(1);

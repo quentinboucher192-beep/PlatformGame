@@ -13,10 +13,12 @@
 #include <string>
 #include <vector>
 
+#include "engine/core/FileUtil.h"
 #include "engine/core/Paths.h"
 #include "game/content/ContentDatabase.h"
 #include "game/levels/LevelData.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/online/Replay.h"
 #include "game/tas/TasFile.h"
 #include "tests/TestFramework.h"
 #include "tools/tas/Output.h"
@@ -180,5 +182,130 @@ TEST_CASE("tas search: a window round keeps the sections before it, re-joins the
     }
     // Never worse, and verified.
     CHECK(ms(out.clock) <= S.bestMs);
+    CHECK(S.verified(out.inputs) == ms(out.clock));
+}
+
+namespace {
+
+/// `run` with `idle` steps of nothing held inserted just after `at` (a pause, as a player would
+/// stand still there): the rest pressed again from nothing.
+std::vector<InputFrame> withPause(const std::vector<InputFrame>& run, size_t at, int idle) {
+    std::vector<InputFrame> out(run.begin(), run.begin() + static_cast<std::ptrdiff_t>(at));
+    InputFrame none;
+    none.released = out.empty() ? 0 : out.back().held;
+    out.push_back(none);
+    for (int i = 1; i < idle; ++i) out.push_back(InputFrame{});
+    for (size_t i = at; i < run.size(); ++i) {
+        InputFrame f = run[i];
+        if (i == at) {
+            f.pressed = f.held;
+            f.released = 0;
+        }
+        out.push_back(f);
+    }
+    return out;
+}
+
+}  // namespace
+
+TEST_CASE("tas guides: a guide of another version of the level or of the simulation is refused") {
+    ReplayData r;
+    r.levelId = "sylvanox_01";
+    r.levelHash = std::string(64, 'a');
+    r.attemptId = makeUuidV4();
+    r.keysPerSlot = true;
+    r.inputs.resize(10);
+    r.frames.push_back(ReplayFrame{});
+    CHECK(tas::guideRefusal(r, "sylvanox_01", std::string(64, 'a')).empty());
+    CHECK(!tas::guideRefusal(r, "sylvanox_01", std::string(64, 'b')).empty());  // another version of the level
+    CHECK(!tas::guideRefusal(r, "sylvanox_02", std::string(64, 'a')).empty());  // another level
+    ReplayData old = r;
+    old.simVersion = static_cast<uint16_t>(kSimulationVersion - 1);
+    CHECK(tas::guideRefusal(old, "sylvanox_01", std::string(64, 'a')).find("simulation") != std::string::npos);
+    ReplayData coarse = r;
+    coarse.inputs.clear();
+    CHECK(!tas::guideRefusal(coarse, "sylvanox_01", std::string(64, 'a')).empty());
+    // Through the file, as cosmic_tas --guide reads it.
+    const fs::path file = Paths::userDir() / "tas_guide_refused.cprz";
+    r.levelHash = std::string(64, 'c');
+    CHECK(FileUtil::writeBinary(file, r.encode()));
+    std::vector<InputFrame> in;
+    std::string id, why;
+    CHECK(!tas::readGuideReplay(Paths::toUtf8(file), "sylvanox_01", std::string(64, 'a'), in, id, why));
+    CHECK(why.find("version du niveau") != std::string::npos);
+    std::error_code ec;
+    fs::remove(file, ec);
+}
+
+TEST_CASE("tas guides: a guide faster early and a best run faster late are spliced into a faster run, verified") {
+    Shipped S;
+    if (!S.ok) return;
+    const auto ends = tas::sectionEndsOf(S.content, *S.level, RunCategory::AnyPercent, S.best);
+    if (ends.size() < 7) return;
+    // The best run (the machine's): slower early (a pause after CP1, or the next checkpoint where
+    // the run still finishes); the guide (a player's run): slower late (a pause after CP6, before
+    // the exit) — the shape of a player's run against the machine's.
+    std::vector<InputFrame> tasRun, guide;
+    int64_t tasMs = -1;
+    for (size_t cp : {size_t(0), size_t(1), size_t(2)}) {
+        tasRun = withPause(S.best, ends[cp], 240);
+        tasMs = S.verified(tasRun);
+        if (tasMs > 0) break;
+    }
+    guide = withPause(S.best, ends[5], 240);
+    const int64_t guideMs = S.verified(guide);
+    std::printf("  course de la machine ralentie tôt : %lld ms ; guide ralenti tard : %lld ms ; livrée %lld ms\n", static_cast<long long>(tasMs),
+                static_cast<long long>(guideMs), static_cast<long long>(S.bestMs));
+    CHECK(tasMs > S.bestMs && guideMs > S.bestMs);
+    if (tasMs <= 0 || guideMs <= 0) return;
+    tas::SearchOptions o;
+    o.category = RunCategory::AnyPercent;
+    o.threads = 2;
+    o.budgetSeconds = 40.0;
+    o.seed = 9;
+    o.seedRun = tasRun;
+    o.guides = {guide};
+    o.windowFirst = o.windowLast = 7;  // a short window after the splice: the splice is the point
+    o.refine = false;
+    std::vector<std::pair<std::vector<InputFrame>, float>> handed;  // what the search hands over to verify
+    o.onRun = [&](const std::vector<InputFrame>& run, float clock, const std::string&) { handed.push_back({run, clock}); };
+    const tas::SearchOutcome out = tas::search(S.content, *S.level, o);
+    std::printf("  assemblage : %.3f s, %d section(s) du guide, %d voie(s), %d arrivée(s), %d raccordée(s) ; course gardée %.3f s (%s)\n",
+                static_cast<double>(out.spliceClock), out.splicedSections, out.spliceWays, out.spliceArrivals, out.spliceJoined,
+                static_cast<double>(out.clock), out.bestSource.c_str());
+    CHECK(out.guideSources == 1);
+    CHECK(out.spliceClock > 0.0f);
+    CHECK(out.splicedSections >= 1);
+    // Faster than both, and a real run: the normal replay playback gives its time.
+    CHECK(out.found && ms(out.clock) < std::min(tasMs, guideMs));
+    CHECK(S.verified(out.inputs) == ms(out.clock));
+    // Each faster run was handed over at once (to be verified while the search goes on).
+    CHECK(!handed.empty());
+    bool same = false;
+    for (const auto& [run, clock] : handed) same = same || (ms(clock) == ms(out.clock) && S.verified(run) == ms(clock));
+    CHECK(same);
+}
+
+TEST_CASE("tas guides: a splice slower than the best run is never kept") {
+    Shipped S;
+    if (!S.ok) return;
+    const auto ends = tas::sectionEndsOf(S.content, *S.level, RunCategory::AnyPercent, S.best);
+    if (ends.size() < 7) return;
+    // The guide: the best run with a pause after CP3 — slower from there on, never faster.
+    const std::vector<InputFrame> guide = withPause(S.best, ends[2], 240);
+    tas::SearchOptions o;
+    o.category = RunCategory::AnyPercent;
+    o.threads = 2;
+    o.budgetSeconds = 20.0;
+    o.seed = 11;
+    o.seedRun = S.best;
+    o.guides = {guide};
+    o.windowFirst = o.windowLast = 7;
+    o.refine = false;
+    int slower = 0;
+    o.onRun = [&](const std::vector<InputFrame>&, float clock, const std::string&) { slower += ms(clock) < S.bestMs ? 0 : 1; };
+    const tas::SearchOutcome out = tas::search(S.content, *S.level, o);
+    CHECK(out.found && ms(out.clock) <= S.bestMs);
+    CHECK(slower == 0);  // nothing slower is ever handed over to be written
     CHECK(S.verified(out.inputs) == ms(out.clock));
 }
