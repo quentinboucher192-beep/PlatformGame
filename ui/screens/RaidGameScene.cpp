@@ -1680,7 +1680,9 @@ public:
                 inPlay += sw->member(s).presence == GameWorld::Presence::Playing;
             }
             std::string state = g.wiped ? "ÉLIMINÉ · ses joueurs regardent" : std::to_string(inPlay) + " / " + std::to_string(seats) + " joueurs simulés en jeu";
-            if (g.relieves > 0) state += " · renfort du Groupe " + std::to_string(g.relieves);
+            // §39: waiting in its branch (its gigaboss fell) until a group is wiped; a group that replaced a wiped one.
+            if (g.waiting) state += " · EN ATTENTE : il ne part que pour remplacer un groupe éliminé";
+            if (g.relieves > 0) state += " · a remplacé le Groupe " + std::to_string(g.relieves);
             if (here) state += shownSeated() ? " · VOUS ÊTES ICI" : " · vous regardez";
             if (relay_.on && relay_.started) {
                 // 2.80: the real players of the test in this group.
@@ -1815,8 +1817,13 @@ public:
             part.fallen = heart ? sim_->heartFallen() : sim_->gigabossDown(b);
             part.relic = !heart && simRelic(b);
             // 2.86: its gigaboss's bar: the real health in the simulations of the groups in its lair; several groups
-            // there apart: the lowest (the best progress).
-            if (!part.fallen)
+            // there apart: the lowest (the best progress). §39: the heart's is ONE bar for every group, each in its own
+            // instance: its shared health (every instance's part summed) and its shared phase, never an instance's own.
+            if (heart && sim_->heartOpen() && !part.fallen) {
+                part.health = static_cast<float>(raid::kHeartUnits - sim_->heartTaken()) / static_cast<float>(raid::kHeartUnits);
+                part.phase = std::clamp(sim_->heartPhase(), 1, 4);
+                part.shared = true;
+            } else if (!part.fallen)
                 for (const auto& gp : groups) {
                     float h = 0.0f;
                     int ph = 0;
@@ -1845,6 +1852,7 @@ public:
                 for (const auto& st : g.past) was = was || st.branch == b;
                 if (!here && !was) continue;
                 if (here && !g.wiped) part.groups.push_back(g.id);
+                if (here && !g.wiped && g.waiting) part.waiting.push_back(g.id);  // §39
                 if (here && shownSeated() && static_cast<int>(i) == simPlace().first) part.mine = true;  // 2.95: « Vous »
                 const int sec = static_cast<int>(part.whole.sections.size());
                 part.whole.sections.push_back(g.name + (here ? (g.wiped ? " · éliminé ici" : " · sur place") : " · parti ailleurs"));
@@ -1910,6 +1918,7 @@ public:
             const raid::RaidRun& run = g.session->run();
             const raid::ZoneInfo* here = br.zone(run.zone());
             c.state = g.wiped ? "éliminé · ses joueurs regardent"
+                      : g.waiting ? br.gigaboss + " tombé · en attente"  // §39: it stays in its branch
                       : c.fallen ? (heart ? std::string("le Cœur est tombé") : br.gigaboss + " tombé")
                                  : "en combat · " + (run.zone() == 0 ? std::string("Vestiaire") : here ? here->name : std::string("?"));
             for (const raid::ZoneInfo& z : br.zones) c.dots.push_back(raid::zoneFinished(br, z.id, sim_->mask(g.branch)) ? 2 : z.id == run.zone() ? 1 : 0);

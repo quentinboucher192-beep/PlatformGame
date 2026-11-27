@@ -117,7 +117,11 @@ struct Part {
     bool open = true;      // its numbers are on this computer (else `closed` says where they are)
     std::string closed;
     std::vector<int> groups;  // the groups there now (their numbers)
+    /// §39: those of `groups` « en attente » there (its gigaboss fell: they stay until a group is wiped elsewhere).
+    std::vector<int> waiting;
     bool mine = false;        // 2.95: this computer's player is there now (« · Vous » on its callout)
+    /// §39 (the heart): its single health shared by every group fighting it, each in its own instance.
+    bool shared = false;
     std::vector<Table> zones; // its zones' tables (the newest first)
     Table whole;              // the whole part: its groups, a header each
     std::vector<ZoneTab> tabs; // its zones' tabs after « Toute la branche » (empty: the tabs « Zone » / « Toute la branche »)
@@ -131,6 +135,9 @@ struct Part {
 
 /// 2.86: what a part's bar says (« 62 % · phase 2 », « Vaincu », « — · phase 2 »), empty: no bar.
 std::string healthText(const Part& p);
+/// §39: the groups line of a part's callout (« Groupes 3, 7 », « Groupe 1 en attente », « Groupes 2, 8 (8 en attente) »,
+/// « · Vous »), « Aucun groupe ».
+std::string groupsText(const Part& p);
 
 /// 2.86: a part's callout measured (the rows of drawCallout): every box inside the callout, none over another.
 struct Callout {

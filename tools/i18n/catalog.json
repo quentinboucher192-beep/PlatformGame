@@ -1335,6 +1335,12 @@
    ]
   },
   {
+   "fr": "a remplacé le Groupe {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "a remplacé les données de {0} par celles de {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -19602,6 +19608,12 @@
    ]
   },
   {
+   "fr": "CŒUR · {0} groupes le combattent, chacun dans son instance : une seule vie pour tous, leurs dégâts additionnés",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "Cœur à nu",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -23710,6 +23722,18 @@
    ]
   },
   {
+   "fr": "dégage {0} : frappe {1}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Dégager {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Dégel",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -24989,6 +25013,12 @@
    ]
   },
   {
+   "fr": "EN ATTENTE : il ne part que pour remplacer un groupe éliminé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "En attente d'envoi vers votre profil Cosmic Online.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -25049,6 +25079,12 @@
    "fr": "en attente · {0}",
    "where": [
     "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "EN ATTENTE · {0} reste dans la branche {1} ({2} tombé) : il n'en part que pour remplacer un groupe éliminé",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -31588,6 +31624,12 @@
    ]
   },
   {
+   "fr": "Groupe {0} en attente{1}",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Groupe {0} · chef {1}",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -31795,6 +31837,12 @@
    ]
   },
   {
+   "fr": "GROUPE ÉLIMINÉ · {0} dans {1} : ses joueurs regardent, sa part du Cœur reste comptée",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE ÉLIMINÉ — mode spectateur",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -31829,7 +31877,6 @@
   {
    "fr": "Groupes",
    "where": [
-    "ui/online/ContribTable.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
@@ -31863,6 +31910,18 @@
    "fr": "Groupes présents · {0} groupes requis",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes {0} ({1} en attente){2}",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes {0} en attente{1}",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -62014,6 +62073,18 @@
    ]
   },
   {
+   "fr": "REMPLACEMENT · {0} quitte sa branche pour remplacer {1}, éliminé dans ? ({2}) : il reprend cette zone",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "REMPLACEMENT · {0} quitte sa branche pour remplacer {1}, éliminé dans {2} ({3}) : il reprend cette zone",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "Remplacer",
    "where": [
     "ui/screens/PowerChoiceScene.cpp"
@@ -62139,24 +62210,6 @@
    "fr": "Renfort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
-   ]
-  },
-  {
-   "fr": "renfort du Groupe {0}",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Renfort {0}",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
-   ]
-  },
-  {
-   "fr": "RENFORT · {0} part reprendre {1}",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -77661,6 +77714,12 @@
    ]
   },
   {
+   "fr": "une seule vie pour tous les groupes, chacun dans son instance",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Une seule vie. Un dragon d'obsidienne. Huit phases.",
    "where": [
     "data/levels/confins_01.json"
@@ -84481,6 +84540,18 @@
    ]
   },
   {
+   "fr": "{0} double la branche {1}",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "{0} double la branche {1} : un groupe seul n'en atteint jamais le Gigaboss",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "{0} défaite sur {1} arrivée",
    "where": [
     "ui/screens/StatisticsLevels.cpp"
@@ -86116,6 +86187,18 @@
    ]
   },
   {
+   "fr": "{0} quitte sa branche pour la branche {1} : un groupe seul n'en atteint jamais le Gigaboss",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "{0} quitte sa branche pour la branche {1}, qu'aucun groupe ne joue",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "{0} rebond  ·  Carapace : dégâts reçus {1}  ·  Étourdi : dégâts reçus {2}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -86149,12 +86232,6 @@
    "fr": "{0} refusée : {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} rejoint la branche {1} (plus rien à faire dans la sienne)",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -86678,6 +86755,12 @@
   },
   {
    "fr": "{0} tombé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tombé · en attente",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]

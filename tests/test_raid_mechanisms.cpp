@@ -590,6 +590,20 @@ TEST_CASE("raid mechanisms (2.86): the bosses' health bars on the titan's callou
     CHECK(contrib::healthText(p).empty());  // not discovered: no bar
     p.fallen = true;
     CHECK(contrib::healthText(p) == "Vaincu");
+    // §39: the groups line says the groups waiting in a part (its Gigaboss fallen), « Vous » kept.
+    contrib::Part gp;
+    CHECK(contrib::groupsText(gp) == "Aucun groupe");
+    gp.groups = {1};
+    gp.waiting = {1};
+    CHECK(contrib::groupsText(gp) == "Groupe 1 en attente");
+    gp.groups = {2, 8};
+    gp.waiting = {8};
+    CHECK(contrib::groupsText(gp) == "Groupes 2, 8 (8 en attente)");
+    gp.waiting = {2, 8};
+    gp.mine = true;
+    CHECK(contrib::groupsText(gp) == "Groupes 2, 8 en attente · Vous");
+    gp.waiting.clear();
+    CHECK(contrib::groupsText(gp) == "Groupes 2, 8 · Vous");
 
     // The server's results: the heart's validated shared health and phase, each gigaboss's best phase; sealed: nothing.
     const Json res = Json::parse(R"({"gigaboss":{"defeated_bosses":["Pyroclast"],"fights":[
