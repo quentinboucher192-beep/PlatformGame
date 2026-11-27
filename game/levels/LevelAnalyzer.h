@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -101,6 +102,35 @@ std::vector<PowerStation> planPowerStations(const LevelData& level, const Conten
 /// The intended route of the level (feet positions, start -> checkpoints in progress order
 /// -> exit), computed with every power of the game: the progress bar measures along it.
 std::vector<Vec2> intendedRoute(const LevelData& level, const ContentDatabase& content);
+
+/// Distances TO a place over the movement model of the analysis (the moves shortest routes take,
+/// reversed: falling anywhere, rising and moving sideways within the reach of a support), with
+/// every power of the game and the doors open. The machine's search (docs/TAS.md) measures with
+/// it how far Nova's feet are from the next checkpoint (or collectible, or the exit) along the
+/// level's own geometry, wherever she is.
+class LevelNavigator {
+public:
+    LevelNavigator(const LevelData& level, const ContentDatabase& content);
+    ~LevelNavigator();
+    LevelNavigator(const LevelNavigator&) = delete;
+    LevelNavigator& operator=(const LevelNavigator&) = delete;
+
+    /// Distances (px) from every cell to `targetFeet`; dist empty when the target is in no free cell.
+    struct Field {
+        std::vector<float> dist;
+        bool valid() const { return !dist.empty(); }
+    };
+    Field fieldTo(Vec2 targetFeet) const;
+    /// The distance from `feet` (the nearest cell of the model within a few cells that has one),
+    /// infinity when none.
+    float distance(const Field& f, Vec2 feet) const;
+    /// The feet of the free cell nearest to `p` (`p` when none).
+    Vec2 snap(Vec2 p) const;
+
+private:
+    struct Impl;
+    std::unique_ptr<Impl> impl_;
+};
 
 /// Writes a PPM picture of the analysis (terrain, reachable space, routes, checkpoints).
 bool writeAnalysisImage(const LevelData& level, const ContentDatabase& content, const LevelAnalysis& a, const std::string& path,

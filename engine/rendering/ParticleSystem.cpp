@@ -1,7 +1,9 @@
 #include "engine/rendering/ParticleSystem.h"
 
 #include <cmath>
+#include <mutex>
 
+#include "engine/core/ArenaHeap.h"
 #include "engine/core/Log.h"
 #include "engine/resources/ResourceManager.h"
 
@@ -90,6 +92,9 @@ const ParticlePreset* ParticleSystem::preset(const std::string& name) const {
 void ParticleSystem::emit(const std::string& name, Vec2 pos, float scale, Vec2 dir, const Color* tint) {
     const ParticlePreset* p = preset(name);
     if (!p) {
+        heap::ArenaOutside normalHeap;  // what was warned is global: never in a savestate's arena (engine/core/ArenaHeap.h)
+        static std::mutex mutex;  // worlds stepped on several threads (the machine's search)
+        std::lock_guard<std::mutex> lock(mutex);
         static std::unordered_map<std::string, bool> warned;
         if (!warned[name]) Log::warn("Unknown particle preset '{}'", name);
         warned[name] = true;

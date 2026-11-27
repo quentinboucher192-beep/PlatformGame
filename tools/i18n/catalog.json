@@ -11037,6 +11037,12 @@
    ]
   },
   {
+   "fr": "catégorie inconnue",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "Catégorie inconnue.",
    "where": [
     "server/src/leaderboards.ts"
@@ -13468,6 +13474,7 @@
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/tas/TasFile.cpp",
     "packaging/DependencyCollector.cpp",
     "ui/online/RaidHud.cpp"
    ]
@@ -24579,6 +24586,12 @@
    ]
   },
   {
+   "fr": "empreinte du niveau invalide",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "empreinte incorrecte pour « {0} »",
    "where": [
     "server/src/backups.ts"
@@ -27931,6 +27944,12 @@
    ]
   },
   {
+   "fr": "fichier absent",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "Fichier abîmé : l'onglet repart de zéro, l'ancien est gardé en stats.json.bak.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -28929,6 +28948,7 @@
     "game/progression/NewsCenter.cpp",
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidCatalog.cpp",
+    "game/tas/TasFile.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
@@ -28937,6 +28957,12 @@
     "ui/screens/GameScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "format inconnu",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -35293,6 +35319,7 @@
    "fr": "JSON invalide",
    "where": [
     "game/online/LevelFingerprint.cpp",
+    "game/tas/TasFile.cpp",
     "server/src/campaignRevisions.ts",
     "server/src/enemyRevisions.ts",
     "server/src/live.ts",
@@ -44858,6 +44885,12 @@
    ]
   },
   {
+   "fr": "Meilleur temps trouvé par la machine",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur {0}",
    "where": [
     "ui/screens/TrainingSession.cpp"
@@ -47453,6 +47486,12 @@
    ]
   },
   {
+   "fr": "niveau absent",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "Niveau absent de ce jeu : installez-le pour regarder ce replay.",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -48335,6 +48374,12 @@
    "fr": "Nom du projet ou du propriétaire",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "nom du replay invalide",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -52514,6 +52559,12 @@
    "fr": "Pas un frisson",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "pas un objet JSON",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -61361,6 +61412,7 @@
     "game/ghost/GhostStore.cpp",
     "game/ghost/PersonalBests.cpp",
     "game/online/DailyChallenges.cpp",
+    "game/tas/TasFile.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CommunityPublishScene.cpp"
    ]
@@ -61369,6 +61421,12 @@
    "fr": "REPLAY - {0}",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "replay absent",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -61388,6 +61446,12 @@
    "fr": "replay d'un autre niveau.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "replay d'une autre version du niveau",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {
@@ -62895,6 +62959,7 @@
    "where": [
     "game/race/Race.cpp",
     "game/records/PlayStats.cpp",
+    "game/tas/TasFile.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -70723,6 +70788,12 @@
    ]
   },
   {
+   "fr": "temps absent",
+   "where": [
+    "game/tas/TasFile.cpp"
+   ]
+  },
+  {
    "fr": "Temps classé",
    "where": [
     "game/online/OnlineService.cpp"
@@ -78102,6 +78173,12 @@
    "fr": "version de format {0} non prise en charge",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "version de la simulation absente",
+   "where": [
+    "game/tas/TasFile.cpp"
    ]
   },
   {

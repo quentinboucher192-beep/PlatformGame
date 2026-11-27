@@ -988,6 +988,77 @@ std::vector<PowerStation> planPowerStations(const LevelData& level, const Conten
     return stations;
 }
 
+struct LevelNavigator::Impl {
+    Model m;
+};
+
+LevelNavigator::LevelNavigator(const LevelData& level, const ContentDatabase& content) : impl_(std::make_unique<Impl>()) {
+    std::set<std::string> all;
+    for (const PowerDefinition* p : content.powers()) all.insert(p->id);
+    float rise = 0.0f, air = 0.0f;
+    impl_->m = buildModel(level, content, all, rise, air);
+}
+
+LevelNavigator::~LevelNavigator() = default;
+
+LevelNavigator::Field LevelNavigator::fieldTo(Vec2 targetFeet) const {
+    const Model& m = impl_->m;
+    const Grid& g = m.g;
+    Field f;
+    const int target = nearestFree(m, targetFeet, 6);
+    if (target < 0) return f;
+    f.dist.assign(static_cast<size_t>(g.w) * static_cast<size_t>(g.h), kInf);
+    using Item = std::pair<float, int>;
+    std::priority_queue<Item, std::vector<Item>, std::greater<>> q;
+    f.dist[static_cast<size_t>(target)] = 0.0f;
+    q.push({0.0f, target});
+    static const int dirs[8][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+    while (!q.empty()) {
+        auto [d, n] = q.top();
+        q.pop();
+        if (d > f.dist[static_cast<size_t>(n)]) continue;
+        const int nx = n % g.w, ny = n / g.w;
+        // The moves of shortest() that end in n, taken backwards: from c = n - dv.
+        for (const auto& dv : dirs) {
+            const int cx = nx - dv[0], cy = ny - dv[1];
+            if (!m.canEnter(cx, cy)) continue;
+            if (!m.reach[static_cast<size_t>(n)] && ny <= cy) continue;
+            if (dv[0] != 0 && dv[1] != 0 && (!m.isFree(cx + dv[0], cy) || !m.isFree(cx, cy + dv[1]))) continue;
+            const float nd = d + ((dv[0] != 0 && dv[1] != 0) ? 1.41421356f : 1.0f) * kCell;
+            const int c = g.idx(cx, cy);
+            if (nd < f.dist[static_cast<size_t>(c)]) {
+                f.dist[static_cast<size_t>(c)] = nd;
+                q.push({nd, c});
+            }
+        }
+    }
+    return f;
+}
+
+float LevelNavigator::distance(const Field& f, Vec2 feet) const {
+    if (!f.valid()) return kInf;
+    const Model& m = impl_->m;
+    // The cell whose feet (cellFeet) are nearest.
+    const int cx = static_cast<int>(std::floor((feet.x - m.g.ox) / kCell - static_cast<float>(m.bw) * 0.5f + 0.5f));
+    const int cy = static_cast<int>(std::floor((feet.y - m.g.oy) / kCell - 0.5f));
+    float best = kInf;
+    for (int r = 0; r <= 3 && !std::isfinite(best); ++r)
+        for (int dy = -r; dy <= r; ++dy)
+            for (int dx = -r; dx <= r; ++dx) {
+                if (std::max(std::abs(dx), std::abs(dy)) != r) continue;
+                const int x = cx + dx, y = cy + dy;
+                if (!m.g.in(x, y)) continue;
+                const float d = f.dist[static_cast<size_t>(m.g.idx(x, y))];
+                if (std::isfinite(d)) best = std::min(best, d + static_cast<float>(r) * kCell);
+            }
+    return best;
+}
+
+Vec2 LevelNavigator::snap(Vec2 p) const {
+    const int c = nearestFree(impl_->m, p, 6);
+    return c < 0 ? p : cellFeet(impl_->m, c);
+}
+
 std::vector<Vec2> intendedRoute(const LevelData& level, const ContentDatabase& content) {
     std::vector<Vec2> out;
     std::set<std::string> all;

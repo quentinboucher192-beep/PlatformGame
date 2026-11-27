@@ -1,4 +1,5 @@
 #include "engine/core/I18n.h"
+#include "engine/core/ArenaHeap.h"
 
 #include <algorithm>
 #include <functional>
@@ -924,6 +925,7 @@ void setDictionaryFolder(const std::string& folderUtf8) {
 }
 
 const Dictionary& dictionary(Language l) {
+    heap::ArenaOutside normalHeap;  // the dictionaries are global: never in a savestate's arena (engine/core/ArenaHeap.h)
     static const Dictionary kNone;
     State& st = state();
     std::lock_guard lock(st.mutex);
@@ -943,6 +945,7 @@ bool unchangedNumbers(std::string_view s) {
 }
 
 std::string_view display(std::string_view source) {
+    heap::ArenaOutside normalHeap;  // the cache of the texts shown is global: never in a savestate's arena (engine/core/ArenaHeap.h)
     // « \x1F contexte|texte »: a word translated according to where it is shown (« Annuler »
     // is Cancel in a dialog, Undo in the editor). The context is never shown.
     std::string_view french = source, context;

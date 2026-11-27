@@ -1,7 +1,9 @@
 #include "game/levels/DecorAtlas.h"
 
 #include <cmath>
+#include <mutex>
 
+#include "engine/core/ArenaHeap.h"
 #include "engine/core/Log.h"
 #include "engine/resources/ResourceManager.h"
 
@@ -68,6 +70,11 @@ const std::vector<std::string>& DecorAtlas::builtinAtlases() {
 }
 
 DecorAtlas& DecorAtlas::shared(ResourceManager& res) {
+    // Global, shared by every world (those of the machine's search load their levels on several
+    // threads, each in its own arena): on the normal heap, loaded once under a lock.
+    heap::ArenaOutside normalHeap;
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock(mutex);
     static DecorAtlas atlas;
     static std::string mountKey;
     std::string key;
