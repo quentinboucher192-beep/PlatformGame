@@ -6,6 +6,7 @@
 
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
+import { MAX_CURVE_POINTS, MAX_CURVE_WINDOWS } from "../src/tas";
 import { LEVEL_HASH, LEVEL_HASH_V2, api, buildReplay, publishV2, registerPlayer, seedAll, type TestPlayer } from "./helpers";
 
 beforeEach(seedAll);
@@ -96,6 +97,7 @@ describe("TAS: the routes are an administrator's", () => {
             ["POST", `${V}/admin/tas/test_01/ANY_PERCENT/lease/heartbeat`],
             ["POST", `${V}/admin/tas/test_01/ANY_PERCENT/lease/release`],
             ["POST", `${V}/admin/tas/test_01/ANY_PERCENT/publish`],
+            ["GET", `${V}/admin/tas/test_01/ANY_PERCENT/curve`],
         ] as const) {
             const r = await api(method, path, { token: p.token, body: method === "POST" ? {} : undefined });
             expect(r.status).toBe(404);
@@ -383,5 +385,184 @@ describe("TAS: when a level changes (a new version: its fingerprint, or the simu
         expect((await lease(b, "ANY_PERCENT", "unknown_07", h)).status).toBe(409);
         expect((await lease(b, "ANY_PERCENT", "unknown_07", "8".repeat(64))).status).toBe(200);
         expect((await lease(b, "ANY_PERCENT", "unknown_07", h, SIM + 1)).status).toBe(200);
+    });
+});
+
+describe("TAS: the training curve (best times and attempts sent with the lease)", () => {
+    const point = (time_ms: number, age_ms = 0, explored = 0, kind = "improvement") => ({ kind, time_ms, age_ms, explored });
+    const win = (o: Record<string, unknown> = {}) => ({
+        age_ms: 0,
+        duration_ms: 5000,
+        round: 1,
+        section: 2,
+        sections: 3,
+        attempts: 1000,
+        finished: 10,
+        best_ms: 41000,
+        median_ms: 42000,
+        worst_ms: 50000,
+        route_median: 400,
+        route_max: 900,
+        stopped: [100, 800, 90],
+        broken: [10, 50, 0],
+        ...o,
+    });
+    const beatWith = (p: TestPlayer, id: string, explored: number, extra: Record<string, unknown>, path = "heartbeat") =>
+        api("POST", `${V}/admin/tas/test_01/ANY_PERCENT/lease/${path}`, { token: p.token, body: { lease_id: id, explored, ...extra } });
+    const curveOf = async (p: TestPlayer) => {
+        const list = await api("GET", `${V}/admin/tas`, { token: p.token });
+        const pair = list.body.data.pairs.find((x: any) => x.level_id === "test_01" && x.category === "ANY_PERCENT");
+        return pair?.curves?.find((c: any) => c.level_hash === LEVEL_HASH && c.sim_version === SIM);
+    };
+
+    it("places each best time on the server's own training time, keeps only improvements, and every administrator sees it", async () => {
+        const [a, b] = await admins();
+        const got = await lease(a);
+        const id = got.body.data.lease_id;
+        await age(60_000);
+        // Two improvements found 40 s and 10 s ago; a third one slower than the second: refused.
+        const r = await beatWith(a, id, 30_000, { curve: [point(41_250, 40_000, 5_000, "start"), point(41_000, 10_000, 20_000), point(41_100, 5_000, 25_000)] });
+        expect(r.status).toBe(200);
+        expect(r.body.data.curve.refused).toBe(1);
+        const added = r.body.data.curve.points;
+        expect(added.map((x: any) => x.time_ms)).toEqual([41_250, 41_000]);
+        const total = r.body.data.training.total_ms;
+        // Within this heartbeat's minute, on the server's measure (never what the game says the total is).
+        expect(added[0].training_ms).toBe(total - 40_000);
+        expect(added[1].training_ms).toBe(total - 10_000);
+        expect(added[1].explored).toBe(r.body.data.training.total_explored - 10_000);
+        expect(added[0].by.username).toBe("ada");
+        expect(added[0].session).toBe(1);
+        // An age older than the call: at its start, never before.
+        await age(30_000);
+        const old = await beatWith(a, id, 40_000, { curve: [point(40_500, 3_600_000, 30_000)] });
+        expect(old.body.data.curve.points[0].training_ms).toBe(total);
+        // Equal to the best: not an improvement.
+        const same = await beatWith(a, id, 41_000, { curve: [point(40_500, 0, 41_000)] });
+        expect(same.body.data.curve.refused).toBe(1);
+        // Bob sees Ada's curve; the release brings the last one.
+        const rel = await beatWith(a, id, 42_000, { curve: [point(40_400, 0, 42_000)] }, "release");
+        expect(rel.status).toBe(200);
+        expect(rel.body.data.curve.points).toHaveLength(1);
+        const curve = await curveOf(b);
+        expect(curve.points.map((x: any) => x.time_ms)).toEqual([41_250, 41_000, 40_500, 40_400]);
+        expect(curve.points[0].kind).toBe("start");
+        for (let i = 1; i < curve.points.length; ++i) expect(curve.points[i].training_ms).toBeGreaterThanOrEqual(curve.points[i - 1].training_ms);
+        // A publication is a mark of the curve of its version, at the training time then.
+        expect((await publish(a, { record: record({ timeMs: 40_400 }), replay: await replay(40_400) })).status).toBe(201);
+        const marked = await curveOf(b);
+        const pub = marked.points.find((x: any) => x.kind === "publish");
+        expect(pub.time_ms).toBe(40_400);
+        expect(pub.revision).toBe(1);
+        expect(pub.training_ms).toBe(rel.body.data.training.total_ms);
+    });
+
+    it("refuses malformed points and windows (the whole call), never trusting the game", async () => {
+        const [a] = await admins();
+        const id = (await lease(a)).body.data.lease_id;
+        const bad = async (extra: Record<string, unknown>) => {
+            const r = await beatWith(a, id, 10, extra);
+            if (r.status !== 400) console.log(JSON.stringify(r.body));
+            expect(r.status).toBe(400);
+            expect(r.body.error.code).toBe("VALIDATION_ERROR");
+        };
+        await bad({ curve: [point(0)] });
+        await bad({ curve: [point(-5)] });
+        await bad({ curve: [point(30 * 60 * 1000 + 1)] });
+        await bad({ curve: [{ ...point(41_000), kind: "publish" }] });
+        await bad({ curve: [{ ...point(41_000), training_ms: 5 }] });
+        await bad({ curve: [point(41_000, -1)] });
+        await bad({ curve: Array.from({ length: 17 }, (_, i) => point(41_000 - i)) });
+        await bad({ curve: "nope" });
+        await bad({ attempts: [win({ finished: 1001 })] });
+        await bad({ attempts: [win({ best_ms: 43000 })] });
+        await bad({ attempts: [win({ stopped: [100, 800, 91] })] });
+        await bad({ attempts: [win({ broken: [101, 0, 0] })] });
+        await bad({ attempts: [win({ stopped: [990] })] });
+        await bad({ attempts: [win({ section: 4 })] });
+        await bad({ attempts: [win({ sections: 33 })] });
+        await bad({ attempts: [win({ route_max: 300 })] });
+        await bad({ attempts: [win({ finished: 0 })] });
+        // More attempts than a window's time allows (50 000 a second).
+        await bad({ attempts: [win({ duration_ms: 1000, attempts: 50_001, finished: 0, best_ms: 0, median_ms: 0, worst_ms: 0, stopped: [50_001, 0, 0], broken: [0, 0, 0] })] });
+        await bad({ attempts: Array.from({ length: 5 }, () => win()) });
+        // Nothing was kept.
+        expect(await curveOf(a)).toBeUndefined();
+        // The lease is still there: a good call goes through.
+        expect((await beatWith(a, id, 10, { curve: [point(41_000)], attempts: [win()] })).status).toBe(200);
+    });
+
+    it("the windows of attempts: on the server's training time, with their session, given by the curve route", async () => {
+        const [a, b] = await admins();
+        const id = (await lease(a)).body.data.lease_id;
+        await age(60_000);
+        const r = await beatWith(a, id, 50_000, { attempts: [win({ age_ms: 30_000 }), win({ age_ms: 0, round: 2, section: 0 })] });
+        expect(r.status).toBe(200);
+        expect(r.body.data.curve.windows).toBe(2);
+        const c = await api("GET", `${V}/admin/tas/test_01/ANY_PERCENT/curve`, { token: b.token });
+        expect(c.status).toBe(200);
+        expect(c.body.data.versions).toHaveLength(1);
+        const v = c.body.data.versions[0];
+        expect(v.level_hash).toBe(LEVEL_HASH);
+        expect(v.windows).toHaveLength(2);
+        const [w1, w2] = v.windows;
+        expect(w1.session).toBe(1);
+        expect(w1.end_ms - w1.start_ms).toBe(5000);
+        expect(w2.end_ms).toBe(r.body.data.training.total_ms);
+        expect(w1.end_ms).toBe(w2.end_ms - 30_000);
+        expect(w1.stopped).toEqual([100, 800, 90]);
+        expect(w1.broken).toEqual([10, 50, 0]);
+        expect(w2.round).toBe(2);
+        expect(w1.by.username).toBe("ada");
+        // The list of every pair gives the points, never the windows.
+        const list = await api("GET", `${V}/admin/tas`, { token: b.token });
+        expect(JSON.stringify(list.body.data)).not.toContain("route_median");
+    });
+
+    it("keeps at most 1 000 best points per version: the last one gives way, the start and the best stay", async () => {
+        const [a] = await admins();
+        const id = (await lease(a)).body.data.lease_id;
+        const stmts = [];
+        for (let i = 1; i <= MAX_CURVE_POINTS; ++i)
+            stmts.push(
+                env.DB.prepare(
+                    `INSERT INTO tas_curve_points (level_id, category, level_hash, sim_version, seq, kind, time_ms, training_ms, explored, session, found_at)
+                     VALUES ('test_01', 'ANY_PERCENT', ?1, ?2, ?3, 'improvement', ?4, ?5, 0, 1, '2026-11-27T10:00:00Z')`,
+                ).bind(LEVEL_HASH, SIM, i, 100_000 - i, i),
+            );
+        for (let i = 0; i < stmts.length; i += 500) await env.DB.batch(stmts.slice(i, i + 500));
+        const r = await beatWith(a, id, 10, { curve: [point(50_000)] });
+        expect(r.status).toBe(200);
+        expect(r.body.data.curve.points[0].time_ms).toBe(50_000);
+        const n = await env.DB.prepare("SELECT COUNT(*) AS n, MIN(time_ms) AS best, MAX(time_ms) AS first FROM tas_curve_points").first<{ n: number; best: number; first: number }>();
+        expect(n!.n).toBe(MAX_CURVE_POINTS);
+        expect(n!.best).toBe(50_000);
+        expect(n!.first).toBe(100_000 - 1);
+        // Still strictly decreasing.
+        expect((await beatWith(a, id, 20, { curve: [point(50_000)] })).body.data.curve.refused).toBe(1);
+    });
+
+    it("windows beyond the cap are added to the last one of the session", async () => {
+        const [a] = await admins();
+        const id = (await lease(a)).body.data.lease_id;
+        const stmts = [];
+        for (let i = 1; i <= MAX_CURVE_WINDOWS; ++i)
+            stmts.push(
+                env.DB.prepare(
+                    `INSERT INTO tas_curve_windows (level_id, category, level_hash, sim_version, seq, session, round, section, sections, start_ms, end_ms, attempts, finished,
+                       best_ms, median_ms, worst_ms, route_median, route_max, stopped, broken, at)
+                     VALUES ('test_01', 'ANY_PERCENT', ?1, ?2, ?3, 1, 1, 2, 3, 0, 1, 10, 0, 0, 0, 0, 5, 9, '[0,10,0]', '[0,1,0]', '2026-11-27T10:00:00Z')`,
+                ).bind(LEVEL_HASH, SIM, i),
+            );
+        for (let i = 0; i < stmts.length; i += 500) await env.DB.batch(stmts.slice(i, i + 500));
+        const r = await beatWith(a, id, 2000, { attempts: [win()] });
+        expect(r.status).toBe(200);
+        const rows = await env.DB.prepare("SELECT COUNT(*) AS n FROM tas_curve_windows").first<{ n: number }>();
+        expect(rows!.n).toBe(MAX_CURVE_WINDOWS);
+        const last = await env.DB.prepare("SELECT * FROM tas_curve_windows ORDER BY seq DESC LIMIT 1").first<any>();
+        expect(last.attempts).toBe(1010);
+        expect(last.finished).toBe(10);
+        expect(JSON.parse(last.stopped)).toEqual([100, 810, 90]);
+        expect(JSON.parse(last.broken)).toEqual([10, 51, 0]);
     });
 });

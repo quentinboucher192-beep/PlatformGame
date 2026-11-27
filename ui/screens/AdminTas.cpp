@@ -14,6 +14,7 @@
 #include "game/online/OnlineSession.h"
 #include "game/online/Spectate.h"
 #include "game/planets/PlanetData.h"
+#include "game/tas/TasCurve.h"
 #include "game/tas/TasFile.h"
 #include "game/tas/TasTraining.h"
 #include "game/tas/TasVerify.h"
@@ -21,9 +22,10 @@
 
 namespace cosmic {
 
-namespace {
-/// « 1 234 567 » (French digit groups; the translation writes them the English way).
+namespace tasadmin {
+
 std::string countText(int64_t n) {
+    // French digit groups (the translation writes them the English way).
     std::string d = std::to_string(std::max<int64_t>(0, n)), out;
     for (size_t i = 0; i < d.size(); ++i) {
         if (i > 0 && (d.size() - i) % 3 == 0) out += ' ';
@@ -31,9 +33,92 @@ std::string countText(int64_t n) {
     }
     return out;
 }
-}  // namespace
 
-namespace tasadmin {
+std::string compactCount(int64_t n) {
+    n = std::max<int64_t>(0, n);
+    if (n < 10000) return countText(n);
+    char b[32];
+    auto decimal = [&](double v, const char* unit) {
+        if (v < 100.0) std::snprintf(b, sizeof b, "%.1f %s", v, unit);
+        else std::snprintf(b, sizeof b, "%.0f %s", v, unit);
+        std::string s = b;
+        for (char& c : s)
+            if (c == '.') c = ',';  // French decimal comma
+        return s;
+    };
+    if (n < 1000000) return decimal(static_cast<double>(n) / 1000.0, "k");
+    if (n < 1000000000) return decimal(static_cast<double>(n) / 1e6, "M");
+    return decimal(static_cast<double>(n) / 1e9, "G");
+}
+
+std::string percentText(int64_t part, int64_t total) {
+    if (total <= 0) return "—";
+    const double p = 100.0 * static_cast<double>(std::clamp<int64_t>(part, 0, total)) / static_cast<double>(total);
+    char b[32];
+    if (p == 0.0 || p >= 10.0) std::snprintf(b, sizeof b, "%.0f %%", p);
+    else if (p >= 1.0) std::snprintf(b, sizeof b, "%.1f %%", p);
+    else if (p >= 0.01) std::snprintf(b, sizeof b, "%.2f %%", p);
+    else std::snprintf(b, sizeof b, "< 0.01 %%");
+    std::string s = b;
+    for (char& c : s)
+        if (c == '.') c = ',';
+    return s;
+}
+
+std::string durationTick(int64_t ms) {
+    const int64_t s = std::max<int64_t>(0, ms) / 1000;
+    char b[40];
+    if (s == 0) return "0";
+    // Days in hours (« 48 h »: the same in both languages).
+    if (s >= 3600 && s % 3600 == 0) std::snprintf(b, sizeof b, "%lld h", static_cast<long long>(s / 3600));
+    else if (s >= 3600) std::snprintf(b, sizeof b, "%lld h %02lld", static_cast<long long>(s / 3600), static_cast<long long>((s / 60) % 60));
+    else if (s >= 60 && s % 60 == 0) std::snprintf(b, sizeof b, "%lld min", static_cast<long long>(s / 60));
+    else if (s >= 60) std::snprintf(b, sizeof b, "%lld min %02lld", static_cast<long long>(s / 60), static_cast<long long>(s % 60));
+    else std::snprintf(b, sizeof b, "%lld s", static_cast<long long>(s));
+    return b;
+}
+
+std::vector<int64_t> axisTicks(int64_t lo, int64_t hi, int maxCount, const std::vector<int64_t>& steps) {
+    std::vector<int64_t> out;
+    maxCount = std::max(1, maxCount);
+    if (hi <= lo || steps.empty()) {
+        out.push_back(lo);
+        return out;
+    }
+    int64_t step = steps.back();
+    for (int64_t s : steps)
+        if ((hi - lo) / s <= maxCount) {
+            step = s;
+            break;
+        }
+    // Beyond the largest step: its multiples.
+    while ((hi - lo) / step > maxCount) step *= 2;
+    for (int64_t v = (lo + step - 1) / step * step; v <= hi; v += step) out.push_back(v);
+    if (out.empty()) out.push_back(lo);
+    return out;
+}
+
+const std::vector<int64_t>& durationSteps() {
+    static const std::vector<int64_t> s = {1000,    2000,    5000,     10000,    15000,    30000,    60000,     120000,    300000,    600000,
+                                           900000,  1800000, 3600000,  7200000,  10800000, 21600000, 43200000,  86400000,  172800000, 604800000};
+    return s;
+}
+
+const std::vector<int64_t>& runTimeSteps() {
+    static const std::vector<int64_t> s = {1, 2, 5, 10, 20, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000, 15000, 30000, 60000, 120000, 300000, 600000};
+    return s;
+}
+
+std::vector<std::pair<int64_t, int>> roundStarts(const std::vector<TasCurveWindow>& windows) {
+    std::vector<std::pair<int64_t, int>> out;
+    int session = -1, round = -1;
+    for (const TasCurveWindow& w : windows) {
+        if (w.session != session || w.stats.round != round) out.emplace_back(w.fromMs, w.stats.round);
+        session = w.session;
+        round = w.stats.round;
+    }
+    return out;
+}
 
 std::string durationText(int64_t ms) {
     const int64_t s = std::max<int64_t>(0, ms) / 1000;
@@ -183,13 +268,6 @@ std::vector<Local> scanLocal(const fs::path& userDir, const std::string& server)
     return out;
 }
 
-}  // namespace tasadmin
-
-using namespace tasadmin;
-
-namespace {
-
-/// "27/11 · 14:05" (local time), from an ISO date of the server.
 std::string stamp(const std::string& iso) {
     auto t = parseIsoUtc(iso);
     if (!t) return "—";
@@ -205,7 +283,18 @@ std::string stamp(const std::string& iso) {
     return b;
 }
 
+}  // namespace tasadmin
+
+using namespace tasadmin;
+
+namespace {
+
 constexpr int kBudgets[] = {0, 10, 20, 30, 60, 120, 240};
+
+/// The columns of the table (shares of the room left of the actions), their titles.
+constexpr float kCols[] = {0.0f, 0.21f, 0.32f, 0.45f, 0.56f, 0.76f, 1.0f};
+constexpr int kColCount = 6;
+const char* const kColTitles[] = {"Niveau", "Livrée", "En ligne", "Entraînement", "Essais", "État"};
 
 std::string budgetText(int minutes) { return minutes <= 0 ? std::string("Sans limite") : std::to_string(minutes) + " min"; }
 
@@ -239,6 +328,7 @@ void AdminTas::enter(bool force) {
         if (alive.expired()) return;
         rescan_ = true;  // a new run of this computer, maybe
         serverT_ = -100.0f;
+        curveT_ = -100.0f;  // the curve opened: its windows again
     };
     if ((!scanned_ || force) && !scan_.valid())
         scan_ = std::async(std::launch::async, [dir = Paths::userDir(), server = g_.online.config().serverUrl] { return scanLocal(dir, server); });
@@ -250,9 +340,78 @@ void AdminTas::setLocal(std::vector<Local> local) {
     scanned_ = true;
 }
 
+namespace {
+
+/// The curves of a pair of the server (GET /admin/tas: points; …/curve: windows too) taken into
+/// this computer's (its own pending and finer ones kept).
+void takeCurves(TasCurveBook& book, const std::string& levelId, RunCategory cat, const Json& versions, bool withWindows) {
+    if (!versions.is_array() || levelId.empty()) return;
+    bool changed = false;
+    for (const Json& v : versions) {
+        const std::string hash = jstr(v, "level_hash");
+        const int sim = jget<int>(v, "sim_version", 0);
+        if (hash.empty() || sim <= 0) continue;
+        std::vector<TasCurvePoint> pts;
+        if (const Json list = jfield(v, "points", Json::array()); list.is_array())
+            for (const Json& p : list)
+                if (auto pt = TasCurvePoint::fromServer(p)) pts.push_back(std::move(*pt));
+        TasCurve& c = book.at(levelId, cat);
+        changed = c.mergeServerPoints(hash, sim, std::move(pts)) || changed;
+        if (!withWindows) continue;
+        std::vector<TasCurveWindow> ws;
+        if (const Json list = jfield(v, "windows", Json::array()); list.is_array())
+            for (const Json& w : list)
+                if (auto cw = TasCurveWindow::fromServer(w)) ws.push_back(std::move(*cw));
+        changed = c.mergeServerWindows(hash, sim, std::move(ws)) || changed;
+    }
+    if (changed) book.changed(levelId, cat);
+}
+
+}  // namespace
+
 void AdminTas::applyServer(const Json& data) {
     server_ = data.is_object() ? data : Json::object();
     serverLoaded_ = true;
+    const Json& pairs = jfield(server_, "pairs", Json::array());
+    if (!pairs.is_array()) return;
+    for (const Json& p : pairs) {
+        RunCategory cat;
+        if (!categoryFromId(jstr(p, "category"), cat)) continue;
+        takeCurves(g_.tasTraining.curves(), jstr(p, "level_id"), cat, jfield(p, "curves", Json::array()), false);
+    }
+}
+
+void AdminTas::applyCurve(const Json& data) {
+    RunCategory cat;
+    if (!categoryFromId(jstr(data, "category"), cat)) return;
+    takeCurves(g_.tasTraining.curves(), jstr(data, "level_id"), cat, jfield(data, "versions", Json::array()), true);
+}
+
+void AdminTas::loadCurve() {
+    if (curveBusy_ || selLevel_.empty() || !g_.online.usable() || !g_.online.loggedIn()) return;
+    curveBusy_ = true;
+    curveT_ = g_.ui.time();
+    g_.online.get(
+        "/api/v1/admin/tas/" + selLevel_ + "/" + categoryId(selCat_) + "/curve", OnlineService::guard(life_, [this](const ApiResult& r) {
+            curveBusy_ = false;
+            if (lostRole_(r)) return;
+            if (r.ok) applyCurve(r.data);  // a failure: this computer's curve stays (said by the next list)
+        }),
+        false);
+}
+
+void AdminTas::select(const std::string& levelId, RunCategory c) {
+    if (levelId.empty() || selected(levelId, c)) {
+        selLevel_.clear();  // closed (the same row again)
+        tip_ = charts::Tip{};
+        return;
+    }
+    selLevel_ = levelId;
+    selCat_ = c;
+    selVersion_ = 0;
+    pointCursor_ = windowCursor_ = -1;
+    scrollToSel_ = true;
+    curveT_ = -100.0f;
 }
 
 void AdminTas::loadServer() {
@@ -302,7 +461,8 @@ void AdminTas::text(const std::string& t, const Rect& box, float size, Color c, 
     const std::string shownText = ui.elide(t, face, f, box.w);
     const float x = a == Align::Left ? box.x : a == Align::Right ? box.right() : box.center().x;
     ui.label(shownText, {x, box.center().y}, f, c, a, face, VAlign::Middle);
-    layout_.texts.push_back({box, shownText, f, face, verbatim});
+    // What the list's scroll region cuts is not on screen: not placed (the fit tests).
+    if (!inList_ || layout_.list.expanded(0.5f).containsRect(box)) layout_.texts.push_back({box, shownText, f, face, verbatim});
 }
 
 bool AdminTas::button(const std::string& id, const Rect& r, const std::string& label, bool enabled, bool primary, bool danger) {
@@ -311,7 +471,7 @@ bool AdminTas::button(const std::string& id, const Rect& r, const std::string& l
     st.enabled = enabled;
     st.primary = primary;
     st.danger = danger;
-    layout_.buttons.push_back(r);
+    if (!inList_ || layout_.list.expanded(0.5f).containsRect(r)) layout_.buttons.push_back(r);
     return cframe::button(g_.ui, id, r, label, st);
 }
 
@@ -520,25 +680,48 @@ void AdminTas::draw(const Rect& in) {
     actionsW += ui.s(8) + ui.text().measure("Publier", FontFace::Bold, ui.s(15)).x + ui.s(30) + ui.s(20);
     const float rowRight = in.right() - ui.s(16);
     const float x0 = in.x + ui.s(12), cw = rowRight - actionsW - x0;
-    const float cols[] = {0.0f, 0.27f, 0.40f, 0.57f, 0.71f, 1.0f};
-    const char* titles[] = {"Niveau", "Livrée", "En ligne", "Entraînement", "État"};
-    for (int i = 0; i < 5; ++i)
-        text(titles[i], {x0 + cw * cols[i], y, cw * (cols[i + 1] - cols[i]) - ui.s(10), ui.s(24)}, 14, ui.theme().textDim, FontFace::Bold);
+    for (int i = 0; i < kColCount; ++i)
+        text(kColTitles[i], {x0 + cw * kCols[i], y, cw * (kCols[i + 1] - kCols[i]) - ui.s(10), ui.s(24)}, 14, ui.theme().textDim, FontFace::Bold);
     y += ui.s(30);
 
     Rect list{in.x, y, in.w, in.bottom() - y};
-    layout_.list = list;
     const auto visible = shown();
     const auto all = rows();
+    const float rowH = ui.s(60), gap = ui.s(6);
+    // The curve of the row selected: under the table, the table keeping three rows and more.
+    const Row* sel = nullptr;
+    for (const Row& r : all)
+        if (selected(r.local.levelId, r.local.category)) sel = &r;
+    if (!sel) selLevel_.clear();
+    Rect detail;
+    if (sel) {
+        const float avail = list.h, keep = (rowH + gap) * 3.3f, dgap = ui.s(10);
+        const float h = std::clamp(avail - keep - dgap, std::min(ui.s(250), avail * 0.6f), ui.s(520));
+        list.h = std::max(ui.s(40), avail - h - dgap);
+        detail = {in.x, list.bottom() + dgap, in.w, in.bottom() - list.bottom() - dgap};
+        // Échap / B closes it (ADMINISTRATION does not leave: capturesBack).
+        if (ui.acceptsInput() && ui.backPressed()) {
+            const std::string level = selLevel_;
+            select(level, selCat_);
+        }
+    }
+    layout_.list = list;
     if (local_.empty() || visible.empty()) {
         const std::string msg = !scanned_ ? "Lecture des niveaux…" : local_.empty() ? "Aucun niveau du jeu." : "Aucune paire ne correspond.";
         text(msg, {list.x, list.y + ui.s(20), list.w, ui.s(30)}, 18, ui.theme().textDim, FontFace::Body, Align::Center);
         ui.popId();
         return;
     }
-    const float rowH = ui.s(60), gap = ui.s(6);
+    // Opened: the row selected brought into the shorter list.
+    if (scrollToSel_ && sel) {
+        scrollToSel_ = false;
+        for (size_t i = 0; i < visible.size(); ++i)
+            if (visible[i]->levelId == sel->local.levelId && visible[i]->category == sel->local.category)
+                ui.setScroll("list", std::max(0.0f, static_cast<float>(i) * (rowH + gap) - (list.h - rowH) * 0.5f));
+    }
     ui.beginScroll("list", list, static_cast<float>(visible.size()) * (rowH + gap));
     float ry = list.y - ui.scrollOffset();
+    inList_ = true;
     for (const Local* l : visible) {
         Rect row{list.x, ry, list.w - ui.s(16), rowH};
         ry += rowH + gap;
@@ -547,7 +730,15 @@ void AdminTas::draw(const Rect& in) {
             if (r.local.levelId == l->levelId && r.local.category == l->category) drawRow(r, row, actionsW);
         ++layout_.rowsDrawn;
     }
+    inList_ = false;
     ui.endScroll();
+    if (sel && !selLevel_.empty()) {
+        // Its windows of attempts from the server: at once, then every 30 s while it is open.
+        if (ui.time() - curveT_ > 30.0f) loadCurve();
+        drawDetail(*sel, detail);
+    } else {
+        tip_ = charts::Tip{};
+    }
     ui.popId();
 }
 
@@ -595,13 +786,23 @@ void AdminTas::drawRow(const Row& row, const Rect& r, float actionsW) {
 
     const float x0 = r.x + ui.s(12);
     const float cw = r.right() - actionsW - x0 + ui.s(16) - ui.s(16);
-    const float cols[] = {0.0f, 0.27f, 0.40f, 0.57f, 0.71f, 1.0f};
     const float limit = bx - ui.s(10);
     auto colBox = [&](int i, bool second) {
-        const float cx = x0 + cw * cols[i];
-        const float right = std::min(x0 + cw * cols[i + 1] - ui.s(10), limit);
+        const float cx = x0 + cw * kCols[i];
+        const float right = std::min(x0 + cw * kCols[i + 1] - ui.s(10), limit);
         return Rect{cx, second ? r.y + ui.s(32) : r.y + ui.s(8), std::max(0.0f, right - cx), second ? ui.s(20) : ui.s(22)};
     };
+    // The row itself selects its curve (click, Entrée / A; arrows and d-pad reach it): the part
+    // left of its buttons.
+    {
+        bool hovered = false;
+        const Rect zone{r.x, r.y, std::max(0.0f, limit - r.x), r.h};
+        if (ui.hotspot("row_" + id, zone, &hovered)) select(row.local.levelId, row.local.category);
+        const bool sel = selected(row.local.levelId, row.local.category);
+        if (sel) ui.r().drawRoundedRect(r, ui.s(8), th.accent, std::max(1.5f, ui.s(2.0f)));
+        else if (ui.focused("row_" + id) && !ui.usingPointer()) ui.r().drawRoundedRect(r, ui.s(8), th.accent.withAlpha(170), std::max(1.0f, ui.s(1.5f)));
+        else if (hovered && ui.usingPointer()) ui.r().drawRoundedRect(r, ui.s(8), th.accent.withAlpha(90), std::max(1.0f, ui.s(1.0f)));
+    }
     // Level and category.
     text(row.local.levelName, colBox(0, false), 16, th.text, FontFace::Bold);
     text(std::string(categoryLabel(row.local.category)) + " · " + row.local.planetName, colBox(0, true), 13, th.textDim);
@@ -624,13 +825,57 @@ void AdminTas::drawRow(const Row& row, const Rect& r, float actionsW) {
     // Training of this version: every administrator's, this computer's session counted live.
     int64_t trainingMs = row.server.trainingMs, explored = row.server.explored;
     if (job && (job->state == TasTraining::JobState::Running || job->state == TasTraining::JobState::Stopping)) {
-        trainingMs = std::max(trainingMs, job->serverTotalMs) + std::max<int64_t>(0, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - job->lastBeatOk).count());
-        explored = std::max(explored, job->serverExplored) + std::max<int64_t>(0, (job->progress ? job->progress->explored : 0) - job->exploredReported);
+        trainingMs = std::max(trainingMs, job->trainingTotalMs());
+        explored = std::max(explored, job->exploredAt(job->progress ? job->progress->explored : 0));
     }
     if (trainingMs > 0 || explored > 0) {
         text(durationText(trainingMs), colBox(3, false), 15, th.text);
         text(countText(explored) + " essais", colBox(3, true), 12, th.textDim);
     } else text("jamais entraîné", colBox(3, false), 15, th.textDim);
+    // The attempts in short (the windows counted: finished, their share) and the best time
+    // verified, beside a small step line of the best time along the training.
+    {
+        const Rect box{colBox(4, false).x, r.y + ui.s(8), colBox(4, false).w, r.h - ui.s(16)};
+        const TasCurve* curve = g_.tasTraining.curves().find(row.local.levelId, row.local.category);
+        const TasCurveVersion* v = curve && !row.local.hash.empty() ? curve->find(row.local.hash, kSimulationVersion) : nullptr;
+        float tx = box.x;
+        std::vector<Vec2> steps;  // (training time, best time)
+        if (v)
+            for (const TasCurvePoint& p : v->points)
+                if (p.best()) steps.push_back({static_cast<float>(p.trainingMs), static_cast<float>(p.timeMs)});
+        const float sw = std::min(ui.s(84), box.w * 0.4f);
+        if (!steps.empty() && sw >= ui.s(30)) {
+            const Rect sp{box.x, box.y + ui.s(4), sw, box.h - ui.s(8)};
+            const float xEnd = std::max({steps.back().x + 1.0f, static_cast<float>(trainingMs), steps.front().x + 1.0f});
+            float lo = steps.back().y, hi = steps.front().y;
+            if (hi <= lo) hi = lo + 1.0f;
+            auto X = [&](float t) { return sp.x + (t - steps.front().x) / std::max(1.0f, xEnd - steps.front().x) * sp.w; };
+            auto Y = [&](float t) { return sp.y + (1.0f - (t - lo) / (hi - lo)) * sp.h; };
+            ui.r().fillRoundedRect(sp.expanded(ui.s(2)), ui.s(4), Color{12, 18, 36, 200});
+            const float th2 = std::max(1.0f, ui.s(1.5f));
+            Vec2 prev{X(steps[0].x), Y(steps[0].y)};
+            for (size_t i = 1; i < steps.size(); ++i) {
+                const Vec2 at{X(steps[i].x), Y(steps[i].y)};
+                ui.r().drawLine(prev, {at.x, prev.y}, th.accent, th2);
+                ui.r().drawLine({at.x, prev.y}, at, th.accent, th2);
+                prev = at;
+            }
+            ui.r().drawLine(prev, {sp.right(), prev.y}, th.accent, th2);
+            ui.r().fillCircle(prev, ui.s(2.6f), th.accent);
+            tx = sp.right() + ui.s(10);
+            ++layout_.sparklines;
+        }
+        const Rect line1{tx, colBox(4, false).y, std::max(0.0f, box.right() - tx), colBox(4, false).h};
+        const Rect line2{tx, colBox(4, true).y, std::max(0.0f, box.right() - tx), colBox(4, true).h};
+        std::vector<const TasCurveWindow*> ws;
+        if (v)
+            for (const TasCurveWindow& w : v->windows) ws.push_back(&w);
+        const TasAttemptWindow t = tasAttemptTotal(ws);
+        if (t.attempts > 0) text(compactCount(t.finished) + " finis · " + percentText(t.finished, t.attempts), line1, 13, th.text);
+        else if (trainingMs > 0) text("essais non détaillés", line1, 12, th.textDim);
+        const int64_t best = v ? v->bestMs() : 0;
+        if (best > 0) text("meilleur " + formatRunTime(best), line2, 12, th.textDim);
+    }
     // Where it stands.
     Color sc = th.textDim;
     std::string line1 = statusLabel(st), line2;
@@ -681,14 +926,14 @@ void AdminTas::drawRow(const Row& row, const Rect& r, float actionsW) {
     }
     if (st == Status::HeldByOther) {
         // « En entraînement par » translated, the name never: two boxes side by side, measured.
-        const Rect box = colBox(4, false);
+        const Rect box = colBox(5, false);
         const float lw = std::min(box.w * 0.6f, ui.text().measure(line1, FontFace::Bold, ui.s(15)).x + ui.s(2));
         text(line1, {box.x, box.y, lw, box.h}, 15, sc, FontFace::Bold);
         text(row.server.holder, {box.x + lw + ui.s(6), box.y, std::max(0.0f, box.w - lw - ui.s(6)), box.h}, 15, sc, FontFace::Bold, Align::Left, true);
     } else {
-        text(line1, colBox(4, false), 15, sc, FontFace::Bold);
+        text(line1, colBox(5, false), 15, sc, FontFace::Bold);
     }
-    if (!line2.empty()) text(line2, colBox(4, true), 12, th.textDim);
+    if (!line2.empty()) text(line2, colBox(5, true), 12, th.textDim);
 }
 
 }  // namespace cosmic

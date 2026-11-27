@@ -477,6 +477,7 @@ route("POST", `${V}/admin/tas/{levelId}/{category}/lease`, (ctx) => tas.acquire(
 route("POST", `${V}/admin/tas/{levelId}/{category}/lease/heartbeat`, (ctx) => tas.heartbeat(ctx));
 route("POST", `${V}/admin/tas/{levelId}/{category}/lease/release`, (ctx) => tas.release(ctx));
 route("POST", `${V}/admin/tas/{levelId}/{category}/publish`, (ctx) => tas.publish(ctx));
+route("GET", `${V}/admin/tas/{levelId}/{category}/curve`, (ctx) => tas.adminCurve(ctx));
 route("GET", `${V}/admin/challenges/levels`, (ctx) => adminChallenges.listLevels(ctx));
 route("PUT", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.setChallenge(ctx));
 route("DELETE", `${V}/admin/challenges/{challengeId}`, (ctx) => adminChallenges.resetChallenge(ctx));

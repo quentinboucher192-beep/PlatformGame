@@ -38,6 +38,15 @@ struct LevelData;
 
 namespace cosmic::tas {
 
+/// One attempt of the search, for the counts of a training (game/tas/TasProgress.h windows).
+struct AttemptNote {
+    bool finished = false;  // the exit reached, the category kept
+    float clock = 0.0f;     // the level's clock then (s)
+    int section = 0;        // did not finish: the section (0-based) of its furthest point
+    float route = 0.0f;     // ... how far along the route (0..1)
+    bool broke = false;     // ... it broke the category (a death, a blow in « Sans dégât »)
+};
+
 struct SearchOptions {
     RunCategory category = RunCategory::AnyPercent;
     double budgetSeconds = 30.0 * 60.0;
@@ -55,6 +64,11 @@ struct SearchOptions {
     const std::atomic<bool>* stopRequested = nullptr;
     std::atomic<int64_t>* exploredTotal = nullptr;
     std::function<void(float clock)> onBest;
+    /// The attempts as they go, by batches (one generation of a beam, one refinement), from the
+    /// search's threads; and each stage: a section starts (1-based, of `sections`), or 0: whole
+    /// runs refined.
+    std::function<void(const AttemptNote* notes, size_t n)> onAttempts;
+    std::function<void(int section, int sections)> onStage;
 };
 
 struct SearchOutcome {

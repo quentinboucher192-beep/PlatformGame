@@ -26,6 +26,14 @@
 // Every route of /admin/tas exists only for an active administrator (requireAdminRole: the role
 // of the authenticated session, never anything the game sends). The list and the files of the
 // published runs are public (GET /tas): the game reads them now and then.
+//
+// The TRAINING CURVE (docs/TAS.md « Courbe d'entraînement », migration 0225_tas_curve.sql): the
+// heartbeat and the release of a lease may carry the new best times of the training (`curve`) and
+// a summary of its attempts (`attempts`: windows of counts). Each one is placed on the server's
+// own measure of the training time and of the attempts, within what this very call counted (the
+// game only says how long ago it happened: `age_ms`); a best time is kept only when it is
+// strictly below every one of its version; at most MAX_CURVE_POINTS points and
+// MAX_CURVE_WINDOWS windows per version. The runs published are the curve's other marks.
 
 import { audit } from "./auth";
 import { requireAdminRole } from "./adminRoles";
@@ -48,6 +56,18 @@ export const MAX_TAS_REPLAY_BYTES = MAX_REPLAY_UPLOAD;
 export const MAX_TAS_TIME_MS = 30 * 60 * 1000;
 const SIMULATION_EVENT = 20;
 const LEASE_ID_RE = /^[0-9a-f-]{36}$/;
+/** The best points of the curve kept per version (beyond, the last one gives way: the curve keeps its start and its best). */
+export const MAX_CURVE_POINTS = 1000;
+/** The windows of attempts kept per version (beyond, a window is added to the last one of its session). */
+export const MAX_CURVE_WINDOWS = 1500;
+/** What one heartbeat or release may carry. */
+export const MAX_CURVE_POINTS_PER_CALL = 16;
+export const MAX_CURVE_WINDOWS_PER_CALL = 4;
+/** The sections a window counts (the game's TasAttemptWindow::kMaxSections). */
+export const MAX_CURVE_SECTIONS = 32;
+/** How long ago a point or a window may say it happened, how long a window may last. */
+const MAX_AGE_MS = 86_400_000;
+const MAX_WINDOW_MS = 600_000;
 
 interface TrainingRow {
     level_id: string;
@@ -86,6 +106,48 @@ interface RunRow {
     published_by: string | null;
     published_by_username: string | null;
     published_at: string;
+}
+
+interface CurvePointRow {
+    level_id: string;
+    category: string;
+    level_hash: string;
+    sim_version: number;
+    seq: number;
+    kind: string;
+    time_ms: number;
+    training_ms: number;
+    explored: number;
+    session: number;
+    found_by: string | null;
+    found_by_username: string | null;
+    found_at: string;
+}
+
+interface CurveWindowRow {
+    level_id: string;
+    category: string;
+    level_hash: string;
+    sim_version: number;
+    seq: number;
+    session: number;
+    round: number;
+    section: number;
+    sections: number;
+    start_ms: number;
+    end_ms: number;
+    attempts: number;
+    finished: number;
+    best_ms: number;
+    median_ms: number;
+    worst_ms: number;
+    route_median: number;
+    route_max: number;
+    stopped: string;
+    broken: string;
+    found_by: string | null;
+    found_by_username: string | null;
+    at: string;
 }
 
 function pairOr404(ctx: Ctx): { levelId: string; category: Category } {
@@ -144,6 +206,77 @@ function runJson(r: RunRow | null) {
 
 const sameVersion = (r: { level_hash: string; sim_version: number }, hash: string, sim: number) => r.level_hash === hash && r.sim_version === sim;
 
+const byJson = (id: string | null, username: string | null) => (id || username ? { id, username } : null);
+
+/** A best point of the curve. */
+function curvePointJson(p: CurvePointRow) {
+    return { kind: p.kind, time_ms: p.time_ms, training_ms: p.training_ms, explored: p.explored, at: p.found_at, session: p.session, by: byJson(p.found_by, p.found_by_username) };
+}
+
+/** A run published, as a mark of the curve of its version. */
+function publishPointJson(r: RunRow) {
+    return {
+        kind: "publish",
+        time_ms: r.time_ms,
+        training_ms: r.training_ms_at_publish,
+        explored: r.explored_at_publish,
+        at: r.published_at,
+        session: 0,
+        revision: r.revision,
+        by: byJson(r.published_by, r.published_by_username),
+    };
+}
+
+const counts = (text: string): number[] => {
+    try {
+        const a = JSON.parse(text);
+        return Array.isArray(a) ? a.filter((x) => Number.isSafeInteger(x)) : [];
+    } catch {
+        return [];
+    }
+};
+
+function curveWindowJson(w: CurveWindowRow) {
+    return {
+        session: w.session,
+        round: w.round,
+        section: w.section,
+        sections: w.sections,
+        start_ms: w.start_ms,
+        end_ms: w.end_ms,
+        attempts: w.attempts,
+        finished: w.finished,
+        best_ms: w.best_ms,
+        median_ms: w.median_ms,
+        worst_ms: w.worst_ms,
+        route_median: w.route_median,
+        route_max: w.route_max,
+        stopped: counts(w.stopped),
+        broken: counts(w.broken),
+        at: w.at,
+        by: byJson(w.found_by, w.found_by_username),
+    };
+}
+
+/**
+ * The curves of a pair, one per version that has anything: its best points and its runs
+ * published (by training time), and its windows of attempts when asked (`windows`).
+ */
+function curvesJson(points: CurvePointRow[], runs: RunRow[], windows: CurveWindowRow[] | null) {
+    const versions = new Map<string, { level_hash: string; sim_version: number; points: ReturnType<typeof curvePointJson | typeof publishPointJson>[]; windows?: ReturnType<typeof curveWindowJson>[] }>();
+    const at = (hash: string, sim: number) => {
+        const k = `${hash}/${sim}`;
+        let v = versions.get(k);
+        if (!v) versions.set(k, (v = { level_hash: hash, sim_version: sim, points: [], ...(windows ? { windows: [] } : {}) }));
+        return v;
+    };
+    for (const p of [...points].sort((a, b) => a.seq - b.seq)) at(p.level_hash, p.sim_version).points.push(curvePointJson(p));
+    for (const r of [...runs].sort((a, b) => a.revision - b.revision)) at(r.level_hash, r.sim_version).points.push(publishPointJson(r));
+    if (windows) for (const w of [...windows].sort((a, b) => a.seq - b.seq)) at(w.level_hash, w.sim_version).windows!.push(curveWindowJson(w));
+    for (const v of versions.values()) v.points.sort((a, b) => a.training_ms - b.training_ms);
+    return [...versions.values()];
+}
+
 /**
  * The runs of a pair, newest first, split as the list gives them: `current` (the latest run of
  * the current version: the fingerprint the server knows for the level, else the latest run's,
@@ -195,22 +328,24 @@ function outdatedError(level: { current_version: number; content_hash: string })
  */
 export async function adminList(ctx: Ctx): Promise<Response> {
     const auth = await requireAdminRole(ctx);
-    const [trainings, runs, levels] = await Promise.all([
+    const [trainings, runs, levels, points] = await Promise.all([
         ctx.env.DB.prepare("SELECT * FROM tas_training").all<TrainingRow>(),
         ctx.env.DB.prepare("SELECT * FROM tas_runs").all<RunRow>(),
         ctx.env.DB.prepare("SELECT id, content_hash FROM levels").all<{ id: string; content_hash: string }>(),
+        ctx.env.DB.prepare("SELECT * FROM tas_curve_points").all<CurvePointRow>(),
     ]);
     const now = Date.now();
     const hashOf = new Map(levels.results.map((l) => [l.id, l.content_hash]));
-    const pairs = new Map<string, { levelId: string; category: string; t: TrainingRow[]; r: RunRow[] }>();
+    const pairs = new Map<string, { levelId: string; category: string; t: TrainingRow[]; r: RunRow[]; c: CurvePointRow[] }>();
     const at = (levelId: string, category: string) => {
         const k = `${levelId}/${category}`;
         let e = pairs.get(k);
-        if (!e) pairs.set(k, (e = { levelId, category, t: [], r: [] }));
+        if (!e) pairs.set(k, (e = { levelId, category, t: [], r: [], c: [] }));
         return e;
     };
     for (const t of trainings.results) at(t.level_id, t.category).t.push(t);
     for (const r of runs.results) at(r.level_id, r.category).r.push(r);
+    for (const c of points.results) at(c.level_id, c.category).c.push(c);
     return json(ctx, {
         now: new Date(now).toISOString(),
         lease_ttl_s: LEASE_TTL_MS / 1000,
@@ -227,9 +362,26 @@ export async function adminList(ctx: Ctx): Promise<Response> {
                     published: runJson(current),
                     archive: runJson(archive),
                     trainings: p.t.map((t) => trainingJson(t, now, auth.player.id)),
+                    // The training curve of every version: its best points and runs published (the windows: GET …/curve).
+                    curves: curvesJson(p.c, p.r, null),
                 };
             }),
     });
+}
+
+/**
+ * GET /admin/tas/{levelId}/{category}/curve: the training curve of the pair, every version: its
+ * best points, its runs published and its windows of attempts.
+ */
+export async function adminCurve(ctx: Ctx): Promise<Response> {
+    await requireAdminRole(ctx);
+    const { levelId, category } = pairOr404(ctx);
+    const [points, runs, windows] = await Promise.all([
+        ctx.env.DB.prepare("SELECT * FROM tas_curve_points WHERE level_id = ?1 AND category = ?2").bind(levelId, category).all<CurvePointRow>(),
+        ctx.env.DB.prepare("SELECT * FROM tas_runs WHERE level_id = ?1 AND category = ?2").bind(levelId, category).all<RunRow>(),
+        ctx.env.DB.prepare("SELECT * FROM tas_curve_windows WHERE level_id = ?1 AND category = ?2").bind(levelId, category).all<CurveWindowRow>(),
+    ]);
+    return json(ctx, { level_id: levelId, category, versions: curvesJson(points.results, runs.results, windows.results) });
 }
 
 /**
@@ -304,27 +456,315 @@ function accountStatement(ctx: Ctx, levelId: string, category: string, leaseId: 
     ).bind(levelId, category, leaseId, holder, now, explored, LEASE_TTL_MS, MAX_EXPLORED_PER_SECOND);
 }
 
+interface CurvePointIn {
+    kind: "start" | "improvement";
+    time_ms: number;
+    age_ms: number;
+    explored: number;
+}
+
+interface CurveWindowIn {
+    age_ms: number;
+    duration_ms: number;
+    round: number;
+    section: number;
+    sections: number;
+    attempts: number;
+    finished: number;
+    best_ms: number;
+    median_ms: number;
+    worst_ms: number;
+    route_median: number;
+    route_max: number;
+    stopped: number[];
+    broken: number[];
+}
+
+/** `curve` of a heartbeat or a release: the new best times, each field checked (problems added to `v`). */
+function curvePointsIn(v: Validator, raw: unknown): CurvePointIn[] {
+    if (raw === undefined || raw === null) return [];
+    if (!Array.isArray(raw) || raw.length > MAX_CURVE_POINTS_PER_CALL) {
+        v.fail("curve", `liste de ${MAX_CURVE_POINTS_PER_CALL} points au plus attendue`);
+        return [];
+    }
+    const out: CurvePointIn[] = [];
+    raw.forEach((p, i) => {
+        const f = `curve[${i}]`;
+        if (!isObject(p) || Object.keys(p).some((k) => !["kind", "time_ms", "age_ms", "explored"].includes(k))) return v.fail(f, "point invalide");
+        if (p.kind !== "start" && p.kind !== "improvement") return v.fail(`${f}.kind`, "start ou improvement attendu");
+        if (!isInt(p.time_ms, 1, MAX_TAS_TIME_MS)) return v.fail(`${f}.time_ms`, `entier entre 1 et ${MAX_TAS_TIME_MS} attendu`);
+        if (!isInt(p.age_ms, 0, MAX_AGE_MS)) return v.fail(`${f}.age_ms`, `entier entre 0 et ${MAX_AGE_MS} attendu`);
+        if (!isInt(p.explored, 0, Number.MAX_SAFE_INTEGER)) return v.fail(`${f}.explored`, "entier positif attendu");
+        out.push(p as unknown as CurvePointIn);
+    });
+    return out;
+}
+
+const WINDOW_KEYS = ["age_ms", "duration_ms", "round", "section", "sections", "attempts", "finished", "best_ms", "median_ms", "worst_ms", "route_median", "route_max", "stopped", "broken"];
+
+/** `attempts` of a heartbeat or a release: windows of counts, each checked and consistent (problems added to `v`). */
+function curveWindowsIn(v: Validator, raw: unknown): CurveWindowIn[] {
+    if (raw === undefined || raw === null) return [];
+    if (!Array.isArray(raw) || raw.length > MAX_CURVE_WINDOWS_PER_CALL) {
+        v.fail("attempts", `liste de ${MAX_CURVE_WINDOWS_PER_CALL} fenêtres au plus attendue`);
+        return [];
+    }
+    const out: CurveWindowIn[] = [];
+    raw.forEach((w, i) => {
+        const f = `attempts[${i}]`;
+        if (!isObject(w) || Object.keys(w).some((k) => !WINDOW_KEYS.includes(k))) return v.fail(f, "fenêtre invalide");
+        const bad = (field: string, why: string) => v.fail(`${f}.${field}`, why);
+        if (!isInt(w.age_ms, 0, MAX_AGE_MS)) return bad("age_ms", `entier entre 0 et ${MAX_AGE_MS} attendu`);
+        if (!isInt(w.duration_ms, 1, MAX_WINDOW_MS)) return bad("duration_ms", `entier entre 1 et ${MAX_WINDOW_MS} attendu`);
+        if (!isInt(w.round, 1, 1_000_000)) return bad("round", "entier positif attendu");
+        if (!isInt(w.sections, 0, MAX_CURVE_SECTIONS)) return bad("sections", `entier entre 0 et ${MAX_CURVE_SECTIONS} attendu`);
+        if (!isInt(w.section, 0, w.sections)) return bad("section", "entre 0 et le nombre de sections attendu");
+        // The attempts, bounded by the window's time (as those of the heartbeats).
+        const most = Math.ceil((w.duration_ms * MAX_EXPLORED_PER_SECOND) / 1000);
+        if (!isInt(w.attempts, 1, most)) return bad("attempts", `entier entre 1 et ${most} attendu`);
+        if (!isInt(w.finished, 0, w.attempts)) return bad("finished", "entre 0 et le nombre d'essais attendu");
+        if (w.finished === 0) {
+            if (w.best_ms !== 0 || w.median_ms !== 0 || w.worst_ms !== 0) return bad("best_ms", "0 sans essai fini");
+        } else if (!isInt(w.best_ms, 1, MAX_TAS_TIME_MS) || !isInt(w.median_ms, w.best_ms, MAX_TAS_TIME_MS) || !isInt(w.worst_ms, w.median_ms, MAX_TAS_TIME_MS)) {
+            return bad("best_ms", "meilleur ≤ médian ≤ pire attendus");
+        }
+        if (!isInt(w.route_median, 0, 1000) || !isInt(w.route_max, w.route_median, 1000)) return bad("route_median", "‰ du parcours attendus (médian ≤ max)");
+        const list = (x: unknown) => Array.isArray(x) && x.length === w.sections && x.every((n) => isInt(n, 0, w.attempts as number));
+        if (!list(w.stopped) || !list(w.broken)) return bad("stopped", "un compte par section attendu");
+        const stopped = w.stopped as number[], broken = w.broken as number[];
+        if (broken.some((n, k) => n > stopped[k]!)) return bad("broken", "jamais plus que les arrêts de la section");
+        if (w.sections > 0 && stopped.reduce((a, b) => a + b, 0) !== w.attempts - w.finished) return bad("stopped", "la somme doit valoir les essais non finis");
+        out.push(w as unknown as CurveWindowIn);
+    });
+    return out;
+}
+
+/** Two windows of counts as one (counts added, best and worst kept, medians weighted by their counts). */
+function mergedWindow(a: CurveWindowRow, b: CurveWindowIn & { start_ms: number; end_ms: number }): CurveWindowRow {
+    const finished = a.finished + b.finished;
+    const ua = a.attempts - a.finished,
+        ub = b.attempts - b.finished;
+    const lowest = (x: number, y: number) => (x <= 0 ? y : y <= 0 ? x : Math.min(x, y));
+    const sa = counts(a.stopped),
+        ba = counts(a.broken);
+    const n = Math.max(a.sections, b.sections);
+    const add = (x: number[], y: number[]) => Array.from({ length: n }, (_, k) => (x[k] ?? 0) + (y[k] ?? 0));
+    return {
+        ...a,
+        round: b.round,
+        section: b.section,
+        sections: n,
+        start_ms: Math.min(a.start_ms, b.start_ms),
+        end_ms: Math.max(a.end_ms, b.end_ms),
+        attempts: a.attempts + b.attempts,
+        finished,
+        best_ms: lowest(a.best_ms, b.best_ms),
+        median_ms: finished > 0 ? Math.round((a.median_ms * a.finished + b.median_ms * b.finished) / finished) : 0,
+        worst_ms: Math.max(a.worst_ms, b.worst_ms),
+        route_median: ua + ub > 0 ? Math.round((a.route_median * ua + b.route_median * ub) / (ua + ub)) : 0,
+        route_max: Math.max(a.route_max, b.route_max),
+        stopped: JSON.stringify(add(sa, b.stopped)),
+        broken: JSON.stringify(add(ba, b.broken)),
+    };
+}
+
+/**
+ * The curve's points and windows of a heartbeat or a release, placed within what this call
+ * counted: the training time from `before` to `after` (the server's measure), the attempts too.
+ */
+async function storeCurve(
+    ctx: Ctx,
+    k: { levelId: string; category: string; hash: string; sim: number; session: number; by: { id: string; username: string }; now: number; sessionExplored: number },
+    before: { total_training_ms: number; total_explored: number },
+    after: { total_training_ms: number; total_explored: number },
+    points: CurvePointIn[],
+    windows: CurveWindowIn[],
+) {
+    const hiT = after.total_training_ms,
+        loT = Math.min(before.total_training_ms, hiT);
+    const hiE = after.total_explored,
+        loE = Math.min(before.total_explored, hiE);
+    const clamp = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x));
+    const xOf = (ageMs: number) => clamp(hiT - ageMs, loT, hiT);
+    const atOf = (x: number) => new Date(k.now - (hiT - x)).toISOString();
+    const key = [k.levelId, k.category, k.hash, k.sim] as const;
+    const where = "level_id = ?1 AND category = ?2 AND level_hash = ?3 AND sim_version = ?4";
+    const [lastPoint, lastWindow] = await Promise.all([
+        ctx.env.DB.prepare(`SELECT seq, time_ms, training_ms, (SELECT COUNT(*) FROM tas_curve_points WHERE ${where}) AS n FROM tas_curve_points WHERE ${where} ORDER BY seq DESC LIMIT 1`)
+            .bind(...key)
+            .first<{ seq: number; time_ms: number; training_ms: number; n: number }>(),
+        ctx.env.DB.prepare(`SELECT *, (SELECT COUNT(*) FROM tas_curve_windows WHERE ${where}) AS n FROM tas_curve_windows WHERE ${where} ORDER BY seq DESC LIMIT 1`)
+            .bind(...key)
+            .first<CurveWindowRow & { n: number }>(),
+    ]);
+    const stmts: D1PreparedStatement[] = [];
+    const added: ReturnType<typeof curvePointJson>[] = [];
+    let refused = 0;
+    // The best times, oldest first: each strictly below every one before (stored or just added).
+    let prevTime = lastPoint?.time_ms ?? Number.POSITIVE_INFINITY;
+    let prevX = lastPoint?.training_ms ?? 0;
+    let seq = lastPoint?.seq ?? 0;
+    let n = lastPoint?.n ?? 0;
+    for (const p of [...points].sort((a, b) => b.age_ms - a.age_ms)) {
+        if (p.time_ms >= prevTime) {
+            ++refused;
+            continue;
+        }
+        const x = Math.max(prevX, xOf(p.age_ms));
+        const explored = clamp(hiE - Math.max(0, k.sessionExplored - p.explored), loE, hiE);
+        const row: CurvePointRow = {
+            level_id: k.levelId,
+            category: k.category,
+            level_hash: k.hash,
+            sim_version: k.sim,
+            seq: 0,
+            kind: p.kind,
+            time_ms: p.time_ms,
+            training_ms: x,
+            explored,
+            session: k.session,
+            found_by: k.by.id,
+            found_by_username: k.by.username,
+            found_at: atOf(x),
+        };
+        if (n >= MAX_CURVE_POINTS && seq > 0) {
+            // The cap: the last point gives way (the curve keeps its start and its best).
+            row.seq = seq;
+            stmts.push(
+                ctx.env.DB.prepare(
+                    `UPDATE tas_curve_points SET kind = ?6, time_ms = ?7, training_ms = ?8, explored = ?9, session = ?10, found_by = ?11, found_by_username = ?12, found_at = ?13
+                     WHERE ${where} AND seq = ?5 AND time_ms > ?7`,
+                ).bind(...key, seq, row.kind, row.time_ms, row.training_ms, row.explored, row.session, row.found_by, row.found_by_username, row.found_at),
+            );
+        } else {
+            row.seq = ++seq;
+            ++n;
+            // Strictly below every stored point of the version, checked again in the statement.
+            stmts.push(
+                ctx.env.DB.prepare(
+                    `INSERT INTO tas_curve_points (level_id, category, level_hash, sim_version, seq, kind, time_ms, training_ms, explored, session, found_by, found_by_username, found_at)
+                     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13
+                     WHERE NOT EXISTS (SELECT 1 FROM tas_curve_points WHERE ${where} AND time_ms <= ?7)
+                     ON CONFLICT DO NOTHING`,
+                ).bind(...key, row.seq, row.kind, row.time_ms, row.training_ms, row.explored, row.session, row.found_by, row.found_by_username, row.found_at),
+            );
+        }
+        added.push(curvePointJson(row));
+        prevTime = p.time_ms;
+        prevX = x;
+    }
+    // The windows of attempts, oldest first.
+    let wSeq = lastWindow?.seq ?? 0;
+    let wN = lastWindow?.n ?? 0;
+    let last: CurveWindowRow | null = lastWindow ?? null;
+    let stored = 0;
+    const columns =
+        "level_id, category, level_hash, sim_version, seq, session, round, section, sections, start_ms, end_ms, attempts, finished, best_ms, median_ms, worst_ms, route_median, route_max, stopped, broken, found_by, found_by_username, at";
+    const bindWindow = (s: D1PreparedStatement, w: CurveWindowRow) =>
+        s.bind(w.level_id, w.category, w.level_hash, w.sim_version, w.seq, w.session, w.round, w.section, w.sections, w.start_ms, w.end_ms, w.attempts, w.finished,
+            w.best_ms, w.median_ms, w.worst_ms, w.route_median, w.route_max, w.stopped, w.broken, w.found_by, w.found_by_username, w.at);
+    for (const w of [...windows].sort((a, b) => b.age_ms - a.age_ms)) {
+        const end = xOf(w.age_ms);
+        const placed = { ...w, start_ms: Math.max(0, end - w.duration_ms), end_ms: end };
+        if (wN >= MAX_CURVE_WINDOWS) {
+            // The cap: added to the last window of its session, else left out.
+            if (!last || last.session !== k.session) {
+                ++refused;
+                continue;
+            }
+            last = mergedWindow(last, placed);
+            stmts.push(
+                bindWindow(
+                    ctx.env.DB.prepare(
+                        `UPDATE tas_curve_windows SET level_id = ?1, category = ?2, level_hash = ?3, sim_version = ?4, session = ?6, round = ?7, section = ?8, sections = ?9,
+                           start_ms = ?10, end_ms = ?11, attempts = ?12, finished = ?13, best_ms = ?14, median_ms = ?15, worst_ms = ?16, route_median = ?17, route_max = ?18,
+                           stopped = ?19, broken = ?20, found_by = ?21, found_by_username = ?22, at = ?23
+                         WHERE level_id = ?1 AND category = ?2 AND level_hash = ?3 AND sim_version = ?4 AND seq = ?5`,
+                    ),
+                    last,
+                ),
+            );
+            ++stored;
+            continue;
+        }
+        const row: CurveWindowRow = {
+            level_id: k.levelId,
+            category: k.category,
+            level_hash: k.hash,
+            sim_version: k.sim,
+            seq: ++wSeq,
+            session: k.session,
+            round: w.round,
+            section: w.section,
+            sections: w.sections,
+            start_ms: placed.start_ms,
+            end_ms: placed.end_ms,
+            attempts: w.attempts,
+            finished: w.finished,
+            best_ms: w.best_ms,
+            median_ms: w.median_ms,
+            worst_ms: w.worst_ms,
+            route_median: w.route_median,
+            route_max: w.route_max,
+            stopped: JSON.stringify(w.stopped),
+            broken: JSON.stringify(w.broken),
+            found_by: k.by.id,
+            found_by_username: k.by.username,
+            at: atOf(end),
+        };
+        stmts.push(bindWindow(ctx.env.DB.prepare(`INSERT INTO tas_curve_windows (${columns}) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23) ON CONFLICT DO NOTHING`), row));
+        last = row;
+        ++wN;
+        ++stored;
+    }
+    if (stmts.length) await ctx.env.DB.batch(stmts);
+    return { points: added, refused, windows: stored };
+}
+
 async function leaseCall(ctx: Ctx, release: boolean): Promise<Response> {
     const auth = await requireAdminRole(ctx);
     const { levelId, category } = pairOr404(ctx);
     const body = await readJsonObject(ctx);
-    const v = new Validator(body, ["lease_id", "explored"]);
+    const v = new Validator(body, ["lease_id", "explored", "curve", "attempts"]);
     const leaseId = v.str("lease_id", { min: 36, max: 36, pattern: LEASE_ID_RE });
     const explored = v.int("explored", { min: 0, max: Number.MAX_SAFE_INTEGER });
+    const points = curvePointsIn(v, body.curve);
+    const windows = curveWindowsIn(v, body.attempts);
     v.done();
     const now = Date.now();
-    const row = await accountStatement(ctx, levelId, category, leaseId!, auth.player.id, now, explored!, release).first<{
-        level_hash: string;
-        sim_version: number;
-        total_training_ms: number;
-        total_explored: number;
-        sessions: number;
-        lease_expires_ms: number | null;
-    }>();
-    if (!row) throw Errors.conflict("LEASE_LOST", "Ce verrou n'est plus le vôtre (expiré ou repris).");
+    // What the lease had counted before this call (the curve is placed within this call's time), then the call: one transaction.
+    const [beforeRes, afterRes] = await ctx.env.DB.batch([
+        ctx.env.DB.prepare(
+            "SELECT total_training_ms, total_explored FROM tas_training WHERE level_id = ?1 AND category = ?2 AND lease_id = ?3 AND lease_holder = ?4 AND lease_expires_ms > ?5",
+        ).bind(levelId, category, leaseId, auth.player.id, now),
+        accountStatement(ctx, levelId, category, leaseId!, auth.player.id, now, explored!, release),
+    ]);
+    const before = (beforeRes!.results as { total_training_ms: number; total_explored: number }[])[0];
+    const row = (
+        afterRes!.results as {
+            level_hash: string;
+            sim_version: number;
+            total_training_ms: number;
+            total_explored: number;
+            sessions: number;
+            lease_expires_ms: number | null;
+        }[]
+    )[0];
+    if (!row || !before) throw Errors.conflict("LEASE_LOST", "Ce verrou n'est plus le vôtre (expiré ou repris).");
     const training = { level_hash: row.level_hash, sim_version: row.sim_version, total_ms: row.total_training_ms, total_explored: row.total_explored, sessions: row.sessions };
-    if (release) return json(ctx, { released: true, training });
-    return json(ctx, { expires_at: new Date(row.lease_expires_ms!).toISOString(), training });
+    const curve =
+        points.length || windows.length
+            ? await storeCurve(
+                  ctx,
+                  { levelId, category, hash: row.level_hash, sim: row.sim_version, session: row.sessions, by: { id: auth.player.id, username: auth.player.username }, now, sessionExplored: explored! },
+                  before,
+                  row,
+                  points,
+                  windows,
+              )
+            : undefined;
+    if (release) return json(ctx, { released: true, training, ...(curve ? { curve } : {}) });
+    return json(ctx, { expires_at: new Date(row.lease_expires_ms!).toISOString(), training, ...(curve ? { curve } : {}) });
 }
 
 /** POST /admin/tas/{levelId}/{category}/lease/heartbeat {lease_id, explored}: the lease kept three more minutes. */
@@ -483,6 +923,12 @@ export async function publish(ctx: Ctx): Promise<Response> {
     await ctx.env.STORAGE.put(recordKey, recordBytes, { httpMetadata: { contentType: "application/json; charset=utf-8" }, customMetadata: { sha256: recordSha } });
     await ctx.env.STORAGE.put(replayKey, replayBytes, { httpMetadata: { contentType: "application/octet-stream" }, customMetadata: { sha256: replaySha } });
     const publishedAt = nowIso();
+    // The training time then (the mark of the run on the curve): the session under way counted
+    // up to now when the publisher holds the lease (the server's clock, at most the lease's life).
+    const trainedMs = training
+        ? training.total_training_ms +
+          (leaseActive(training, now) && training.lease_holder === auth.player.id ? Math.max(0, Math.min(now - (training.lease_beat_ms ?? now), LEASE_TTL_MS)) : 0)
+        : 0;
     const res = await ctx.env.DB.prepare(
         `INSERT INTO tas_runs (level_id, category, revision, level_hash, level_version, sim_version, time_ms, explored, record_key, record_sha256,
            record_size, replay_key, replay_sha256, replay_size, training_ms_at_publish, explored_at_publish, published_by, published_by_username, published_at)
@@ -490,7 +936,7 @@ export async function publish(ctx: Ctx): Promise<Response> {
          ON CONFLICT (level_id, category, revision) DO NOTHING`,
     )
         .bind(levelId, category, revision, rec.levelHash, rec.levelVersion, rec.simVersion, rec.timeMs, rec.explored, recordKey, recordSha,
-            recordBytes.byteLength, replayKey, replaySha, replayBytes.byteLength, training?.total_training_ms ?? 0, training?.total_explored ?? 0,
+            recordBytes.byteLength, replayKey, replaySha, replayBytes.byteLength, trainedMs, training?.total_explored ?? 0,
             auth.player.id, auth.player.username, publishedAt)
         .run();
     if (!res.meta.changes) {

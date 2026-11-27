@@ -446,6 +446,12 @@
    ]
   },
   {
+   "fr": "0 sans essai fini",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "0,0 m : côte à côte",
    "where": [
     "ui/screens/ReplayGapView.cpp"
@@ -3026,9 +3032,21 @@
    ]
   },
   {
+   "fr": "Amélioration",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Amélioration locale non publiée",
    "where": [
     "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "Amélioration n° {0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -3067,6 +3085,12 @@
    "fr": "ancienne",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ancienne version {0}/{1} · lecture seule",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -4212,6 +4236,7 @@
   {
    "fr": "Arrivée",
    "where": [
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -4228,6 +4253,12 @@
    "fr": "arrivée",
    "where": [
     "ui/screens/ChainTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée atteinte",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -4313,6 +4344,12 @@
    "where": [
     "ui/screens/AdminTas.cpp",
     "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Arrêts par section",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -5711,6 +5748,12 @@
    ]
   },
   {
+   "fr": "au prochain battement",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Au repos",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -6124,6 +6167,12 @@
    "fr": "Aucun essai classé pour l'instant : allez le plus loin possible !",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun essai compté pour cette version.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -6949,6 +6998,18 @@
    "fr": "Aucune course enregistrée.",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune course vérifiée ni essai compté pour l'instant : la courbe commence à la première course vérifiée.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune course vérifiée pour l'instant.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -12476,6 +12537,12 @@
    ]
   },
   {
+   "fr": "Ce tour",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Ce verrou n'est plus le vôtre (expiré ou repris).",
    "where": [
     "server/src/tas.ts"
@@ -12739,6 +12806,12 @@
    ]
   },
   {
+   "fr": "cet ordinateur seulement",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Cet événement est annulé.",
    "where": [
     "server/src/raidWorld.ts"
@@ -12887,6 +12960,12 @@
    "fr": "Cette lanterne est un point de passage : si Nova perd toute sa vie, elle repart d'ici aussitôt, avec ses pouvoirs. Ici, rien n'est compté : ni le temps, ni les chutes.",
    "where": [
     "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "Cette paire n'a jamais été entraînée pour cette version du niveau.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -18439,6 +18518,12 @@
    ]
   },
   {
+   "fr": "Courbe d'entraînement · {0} · {1}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Coureur",
    "where": [
     "game/raid/bots/BotTypes.cpp"
@@ -18653,6 +18738,12 @@
    ]
   },
   {
+   "fr": "Course de départ, vérifiée",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Course du vendredi",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -18681,6 +18772,12 @@
    "fr": "Course non terminée.",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Course publiée (révision {0})",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -20360,6 +20457,7 @@
    "fr": "Date",
    "where": [
     "ui/screens/AdminBackups.cpp",
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -20948,6 +21046,12 @@
    "where": [
     "data/enemies/monolithe.json",
     "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Dernier tour ({0})",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -24395,6 +24499,7 @@
   {
    "fr": "Départ",
    "where": [
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/StatisticsArt.cpp",
     "ui/screens/StatisticsLevels.cpp",
@@ -24679,6 +24784,12 @@
    "fr": "Désépingler",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Détail de {0} essais sur {1} (les autres ne sont pas comptés par fenêtre).",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -25813,6 +25924,12 @@
    ]
   },
   {
+   "fr": "En ligne {0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "en ligne {0}",
    "where": [
     "ui/screens/AdminTas.cpp"
@@ -26784,9 +26901,22 @@
    ]
   },
   {
+   "fr": "entier entre 0 et {0} attendu",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "entier entre 1 et {0} attendu",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "entier positif attendu",
    "where": [
-    "server/src/devices.ts"
+    "server/src/devices.ts",
+    "server/src/tas.ts"
    ]
   },
   {
@@ -26869,6 +26999,7 @@
     "engine/input/InputTypes.cpp",
     "game/ghost/PersonalBests.cpp",
     "ui/screens/AdminTas.cpp",
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
@@ -27005,6 +27136,18 @@
    "fr": "Entraîner",
    "where": [
     "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "entre 0 et le nombre d'essais attendu",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "entre 0 et le nombre de sections attendu",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -27655,9 +27798,34 @@
    ]
   },
   {
+   "fr": "Essais",
+   "where": [
+    "ui/screens/AdminTas.cpp",
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "essais",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Essais de {0} à {1}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Essais finis : meilleur–pire, médian",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "essais non détaillés",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -28464,6 +28632,12 @@
    ]
   },
   {
+   "fr": "fenêtre invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Fermer",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp",
@@ -28478,6 +28652,7 @@
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
@@ -29440,6 +29615,12 @@
    ]
   },
   {
+   "fr": "Finis",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Finissez d'abord la zone de votre groupe : seuls les groupes qui ont fini la leur reprennent une zone.",
    "where": [
     "server/src/raidWipe.ts"
@@ -29855,6 +30036,7 @@
     "game/progression/NewsCenter.cpp",
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidCatalog.cpp",
+    "game/tas/TasCurve.cpp",
     "game/tas/TasFile.cpp",
     "game/tas/TasOnline.cpp",
     "game/tas/TasProgress.cpp",
@@ -30324,6 +30506,7 @@
   {
    "fr": "G",
    "where": [
+    "ui/screens/AdminTas.cpp",
     "ui/screens/NotificationsScene.cpp"
    ]
   },
@@ -30380,6 +30563,12 @@
    "fr": "gagnée par {0} joueurs",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Gain",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -33525,6 +33714,8 @@
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidCatalog.cpp",
     "game/raid/RaidSheets.cpp",
+    "game/tas/TasCurve.cpp",
+    "game/tas/TasProgress.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminBackups.cpp",
@@ -35578,6 +35769,12 @@
    "fr": "jamais entraîné pour cette version",
    "where": [
     "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "jamais plus que les arrêts de la section",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -38746,6 +38943,12 @@
    "fr": "La Sentinelle Prime s'éteint... L'ascenseur des Anciens se réveille.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "la somme doit valoir les essais non finis",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -43203,6 +43406,12 @@
    ]
   },
   {
+   "fr": "Les essais se comptent pendant l'entraînement.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Les fantômes laissent maintenant la traînée de leur joueur (la vôtre derrière vos propres fantômes), aussi translucide qu'eux.",
    "where": [
     "data/news/changelog.json"
@@ -44842,6 +45051,18 @@
    ]
   },
   {
+   "fr": "liste de {0} fenêtres au plus attendue",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
+   "fr": "liste de {0} points au plus attendue",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "liste de {0} récompenses au plus attendue",
    "where": [
     "server/src/adminChallenges.ts"
@@ -44933,6 +45154,12 @@
    ]
   },
   {
+   "fr": "Livrée {0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Lié depuis le {0}. {1}",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -44960,6 +45187,7 @@
   {
    "fr": "local",
    "where": [
+    "game/tas/TasCurve.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp"
@@ -45228,6 +45456,7 @@
   {
    "fr": "M",
    "where": [
+    "ui/screens/AdminTas.cpp",
     "ui/screens/NotificationsScene.cpp"
    ]
   },
@@ -46164,6 +46393,12 @@
    ]
   },
   {
+   "fr": "Meilleur fini",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur possible à l'arrivée",
    "where": [
     "ui/screens/TrainingSession.cpp"
@@ -46219,6 +46454,12 @@
    ]
   },
   {
+   "fr": "Meilleur temps vérifié",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur {0}",
    "where": [
     "ui/screens/TrainingSession.cpp"
@@ -46231,6 +46472,12 @@
    ]
   },
   {
+   "fr": "Meilleur · médian · pire",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "meilleur − somme",
    "where": [
     "ui/screens/ChainTrainingScene.cpp"
@@ -46240,6 +46487,12 @@
    "fr": "MEILLEUR − TAS",
    "where": [
     "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "meilleur ≤ médian ≤ pire attendus",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -48103,6 +48356,7 @@
    "where": [
     "game/online/RaidRecap.cpp",
     "ui/online/ContribTable.cpp",
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ResultsScene.cpp",
     "ui/screens/StatisticsLevels.cpp",
     "ui/widgets/Charts.cpp"
@@ -48124,6 +48378,12 @@
    "fr": "morts du replay ({0}) ≠ record ({1})",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "Morts ou touchés",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -48514,6 +48774,18 @@
    "fr": "Médailles et records personnels.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Médian",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "médian {0} · max {1}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -49986,6 +50258,12 @@
    "fr": "Non envoyé.",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Non finis : parcours",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -52164,6 +52442,12 @@
    ]
   },
   {
+   "fr": "Ordinateur de",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Ordinateur de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -53270,7 +53554,8 @@
   {
    "fr": "Partage",
    "where": [
-    "engine/input/InputTypes.cpp"
+    "engine/input/InputTypes.cpp",
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -55764,6 +56049,12 @@
    ]
   },
   {
+   "fr": "Pire",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Pistons",
    "where": [
     "data/levels/aethra_03.json"
@@ -57175,6 +57466,12 @@
    ]
   },
   {
+   "fr": "point invalide",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "Point {0}",
    "where": [
     "ui/screens/ChainTrainingScene.cpp",
@@ -57223,7 +57520,10 @@
    "fr": "points",
    "where": [
     "game/online/Raids.cpp",
+    "game/tas/TasCurve.cpp",
+    "game/tas/TasTraining.cpp",
     "ui/screens/AdminClans.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
@@ -59311,6 +59611,12 @@
    ]
   },
   {
+   "fr": "Publication",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "publication d'une révision de l'entité « {0} » refusée : {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -59481,7 +59787,8 @@
   {
    "fr": "Publiée par",
    "where": [
-    "ui/screens/AdminCampaign.cpp"
+    "ui/screens/AdminCampaign.cpp",
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -64406,6 +64713,12 @@
    ]
   },
   {
+   "fr": "Rien d'enregistré pour cette ancienne version.",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Rien d'exploré pour l'instant.",
    "where": [
     "ui/screens/PauseMap.cpp"
@@ -67888,6 +68201,9 @@
   {
    "fr": "section",
    "where": [
+    "game/tas/TasCurve.cpp",
+    "game/tas/TasProgress.cpp",
+    "game/tas/TasTraining.cpp",
     "main.cpp"
    ]
   },
@@ -67948,9 +68264,28 @@
    ]
   },
   {
+   "fr": "Section {0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Section {0} atteinte",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Sections",
    "where": [
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sections atteintes",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -68765,6 +69100,7 @@
    "fr": "sessions",
    "where": [
     "game/online/OnlineService.cpp",
+    "game/tas/TasTraining.cpp",
     "ui/screens/AdminTas.cpp"
    ]
   },
@@ -70568,6 +70904,12 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "start ou improvement attendu",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -72943,6 +73285,7 @@
   {
    "fr": "Temps",
    "where": [
+    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -75343,9 +75686,27 @@
    ]
   },
   {
+   "fr": "Tour",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "Tour des vents",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "Tour {0}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "Tour {0} (en cours)",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -75542,7 +75903,8 @@
   {
    "fr": "Tout",
    "where": [
-    "ui/screens/AdminAssets.cpp"
+    "ui/screens/AdminAssets.cpp",
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -75604,6 +75966,12 @@
    "fr": "Tout est synchronisé",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout l'entraînement",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -77367,6 +77735,12 @@
    "fr": "Un compte gratuit suffit",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "un compte par section attendu",
+   "where": [
+    "server/src/tas.ts"
    ]
   },
   {
@@ -80514,6 +80888,12 @@
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Version actuelle",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -86176,6 +86556,12 @@
    ]
   },
   {
+   "fr": "{0} finis · {1}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "{0} fins",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -86824,6 +87210,12 @@
    "fr": "{0} min avant le début",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} min {1}",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -88197,6 +88589,12 @@
    ]
   },
   {
+   "fr": "{0} · affinage de la course",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
    "fr": "{0} · aperçu",
    "where": [
     "ui/screens/GiftsScene.cpp"
@@ -88494,6 +88892,12 @@
    "fr": "{0} · sans compte",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · section {1}/{2}",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -92362,6 +92766,18 @@
    ]
   },
   {
+   "fr": "… {0} autres sections",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "‰ du parcours attendus (médian ≤ max)",
+   "where": [
+    "server/src/tas.ts"
+   ]
+  },
+  {
    "fr": "‹ Image",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -92456,6 +92872,12 @@
    "fr": "−{0} % de sa vie",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "−{0} s",
+   "where": [
+    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {

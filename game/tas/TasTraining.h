@@ -14,7 +14,12 @@
 //     them, and the attempts reported, bounded); without one for three minutes it expires: a
 //     computer turned off or crashed frees its pairs by itself;
 //   * « Arrêter » asks the child to stop (it verifies and writes its best run, then exits) and
-//     releases the lease AT ONCE; closing the game does the same for every training.
+//     releases the lease as soon as it has exited (kReleaseGrace at most: its last best time
+//     and attempts go with the release); closing the game releases every lease at once.
+//
+// The training curve (game/tas/TasCurve.h): each new best time read in the progress file is a
+// point, each window of attempts is kept; both go to the server with the next heartbeat or the
+// release of their lease (pending until it took them).
 //
 // Several pairs train at once (« Entraînements en parallèle », « Threads par entraînement »); a
 // queue (« Tout entraîner ») keeps that many running, a pair held by another administrator
@@ -34,6 +39,7 @@
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
 #include "game/online/OnlineTypes.h"
+#include "game/tas/TasCurve.h"
 #include "game/tas/TasProgress.h"
 
 struct SDL_Process;
@@ -79,10 +85,18 @@ public:
         std::string levelHash;                         // the version trained (with kSimulationVersion)
         int64_t serverTotalMs = 0, serverExplored = 0;  // the version's totals at the server's last answer
         int64_t exploredReported = 0;                   // this session's attempts at that answer
+        int session = 0;                                // the version's session number of this lease (server)
+        int64_t lastBest = 0;                           // the best time last put on the curve by this training
+        int64_t lastWindow = 0;                         // the progress file's last window taken
         std::string error;
         fs::path progressFile, stopFile;
         /// This session's time (since its lease), as this computer counts it.
         int64_t sessionMs() const;
+        /// The version's training time now (the total the page shows): the server's at its last
+        /// answer, plus the time since while the lease is held.
+        int64_t trainingTotalMs() const;
+        /// The version's attempts when the session had explored `sessionExplored`.
+        int64_t exploredAt(int64_t sessionExplored) const;
     };
 
     explicit TasTraining(OnlineService& online);
@@ -141,6 +155,21 @@ public:
     /// The lease route of a pair: /api/v1/admin/tas/<level>/<CATEGORY>/lease.
     static std::string leasePath(const TasPair& p);
 
+    /// The training curves of this computer (shared ones taken in by the page: AdminTas).
+    TasCurveBook& curves() { return curves_; }
+    const TasCurveBook& curves() const { return curves_; }
+    /// What a heartbeat or a release of the lease carries for the curve: its pending points
+    /// (`curve`, at most kSendPoints) and its pending windows downsampled to kSendWindows
+    /// (`attempts`); the ids of what was sent. Public for the tests.
+    static constexpr size_t kSendPoints = 16, kSendWindows = 4;
+    struct CurveSend {
+        Json points = Json::array(), windows = Json::array();
+        std::vector<int64_t> pointIds, windowIds;
+    };
+    static CurveSend curveSend(const TasCurveVersion& v, const std::string& leaseId, int64_t nowMs);
+    /// A new best time and the new windows of the progress file of a training, on the curve.
+    void noteCurve(Job& j);
+
 private:
     void startNext();
     void acquire(Job& j);
@@ -151,8 +180,18 @@ private:
     void readProgress(Job& j);
     void ended(Job& j);
     void say(const std::string& m, bool error);
+    /// The server's answer to a heartbeat or a release that carried `sent`.
+    void curveAnswer(const TasPair& p, const std::string& hash, const std::string& lease, const CurveSend& sent, const ApiResult& r);
+    /// The lease's pending points and windows (none once the server refused them).
+    CurveSend pendingCurve(const TasPair& p, const std::string& hash, const std::string& lease) const;
+    /// A server that does not know the curve refused the call because of it (400): true, and the
+    /// curve is no longer sent (the call goes again without it: the lease is never lost for it).
+    bool curveRefused(const CurveSend& sent, const ApiResult& r);
+    void sendRelease(const TasPair& p, const std::string& lease, const std::string& hash, int64_t explored, bool withCurve);
 
     OnlineService& online_;
+    TasCurveBook curves_;
+    bool curveUnsupported_ = false;
     TasTrainingSettings settings_;
     std::vector<std::unique_ptr<Job>> jobs_;
     std::deque<TasPair> queue_;

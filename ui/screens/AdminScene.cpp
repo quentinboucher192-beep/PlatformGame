@@ -242,7 +242,7 @@ public:
         float titleW = cframe::title(ui, "ADMINISTRATION", {x0_, y + hh * 0.5f}, 40, Align::Left, VAlign::Middle, W_ - backW - ui.s(24)).x;
         // 2.61: Esc / B first cancels what the Studio has under way (a selection, a shape...).
         bool back = cframe::back(ui, "back", {x0_ + W_ - backW, y, backW, hh}) ||
-                    (!modal && !(tab_ == kTabCreations && creations_.capturesBack()) && ui.backPressed());
+                    (!modal && !(tab_ == kTabCreations && creations_.capturesBack()) && !(tab_ == kTabTas && tas_.capturesBack()) && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
         static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis",
@@ -355,6 +355,7 @@ public:
         if (confirmId_.empty() && !devicePlayer_.is_object() && !creations_.modal()) {
             if (tab_ == kTabCalendar) calendar_.drawTooltip();
             else if (tab_ == kTabCreations) creations_.drawTooltip();
+            else if (tab_ == kTabTas) tas_.drawTooltip();  // the training curve's point or window
         }
         ui.end();
         if (back) g_.app.switchScene(makeMainMenu(g_), 0.3f);
