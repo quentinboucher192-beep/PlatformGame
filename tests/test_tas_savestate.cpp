@@ -1,11 +1,10 @@
 // Savestates of a solo run (game/tas/ArenaWorld.h, docs/TAS.md « États sauvegardés »): the whole
 // simulation is taken and put back exactly. On the first level of every planet, and in a boss
-// fight: N steps, a savestate, M more steps; back to the savestate, the same M steps give the
-// same digests AND the same bytes of the whole arena (every object of the run, its allocator
-// included). A world in an arena plays exactly as a world on the normal heap.
+// fight: N steps, a savestate, M more steps; back to the savestate, the same M steps give the same
+// digest at every step and the same arena (its allocations, their layout), and keep nothing on the
+// normal heap. A world in an arena plays exactly as a world on the normal heap.
 
 #include <cstdio>
-#include <cstring>
 #include <string>
 #include <vector>
 
@@ -58,38 +57,51 @@ std::vector<InputFrame> playInputs(uint64_t seed, int ticks) {
     return out;
 }
 
-bool sameBytes(const tas::ArenaWorld::State& a, const tas::ArenaWorld::State& b) {
-    return a.size == b.size && std::memcmp(a.bytes.get(), b.bytes.get(), a.size) == 0;
-}
-
-/// Steps `inputs[from, to)`, the digest every 60 steps.
+/// Steps `inputs[from, to)`: the digest after every step.
 std::vector<uint64_t> play(tas::ArenaWorld& w, const std::vector<InputFrame>& inputs, size_t from, size_t to) {
     std::vector<uint64_t> d;
     for (size_t i = from; i < to; ++i) {
         w.step(inputs[i]);
-        if ((i + 1 - from) % 60 == 0) d.push_back(w.digest());
+        d.push_back(w.digest());
     }
-    d.push_back(w.digest());
     return d;
 }
 
-/// N steps, a savestate, M steps; restored, M steps again (and once more after other inputs in
-/// between). Returns a description of the first problem, or "".
+/// What a run leaves in its arena, never the contents of the memory: how much is used, its live
+/// allocations and the layout of its blocks (Arena::layoutDigest). Two identical runs may leave
+/// different bytes that nobody wrote — the padding of a structure, the unused end of a short
+/// string that MSVC's std::string copies whole from the stack — so bytes are not compared.
+struct Shape {
+    size_t bytes = 0, live = 0;
+    uint64_t layout = 0;
+    bool operator==(const Shape&) const = default;
+};
+Shape shapeOf(const tas::ArenaWorld& w) { return {w.stateBytes(), w.liveBlocks(), w.layoutDigest()}; }
+
+/// N steps, a savestate, M steps (the global caches the run reads once — a boss's sheets — are filled
+/// then); restored, M steps twice: the same digest at every step, the same arena, and nothing kept on
+/// the normal heap; once more after other inputs in between. Returns the first problem, or "".
 std::string checkRestore(tas::ArenaWorld& w, const std::vector<InputFrame>& inputs, const std::vector<InputFrame>& other, size_t n, size_t m) {
-    w.setScrub(0);  // freed memory as it was before it was ever used: the same steps, the same bytes
+    w.setScrub(0);
     play(w, inputs, 0, n);
-    tas::ArenaWorld::State s, end1, end2;
+    tas::ArenaWorld::State s;
     w.save(s);
     const uint64_t atSave = w.digest();
     const uint32_t stepsAtSave = w.steps();
-    const auto first = play(w, inputs, n, n + m);
-    w.save(end1);
+    const auto warm = play(w, inputs, n, n + m);
     w.restore(s);
     if (w.steps() != stepsAtSave || w.digest() != atSave) return "l'état rendu n'est pas celui de la sauvegarde";
-    const auto second = play(w, inputs, n, n + m);
-    if (second != first) return "les mêmes entrées ne donnent plus les mêmes empreintes";
-    w.save(end2);
-    if (!sameBytes(end1, end2)) return "les mêmes entrées ne laissent pas les mêmes octets";
+    const heap::OutsideCount before = heap::outsideCount();
+    const auto first = play(w, inputs, n, n + m);
+    const heap::OutsideCount after = heap::outsideCount();
+    if (first != warm) return "les mêmes entrées ne donnent plus les mêmes empreintes";
+    // Every allocation of the run is in its arena: what it took from the normal heap (the caches'
+    // look-ups, behind ArenaOutside) it gave back within the run.
+    if (after.allocs - before.allocs != after.frees - before.frees) return "la course garde de la mémoire hors de son arène";
+    const Shape shape = shapeOf(w);
+    w.restore(s);
+    if (play(w, inputs, n, n + m) != first) return "les mêmes entrées ne donnent plus les mêmes empreintes";
+    if (!(shapeOf(w) == shape)) return "les mêmes entrées ne laissent pas la même mémoire (allocations)";
     // Other inputs in between, then back: still the same run, the memory freed by each restore
     // overwritten (nothing may still use it).
     w.setScrub(0xDB);
@@ -97,6 +109,7 @@ std::string checkRestore(tas::ArenaWorld& w, const std::vector<InputFrame>& inpu
     play(w, other, n, n + m);
     w.restore(s);
     if (play(w, inputs, n, n + m) != first) return "après d'autres entrées, la sauvegarde ne rend plus la même course";
+    if (!(shapeOf(w) == shape)) return "après d'autres entrées, la mémoire n'est plus la même (allocations)";
     return {};
 }
 
@@ -133,7 +146,7 @@ TEST_CASE("savestate: a world in its arena plays exactly as a world on the norma
     }
 }
 
-TEST_CASE("savestate: the first level of every planet is restored exactly (digests and bytes)") {
+TEST_CASE("savestate: the first level of every planet is restored exactly (digests, allocations, nothing outside)") {
     ContentDatabase content;
     content.reload();
     const auto inputs = playInputs(17, 120 * 25);

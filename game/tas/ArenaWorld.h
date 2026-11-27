@@ -65,6 +65,9 @@ public:
     void restore(const State& s) { arena_.restore(s); }
     /// Tests: Arena::setScrub.
     void setScrub(int byte) { arena_.setScrub(byte); }
+    /// Tests: the arena's live allocations and the digest of its layout (Arena::layoutDigest).
+    size_t liveBlocks() const { return arena_.liveBlocks(); }
+    uint64_t layoutDigest() const { return arena_.layoutDigest(); }
     /// Bytes a savestate copies.
     size_t stateBytes() const { return arena_.used(); }
 

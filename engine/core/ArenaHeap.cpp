@@ -21,6 +21,7 @@
 namespace cosmic::heap {
 
 thread_local Arena* t_current = nullptr;
+thread_local int t_scopes = 0;
 
 namespace {
 
@@ -78,6 +79,18 @@ const Classes& classes() {
 size_t roundUp(size_t v, size_t a) { return (v + a - 1) & ~(a - 1); }
 
 }  // namespace
+
+namespace {
+thread_local OutsideCount t_outside;
+}  // namespace
+
+OutsideCount outsideCount() { return t_outside; }
+
+void noteOutside(bool alloc) noexcept {
+    if (t_scopes <= 0) return;
+    if (alloc) ++t_outside.allocs;
+    else ++t_outside.frees;
+}
 
 bool hooksInstalled() { return g_hooks.load(std::memory_order_relaxed); }
 void markHooksInstalled() { g_hooks.store(true, std::memory_order_relaxed); }
@@ -203,6 +216,28 @@ void Arena::deallocate(void* p) noexcept {
 
 size_t Arena::used() const noexcept { return header()->top; }
 size_t Arena::liveBlocks() const noexcept { return header()->live; }
+
+uint64_t Arena::layoutDigest() const noexcept {
+    // The blocks lie one after the other from the end of the header to the top.
+    uint64_t h = 1469598103934665603ull;
+    auto mixIn = [&h](uint64_t v) {
+        for (int i = 0; i < 8; ++i) {
+            h ^= (v >> (i * 8)) & 0xFFu;
+            h *= 1099511628211ull;
+        }
+    };
+    const size_t top = header()->top;
+    for (size_t at = roundUp(sizeof(Header), 64); at + sizeof(Prefix) <= top;) {
+        const auto* b = reinterpret_cast<const Prefix*>(base_ + at);
+        mixIn(at);
+        mixIn(b->cls);
+        mixIn(b->tag == kUsed ? 1u : 0u);
+        at += sizeof(Prefix) + b->size;
+    }
+    mixIn(top);
+    mixIn(header()->live);
+    return h;
+}
 
 void Arena::save(Snapshot& s) const {
     ArenaOutside normal;

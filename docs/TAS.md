@@ -310,12 +310,22 @@ portée `ArenaOutside` : ses allocations vont au tas normal. Un état n'est vala
 arène (ses pointeurs sont ceux de son bloc) : chaque fil de la recherche a la sienne.
 
 Les tests (`tests/test_tas_savestate.cpp`) : sur le premier niveau de chaque planète et dans un
-combat de boss (le giga-boss du Noyau en phase 5), N pas, un état sauvegardé, M pas ; restauré, les
-mêmes M pas redonnent les mêmes empreintes **et les mêmes octets de toute l'arène** (une mémoire
-d'état extérieure au monde qui influerait sur la course se verrait) ; après d'autres entrées puis
-une nouvelle restauration, la même course encore, la mémoire libérée par la restauration écrasée
-(rien ne doit encore s'en servir). Un monde dans une arène joue exactement comme un monde sur le
-tas normal.
+combat de boss (le giga-boss du Noyau en phase 5), N pas, un état sauvegardé, M pas (les caches
+globaux lus une fois, comme les feuilles de parties d'un boss, se remplissent) ; restauré, les mêmes
+M pas, deux fois, redonnent **la même empreinte à chaque pas** et **la même arène** (octets
+utilisés, allocations vivantes, disposition de tous ses blocs : `Arena::layoutDigest`) ; pendant
+ces pas, tout ce qui a été pris au tas normal (derrière `ArenaOutside`) lui est rendu : **rien de la
+course ne reste hors de son arène** (compteurs des crochets, `heap::outsideCount`) ; après d'autres
+entrées puis une nouvelle restauration, la même course encore, la mémoire libérée par la
+restauration écrasée (rien ne doit encore s'en servir). Un monde dans une arène joue exactement
+comme un monde sur le tas normal.
+
+Les octets eux-mêmes ne sont pas comparés (2.95.1) : deux courses identiques peuvent laisser des
+octets différents que personne n'a écrits — le bourrage d'une structure, la fin inutilisée d'une
+chaîne courte que `std::string` de MSVC copie en entier depuis la pile (la pile, elle, n'est pas la
+même d'une fois à l'autre). C'est ce que voyait le test sous Windows (« aethra_01 : les mêmes
+entrées ne laissent pas les mêmes octets ») alors que la course était la même à chaque pas. La
+restauration, elle, recopie tous les octets, ceux-là compris.
 
 **Coût** (mesuré sur nos machines, 4 cœurs partagés et chargés) : un état sauvegardé de
 « Les Ruines Suspendues » fait **1,3 Mo** (1,6 Mo au plus sur les premiers niveaux des planètes) ;
