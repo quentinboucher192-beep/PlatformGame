@@ -58,6 +58,57 @@ RaidSimulation::RaidSimulation(WorldServices services, const SimSetup& setup) : 
     finished_.assign(branches_.size(), 0);
     links_.assign(branches_.size(), 0);
     visited_.assign(branches_.size(), 0);
+    // §40: the branches one group alone never takes to their gigaboss. Everything a group can do alone done (of each
+    // pair, only one objective: an instance never does both), is its lair reachable? The Torse's 4 plates are two pairs
+    // (its lock wants all four): no. The links of the titan are left out (another branch's work).
+    needsTwo_.assign(branches_.size(), 0);
+    for (size_t b = 0; b < branches_.size(); ++b)
+        if (static_cast<int>(b) != heart_) needsTwo_[b] = reachesAlone(static_cast<int>(b), 0) ? 0 : 1;  // nothing validated yet
+}
+
+bool RaidSimulation::needsTwoGroups(int branch) const {
+    return branch >= 0 && branch < static_cast<int>(needsTwo_.size()) && needsTwo_[static_cast<size_t>(branch)] != 0;
+}
+
+int RaidSimulation::startBranch(int k) const {
+    // §40: one group per branch in the titan's order; the groups after the seventh double the branches one group cannot
+    // finish first (the Torse), then the others in the titan's order.
+    const int seven = heart_ >= 0 ? heart_ : static_cast<int>(branches_.size());
+    if (seven <= 0) return 0;
+    if (k < seven) return k;
+    std::vector<int> extra;
+    for (int pass = 0; pass < 2; ++pass)
+        for (int b = 0; b < seven; ++b)
+            if (needsTwoGroups(b) == (pass == 0)) extra.push_back(b);
+    return extra[static_cast<size_t>((k - seven) % static_cast<int>(extra.size()))];
+}
+
+int RaidSimulation::startZone(int branch) const {
+    const Branch& br = *branches_[static_cast<size_t>(branch)];
+    return setup_.lairs ? lairZone(br) : br.hasArmory() ? RaidRun::kArmory : br.startZone;
+}
+
+int RaidSimulation::groupsIn(int branch) const {
+    int n = 0;
+    for (const auto& g : groups_) n += g->branch == branch && !g->wiped ? 1 : 0;
+    return n;
+}
+
+bool RaidSimulation::reachesAlone(int branch, uint32_t mine) const {
+    // What the branch has validated, and everything this group can still do there alone (of a pair, never its second
+    // half): is its lair reachable then? A group that is only slow can (it is never helped); the Torse's lone group whose
+    // plates are half done cannot.
+    const Branch& br = *branches_[static_cast<size_t>(branch)];
+    uint32_t m = mask(branch);
+    for (const ObjectiveInfo& o : br.objectives) {
+        if (o.optional || o.role == "gigaboss" || o.index < 0 || o.index >= kLinkBit0 || Branch::done(m, o.index)) continue;
+        if (!br.pairDone(o, mine).empty()) continue;
+        mine |= 1u << o.index;
+        m |= 1u << o.index;
+    }
+    const int lair = lairZone(br);
+    const std::vector<bool> r = br.reachable(m);
+    return lair >= 1 && lair < static_cast<int>(r.size()) && r[static_cast<size_t>(lair)];
 }
 
 int RaidSimulation::relics() const {
@@ -165,6 +216,10 @@ RaidSimulation::Group& RaidSimulation::form(int branch, int zone, const std::str
     t.difficulty = setup_.difficulty;  // titan 13
     g->session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g->session->setSkill(setup_.skill);
+    // §40: a second group of the same branch from the same start would play the very same steps as the first (the same
+    // seed): both did the same half of each pair, and the Torse's lock stayed shut for ever. Its own seed (the first
+    // group of a branch keeps 0: its game is the one of before).
+    g->session->setBotSeed(static_cast<uint32_t>(groupsIn(branch)));
     g->session->setBotsInvincible(setup_.botsInvincible);
     g->session->setRescues(setup_.rescues);
     g->session->setFreeSeatPlayed(setup_.fullGroups);  // 2.77.3
@@ -188,6 +243,9 @@ void RaidSimulation::moveGroup(Group& g, int branch, int zone) {
     if (g.session) g.past.push_back({g.branch, g.session->run().contributions().raidTable(), g.session->run().finishes()});  // 2.79: display only
     g.session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g.session->setSkill(setup_.skill);
+    int others = 0;  // §40: its seed (form()): the groups already there (all of them at the heart's opening, one by one)
+    for (const auto& o : groups_) others += o.get() != &g && o->branch == branch && !o->wiped ? 1 : 0;
+    g.session->setBotSeed(static_cast<uint32_t>(others));
     g.session->setBotsInvincible(setup_.botsInvincible);
     g.session->setRescues(setup_.rescues);
     g.session->setFreeSeatPlayed(setup_.fullGroups);  // 2.77.3
@@ -196,7 +254,7 @@ void RaidSimulation::moveGroup(Group& g, int branch, int zone) {
     g.session->begin(zone);
     g.session->run().setQuiet(&group(viewed_) != &g);
     g.branch = branch;
-    g.idleSteps = 0;
+    g.waiting = false;
     ++g.moves;
     visited_[static_cast<size_t>(branch)] = 1;
 }
@@ -216,11 +274,7 @@ bool RaidSimulation::begin() {
         for (const ZoneInfo& z : branches_[static_cast<size_t>(b)]->zones)
             if (zoneFinished(*branches_[static_cast<size_t>(b)], z.id, mask(b)) && z.id < 32) finished_[static_cast<size_t>(b)] |= 1u << z.id;
     for (int b = 0; b < static_cast<int>(branches_.size()); ++b) links_[static_cast<size_t>(b)] = mask(b) & ~kObjectiveBits;
-    for (int k = 0; k < setup_.groups; ++k) {
-        const int b = k % std::max(1, seven);
-        const Branch& br = *branches_[static_cast<size_t>(b)];
-        form(b, setup_.lairs ? lairZone(br) : br.hasArmory() ? RaidRun::kArmory : br.startZone, "Groupe " + std::to_string(k + 1), 0);
-    }
+    for (int k = 0; k < setup_.groups; ++k) form(startBranch(k), startZone(startBranch(k)), "Groupe " + std::to_string(k + 1), 0);
     viewed_ = 0;
     seated_ = true;
     group(0).session->setAdminSeated(true);
@@ -233,6 +287,15 @@ bool RaidSimulation::begin() {
         event("MONDE · Le raid commence : " + std::to_string(setup_.groups) + (setup_.groups > 1 ? " groupes" : " groupe") + " de " +
                   std::to_string(setup_.bots) + " joueurs simulés (test local)",
               WorldEvent::Kind::World);
+    // §40: the groups after the seventh double a branch (said once).
+    for (int k = seven; k < setup_.groups && seven > 0; ++k) {
+        const Group& g = group(k);
+        if (needsTwoGroups(g.branch))
+            event(g.name + " double la branche " + partName(*branches_[static_cast<size_t>(g.branch)]) + " : un groupe seul n'en atteint jamais le Gigaboss",
+                  WorldEvent::Kind::Group);
+        else
+            event(g.name + " double la branche " + partName(*branches_[static_cast<size_t>(g.branch)]), WorldEvent::Kind::Group);
+    }
     return !groups_.empty();
 }
 
@@ -254,34 +317,6 @@ void RaidSimulation::watch(int g) {
     viewed_ = g;
     seated_ = false;
     group(g).session->run().setQuiet(false);
-}
-
-bool RaidSimulation::hasWork(const Group& g) const {
-    // 2.78: its players may be in several zones: work in any of them.
-    const RaidRun& run = g.session->run();
-    bool work = false;
-    for (int z : run.zonesLoaded()) {
-        run.focusZone(z);
-        work = zoneHasWork(run);
-        if (work) break;
-    }
-    run.focusZone(-1);
-    return work;
-}
-
-bool RaidSimulation::zoneHasWork(const RaidRun& run) {
-    if (Branch::isArmory(run.zone())) return true;  // an armory: its powers and its plate
-    const Gigaboss& gb = run.gigaboss();
-    if (gb.present() && gb.stage() != Gigaboss::Stage::Fallen && gb.boss(run.world())) return true;
-    for (size_t k = 0; k < run.rules().coops.size(); ++k)
-        if (!run.coop(k).done) return true;
-    const Branch& br = run.branch();
-    for (const ZoneObjective& zo : run.rules().objectives) {
-        if (zo.index < 0 || zo.index >= static_cast<int>(br.objectives.size())) continue;
-        const ObjectiveInfo& o = br.objectives[static_cast<size_t>(zo.index)];
-        if (!Branch::done(run.mask(), o.index) && br.pairDone(o, run.localDone()).empty()) return true;
-    }
-    return TestBots::chooseExit(run) >= 0;
 }
 
 void RaidSimulation::step(const InputFrame& admin) { step(admin, {}); }
@@ -403,28 +438,39 @@ void RaidSimulation::aggregate() {
         event("MONDE · " + br.gigaboss + " est tombé — " + partName(br) + " détruit (" + std::to_string(gigabossesDown()) + " / 7 Gigaboss)",
               WorldEvent::Kind::World);
     }
-    // A group wiped: its players spectate; a reinforcement takes the zone back.
+    // A group wiped: its players spectate; its zone waits for a waiting group to replace it (§40: never new players
+    // from nowhere). At the heart nobody waits: its part of the heart's health stays counted.
     for (size_t i = 0; i < groups_.size(); ++i) {
         Group& g = *groups_[i];
         if (g.wiped || !g.session->run().wiped()) continue;
         g.wiped = true;
+        g.waiting = false;
         const int zone = g.session->run().wipedZone();
         const Branch& br = *branches_[static_cast<size_t>(g.branch)];
         const ZoneInfo* z = br.zone(zone);
         const std::string where = (z ? z->name : std::string("?")) + " (" + partName(br) + ")";
-        retake_[{g.branch, zone}] = g.name;
-        event("GROUPE ÉLIMINÉ · " + g.name + " dans " + where + " : ses joueurs regardent, la zone est à reprendre", WorldEvent::Kind::Danger);
         if (static_cast<int>(i) == viewed_ && seated_) {
             seated_ = false;  // the administrator spectates with the group
             g.session->setAdminSeated(false);
         }
-        if (reinforcements_ < setup_.maxReinforcements && !(g.branch == heart_ && heartFallen_)) {
-            ++reinforcements_;
-            const int branch = g.branch, id = g.id;
-            Group& r = form(branch, zone, "Renfort " + std::to_string(reinforcements_), 0);
-            r.relieves = id;
-            event("RENFORT · " + r.name + " part reprendre " + where, WorldEvent::Kind::World);
+        if (g.branch == heart_) {
+            event("GROUPE ÉLIMINÉ · " + g.name + " dans " + where + " : ses joueurs regardent, sa part du Cœur reste comptée", WorldEvent::Kind::Danger);
+            continue;
         }
+        retake_[{g.branch, zone}] = g.name;
+        event("GROUPE ÉLIMINÉ · " + g.name + " dans " + where + " : ses joueurs regardent, la zone est à reprendre", WorldEvent::Kind::Danger);
+        if (!gigabossDown(g.branch)) vacancies_.push_back({g.branch, zone, g.id, tick_});
+    }
+    // §40: a group whose branch's gigaboss fell stays there, waiting (it never leaves to help a group that is only slow).
+    for (auto& gp : groups_) {
+        Group& g = *gp;
+        if (g.wiped || g.waiting || g.branch == heart_ || !gigabossDown(g.branch)) continue;
+        g.waiting = true;
+        g.waitingSince = tick_;
+        const Branch& br = *branches_[static_cast<size_t>(g.branch)];
+        if (heart_ >= 0 && gigabossesDown() >= heart_) continue;  // the seventh: everyone goes to the heart at once
+        event("EN ATTENTE · " + g.name + " reste dans la branche " + partName(br) + " (" + br.gigaboss + " tombé) : il n'en part que pour remplacer un groupe éliminé",
+              WorldEvent::Kind::Group);
     }
     // The heart opens once the seven gigaboss fell: every group still playing goes to it.
     if (heart_ >= 0 && !heartOpen_ && gigabossesDown() >= heart_) {
@@ -434,37 +480,80 @@ void RaidSimulation::aggregate() {
             for (const ObjectiveInfo& o : hb.objectives)
                 if (o.role != "gigaboss" && !o.optional) done_[static_cast<size_t>(heart_)] |= 1u << o.index;
         event("MONDE · Les sept Gigaboss sont tombés : le Cœur d'Asterion est ouvert, tous les groupes y vont !", WorldEvent::Kind::World);
+        vacancies_.clear();  // the branches are all fallen: nothing left to take back
+        int fighters = 0;
         for (auto& g : groups_)
-            if (!g->wiped && g->branch != heart_) moveGroup(*g, heart_, setup_.lairs ? lairZone(hb) : hb.hasArmory() ? RaidRun::kArmory : hb.startZone);
+            if (!g->wiped && g->branch != heart_) {
+                moveGroup(*g, heart_, startZone(heart_));
+                ++fighters;
+            }
+        if (fighters > 1)
+            event("CŒUR · " + std::to_string(fighters) + " groupes le combattent, chacun dans son instance : une seule vie pour tous, leurs dégâts additionnés",
+                  WorldEvent::Kind::World);
         return;
     }
-    // A group with nothing left to do in its branch for 5 s: where a group is needed.
-    if (tick_ % 60 != 0) return;
+    // §40: the waiting groups where the rules send them (twice a second).
+    if (tick_ % 60 == 0) dispatch();
+}
+
+RaidSimulation::Group* RaidSimulation::longestWaiting() {
+    Group* best = nullptr;
     for (auto& gp : groups_) {
         Group& g = *gp;
-        if (g.wiped || g.branch == heart_) continue;
-        g.idleSteps = hasWork(g) ? 0 : g.idleSteps + 60;
-        if (g.idleSteps < 5 * kSimHz) continue;
-        int best = -1, bestCount = 1 << 20;
-        for (int b = 0; b < static_cast<int>(branches_.size()); ++b) {
-            if (b == heart_ || gigabossDown(b)) continue;
-            int count = 0;
-            for (const auto& o : groups_) count += o->branch == b && !o->wiped && o.get() != &g ? 1 : 0;
-            // Where a group is missing: the groups its unfinished zones ask for (a pair: 2), at least one.
-            int need = 1;
-            for (const ZoneInfo& z : branches_[static_cast<size_t>(b)]->zones)
-                if (!zoneFinished(*branches_[static_cast<size_t>(b)], z.id, mask(b))) need = std::max(need, z.groupsRequired);
-            if (count >= need) continue;
-            if (count < bestCount) {
-                bestCount = count;
-                best = b;
-            }
+        if (!g.waiting || g.wiped || g.branch == heart_) continue;
+        if (!best || g.waitingSince < best->waitingSince) best = &g;  // ties: the lowest id (the order of groups_)
+    }
+    return best;
+}
+
+void RaidSimulation::dispatch() {
+    if (heartOpen_) return;
+    // 1. A wiped group's place (oldest first): a waiting group replaces it where it fell, the branch's validated state
+    //    kept (as the server's retake: start_zone). Its branch fallen since: nothing to replace.
+    for (auto it = vacancies_.begin(); it != vacancies_.end();) {
+        if (gigabossDown(it->branch)) {
+            it = vacancies_.erase(it);
+            continue;
         }
-        g.idleSteps = 0;
-        if (best < 0 || best == g.branch) continue;
-        const Branch& to = *branches_[static_cast<size_t>(best)];
-        event(g.name + " rejoint la branche " + partName(to) + " (plus rien à faire dans la sienne)", WorldEvent::Kind::Group);
-        moveGroup(g, best, to.hasArmory() ? RaidRun::kArmory : to.startZone);
+        Group* w = longestWaiting();
+        if (!w) return;  // nobody waits yet: the place stays to take
+        const Branch& br = *branches_[static_cast<size_t>(it->branch)];
+        const ZoneInfo* z = br.zone(it->zone);
+        std::string wiped = "?";
+        for (const auto& g : groups_)
+            if (g->id == it->group) wiped = g->name;
+        event("REMPLACEMENT · " + w->name + " quitte sa branche pour remplacer " + wiped + ", éliminé dans " + (z ? z->name : std::string("?")) + " (" +
+                  partName(br) + ") : il reprend cette zone",
+              WorldEvent::Kind::World);
+        moveGroup(*w, it->branch, it->zone);
+        w->relieves = it->group;
+        it = vacancies_.erase(it);
+    }
+    const int seven = heart_ >= 0 ? heart_ : static_cast<int>(branches_.size());
+    // 2. A branch no group plays (fewer groups than branches): a waiting group takes it from its start.
+    for (int b = 0; b < seven; ++b) {
+        if (gigabossDown(b) || groupsIn(b) > 0) continue;
+        bool pending = false;
+        for (const Vacancy& v : vacancies_) pending = pending || v.branch == b;
+        if (pending) continue;
+        Group* w = longestWaiting();
+        if (!w) return;
+        event(w->name + " quitte sa branche pour la branche " + partName(*branches_[static_cast<size_t>(b)]) + ", qu'aucun groupe ne joue", WorldEvent::Kind::Group);
+        moveGroup(*w, b, startZone(b));
+    }
+    // 3. A branch whose only group can never reach its gigaboss alone (the Torse's pairs, half done by it): a waiting group
+    //    becomes its second group. A group that is only slow is never helped.
+    for (int b = 0; b < seven; ++b) {
+        if (gigabossDown(b) || groupsIn(b) != 1) continue;
+        const Group* lone = nullptr;
+        for (const auto& g : groups_)
+            if (g->branch == b && !g->wiped) lone = g.get();
+        if (!lone || reachesAlone(b, lone->session->run().localDone())) continue;
+        Group* w = longestWaiting();
+        if (!w) return;
+        event(w->name + " quitte sa branche pour la branche " + partName(*branches_[static_cast<size_t>(b)]) + " : un groupe seul n'en atteint jamais le Gigaboss",
+              WorldEvent::Kind::Group);
+        moveGroup(*w, b, startZone(b));
     }
 }
 
@@ -472,7 +561,7 @@ uint64_t RaidSimulation::hash() const {
     uint64_t h = 1469598103934665603ULL;
     for (const auto& g : groups_) {
         h = mix(h, g->session->hash());
-        h = mix(h, (static_cast<uint64_t>(g->branch) << 8) | (g->wiped ? 1u : 0u));
+        h = mix(h, (static_cast<uint64_t>(g->branch) << 8) | (g->wiped ? 1u : 0u) | (g->waiting ? 2u : 0u));
     }
     for (uint32_t d : done_) h = mix(h, d);
     h = mix(h, static_cast<uint64_t>(heartTaken_));

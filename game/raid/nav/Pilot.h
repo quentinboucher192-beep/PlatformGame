@@ -174,6 +174,9 @@ public:
     bool graphChanged() const { return changed_; }
     /// The movement part of a seat's frame this step (held bits, mx, my).
     Pad steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prevHeld);
+    /// §40: whether the graph has a way from where `seat` stands to node `goal` with what it can do (its powers, as its
+    /// steering uses them); true without a graph or a place (nothing known against it).
+    bool reaches(const GameWorld& w, int seat, int goal) const;
     Pilot& pilot(int seat) { return pilots_[static_cast<size_t>(seat)]; }
     const Pilot& pilot(int seat) const { return pilots_[static_cast<size_t>(seat)]; }
     const Cost& cost() const { return cost_; }

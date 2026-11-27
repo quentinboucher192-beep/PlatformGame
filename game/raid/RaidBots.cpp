@@ -1325,14 +1325,62 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             if (!c.group.empty())
                 for (size_t j = 0; j < run.rules().coops.size(); ++j)
                     if (j != k && run.rules().coops[j].group == c.group) group.push_back(j);
+            // §40: the guards of the plates (an enemy awake near them, out of the ambushes: the Poignet-verrou's drone over its
+            // upper twin plate, its stalker below): a spare player, never one the plates need, beats the nearest first. Their
+            // blows made the one sent up wait at their edge for ever, and the twin plates never held together.
+            if (!run.coop(k).ambush) {
+                int needAll = 0;
+                Rect around = run.rules().coops[k].rect;
+                for (size_t g : group) {
+                    needAll += std::max(0, run.coop(g).need - heldByOthers(run.rules().coops[g].rect));
+                    const Rect r = run.rules().coops[g].rect;
+                    const float x0 = std::min(around.x, r.x), y0 = std::min(around.y, r.y);
+                    around = {x0, y0, std::max(around.right(), r.right()) - x0, std::max(around.bottom(), r.bottom()) - y0};
+                }
+                around = around.expanded(320.0f);
+                const Enemy* guard = nullptr;
+                float gd = 1e30f;
+                for (const auto& e : w.enemies()) {
+                    if (!e->alive() || e->dormant() || !around.intersects(e->box)) continue;
+                    const float d = (e->center() - run.rules().coops[k].rect.center()).lengthSq();
+                    if (d < gd) {
+                        gd = d;
+                        guard = e.get();
+                    }
+                }
+                if (guard && freeCount() > needAll) {
+                    const int s = nearestFree(guard->box.bottomCenter());
+                    if (s >= 0) {
+                        give(s, Task::Fight, guard->box.bottomCenter(), Strike, guard->uid());
+                        think(bots_[static_cast<size_t>(s)], "dégage " + c.label + " : frappe " + guard->def().name);
+                        said.push_back("Dégager " + shortLabel(c.label));
+                    }
+                }
+            }
             int sent = 0;
             for (size_t g : group) {
                 const RaidRun::CoopView v = run.coop(g);
                 const Rect r = run.rules().coops[g].rect;
                 int need = std::max(0, v.need - heldByOthers(r));
+                // §40: those who can get there (the graph, with their powers) first: the nearest one sent to the upper twin
+                // plate had no way up with its powers and stood under it for ever, while another who had one waited aside.
+                const int plateNode = nav ? nav->nearest(r.bottomCenter(), std::max(40.0f, r.w), [&](const NavGraph::Node& nd) {
+                    return r.contains({nd.feet.x, nd.feet.y - 4.0f}) && (nd.mover < 0 || (nav->moverFeet(w, nd.mover) - nd.feet).lengthSq() < 24.0f * 24.0f);
+                })
+                                          : -1;
+                std::vector<int8_t> reach(static_cast<size_t>(kMaxInstancePlayers), -1);
+                auto canReach = [&](int seat) {
+                    int8_t& known = reach[static_cast<size_t>(seat)];
+                    if (known < 0) known = plateNode < 0 || r.intersects(w.playerAt(seat).box) || navi_.reaches(w, seat, plateNode) ? 1 : 0;
+                    return known == 1;
+                };
                 for (int slot = 0; need > 0; ++slot) {
-                    int s = nearestFree(r.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Runner; });
-                    if (s < 0) s = nearestFree(r.bottomCenter());
+                    // §40: who was going to this plate keeps it (each plan gave the plate to the nearest: two players
+                    // between the twin plates swapped them four times a second and neither ever got up to the upper one).
+                    int s = nearestFree(r.bottomCenter(), [&](int seat) { return wasPlate[static_cast<size_t>(seat)] == r && canReach(seat); });
+                    if (s < 0) s = nearestFree(r.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Runner && canReach(seat); });
+                    if (s < 0) s = nearestFree(r.bottomCenter(), canReach);
+                    if (s < 0) s = nearestFree(r.bottomCenter());  // nobody can: the nearest, as before
                     if (s < 0) break;
                     // Spread over the plate (never all on one pixel), feet on its floor.
                     const float span = std::max(0.0f, r.w - 16.0f);
@@ -1346,6 +1394,13 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                     b.goalNode = nav ? nav->nearest({r.center().x + off, r.bottom()}, std::max(40.0f, r.w),
                                                     [&](const NavGraph::Node& nd) { return nd.mover < 0 && r.contains({nd.feet.x, nd.feet.y - 4.0f}); })
                                      : -1;
+                    // §40: a plate on a goods lift at rest (« Monte-charge »): its only places are on the lift itself (a
+                    // moving platform's), never the floor beside it (Poignet-verrou) nor the pit under it (Cage du cœur), where
+                    // the nearest fixed place sent them: they stood there for ever and the lift never started.
+                    if (b.goalNode < 0 && nav)
+                        b.goalNode = nav->nearest({r.center().x + off, r.bottom()}, std::max(40.0f, r.w), [&](const NavGraph::Node& nd) {
+                            return nd.mover >= 0 && r.contains({nd.feet.x, nd.feet.y - 4.0f}) && (nav->moverFeet(w, nd.mover) - nd.feet).lengthSq() < 24.0f * 24.0f;
+                        });
                     if (b.goalNode < 0) b.goalNode = standNode(r);
                     think(b, "tient " + c.label);
                     --need;

@@ -15653,6 +15653,27 @@
     "Vous regardez un autre groupe : écrivez sur le canal Raid.": "You are watching another group: write on the Raid channel.",
     "[EXEMPLE]·2": "[EXAMPLE]·2",
     "réanime Joueur 5": "revives Player 5",
-    "{0} : envoyer · {1} / {2} : canal · {3} : fermer · stick droit : défiler": "{0}: send · {1} / {2}: channel · {3}: close · right stick: scroll"
+    "{0} : envoyer · {1} / {2} : canal · {3} : fermer · stick droit : défiler": "{0}: send · {1} / {2}: channel · {3}: close · right stick: scroll",
+    "CŒUR · {0} groupes le combattent, chacun dans son instance : une seule vie pour tous, leurs dégâts additionnés": "HEART · {0} groups fight it, each in its own instance: one health for all, their damage added up",
+    "EN ATTENTE : il ne part que pour remplacer un groupe éliminé": "WAITING: it only leaves to replace a wiped group",
+    "EN ATTENTE · {0} reste dans la branche {1} ({2} tombé) : il n'en part que pour remplacer un groupe éliminé": "WAITING · {0} stays in the branch {1} ({2} fallen): it only leaves it to replace a wiped group",
+    "GROUPE ÉLIMINÉ · {0} dans {1} : ses joueurs regardent, sa part du Cœur reste comptée": "GROUP WIPED · {0} in {1}: its players spectate, its share of the Heart stays counted",
+    "Groupe {0} en attente{1}": "Group {0} waiting{1}",
+    "Groupe {0} en attente": "Group {0} waiting",
+    "Groupes {0} ({1} en attente){2}": "Groups {0} ({1} waiting){2}",
+    "Groupes {0} ({1} en attente)": "Groups {0} ({1} waiting)",
+    "Groupes {0} en attente{1}": "Groups {0} waiting{1}",
+    "Groupes {0} en attente": "Groups {0} waiting",
+    "REMPLACEMENT · {0} quitte sa branche pour remplacer {1}, éliminé dans ? ({2}) : il reprend cette zone": "REPLACEMENT · {0} leaves its branch to replace {1}, wiped in ? ({2}): it takes that zone back",
+    "REMPLACEMENT · {0} quitte sa branche pour remplacer {1}, éliminé dans {2} ({3}) : il reprend cette zone": "REPLACEMENT · {0} leaves its branch to replace {1}, wiped in {2} ({3}): it takes that zone back",
+    "a remplacé le Groupe {0}": "replaced Group {0}",
+    "une seule vie pour tous les groupes, chacun dans son instance": "one health for every group, each in its own instance",
+    "{0} double la branche {1}": "{0} doubles the branch {1}",
+    "{0} double la branche {1} : un groupe seul n'en atteint jamais le Gigaboss": "{0} doubles the branch {1}: one group alone never reaches its Gigaboss",
+    "{0} quitte sa branche pour la branche {1} : un groupe seul n'en atteint jamais le Gigaboss": "{0} leaves its branch for the branch {1}: one group alone never reaches its Gigaboss",
+    "{0} quitte sa branche pour la branche {1}, qu'aucun groupe ne joue": "{0} leaves its branch for the branch {1}, which no group plays",
+    "{0} tombé · en attente": "{0} fallen · waiting",
+    "Dégager {0}": "Clear {0}",
+    "dégage {0} : frappe {1}": "clears {0}: strikes {1}"
   }
 }

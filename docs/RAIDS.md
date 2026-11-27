@@ -23,8 +23,9 @@
 # aucune embuscade derrière soi (titan 12, §35) ;
 # joueurs simulés contre les Gigaboss : mesure sur plusieurs départs, carapaces tenues ensemble (2.84, §36) ;
 # titan 13 : décomptes, plateformes, Gigaboss à leur mesure et difficulté réelle (2.84.1, §37)
-# titan 15 : Titanus allégé, un peu (§38)
-# le chat des raids, « Groupe » et « Raid » (2.95, §39)
+# titan 15 : Titanus allégé, un peu (§38) ;
+# le chat des raids, « Groupe » et « Raid » (2.95, §39) ;
+# raid simulé : groupes en attente, remplacements et un seul Cœur pour tous (§40)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1360,15 +1361,16 @@ test : leurs cœurs reviennent à chaque pas, une chute dans le vide les met enc
 regardés (×1, ou **×2 / ×4 « accéléré »**, dit dans la ligne du test).
 
 * **Les mêmes règles qu'un vrai raid**, ce que le serveur ferait entre les instances fait ici au même pas : chaque groupe
-  est une instance (`raid::TestSession`), le groupe k commence dans la branche k mod 7, par son **vestiaire** ; ce qu'un
+  est une instance (`raid::TestSession`), le groupe k (k < 7) commence dans la branche k, par son **vestiaire** (le 8e
+  double le Torse, les suivants les autres branches : [§40](#40-raid-simulé--groupes-en-attente-remplacements-et-un-seul-cœur-pour-tous)) ; ce qu'un
   groupe accomplit est accepté pour tous les groupes de la branche (le consensus, ici immédiat) ; les **liens du titan**
-  sont calculés comme `statesOf` (`server/src/raidMap.ts`) ; un groupe qui n'a plus rien à faire dans sa branche part là où
-  il manque le plus de groupes (la branche dont le Gigaboss tient encore) ; un groupe **éliminé** devient spectateur, sa
-  zone est **à reprendre** et un **groupe de renfort** la reprend depuis cette zone (des joueurs simulés nouveaux ; dans un
-  vrai raid, ceux d'un groupe qui a fini sa zone ; 8 renforts au plus) ; les sept Gigaboss tombés, le **Cœur** s'ouvre et
-  tous les groupes encore en jeu y vont : sa vie est **partagée** (la part de chaque instance additionnée, ce que les autres
-  ont pris donné à chacune, sa phase, les reliques validées : `server/src/raidHeart.ts`), et sa chute finit le raid.
-* **Événements du monde** (objectifs, zones terminées, liens du titan, Gigaboss tombés, groupes éliminés, renforts, phases
+  sont calculés comme `statesOf` (`server/src/raidMap.ts`) ; un groupe dont le Gigaboss est tombé **reste en attente** dans
+  sa branche (jamais pour aider un groupe lent) ; un groupe **éliminé** devient spectateur, sa zone est **à reprendre** et
+  le groupe en attente depuis le plus longtemps **le remplace** là où il est tombé (§40 ; plus aucun renfort de joueurs
+  venus de nulle part) ; les sept Gigaboss tombés, le **Cœur** s'ouvre et tous les groupes encore en jeu y vont, chacun dans
+  son instance : sa vie est **une seule pour tous** (la part de chaque instance additionnée, ce que les autres ont pris donné
+  à chacune, sa phase, les reliques validées : `server/src/raidHeart.ts`), et sa chute finit le raid.
+* **Événements du monde** (objectifs, zones terminées, liens du titan, Gigaboss tombés, groupes éliminés, groupes en attente et remplacements, phases
   du Cœur) : alertes en jeu et onglet « Événements du monde » ; **carte du titan** (chaque partie : pas encore découverte,
   combat en cours, affaiblie, détruite) ; zone terminée annoncée avec son **tableau des contributions** ; onglet
   « Contributions » (chaque joueur de chaque groupe : dégâts, Gigaboss, relevés, mécanismes, points faibles, objectifs).
@@ -3675,6 +3677,132 @@ place par défaut et lignes mesurées) ; `server/test/raidChat.test.ts` (canaux 
 la session, nettoyage, longueur, rythme, message mal formé, blocages, historique, spectateur d'un autre groupe, salle vide
 qui quitte l'événement, salle d'un test). **Déploiement** : `wrangler deploy` (migration de Durable Object `v4` :
 `RaidChatRoom`) ; aucune migration D1.
+
+## 40. Raid simulé : groupes en attente, remplacements et un seul Cœur pour tous
+
+*Vu par le propriétaire* (« RAID COMPLET — TEST LOCAL », 8 groupes, carte du titan › Contributions) : le Crâne, l'Abdomen
+et la Jambe droite tombés mais « Aucun groupe », le Bras gauche tombé avec le Groupe 1, les Groupes 3 et 7 au Bras droit
+et 2 et 4 au Torse encore loin de leur Gigaboss, les Groupes 5 et 8 à la Jambe gauche, le Cœur pas découvert. « Pourquoi
+certains groupes n'arrivent même pas à aller au boss ? Un groupe qui finit avant reste en attente dans sa branche ; il
+vient remplacer seulement si le groupe est éliminé. »
+
+### Les règles entre les groupes (`game/raid/RaidSimulation`)
+
+| Règle | Avant (2.94.1) | Maintenant |
+|---|---|---|
+| Un groupe dont le Gigaboss est tombé | après 5 s sans rien à faire, il partait vers la branche « où il manquait le plus de groupes » : toutes, puisque chaque branche a une zone à deux groupes (la zone 4) ; c'est ce qui vidait le Crâne, l'Abdomen et la Jambe droite de la capture | il **reste dans sa branche, « en attente »** (carte du titan : « Groupe 1 en attente », « Groupes 3, 7 (7 en attente) » ; carte du groupe : « Skullmaw tombé · en attente » ; panneau des groupes : « EN ATTENTE ») ; jamais pour aider un groupe lent ou affaibli |
+| Un groupe éliminé | un « Renfort N » de joueurs simulés nouveaux reprenait la zone (8 au plus) | sa place attend ; le groupe **en attente depuis le plus longtemps** (puis le plus petit numéro) quitte sa branche et **le remplace** : il reprend **la zone où il est tombé** (celle de la plupart de ses joueurs), avec **l'état validé de la branche** (tout ce que les groupes y ont fait et qui est accepté : passages, générateurs, embuscades), comme la reprise du serveur (`raidWipe.ts`, `start_zone` ; ce que le groupe éliminé n'avait pas validé ne compte pas). Personne n'attend : la zone reste à reprendre. Aucun joueur ne vient plus de nulle part |
+| Le 8e groupe (plus de groupes que de branches) | « k mod 7 » : il doublait le Crâne, qui n'en a pas besoin | il **double le Torse** dès le départ : le verrou de sa Cage du cœur veut ses 4 plaques, qui sont deux paires, et une instance ne fait jamais les deux objectifs d'une paire (§6 : « Deux groupes : 2 × 2 plaques ») ; du 9e au 14e, les autres branches dans l'ordre du titan (14 groupes : deux par branche). Pas de réserve au départ : le premier groupe qui finit devient la réserve (en attente) |
+| Deux cas sans aide (pas un groupe lent) | — | un groupe en attente prend aussi une branche **qu'aucun groupe ne joue** (moins de 7 groupes) et devient le **deuxième groupe d'une branche que son seul groupe ne mène jamais à son Gigaboss** (le Torse à 7 groupes ou moins) : calculé depuis le catalogue (`needsTwoGroups`, `reachesAlone` : ce que la branche a validé plus tout ce que ce groupe peut encore y faire seul, l'antre est-il atteignable ?) |
+| Les sept Gigaboss tombés | tous les groupes en jeu allaient au Cœur | de même, **chacun dans son instance**, plusieurs à la fois ; un groupe éliminé au Cœur n'est pas remplacé (personne n'attend) et sa part reste comptée |
+
+Les événements du monde le disent : « EN ATTENTE · Groupe 1 reste dans la branche CRÂNE (Skullmaw tombé) : il n'en part que
+pour remplacer un groupe éliminé », « REMPLACEMENT · Groupe 1 quitte sa branche pour remplacer Groupe 3, éliminé dans
+Coude-forge (BRAS DROIT) : il reprend cette zone », « Groupe 8 double la branche TORSE : un groupe seul n'en atteint
+jamais le Gigaboss », « CŒUR · 8 groupes le combattent, chacun dans son instance : une seule vie pour tous, leurs dégâts
+additionnés ».
+
+### Le Cœur : une seule vie, vérifiée dans la simulation et dans le vrai raid
+
+| | Vrai raid (`server/src/raidHeart.ts`, relais `RAID_STATE`) | Simulation (`RaidSimulation::step`, `aggregate`) |
+|---|---|---|
+| Part d'une instance | `AsterionHeartRoutine::own` rapporté toutes les 15 s et à sa chute, accepté par le consensus, gardé au **maximum** (`raid_heart_damage`) | la même `own`, lue à chaque pas (le consensus et le relais, ici immédiats) |
+| Vie partagée | 10 000 − la somme des parts (plafonnée) | `heartTaken` : la somme des parts (plafonnée), jamais en baisse |
+| Ce que reçoit chaque instance | la part des **autres** (`raw − own`), la phase partagée (5 : tombé), les reliques | la même (`HeartShared`) |
+| Chute | la somme atteint 10 000 : l'objectif du Cœur écrit une fois, donné à toutes les instances | la même (ou la chute locale d'une instance, qui rapporte alors tout ce qui reste comme sa part) |
+
+Les règles étaient les mêmes ; l'affichage ne l'était pas : la barre de la bulle du Cœur sur la carte du titan prenait la
+vie **locale la plus basse des instances** (une instance, avec un pas de retard sur les autres), pas la vie partagée. Elle
+montre désormais la vie partagée (`heartTaken`) et la phase partagée, la même que la ligne « Cœur : ouvert, N % ôtés » du
+panneau des groupes ; la légende sous le titan ajoute « une seule vie pour tous les groupes, chacun dans son instance ».
+Dans le vrai raid, la bulle du Cœur (le tableau des contributions d'une instance) montre la vie de son cœur, où la part
+validée des autres est déjà ôtée, et « Résultats du raid » la vie validée du serveur (`heartStatusOf`) : rien à corriger.
+
+### Pourquoi des groupes n'arrivaient pas au boss (mesuré)
+
+**Le banc** (`tests/test_raid_sim_rules.cpp`, « raid simulation bench », sans affichage) : `COSMIC_RAID_SIM_BENCH=1`
+(8 groupes de 5 joueurs Confirmés depuis les vestiaires, comme le menu ; `COSMIC_RAID_SIM_GROUPS`, `_BOTS`, `_SKILL`,
+`_MINUTES`, `_INVINCIBLE` pour les joueurs simulés invincibles, `_DETAIL` : chaque plaque et chaque joueur, où il est et
+ce qu'il pense) ; il écrit chaque événement du monde, où est chaque groupe toutes les `_EVERY` secondes, puis, par groupe,
+son chemin de zone en zone et son plus long séjour dans une zone. Le banc d'une zone (`COSMIC_RAID_ZONE_BENCH=1`,
+`COSMIC_RAID_ZONE_PART`, `_NUMBER`, `_FROM` : -1 depuis le vestiaire, ses pouvoirs choisis, `_SECONDS`, `_SEED`) montre
+toutes les 10 s chaque plaque (tenue, demandée, embuscades restantes) et chaque joueur (place, état, tâche, chemin, ce qu'il
+pense) : c'est lui qui a trouvé les blocages ci-dessous.
+
+**Avant** (2.94.1, 8 groupes, joueurs simulés invincibles) : 6 / 7 Gigaboss à 26 min, puis plus rien (mesure arrêtée à
+38 min). Mortels : 2 / 7 à 34 min.
+
+| Groupe (départ) | Invincibles | Mortels |
+|---|---|---|
+| 1 (Crâne) | Skullmaw à 12 min, puis parti « aider » le Bras gauche (16 min) | idem, parti au Bras gauche à 18 min |
+| 2 (Bras gauche) | Dreadfang, puis Jambe gauche (22 min), puis Jambe droite (26 min) : 10 min dans le Genou-forge sans rien y faire | parti au Torse à 26 min, coincé au monte-charge |
+| 3 (Bras droit) | **jamais à l'antre** : 33 min dans le Poignet-verrou (la vanne double) | **29 min** dans le Poignet-verrou (les plaques jumelles) |
+| 4 (Torse) | **20 min** dans les Côtes basses (seul : ses plaques à moitié), puis **14 min** au monte-charge de la Cage du cœur | 24 min seul, puis le monte-charge |
+| 5 (Abdomen) | Voidworm à 16 min, puis au Torse : 14 min au monte-charge | **28 min** au monte-charge du Gosier |
+| 6 (Jambe gauche) | à l'antre à 14 min | à l'antre à 14 min (Graviton debout) |
+| 7 (Jambe droite) | à l'antre à 14 min | **28 min** au monte-charge de la Cheville d'acier |
+| 8 (le Crâne, en double) | parti au Bras droit à 16 min : Pyroclast à 25 min | idem |
+
+Les causes, chacune trouvée et corrigée :
+
+1. **La règle d'aide** (ci-dessus) : les groupes qui finissaient quittaient leur branche (le Crâne, l'Abdomen, la Jambe
+   droite vides sur la carte du propriétaire) et seul ce départ débloquait le Torse, une vingtaine de minutes plus tard.
+2. **Le Torse seul** : son verrou ne s'ouvre jamais à un seul groupe (deux paires de plaques) ; le 8e groupe doublait le
+   Crâne. Il double désormais le Torse.
+3. **Deux groupes d'une même branche jouaient les mêmes pas** (même départ, même graine des joueurs simulés) : au Torse, les
+   deux faisaient la même moitié de chaque paire au même pas, et le verrou restait fermé pour toujours. Chaque groupe d'une
+   branche a sa graine (le premier garde 0 : sa partie est celle d'avant ; `TestSession::setBotSeed`).
+4. **Le monte-charge** (Poignet-verrou, Cage du cœur, Gosier, Cheville d'acier) : sa plaque est sur la plateforme mobile ;
+   la place la plus proche hors plateforme envoyait les joueurs à côté (Poignet-verrou) ou **dans la fosse sous le monte-charge**
+   (Cage du cœur : 32 px sous la plateforme, d'où l'on ne ressort pas). Leur place est maintenant sur la plateforme au repos.
+5. **Les échelles qui traversent une grille** (Poignet-verrou) : debout sur la grille, « Bas » seul ne prend jamais l'échelle
+   (`Player::stepMovement`) ; le joueur simulé appuyait sur « Bas » pour toujours, et la vanne double (4 joueurs) en manquait
+   un. Comme un joueur : « Bas » + « Saut » traverse la grille et l'échelle le rattrape (`nav::Pilot`, mouvement `Climb`).
+6. **Les plaques jumelles** (Poignet-verrou) : (a) un drone et un traqueur gardent la plaque haute ; leurs coups faisaient
+   attendre sans fin celui qui y montait : un joueur en trop (jamais un de ceux que les plaques demandent) bat d'abord les
+   gardes éveillés à moins de 320 px des plaques (« Dégager … ») ; (b) la plaque haute était donnée au plus proche, qui
+   n'avait aucun chemin avec ses pouvoirs du vestiaire : ceux qui ont un chemin (le graphe, leurs pouvoirs) d'abord
+   (`Navigator::reaches`) ; (c) à chaque plan (quatre fois par seconde), deux joueurs entre les deux plaques se les
+   échangeaient et aucun n'arrivait en haut : qui allait à une plaque la garde.
+
+**Après** (le même banc, le même binaire pour les deux colonnes) :
+
+| Groupe | Invincibles (Cœur tombé à **33 min 41**) | Mortels (60 min) |
+|---|---|---|
+| 1 (Crâne) | à l'antre à 12 min, Skullmaw à 15 min 33, puis **en attente** au Crâne | Skullmaw à 14 min 52, en attente |
+| 2 (Bras gauche) | antre à 12 min 45, Dreadfang à 20 min 30, en attente | Dreadfang à 21 min, en attente |
+| 3 (Bras droit) | Poignet-verrou en 7 min 38, antre à 10 min 35, **Pyroclast à 16 min 02** | antre à 12 min 34 ; Pyroclast debout |
+| 4 et 8 (Torse) | Côtes basses finies à 2 min 14 (une moitié de paire chacun), antre à 11 min, **Heartbreaker à 13 min 17** | Heartbreaker à 14 min 05 |
+| 5 (Abdomen) | antre à 15 min, Voidworm à 22 min 04 | antre à 13 min 18 ; Voidworm debout |
+| 6 (Jambe gauche) | antre à 12 min 16, Graviton à 23 min 24 | antre à 12 min 16 ; Graviton debout |
+| 7 (Jambe droite) | antre à 14 min, Titanus à 20 min 41 | Titanus à 27 min 50 |
+| Le Cœur | ouvert à 23 min 24, les 8 groupes y vont (chacun son instance) ; l'Aorte finie à 31 min 44 ; la vie partagée : 25 % à 32 min 38, 50 % à 33 min 17, 75 % à 33 min 32, tombé à 33 min 41 | fermé (4 / 7) |
+
+Chaque groupe atteint maintenant son Gigaboss (le plus long séjour dans une zone avant l'antre : 11 min 32 dans le Gosier de
+Voidworm, la longue expédition prévue de 13 à 17 min ; mortels, tous à leur antre entre 11 min 35 et 13 min 57). Aucun groupe n'a
+quitté sa branche avant l'ouverture du Cœur.
+
+### Ce qui reste
+
+* **Mortels, trois Gigaboss** : Pyroclast, Voidworm et Graviton restent debout une heure ; leurs groupes ne sont jamais
+  éliminés (un joueur relève toujours les autres, 1 / 5 en jeu à la fin), donc personne ne les remplace. C'est la limite
+  des joueurs simulés contre les Gigaboss mesurée au §36 (survie et dégâts près du boss), pas une règle du raid.
+* **Le Poignet-verrou** reste une longue expédition (7 min 38 invincibles) : sa dernière embuscade (un traqueur sur une
+  grille entre deux échelles) se finit lentement.
+* « Joueurs simulés invincibles » : le Cœur tombe en 90 s une fois l'arène ouverte, ses huit instances additionnées.
+
+### Versions
+
+Aucune règle d'une instance ne change (`RaidRun`, ses zones, ses objectifs, le consensus) : `TITAN_REVISION`,
+`kCoopSimulationVersion`, `kSimulationVersion` et `kRankingGeneration` restent, aucune empreinte de référence ne bouge et aucun
+record n'est touché. Ce qui change est entre les instances du test local (`RaidSimulation`) et dans les joueurs simulés
+(`RaidBots`, `nav::Pilot`, des tests seulement) ; le test relayé avec des joueurs invités vérifie déjà la version du jeu
+(`testFingerprint`). Le serveur ne change pas (rien à déployer). Tests : `tests/test_raid_sim_rules.cpp` (le 8e groupe double
+le Torse, 14 groupes deux par branche ; un groupe en attente ne bouge pas pendant que les autres sont lents ; à 7 groupes, le
+premier en attente devient le deuxième du Torse et personne d'autre ne bouge ; éliminé sans personne en attente : la zone
+attend, aucun groupe de nulle part ; avec un groupe en attente : il remplace l'éliminé dans sa zone, avec l'état validé ; le
+Cœur à trois instances : la somme des parts, la même vie et la même phase partout), `tests/test_raid_mechanisms.cpp` (la ligne
+des groupes d'une bulle : « Groupe 1 en attente », « Groupes 2, 8 (8 en attente) », « · Vous »).
 
 ---
 

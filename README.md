@@ -352,7 +352,7 @@ mobiles visées là où elles seront, [§27](docs/RAIDS.md)), esquivent tirs, ra
 monte, battent les Gigaboss et relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert, en disant ce
 qu'ils font (« Double saut au-dessus du vide »…). **« Simuler un raid complet »** joue tout le raid
 de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
-carte du titan, contributions, groupes éliminés et renforts ; l'administrateur rejoint ou regarde n'importe quel groupe,
+carte du titan, contributions, groupes éliminés remplacés par un groupe en attente (un groupe dont le Gigaboss est tombé reste dans sa branche), le Cœur à plusieurs instances avec une seule vie ; l'administrateur rejoint ou regarde n'importe quel groupe,
 et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md). Dans les deux tests, l'administrateur peut aussi
 **inviter de vrais joueurs** connectés (liste avec recherche, administrateurs ou non) : chacun prend la place d'un joueur
 simulé de son groupe, avec sa case **« Invincible »** que seul l'administrateur change ; le test passe alors par le
@@ -840,7 +840,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   liquide qui monte, Gigaboss (mécanisme quand il est blindé, points faibles à nu), réanimations, choix des pouvoirs au
   vestiaire ; « Niveau des joueurs simulés » : Débutant, Confirmé, Expert ([docs/RAIDS.md §22](docs/RAIDS.md)).
 * **« Simuler un raid complet »** : tout le raid de clan en local, sept branches puis le Cœur avec tous les groupes,
-  événements du monde, carte du titan, contributions, groupes éliminés et renforts ; rejoindre ou regarder n'importe
+  événements du monde, carte du titan, contributions, groupes en attente et remplacements, une seule vie du Cœur pour tous ; rejoindre ou regarder n'importe
   quel groupe ; **TEST LOCAL — rien n'est envoyé**.
 * **Coopération et raids** (règles de coopération **3**) : l'âme **tombe** sous le point de la mort (tué en plein saut :
   juste dessous), ou va sur le **dernier endroit sûr** du joueur au-dessus du vide ou d'un danger ; elle glisse jusqu'à sa

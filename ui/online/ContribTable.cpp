@@ -175,15 +175,7 @@ Color stateFill(const Part& p) {
     }
 }
 
-std::string groupsLine(const Part& p) {
-    // 2.95: « · Vous » where this computer's player is (fitted with the line on its callout).
-    const std::string you = p.mine ? std::string(" · Vous") : std::string();
-    if (p.groups.empty()) return p.mine ? std::string("Vous") : std::string("Aucun groupe");
-    if (p.groups.size() == 1) return "Groupe " + std::to_string(p.groups[0]) + you;
-    std::string s = "Groupes ";
-    for (size_t i = 0; i < p.groups.size(); ++i) s += (i == 0 ? "" : ", ") + std::to_string(p.groups[i]);
-    return s + you;
-}
+std::string groupsLine(const Part& p) { return groupsText(p); }
 
 /// The line under the titan: what is shown.
 std::string captionText(const Model& m, const View& v) {
@@ -191,6 +183,7 @@ std::string captionText(const Model& m, const View& v) {
     if (!p) return "Raid entier : chaque groupe et ses joueurs. Une partie du titan (clic, ou " + m.partKey + ") : ses groupes et ses zones.";
     std::string s = p->name + (p->gigaboss.empty() ? std::string() : " · " + p->gigaboss) + " · " + groupsLine(*p);
     if (p->relic) s += " · relique rapportée";
+    if (p->shared) s += " · une seule vie pour tous les groupes, chacun dans son instance";  // §40: the heart
     if (!p->open && !p->closed.empty()) s += " · " + p->closed;
     return s;
 }
@@ -741,6 +734,25 @@ Tooltip tooltip(UIContext& ui, const Model& m, const View& v, const Prepared& p,
 }
 
 // ------------------------------------------------------------------------------------- 2.86: the bosses' bars
+
+std::string groupsText(const Part& p) {
+    // 2.95: « · Vous » where this computer's player is (fitted with the line on its callout).
+    const std::string you = p.mine ? std::string(" · Vous") : std::string();
+    if (p.groups.empty()) return p.mine ? std::string("Vous") : std::string("Aucun groupe");
+    auto list = [](const std::vector<int>& v) {
+        std::string s;
+        for (size_t i = 0; i < v.size(); ++i) s += (i == 0 ? "" : ", ") + std::to_string(v[i]);
+        return s;
+    };
+    std::vector<int> waiting;  // §40: those of the groups here that wait
+    for (int g : p.waiting)
+        if (std::find(p.groups.begin(), p.groups.end(), g) != p.groups.end()) waiting.push_back(g);
+    if (p.groups.size() == 1)
+        return waiting.empty() ? "Groupe " + list(p.groups) + you : "Groupe " + list(p.groups) + " en attente" + you;
+    if (waiting.size() == p.groups.size()) return "Groupes " + list(p.groups) + " en attente" + you;
+    if (!waiting.empty()) return "Groupes " + list(p.groups) + " (" + list(waiting) + " en attente)" + you;
+    return "Groupes " + list(p.groups) + you;
+}
 
 std::string healthText(const Part& p) {
     if (p.fallen) return "Vaincu";

@@ -747,6 +747,19 @@ bool Navigator::escape(const Body& body, Pilot& p, const BodySim& sim, uint32_t 
 
 // ----------------------------------------------------------------------------- one seat's step
 
+bool Navigator::reaches(const GameWorld& w, int seat, int goal) const {
+    const NavGraph* nav = graph_.get();
+    if (!nav || goal < 0 || goal >= nav->size() || seat < 0 || seat >= w.teamSize()) return true;
+    const Player& me = w.playerAt(seat);
+    const int from = nav->locate(me.feet());
+    if (from < 0) return true;
+    const Kit kit = Kit::of(me);
+    const uint8_t can = static_cast<uint8_t>((kit.hasDash() && skill_.powers ? NeedDash : 0) | (kit.hasImpulse() && skill_.powers ? NeedImpulse : 0) |
+                                             (kit.airJumps >= 2 ? NeedExtraJump : 0));
+    std::vector<int> way;
+    return nav->path(from, goal, way, 20000, can);
+}
+
 Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prevHeld) {
     const auto clock0 = std::chrono::steady_clock::now();
     Pilot& p = pilots_[static_cast<size_t>(seat)];
@@ -1123,6 +1136,14 @@ Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prev
             if (std::fabs(up) > 4.0f && (body.onLadder || S.ladder || T.ladder)) {
                 pad.held |= 1u << static_cast<int>(up > 0.0f ? Action::MoveUp : Action::MoveDown);
                 pad.my = static_cast<int8_t>(up > 0.0f ? -127 : 127);
+                // §40: down a ladder that goes through the one-way platform it stands on (the Poignet-verrou's grates): Down
+                // alone never takes a ladder while standing (Player::stepMovement), so it stayed there pressing Down for ever.
+                // As a player does: Down + Jump drops through the platform (a fresh press), and the ladder catches it below.
+                if (up < 0.0f && body.grounded && body.state != PlayerState::Climb && !(prevHeld & kJumpBit)) {
+                    const Player& pl = w.playerAt(seat);
+                    const Collider* ground = w.physics().groundBelow(pl.box, pl.moveOptions());
+                    if (ground && ground->kind == ColliderKind::OneWay) pad.held |= kJumpBit;
+                }
             }
             p.think(Intent::Climb, tick_);
             break;
