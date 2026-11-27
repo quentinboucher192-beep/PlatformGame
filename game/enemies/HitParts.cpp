@@ -4,6 +4,7 @@
 #include <cmath>
 #include <mutex>
 
+#include "engine/core/ArenaHeap.h"
 #include "engine/animation/Animation.h"
 #include "engine/core/FileUtil.h"
 #include "engine/core/Paths.h"
@@ -124,6 +125,7 @@ std::shared_ptr<HitPartsSheet> HitPartsSheet::parse(const Json& j) {
 }
 
 const HitPartsSheet* HitPartsSheet::of(const std::string& sheetPath) {
+    heap::ArenaOutside normalHeap;  // the sheets read are global: never in a savestate's arena (engine/core/ArenaHeap.h)
     static std::mutex mutex;
     static std::map<std::string, std::shared_ptr<HitPartsSheet>> loaded;
     std::lock_guard<std::mutex> lock(mutex);
@@ -232,6 +234,7 @@ PartRules readRules(const std::string& enemyId) {
 }  // namespace
 
 const PartRules& PartRules::of(const std::string& enemyId) {
+    heap::ArenaOutside normalHeap;  // the rules read are global: never in a savestate's arena (engine/core/ArenaHeap.h)
     RulesCache& c = rulesCache();
     std::lock_guard<std::mutex> lock(c.mutex);
     auto it = c.loaded.find(enemyId);

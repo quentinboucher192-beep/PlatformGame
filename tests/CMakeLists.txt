@@ -6,7 +6,8 @@ if(COSMIC_EXTRA_TESTS_DIR)
     list(APPEND COSMIC_TEST_SOURCES ${COSMIC_EXTRA_TEST_SOURCES})
 endif()
 add_executable(cosmic_tests ${COSMIC_TEST_SOURCES})
-target_link_libraries(cosmic_tests PRIVATE cosmic_game)
+# Arena heaps (savestates of the machine's search, docs/TAS.md): the tests redirect operator new too.
+target_link_libraries(cosmic_tests PRIVATE cosmic_game cosmic_heap_hooks)
 if(WIN32)
     target_link_libraries(cosmic_tests PRIVATE ws2_32)  # local socket server of test_online_net.cpp
 endif()

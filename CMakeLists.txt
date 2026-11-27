@@ -90,6 +90,14 @@ if(COSMIC_ONLINE_HTTP)
     endif()
 endif()
 
+# ------------------------------------------------------------- machine's runs (TAS)
+# The programs that keep savestates of the simulation (the offline search and the tests) build
+# each run in an arena heap: they replace operator new with tools/tas/HeapHooks.cpp (docs/TAS.md).
+# The game never links it.
+add_library(cosmic_heap_hooks OBJECT ${CMAKE_SOURCE_DIR}/tools/tas/HeapHooks.cpp)
+target_link_libraries(cosmic_heap_hooks PRIVATE cosmic_engine)
+cosmic_set_warnings(cosmic_heap_hooks)
+
 # ------------------------------------------------------------------------- executable
 set(COSMIC_EXE_SOURCES main.cpp)
 if(WIN32)
