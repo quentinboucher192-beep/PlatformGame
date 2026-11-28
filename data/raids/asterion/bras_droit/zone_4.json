@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_bd_4",
  "name": "Asterion · Bras droit · Coude-forge",
- "description": "Une articulation de basalte où le titan fond le métal des mondes avalés. Deux soufflets attisent la forge : il faut deux groupes, un par soufflet. La coulée de magma revient sans cesse.",
+ "description": "Une articulation de basalte où le titan fond le métal des mondes avalés. Deux soufflets attisent la forge : détruisez-les ensemble, à 3 s près, le groupe partagé en deux. La coulée de magma revient sans cesse.",
  "planet": "pyralis",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -785,7 +785,7 @@
     24.0
    ],
    "props": {
-    "text": "Coude-forge : deux soufflets, deux groupes. Chaque groupe en détruit un (un pouvoir de tir).",
+    "text": "Coude-forge : deux soufflets à détruire ensemble, à 3 s près : le groupe se partage (un pouvoir de tir).",
     "auto": true
    }
   },

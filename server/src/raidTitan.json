@@ -1,6 +1,6 @@
 {
  "format": "cosmic.raid_titan",
- "revision": 15,
+ "revision": 16,
  "raid": "asterion",
  "comment": "Written by tools/levelgen/raid_asterion.py: the seven branches of Asterion and the links between them (an objective of one branch acts on another), its heart (the final fight, 2.72: raid_coeur.py) and the links of kind « modifier » that the parts' falls give it. Never edit by hand.",
  "branches": [
@@ -503,7 +503,7 @@
      "event": "Onde psychique toutes les 80 s (corniches hautes sûres)",
      "secret": false,
      "boss": false,
-     "groups_required": 2,
+     "groups_required": 1,
      "minutes": 1.3
     },
     {
@@ -657,7 +657,7 @@
      "id": "crane_nerf_gauche",
      "index": 3,
      "zone": 4,
-     "label": "Trancher le nerf gauche (un groupe)",
+     "label": "Trancher le nerf gauche (en même temps que le droit)",
      "optional": false,
      "role": "",
      "pair": "nerfs"
@@ -666,7 +666,7 @@
      "id": "crane_nerf_droit",
      "index": 4,
      "zone": 4,
-     "label": "Trancher le nerf droit (un autre groupe)",
+     "label": "Trancher le nerf droit (en même temps que le gauche)",
      "optional": false,
      "role": "",
      "pair": "nerfs"
@@ -866,7 +866,7 @@
      "event": "Balayage des griffes toutes les 75 s (corniches hautes sûres)",
      "secret": false,
      "boss": false,
-     "groups_required": 2,
+     "groups_required": 1,
      "minutes": 1.1
     },
     {
@@ -1020,7 +1020,7 @@
      "id": "bg_lame_haute",
      "index": 3,
      "zone": 4,
-     "label": "Briser la lame haute (un groupe)",
+     "label": "Briser la lame haute (en même temps que la basse)",
      "optional": false,
      "role": "",
      "pair": "lames"
@@ -1029,7 +1029,7 @@
      "id": "bg_lame_basse",
      "index": 4,
      "zone": 4,
-     "label": "Briser la lame basse (un autre groupe)",
+     "label": "Briser la lame basse (en même temps que la haute)",
      "optional": false,
      "role": "",
      "pair": "lames"
@@ -1229,7 +1229,7 @@
      "event": "Pulsation du cœur toutes les 45 s (passerelles sûres)",
      "secret": false,
      "boss": false,
-     "groups_required": 2,
+     "groups_required": 1,
      "minutes": 1.1
     },
     {
@@ -1257,7 +1257,7 @@
      "event": "Pulsation du cœur toutes les 50 s (passerelles sûres)",
      "secret": false,
      "boss": false,
-     "groups_required": 2,
+     "groups_required": 1,
      "minutes": 1.3
     },
     {
@@ -1386,7 +1386,7 @@
      "id": "torse_plaque_nord",
      "index": 4,
      "zone": 4,
-     "label": "Briser la plaque nord (un groupe)",
+     "label": "Briser la plaque nord (en même temps que la sud)",
      "optional": false,
      "role": "generator",
      "pair": "plaques_sternum"
@@ -1395,7 +1395,7 @@
      "id": "torse_plaque_sud",
      "index": 5,
      "zone": 4,
-     "label": "Briser la plaque sud (un autre groupe)",
+     "label": "Briser la plaque sud (en même temps que la nord)",
      "optional": false,
      "role": "generator",
      "pair": "plaques_sternum"
@@ -1413,7 +1413,7 @@
      "id": "torse_plaque_est",
      "index": 7,
      "zone": 6,
-     "label": "Briser la plaque est (un groupe)",
+     "label": "Briser la plaque est (en même temps que l'ouest)",
      "optional": false,
      "role": "generator",
      "pair": "plaques_cotes"
@@ -1422,7 +1422,7 @@
      "id": "torse_plaque_ouest",
      "index": 8,
      "zone": 6,
-     "label": "Briser la plaque ouest (un autre groupe)",
+     "label": "Briser la plaque ouest (en même temps que l'est)",
      "optional": false,
      "role": "generator",
      "pair": "plaques_cotes"
@@ -1600,7 +1600,7 @@
      "event": "Reflux d'acide toutes les 50 s (branches hautes sûres)",
      "secret": false,
      "boss": false,
-     "groups_required": 2,
+     "groups_required": 1,
      "minutes": 1.4
     },
     {
@@ -1754,7 +1754,7 @@
      "id": "abd_valve_haute",
      "index": 3,
      "zone": 4,
-     "label": "Fermer la valve haute (un groupe)",
+     "label": "Fermer la valve haute (en même temps que la basse)",
      "optional": false,
      "role": "",
      "pair": "valves"
@@ -1763,7 +1763,7 @@
      "id": "abd_valve_basse",
      "index": 4,
      "zone": 4,
-     "label": "Fermer la valve basse (un autre groupe)",
+     "label": "Fermer la valve basse (en même temps que la haute)",
      "optional": false,
      "role": "",
      "pair": "valves"
@@ -1963,7 +1963,7 @@
      "event": "Puits de gravité toutes les 60 s (îlots hauts sûrs)",
      "secret": false,
      "boss": false,
-     "groups_required": 2,
+     "groups_required": 1,
      "minutes": 1.2
     },
     {
@@ -2117,7 +2117,7 @@
      "id": "jg_rotule_interieure",
      "index": 3,
      "zone": 4,
-     "label": "Briser la rotule intérieure (un groupe)",
+     "label": "Briser la rotule intérieure (en même temps que l'extérieure)",
      "optional": false,
      "role": "",
      "pair": "rotules"
@@ -2126,7 +2126,7 @@
      "id": "jg_rotule_exterieure",
      "index": 4,
      "zone": 4,
-     "label": "Briser la rotule extérieure (un autre groupe)",
+     "label": "Briser la rotule extérieure (en même temps que l'intérieure)",
      "optional": false,
      "role": "",
      "pair": "rotules"
@@ -2326,7 +2326,7 @@
      "event": "Onde sismique toutes les 75 s (grilles hautes sûres)",
      "secret": false,
      "boss": false,
-     "groups_required": 2,
+     "groups_required": 1,
      "minutes": 1.2
     },
     {
@@ -2480,7 +2480,7 @@
      "id": "jd_piston_haut",
      "index": 3,
      "zone": 4,
-     "label": "Bloquer le piston haut (un groupe)",
+     "label": "Bloquer le piston haut (en même temps que le bas)",
      "optional": false,
      "role": "",
      "pair": "pistons"
@@ -2489,7 +2489,7 @@
      "id": "jd_piston_bas",
      "index": 4,
      "zone": 4,
-     "label": "Bloquer le piston bas (un autre groupe)",
+     "label": "Bloquer le piston bas (en même temps que le haut)",
      "optional": false,
      "role": "",
      "pair": "pistons"

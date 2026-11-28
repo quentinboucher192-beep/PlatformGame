@@ -14,7 +14,7 @@
     "poster": {"image": "ui/films/asterion_film.png", "crop": [85, 0, 150, 108]},
     "formats": [
       {"id": "court", "name": "Court", "minutes": [25, 30]},
-      {"id": "standard", "name": "Standard", "minutes": [45, 60]},
+      {"id": "standard", "name": "Standard", "minutes": [60, 60]},
       {"id": "legendaire", "name": "Légendaire", "minutes": [75, 90]}
     ],
     "default_format": "standard",

@@ -19,6 +19,7 @@ import { Validator } from "./validate";
 import { WORLD_REWARDS } from "./raidWorldRewards";
 import { HEART_REWARDS } from "./raidHeartRewards";
 import { grantEndedHeartTops, grantHeartTop, heartStatusOf } from "./raidHeart";
+import { clanInstancesOf, doneOf, outcomeOf } from "./raidMap";
 
 /** One player's contributions (the numbers the games computed, tenths of health for the damage). */
 export interface Contribution {
@@ -665,11 +666,15 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
     const { zoneTables, raidTotals } = contributionTables((zonesR?.results ?? []) as ZoneTableRow[]);
     // 2.86: the heart's shared health and phase (validated parts only), for its bar on the titan of « Contributions ».
     const heart = await heartStatusOf(db, eventRow.id);
+    // §41 (titan 16): how the raid ends for my clan (victory, defeat by time, every group eliminated).
+    const myClan = await db.prepare("SELECT clan_id FROM raid_registrations WHERE event_id = ?1 AND player_id = ?2").bind(eventRow.id, me).first<{ clan_id: string }>();
+    const outcome = outcomeOf(eventRow, now, await doneOf(db, eventRow.id), myClan ? await clanInstancesOf(db, eventRow.id, myClan.clan_id) : null);
     return json(ctx, {
         zone_tables: zoneTables,
         raid_totals: raidTotals,
         server_time: now,
-        event: { id: eventRow.id, state, final: state === "termine" },
+        event: { id: eventRow.id, state, final: state === "termine", ends_at: eventRow.ends_at },
+        outcome,
         gigaboss: {
             boss: fights.find((f) => f.phase === 4)?.boss ?? "Pyroclast",
             defeated: fights.some((f) => f.phase === 4),

@@ -83,7 +83,7 @@
    "event": "Puits de gravité toutes les 60 s (îlots hauts sûrs)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.2
   },
   {
@@ -237,7 +237,7 @@
    "id": "jg_rotule_interieure",
    "index": 3,
    "zone": 4,
-   "label": "Briser la rotule intérieure (un groupe)",
+   "label": "Briser la rotule intérieure (en même temps que l'extérieure)",
    "optional": false,
    "role": "",
    "pair": "rotules"
@@ -246,7 +246,7 @@
    "id": "jg_rotule_exterieure",
    "index": 4,
    "zone": 4,
-   "label": "Briser la rotule extérieure (un autre groupe)",
+   "label": "Briser la rotule extérieure (en même temps que l'intérieure)",
    "optional": false,
    "role": "",
    "pair": "rotules"

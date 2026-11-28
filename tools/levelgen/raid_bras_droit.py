@@ -6,7 +6,7 @@ zone_N.json), and the branch catalog (branch.json) the game and the server share
 server/src/raidBranches.json: the server never trusts the game's).
 
 The graph (maquette « Branche »): Épaule (1) → Biceps de basalte (2) and Veine de magma (3), two
-paths that meet at the Coude-forge (4, two groups: one bellows each). The Veine hides the secret
+paths that meet at the Coude-forge (4: its two bellows destroyed together by one group, split in two). The Veine hides the secret
 Grotte des scories (5) and the shortcut to the Avant-bras (6), opened by the lever of the
 Avant-bras. The Poignet-verrou (7) opens once the two generators (Veine and Avant-bras) are on;
 2.68 (phase 3): it is the long level before the gigaboss (about 15 minutes for 8 players: wide
@@ -80,8 +80,8 @@ OBJECTIVES = [
     ("epaule_arene", 1, "Reprendre l'épaule : vaincre la garde de l'arène", False, "ambush", ""),
     ("biceps_gardien", 2, "Abattre le golem gardien du biceps", False, "", ""),
     ("veine_generateur", 3, "Activer le générateur de la Veine (un pouvoir de tir)", False, "generator", ""),
-    ("forge_soufflet_ouest", 4, "Détruire le soufflet ouest (un groupe)", False, "", "soufflets"),
-    ("forge_soufflet_est", 4, "Détruire le soufflet est (un autre groupe)", False, "", "soufflets"),
+    ("forge_soufflet_ouest", 4, "Détruire le soufflet ouest (en même temps que l'est)", False, "", "soufflets"),
+    ("forge_soufflet_est", 4, "Détruire le soufflet est (en même temps que l'ouest)", False, "", "soufflets"),
     ("forge_enclume", 4, "Facultatif : vaincre l'Enclume vivante", True, "", ""),
     ("grotte_relique", 5, "Facultatif : emporter la relique des scories", True, "", ""),
     ("avantbras_generateur", 6, "Activer le générateur de l'avant-bras (un pouvoir de tir)", False, "generator", ""),
@@ -336,7 +336,7 @@ def zone_3():
 # =================================================================== 4 — Coude-forge
 def zone_4():
     z = Zone(4, 150, "Une articulation de basalte où le titan fond le métal des mondes avalés. Deux soufflets "
-                     "attisent la forge : il faut deux groupes, un par soufflet. La coulée de magma revient sans cesse.")
+                     "attisent la forge : détruisez-les ensemble, à 3 s près, le groupe partagé en deux. La coulée de magma revient sans cesse.")
     L, P = z.L, z.P
     z.rock(0, 36, 20)
     z.passage(3, 1, 36)
@@ -353,7 +353,7 @@ def zone_4():
     z.magma(22, 128, 33, 36, period=42.0, first=20.0)
     for x0 in (34, 54, 74, 94, 114):
         L.oneway(x0, x0 + 8, 30, "chain_grate")
-    L.sign(30, 36, "Coude-forge : deux soufflets, deux groupes. Chaque groupe en détruit un (un pouvoir de tir).")
+    L.sign(30, 36, "Coude-forge : deux soufflets à détruire ensemble, à 3 s près : le groupe se partage (un pouvoir de tir).")
     west = L.receptor(46, 36, "")
     east = L.receptor(106, 36, "")
     z.objective("forge_soufflet_ouest", west, "activate")
@@ -758,7 +758,7 @@ def catalog(minutes):
     for n, name, sub, x, y, inside, event in ZONES:
         zones.append({"id": n, "name": name, "sub": sub, "x": x, "y": y, "level": "zone_%d.json" % n,
                       "inside": inside, "event": event, "secret": n == 5, "boss": n == 8,
-                      "groups_required": 2 if n == 4 else 1})
+                      "groups_required": 1})  # §41 (titan 16): a pair is one group's
         if n in minutes:
             zones[-1]["minutes"] = minutes[n]
     objectives = [{"id": oid, "index": i, "zone": zone, "label": label, "optional": opt, "role": role, "pair": pair}

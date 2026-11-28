@@ -325,8 +325,11 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
     if (fits(ui.s(24), by - ui.s(6))) {
         std::vector<std::string> parts = {raids::difficultyLabel(e.difficulty), plural(e.clans, "clan", "clans") + " · " + plural(e.players, "joueur inscrit", "joueurs inscrits")};
         if (!clanId().empty())
-            parts.push_back(e.clanRegistered ? clans::bracket(clanTag()) + " : " + plural(e.clanPlayers, "inscrit", "inscrits") + ", " +
-                                                   plural(e.clanGroups, "groupe", "groupes")
+            // §41: fewer than 14 registered, the clan cannot start yet (said with the count).
+            parts.push_back(e.clanRegistered ? clans::bracket(clanTag()) + " : " +
+                                                   (e.clanPlayers < raids::kMinClanPlayers
+                                                        ? std::to_string(e.clanPlayers) + " / " + std::to_string(raids::kMinClanPlayers) + " inscrits"
+                                                        : plural(e.clanPlayers, "inscrit", "inscrits") + ", " + plural(e.clanGroups, "groupe", "groupes"))
                                              : clans::bracket(clanTag()) + " : clan pas encore inscrit");
         float px = x;
         for (const std::string& p : parts) {

@@ -9,24 +9,23 @@
 //   a join gives them a spectator link (a socket that watches, never a seat), on their instance or on
 //   any instance of their branch still playing (GET /raids/instances/{id}/watch lists its players).
 // * The zone stays « à reprendre » (to retake) while one of its objectives that is not optional is
-//   not done. A player of a group that FINISHED its own zone (every objective of its zone done) takes
-//   it again (POST /raids/instances/{id}/retake): the server places them in a fresh instance of that
-//   zone (`start_zone`, the validated state of the branch kept), made once per wiped instance and
-//   clan; their group follows them one by one (8 at most). Only that new group's reports can
-//   validate the zone.
+//   not done. §41 (titan 16): replacement is the only help. A group WAITING in its branch (its Gigaboss
+//   fell, the Cœur not open yet) replaces a wiped group of its clan (POST /raids/instances/{id}/retake):
+//   the whole group goes to a fresh instance of that zone (`start_zone`, the validated state of the
+//   branch kept), made once per wiped instance and clan, never where the clan still has a group (one
+//   group per branch). Nobody waiting: the zone stays to take. Only that group's reports can validate it.
 
 import { requireAuth } from "./auth";
 import { ask } from "./coop";
 import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
-import { catalogById, enter, isDone, putIn, stateMaskOf, type Catalog } from "./raidMap";
+import { HEART, catalogById, catalogByPart, clanInstancesOf, currentOf, doneOf, enter, gigabossFallen, groupsInPlay, isDone, stateMaskOf, statesOf, type Catalog } from "./raidMap";
+import { heartOpenIn } from "./raidHeart";
 import { raidState } from "./raids";
 import { requireEntry } from "./raidWorld";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-/** Players of an instance at most (a reinforcement group too). */
-const INSTANCE_SIZE = 8;
 
 export interface WipeInstanceRow {
     id: string;
@@ -141,9 +140,11 @@ async function runningEvent(db: D1Database, id: string, now: string) {
 }
 
 /**
- * POST /raids/instances/{instanceId}/retake {zone}: a player of this instance (their group finished
- * its zone) takes a wiped zone of the branch again: placed in the fresh instance of that zone (made
- * once per wiped instance and clan), whose games start in that zone with the branch's state.
+ * POST /raids/instances/{instanceId}/retake {zone, branch?}: §41 (titan 16), a group WAITING (its branch's Gigaboss
+ * fell, the Cœur not open yet) replaces a wiped group of its clan: it takes the zone where that group fell (in its
+ * branch, `branch`, its own by default), with the branch's validated state (`start_zone`). One group per branch: never
+ * where the clan still has a group in play. The whole group goes (its placements moved to the relief instance, made
+ * once per wiped instance); a player of that group asks it from their group's instance.
  */
 export async function retake(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
@@ -154,8 +155,9 @@ export async function retake(ctx: Ctx): Promise<Response> {
     const inst = await instanceOf(db, ctx.params.instanceId ?? "");
     const e = await runningEvent(db, inst.event_id, now);
     const body = await readJsonObject(ctx);
-    const v = new Validator(body, ["zone"]);
+    const v = new Validator(body, ["zone", "branch"]);
     const zone = v.int("zone", { min: 1, max: 32 })!;
+    const part = v.str("branch", { max: 32, pattern: /^[a-z_]{1,32}$/, optional: true });
     v.done();
     const reg = await db.prepare("SELECT clan_id FROM raid_registrations WHERE event_id = ?1 AND player_id = ?2").bind(e.id, me).first<{ clan_id: string }>();
     if (!reg || reg.clan_id !== inst.clan_id) throw Errors.forbidden("NOT_IN_INSTANCE", "Vous ne jouez pas dans ce groupe.");
@@ -170,43 +172,50 @@ export async function retake(ctx: Ctx): Promise<Response> {
         .first();
     if (!member) throw Errors.forbidden("NOT_IN_INSTANCE", "Vous ne jouez pas dans ce groupe.");
     if (inst.wiped_zone !== null) throw Errors.conflict("INSTANCE_WIPED", "Ce groupe a été éliminé.");
-    const c = catalogById(inst.branch);
-    if (!c) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
+    const rows = await clanInstancesOf(db, e.id, inst.clan_id);
+    if (currentOf(rows, inst.group_no)?.id !== inst.id) throw Errors.forbidden("NOT_IN_INSTANCE", "Votre groupe ne joue plus dans cette instance.");
+    const done = await doneOf(db, e.id);
+    const states = statesOf(done);
+    const own = catalogById(inst.branch);
+    if (!own || (HEART && own.id === HEART.id) || !gigabossFallen(own, states))
+        throw Errors.conflict(
+            "RAID_NOT_WAITING",
+            "Seul un groupe en attente (le Gigaboss de sa branche est tombé) remplace un groupe éliminé : finissez d'abord votre branche.",
+        );
+    if (heartOpenIn(done)) throw Errors.conflict("RAID_NOTHING_TO_RETAKE", "Le Cœur d'Asterion est ouvert : plus aucune zone à reprendre.");
+    const c = part !== undefined ? catalogByPart(part) : own;
+    if (!c || (HEART && c.id === HEART.id)) throw Errors.notFound("BRANCH_NOT_FOUND", "Cette branche du titan n'existe pas.");
+    if (groupsInPlay(rows).some((i) => i.branch === c.id))
+        throw Errors.conflict("RAID_BRANCH_TAKEN", "Un groupe de votre clan joue déjà cette branche : jamais deux groupes dans une branche.");
     const mask = await stateMaskOf(db, e.id, c.id);
-    // 2.78: the zone of the player's own seat (each player changes zone alone), else the instance's.
-    let myZone = inst.zone;
-    if (inst.seat_zones) {
-        const own = await db.prepare("SELECT seat FROM raid_instance_members WHERE instance_id = ?1 AND player_id = ?2 AND left_at IS NULL").bind(inst.id, me).first<{ seat: number }>();
-        const z = own ? Number(inst.seat_zones.split(",")[own.seat] ?? 0) : 0;
-        if (z > 0) myZone = z;
-    }
-    if (!zoneFinished(c, myZone, mask))
-        throw Errors.conflict("RAID_ZONE_UNFINISHED", "Finissez d'abord la zone de votre groupe : seuls les groupes qui ont fini la leur reprennent une zone.");
-    const target = (await zonesToRetake(db, e.id, c, mask)).find((z) => z.zone === zone);
+    const target = (await zonesToRetake(db, e.id, c, mask)).find((z) => z.zone === zone && rows.some((i) => i.id === z.instance_id));
     if (!target) throw Errors.conflict("RAID_NOTHING_TO_RETAKE", "Cette zone n'est pas à reprendre.");
-    // The fresh instance of that zone for this clan (made once per wiped instance: the others join it).
-    let relief = await db
+    // The relief: this group's instance on that branch, starting in that zone, relieving the wiped one (made once).
+    await db
+        .prepare(
+            `INSERT OR IGNORE INTO raid_instances (id, event_id, clan_id, group_no, branch, zone, players, created_at, updated_at, start_zone, relieves)
+             SELECT ?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?7, ?6, ?8
+             WHERE NOT EXISTS (SELECT 1 FROM raid_instances WHERE relieves = ?8 AND clan_id = ?3 AND wiped_zone IS NULL)`,
+        )
+        .bind(crypto.randomUUID(), e.id, inst.clan_id, inst.group_no, c.id, zone, now, target.instance_id)
+        .run();
+    const relief = await db
         .prepare("SELECT * FROM raid_instances WHERE relieves = ?1 AND clan_id = ?2 AND wiped_zone IS NULL ORDER BY created_at LIMIT 1")
         .bind(target.instance_id, inst.clan_id)
         .first<WipeInstanceRow>();
-    if (!relief) {
-        const id = crypto.randomUUID();
-        await db
+    if (!relief || relief.group_no !== inst.group_no) throw Errors.conflict("RAID_ALREADY_RETAKEN", "Un autre groupe de votre clan reprend déjà cette zone.");
+    // The whole group goes: its placements follow it there (journaled), each player's game moves at their next entry.
+    await db.batch([
+        db
             .prepare(
-                `INSERT INTO raid_instances (id, event_id, clan_id, group_no, branch, zone, players, created_at, updated_at, start_zone, relieves)
-                 SELECT ?1, ?2, ?3, COALESCE(MAX(group_no), 0) + 1, ?4, ?5, 0, ?6, ?6, ?5, ?7 FROM raid_instances WHERE event_id = ?2 AND clan_id = ?3 AND branch = ?4
-                   AND NOT EXISTS (SELECT 1 FROM raid_instances WHERE relieves = ?7 AND clan_id = ?3 AND wiped_zone IS NULL)`,
+                `INSERT INTO raid_placement_log (event_id, player_id, from_instance, to_instance, by_player, reason, created_at)
+                 SELECT ?1, player_id, ?2, ?3, ?4, 'remplacement', ?5 FROM raid_placements WHERE event_id = ?1 AND instance_id = ?2`,
             )
-            .bind(id, e.id, inst.clan_id, c.id, zone, now, target.instance_id)
-            .run();
-        relief = await db
-            .prepare("SELECT * FROM raid_instances WHERE relieves = ?1 AND clan_id = ?2 AND wiped_zone IS NULL ORDER BY created_at LIMIT 1")
-            .bind(target.instance_id, inst.clan_id)
-            .first<WipeInstanceRow>();
-    }
-    if (!relief) throw Errors.conflict("INSTANCE_BUSY", "Beaucoup de joueurs arrivent en même temps : réessayez.");
-    if (!(await putIn(db, e.id, inst.clan_id, me, relief as never, me, "choix")))  // the player's own choice (the placement journal's reasons)
-        throw Errors.conflict("INSTANCE_FULL", "Le groupe qui reprend cette zone a déjà 8 joueurs.");
+            .bind(e.id, inst.id, relief.id, me, now),
+        db
+            .prepare("UPDATE raid_placements SET instance_id = ?3, branch = ?4, updated_at = ?5 WHERE event_id = ?1 AND instance_id = ?2")
+            .bind(e.id, inst.id, relief.id, relief.branch, now),
+    ]);
     return enter(ctx, e as never, relief, me);
 }
 

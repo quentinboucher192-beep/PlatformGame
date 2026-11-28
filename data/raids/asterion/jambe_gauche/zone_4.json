@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_jg_4",
  "name": "Asterion · Jambe gauche · Genou",
- "description": "Le genou du titan, tenu par deux rotules. Deux groupes, une rotule chacun ; des puits de gravité y écrasent tout.",
+ "description": "Le genou du titan, tenu par deux rotules à briser ensemble, à 3 s près : le groupe se partage ; des puits de gravité y écrasent tout.",
  "planet": "aethra",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -506,7 +506,7 @@
     24.0
    ],
    "props": {
-    "text": "Deux rotules, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+    "text": "Deux rotules à briser ensemble : le groupe se partage, une rotule chacun, à 3 s près (un pouvoir de tir).",
     "auto": true
    }
   },

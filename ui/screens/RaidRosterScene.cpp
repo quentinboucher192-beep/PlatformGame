@@ -1,9 +1,9 @@
 // 2.68: where the players of my clan are in the raid (docs/RAIDS.md, spec §8): each registered
-// member and their place (branch, group of 8, zone, in play or not), the clan's groups on each
-// branch (placed out of 8, in play). The raid leader, the chief and the officers move the member
-// selected to a branch (the server picks the group with room, a new one when all are full) and
-// rebalance a branch (its players spread evenly over as few groups as they need). Everything is
-// done by the server (GET / POST /raids/events/{id}/placements): never more than 8 in a group.
+// member and their place (branch, group, zone, in play or not). §41 (titan 16): ALWAYS seven groups, one
+// per branch, 2 to 8 players each. The raid leader, the chief and the officers move the member selected
+// to another group (one of the seven, by the branch it plays now) and even out the seven groups (sizes
+// that differ by one at most). Everything is checked by the server (GET / POST /raids/events/{id}/
+// placements): never fewer than 2 nor more than 8 in a group; the buttons that would break it are off.
 //
 // Keyboard, gamepad and mouse: the members are focus stops (a scrolling list), the branch buttons
 // too; Échap / B goes back. Every text is measured into its room (raidui::fit, wrap).
@@ -15,6 +15,7 @@
 
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
+#include "game/online/Raids.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -93,8 +94,8 @@ public:
             const float cw = std::min(textW(ui, count, 14), (W - m - hx) * 0.35f);
             fit(ui, count, {W - m, hy}, 14, cw, kDim, FontFace::Body, Align::Right);
             const float tw = fit(ui, "RÉPARTITION DU CLAN", {hx, hy}, 26, (W - m - cw - hx) * 0.6f, kText, FontFace::Title).x;
-            fit(ui, "[" + jstr(data_, "clan_tag") + "] · 8 joueurs au plus par groupe", {hx + tw + ui.s(14), hy}, 15, W - m - cw - ui.s(16) - hx - tw - ui.s(14),
-                kPeach, FontFace::Body, Align::Left, false);
+            fit(ui, "[" + jstr(data_, "clan_tag") + "] · 7 groupes de 2 à 8 joueurs, un par branche", {hx + tw + ui.s(14), hy}, 15,
+                W - m - cw - ui.s(16) - hx - tw - ui.s(14), kPeach, FontFace::Body, Align::Left, false);
             const float top = ui.s(78), bottom = H - ui.s(24), gap = ui.s(16);
             const float leftW = std::clamp(W * 0.36f, ui.s(300), ui.s(520));
             drawGroups({m, top, leftW, bottom - top});
@@ -106,32 +107,59 @@ public:
         if (back) g_.app.popScene();
     }
 
-    /// The clan's groups, by branch: placed out of 8, in play, the zone.
+    /// §41: the instance of a group in play (its zone, its players in play), null.
+    Json instanceOf(const std::string& id) const {
+        for (const auto& i : data_.value("instances", Json::array()))
+            if (jstr(i, "id") == id) return i;
+        return Json();
+    }
+
+    /// §41: the clan's seven groups: their branch now, placed out of 8, in play, the zone; waiting, eliminated.
     void drawGroups(const Rect& r) {
         UIContext& ui = g_.ui;
         float y = section(ui, r, "GROUPES DU CLAN", kGold);
-        const Json insts = data_.value("instances", Json::array());
+        const Json groups = data_.value("groups", Json::array());
         const float rowH = ui.s(48), x = r.x + ui.s(14), w = r.w - ui.s(28);
-        if (insts.empty()) {
-            const auto ls = wrap(ui, "Aucun groupe pour l'instant : le premier joueur qui rejoint une branche en ouvre un.", FontFace::Body, 14, w, 3);
+        if (groups.empty()) {
+            const int n = jget<int>(data_, "registered", 0);
+            const std::string t = jget<bool>(data_, "too_few", false)
+                                      ? "Votre clan n'a que " + std::to_string(n) + " inscrit(s) : il en faut au moins 14 pour former les sept groupes."
+                                      : std::string("Les sept groupes se forment au début du raid, un par branche du titan.");
+            const auto ls = wrap(ui, t, FontFace::Body, 14, w, 4);
             drawLines(ui, ls, {x, y}, 14, ui.s(20), kDim);
             return;
         }
         int shown = 0;
-        for (const auto& i : insts) {
+        for (const auto& g : groups) {
             if (y + rowH > r.bottom() - ui.s(26)) break;
-            const std::string head = jstr(i, "branch_name") + " · [" + jstr(i, "clan_tag") + "]·" + std::to_string(jget<int>(i, "group", 1));
-            const int pl = jget<int>(i, "placed", 0), live = jget<int>(i, "players", 0);
-            const std::string sub = std::to_string(pl) + " / 8 placés · " + std::to_string(live) + " en jeu · zone : " + jstr(i, "zone_name");
+            const bool out = jget<bool>(g, "out", false), waiting = jget<bool>(g, "waiting", false);
+            const std::string head = "Groupe " + std::to_string(jget<int>(g, "group", 1)) + " · " + jstr(g, "branch_name");
+            const int pl = jget<int>(g, "placed", 0);
+            const Json inst = instanceOf(jstr(g, "instance_id"));
+            std::string sub;
+            if (out) sub = "éliminé : ses joueurs regardent";
+            else {
+                sub = std::to_string(pl) + " / 8 placés · " + std::to_string(jget<int>(inst, "players", 0)) + " en jeu";
+                if (!jstr(inst, "zone_name").empty()) sub += " · zone : " + jstr(inst, "zone_name");
+                if (waiting) sub += " · en attente";
+            }
             ui.r().fillRoundedRect({x - ui.s(4), y, w + ui.s(8), rowH - ui.s(6)}, ui.s(8), Color{30, 26, 58, 255});
-            ui.r().fillRoundedRect({x - ui.s(4), y, ui.s(5), rowH - ui.s(6)}, ui.s(2), pl >= 8 ? kOrange : kGreen);
-            fit(ui, head, {x + ui.s(8), y + ui.s(13)}, 14, w - ui.s(12), jget<bool>(i, "mine", false) ? kText : kSky, FontFace::Bold);
-            fit(ui, sub, {x + ui.s(8), y + ui.s(30)}, 12, w - ui.s(12), kDim);
+            ui.r().fillRoundedRect({x - ui.s(4), y, ui.s(5), rowH - ui.s(6)}, ui.s(2), out ? kDim : pl >= 8 || pl <= 2 ? kOrange : kGreen);
+            fit(ui, head, {x + ui.s(8), y + ui.s(13)}, 14, w - ui.s(12), out ? kDim : kText, FontFace::Bold);
+            fit(ui, sub, {x + ui.s(8), y + ui.s(30)}, 12, w - ui.s(12), out ? Color{255, 140, 140, 255} : kDim);
             y += rowH;
             ++shown;
         }
-        const int rest = static_cast<int>(insts.size()) - shown;
+        const int rest = static_cast<int>(groups.size()) - shown;
         if (rest > 0) fit(ui, "+ " + std::to_string(rest) + (rest > 1 ? " autres groupes" : " autre groupe"), {x, r.bottom() - ui.s(16)}, 12, w, kDim);
+    }
+
+    /// §41: the groups still in play (a member moves to one of them), in their order.
+    std::vector<Json> liveGroups() const {
+        std::vector<Json> out;
+        for (const auto& g : data_.value("groups", Json::array()))
+            if (!jget<bool>(g, "out", false) && !jstr(g, "instance_id").empty()) out.push_back(g);
+        return out;
     }
 
     /// The members (a scrolling list), then the tools of the raid leader for the one selected.
@@ -139,8 +167,8 @@ public:
         UIContext& ui = g_.ui;
         Renderer& rr = ui.r();
         const bool manage = jget<bool>(data_, "can_manage", false);
-        const Json branches = data_.value("branches", Json::array());
-        const int n = static_cast<int>(branches.size());
+        const std::vector<Json> live = liveGroups();  // §41: the groups in play (one per branch)
+        const int n = static_cast<int>(live.size());
         const int perRow = 4;
         const float bh = ui.s(44), bgap = ui.s(8);
         const int rows = (n + perRow - 1) / perRow;
@@ -167,7 +195,10 @@ public:
             if (sel || focus) rr.drawRoundedRect(row, ui.s(8), kGold.withAlphaF(sel ? 0.9f : 0.6f), ui.s(focus ? 2.0f : 1.0f));
             const std::string part = jstr(mb, "branch");
             const bool playing = jget<bool>(mb, "playing", false);
-            const std::string where = part.empty() ? "pas encore placé" : branchName(part) + " · " + jstr(mb, "group") + (jstr(mb, "zone_name").empty() ? "" : " · " + jstr(mb, "zone_name"));
+            const int rank = jget<int>(mb, "waiting_rank", 0);  // §41: beyond the 56 in play
+            const std::string where = rank > 0       ? "liste d'attente · rang " + std::to_string(rank)
+                                      : part.empty() ? "pas encore placé"
+                                                     : branchName(part) + " · " + jstr(mb, "group") + (jstr(mb, "zone_name").empty() ? "" : " · " + jstr(mb, "zone_name"));
             const std::string state = playing ? "en jeu" : "hors combat";
             const float sw = std::min(textW(ui, state, 12, FontFace::Bold), row.w * 0.25f);
             fit(ui, state, {row.right() - ui.s(12), row.center().y}, 12, sw, playing ? kGreen : kDim, FontFace::Bold, Align::Right);
@@ -179,51 +210,56 @@ public:
         }
         ui.endScroll();
 
-        // The tools: move the member selected, rebalance a branch (raid leader, chief, officers).
+        // The tools: move the member selected to another group, even out the seven groups (raid leader, chief, officers).
         const Rect tools{r.x, list.bottom() + ui.s(12), r.w, r.bottom() - list.bottom() - ui.s(12)};
         const Json sel = member(selected_);
         const float x = tools.x, w = tools.w;
         float ty = tools.y;
         if (!manage) {
-            const auto ls = wrap(ui, status_.empty() ? "Seuls le chef, les officiers et le chef de raid du clan déplacent les joueurs ; chacun choisit sa branche sur la carte du titan."
+            const auto ls = wrap(ui, status_.empty() ? "Seuls le chef, les officiers et le chef de raid du clan déplacent les joueurs d'un groupe à l'autre ; chaque groupe joue sa branche."
                                                       : status_,
                                  FontFace::Body, 14, w, 3);
             drawLines(ui, ls, {x, ty}, 14, ui.s(20), statusError_ ? ui.theme().danger : kDim);
             return;
         }
         const std::string who = sel.is_object() ? jstr(sel, "username") : "";
-        fit(ui, who.empty() ? "Choisissez un joueur dans la liste." : "Déplacer " + who + " vers :", {x, ty + ui.s(12)}, 15, w, kText, FontFace::Bold, Align::Left,
-            false);
+        fit(ui, who.empty() ? "Choisissez un joueur dans la liste." : "Déplacer " + who + " vers le groupe de :", {x, ty + ui.s(12)}, 15, w, kText, FontFace::Bold,
+            Align::Left, false);
         ty += ui.s(34);
         const float cellW = (w - static_cast<float>(perRow - 1) * bgap) / static_cast<float>(perRow);
+        // §41: every group keeps 2 to 8 players: a move that would break it is off (the server checks it again).
+        const std::string from = sel.is_object() ? jstr(sel, "instance_id") : "";
+        int fromSize = 0;
+        for (const Json& g : live)
+            if (jstr(g, "instance_id") == from) fromSize = jget<int>(g, "placed", 0);
         UIContext::ButtonStyle bs;
-        bs.enabled = sel.is_object() && !busy_;
+        bs.enabled = sel.is_object() && !busy_ && jget<int>(sel, "waiting_rank", 0) == 0 && !from.empty();
         for (int i = 0; i < n; ++i) {
-            const Json& b = branches[static_cast<size_t>(i)];
+            const Json& g = live[static_cast<size_t>(i)];
             const Rect cell{x + static_cast<float>(i % perRow) * (cellW + bgap), ty + static_cast<float>(i / perRow) * (bh + bgap), cellW, bh};
             UIContext::ButtonStyle s = bs;
-            s.selected = sel.is_object() && jstr(sel, "branch") == jstr(b, "part");
-            if (ui.button("to" + std::to_string(i), cell, jstr(b, "name"), s)) move(jstr(sel, "id"), jstr(b, "part"));
+            s.selected = !from.empty() && jstr(g, "instance_id") == from;
+            if (!s.selected) s.enabled = s.enabled && jget<int>(g, "placed", 0) < raids::kGroupSize && fromSize > raids::kMinGroup;
+            if (ui.button("to" + std::to_string(i), cell, jstr(g, "branch_name"), s) && !s.selected) move(jstr(sel, "id"), jstr(g, "instance_id"));
         }
         ty += static_cast<float>(rows) * (bh + bgap);
-        // Rebalance the branch of the member selected (or say why not).
-        const std::string part = sel.is_object() ? jstr(sel, "branch") : "";
-        const std::string label = part.empty() ? "Équilibrer une branche (choisissez un joueur placé)" : "Équilibrer les groupes : " + branchName(part);
+        // §41: even out the seven groups (every one at once).
+        const std::string label = "Équilibrer les sept groupes";
         const float rbw = std::min(textW(ui, label, 15, FontFace::Bold) + ui.s(40), w * 0.6f);
         UIContext::ButtonStyle rs;
         rs.primary = true;
-        rs.enabled = !part.empty() && !busy_;
-        if (ui.button("rebalance", {x, ty, rbw, bh}, label, rs)) rebalance(part);
+        rs.enabled = n > 0 && !busy_;
+        if (ui.button("rebalance", {x, ty, rbw, bh}, label, rs)) rebalance();
         const std::string note = status_.empty() ? "Les joueurs en combat gardent leur partie : leur nouvelle place compte à leur prochaine entrée." : status_;
         const auto ls = wrap(ui, note, FontFace::Body, 13, w - rbw - ui.s(16), 2);
         drawLines(ui, ls, {x + rbw + ui.s(16), ty + (bh - static_cast<float>(ls.size()) * ui.s(18)) * 0.5f}, 13, ui.s(18), statusError_ ? ui.theme().danger : kDim);
     }
 
-    void move(const std::string& player, const std::string& part) {
+    void move(const std::string& player, const std::string& instance) {
         busy_ = true;
         status_ = "Déplacement…";
         statusError_ = false;
-        g_.online.send("POST", "/api/v1/raids/events/" + eventId_ + "/placements", Json{{"player_id", player}, {"branch", part}},
+        g_.online.send("POST", "/api/v1/raids/events/" + eventId_ + "/placements", Json{{"player_id", player}, {"instance_id", instance}},
                        OnlineService::guard(life_, [this](const ApiResult& r) {
                            busy_ = false;
                            statusError_ = !r.ok;
@@ -232,11 +268,11 @@ public:
                        }));
     }
 
-    void rebalance(const std::string& part) {
+    void rebalance() {
         busy_ = true;
         status_ = "Équilibrage…";
         statusError_ = false;
-        g_.online.send("POST", "/api/v1/raids/events/" + eventId_ + "/placements/rebalance", Json{{"branch", part}},
+        g_.online.send("POST", "/api/v1/raids/events/" + eventId_ + "/placements/rebalance", Json::object(),
                        OnlineService::guard(life_, [this](const ApiResult& r) {
                            busy_ = false;
                            statusError_ = !r.ok;

@@ -120,11 +120,20 @@ TEST_CASE("raid test relay (2.80): the settings of a relayed test, as the server
     CHECK(back->skill == 2 && !back->invincible && !back->fullRaid);
     raid::RelayedTestConfig r;
     r.fullRaid = true;
-    r.groups = 9;
-    r.bots = 3;
+    r.raidPlayers = 30;    // §41: seven groups (5, 5, 4, 4, 4, 4, 4)
     r.fullGroups = true;  // 2.77.3: « Joueurs par groupe (vous compris) »
     const auto rb = raid::RelayedTestConfig::fromJson("raid", r.toJson());
-    CHECK(rb.has_value() && rb->fullRaid && rb->groups == 9 && rb->bots == 3 && rb->fullGroups && rb->seatsPerGroup() == 4);
+    CHECK(rb.has_value() && rb->fullRaid && rb->raidPlayers == 30 && rb->fullGroups && rb->seatsPerGroup() == 4);
+    // §41: 14 to 56 players; the settings of before (groups, players per group) are refused.
+    Json raidBad = r.toJson();
+    raidBad["players"] = 13;
+    CHECK(!raid::RelayedTestConfig::fromJson("raid", raidBad).has_value());
+    raidBad["players"] = 57;
+    CHECK(!raid::RelayedTestConfig::fromJson("raid", raidBad).has_value());
+    raidBad.erase("players");
+    raidBad["groups"] = 3;
+    raidBad["bots"] = 2;
+    CHECK(!raid::RelayedTestConfig::fromJson("raid", raidBad).has_value());
     // Out of bounds, or a field missing: nothing (the game never builds a test it cannot trust).
     Json bad = j;
     bad["players"] = 12;
@@ -197,8 +206,7 @@ TEST_CASE("raid test relay (2.80): the whole raid — an invited player in anoth
     Svc svc;
     raid::RelayedTestConfig c;
     c.fullRaid = true;
-    c.groups = 2;
-    c.bots = 2;
+    c.raidPlayers = 21;   // §41: seven groups of 3
     c.fullGroups = true;  // as ADMINISTRATION › Raids launches it (2.77.3): the administrator's place played where they are not
     c.invincible = false;
     const int steps = 900;

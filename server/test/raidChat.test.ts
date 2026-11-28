@@ -23,6 +23,7 @@ import {
     setChatHeaders,
 } from "../src/raidChat";
 import { api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -138,6 +139,7 @@ async function clanIn(ev: string, tag: string, n: number, now: string): Promise<
         await env.DB.prepare("INSERT INTO raid_registrations (event_id, player_id, clan_id, created_at) VALUES (?1, ?2, ?3, ?4)")
             .bind(ev, p.id, id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
             .run();
+    await raidGroups(ev, id, { crane: players }); // §41: the clan's seven groups, these players in group 1
     return players;
 }
 
@@ -326,7 +328,7 @@ describe("raid chat: an administrator's test with invited players (one room)", (
         const FP = "2.80.0|s17|c3|t7";
         const r = await api("POST", `${V}/admin/raid-tests`, {
             token: a.token,
-            body: { mode: "raid", config: { skill: 1, invincible: false, bots_invincible: false, groups: 3, bots: 2, full_groups: true }, fingerprint: FP },
+            body: { mode: "raid", config: { skill: 1, invincible: false, bots_invincible: false, players: 21, full_groups: true }, fingerprint: FP },
         });
         expect(r.status, JSON.stringify(r.body)).toBe(201);
         const test = r.body.data.test.id as string;
