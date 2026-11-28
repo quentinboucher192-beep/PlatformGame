@@ -6,8 +6,10 @@
 // (a death never kept, the category's rules, the player's presses and cinematics), written once
 // more so that the strategies stay out of Search.cpp.
 
+#include <array>
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "engine/core/Math.h"
@@ -19,12 +21,23 @@
 namespace cosmic {
 class ContentDatabase;
 class CheckpointEntity;
+class GameWorld;
 struct LevelData;
 }  // namespace cosmic
 
 namespace cosmic::tas {
 
 constexpr uint32_t keyBit(Action a) { return 1u << static_cast<int>(a); }
+
+/// The power id held in each slot key (PowerSlot1..8; empty: none).
+using SlotLayout = std::array<std::string, 8>;
+/// The slot layout of `w`'s player now.
+SlotLayout slotLayout(const GameWorld& w);
+/// `f` (played by a run whose slots held `from`) for a world whose slots hold `to`: its power-slot
+/// keys (and a power offer's answer) moved to the slots that hold the same powers there, a power
+/// that world does not carry dropped; `prevHeld`: the keys sent the frame before (the presses and
+/// releases of the slot keys recomputed from it). Unchanged when the layouts are the same.
+InputFrame remapSlots(const InputFrame& f, const SlotLayout& from, const SlotLayout& to, uint32_t prevHeld);
 
 /// The best run, studied once from the load: Nova and the clock after every frame, where each
 /// section ends (as Search.cpp's Guide).
@@ -38,6 +51,11 @@ struct RunStudy {
     size_t exitAt = 0;
     float clock = -1.0f;           // its time when it finishes the category, else negative
     float maxSpeedX = 0.0f, maxSpeed = 0.0f;  // the fastest Nova went (the time bound)
+    /// The power in each slot key (PowerSlot1..8) after i frames: `layoutAt[i]` indexes `layouts`
+    /// (they change only when a power is taken or replaced). To play this run's frames in a world
+    /// that carries other powers, or the same in other slots (remapSlots).
+    std::vector<SlotLayout> layouts;
+    std::vector<uint16_t> layoutAt;
     bool finishes() const { return clock >= 0.0f; }
     static constexpr size_t kNone = static_cast<size_t>(-1);
     size_t sectionStart(size_t s) const { return s == 0 ? 0 : s - 1 < ends.size() ? ends[s - 1] : kNone; }

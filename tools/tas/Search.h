@@ -94,6 +94,10 @@ struct SearchOptions {
     /// (--no-planner: off, for A/B tests).
     bool planner = true;
     int plannerEvery = 8;
+    /// Phase leads (docs/TAS.md « Le réalignement de phase »): when the run is early on the best run
+    /// (or a guide) at a section's start, that source's frames for the section are also offered
+    /// after the wait that takes them furthest along their path (--no-phase-leads: off).
+    bool phaseLeads = true;
     PlanBudget plannerBudget;
     /// The whole level only: the run's first frames taken as they are (it goes on from the section
     /// they end in) — a run that has already left the seed run (the tests of the guidance).
@@ -164,6 +168,18 @@ struct SearchOutcome {
     size_t rejoinAt = 0, rejoinSeedAt = 0;
     std::vector<InputFrame> beforeRefinement;  // the run kept before the refinement
     PlanStats planner;                         // what the planner did, all threads
+    /// Arrivals EARLIER than the best run at a section's end that did not re-join it (their world
+    /// out of phase for its next sections): the run from the load through that section, for the
+    /// phase realignment (tools/tas/Phase.h, docs/TAS.md « Le réalignement de phase »). The earliest
+    /// two of each section (as healthy or more), at least `kEarlyLead` s ahead.
+    struct EarlyArrival {
+        std::vector<InputFrame> run;
+        size_t sections = 0;  // the sections it went through
+        float clock = 0.0f, lead = 0.0f;
+        int health = 0;
+    };
+    std::vector<EarlyArrival> early;
+    static constexpr float kEarlyLead = 0.25f;
 };
 
 /// The windows of a training's rounds (docs/TAS.md « Les tours »): from the second round, each

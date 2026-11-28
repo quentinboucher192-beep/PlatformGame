@@ -8,6 +8,7 @@
 #include "game/gameplay/entities/Entities.h"
 #include "game/levels/LevelData.h"
 #include "game/player/Player.h"
+#include "game/powers/Power.h"
 
 namespace cosmic::tas {
 
@@ -30,6 +31,40 @@ size_t RunStudy::frameAtPotential(float p) const {
     for (size_t i = 0; i < potential.size() && i <= exitAt; ++i)
         if (potential[i] >= p) return i;
     return exitAt;
+}
+
+SlotLayout slotLayout(const GameWorld& w) {
+    SlotLayout out;
+    const int first = static_cast<int>(Action::PowerSlot1);
+    for (const auto& p : w.player().powers()) {
+        const int k = static_cast<int>(p->key()) - first;
+        if (k >= 0 && k < 8) out[static_cast<size_t>(k)] = p->id();
+    }
+    return out;
+}
+
+InputFrame remapSlots(const InputFrame& f, const SlotLayout& from, const SlotLayout& to, uint32_t prevHeld) {
+    if (from == to) return f;
+    const int first = static_cast<int>(Action::PowerSlot1);
+    uint32_t slots = 0;
+    for (int k = 0; k < 8; ++k) slots |= 1u << (first + k);
+    // Slot k of the source → the slot of the same power here (-1: not carried here).
+    int where[8];
+    for (int k = 0; k < 8; ++k) {
+        where[k] = -1;
+        if (from[static_cast<size_t>(k)].empty()) continue;
+        for (int m = 0; m < 8; ++m)
+            if (to[static_cast<size_t>(m)] == from[static_cast<size_t>(k)]) where[k] = m;
+    }
+    InputFrame g = f;
+    g.held = f.held & ~slots;
+    for (int k = 0; k < 8; ++k)
+        if ((f.held >> (first + k)) & 1u && where[k] >= 0) g.held |= 1u << (first + where[k]);
+    g.pressed = (f.pressed & ~slots) | (g.held & slots & ~prevHeld);
+    g.released = (f.released & ~slots) | (prevHeld & slots & ~g.held);
+    // A power offer answered by replacing a slot: the slot of the same power here.
+    if (f.choice >= 1 && f.choice <= 8 && where[f.choice - 1] >= 0) g.choice = static_cast<uint8_t>(where[f.choice - 1] + 1);
+    return g;
 }
 
 void repressRun(std::vector<InputFrame>& in, size_t lo, size_t hi) {
@@ -104,6 +139,9 @@ RunStudy Sim::study(const std::vector<InputFrame>& frames) {
             g.maxSpeed = std::max(g.maxSpeed, p.vel.length());
         }
         while (g.ends.size() < ends.size() && pr.waypoint > ends[g.ends.size()]) g.ends.push_back(g.feet.size() - 1);
+        SlotLayout l = slotLayout(world_.world());
+        if (g.layouts.empty() || g.layouts.back() != l) g.layouts.push_back(std::move(l));
+        g.layoutAt.push_back(static_cast<uint16_t>(g.layouts.size() - 1));
     };
     keep();
     g.exitAt = frames.size();

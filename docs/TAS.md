@@ -99,6 +99,9 @@ cmake --build build --target cosmic_tas
 | `--no-bnb`, `--bound-slack <s>` | sans séparation et évaluation ; ou avec une marge sur le temps à battre |
 | `--user-dir <dossier>`, `--server <url>` | le niveau tel que le jeu le joue sur cet ordinateur : les révisions en ligne (campagne, entités) que le jeu a téléchargées |
 | `--guide <replay> [--guide-name <joueur>]` | (2.99, plusieurs fois, 8 au plus) une course d'un joueur qui guide la recherche : un replay exact de **cette version** du niveau et de la simulation ; d'une autre version du même niveau, son **tracé** seulement (jamais ses entrées) ; d'un autre niveau, refusé (« Guide refusé (…) : … ») ; voir « Les guides » |
+| `--phase`, `--phase-source <replay>`, `--realign <replay>` | le réalignement de phase : une arrivée en avance continuée par la suite des autres courses, après les attentes qui remettent le niveau en phase ; voir [Le réalignement de phase](#le-réalignement-de-phase) |
+| `--branch <replay> [--branch-through <n>]` | une branche : les `n` premières sections du replay gardées, la suite entraînée avec sa propre meilleure course ; voir [La branche](#la-branche) |
+| `--no-phase-leads` | sans les pistes de phase (pour comparer) |
 
 La course trouvée est **vérifiée** avant d'être écrite ; un fichier qui garde une course plus
 rapide (ou égale) du même niveau et de la même simulation n'est pas remplacé. Arrêtée (fichier ou
@@ -529,7 +532,7 @@ pouvoirs restent hors de portée, sauf si un **guide** les apporte.
   segments comme guides (le téléchargement des replays vérifiés existe, le lien avec
   l'entraînement non) ; un choix guide par guide ; les ensembles d'arrivées de Pareto aux points
   de passage (une arrivée plus lente mais plus rapide en vitesse ou en énergie gardée pour la
-  suite).
+  suite ; la phase du monde, elle, est couverte par les attentes du réalignement de phase).
 
 Mesure (2.99, `sylvanox_01` ANY%, 2 fils, depuis la course livrée 1:26.692 avec comme guide une
 course 1:26.617 d'un autre entraînement) : 1:26.600 vérifiée et écrite **6 s** après le départ (un
@@ -539,6 +542,142 @@ recherche arrive au CP1 en 9,667 s (la machine 11,025 s, le joueur 9,225 s), mai
 aux CP2 (28,825 s) et CP3 (39,433 s) et ne se raccorde pas à la meilleure course : **continuer
 après une arrivée de plusieurs secondes en avance** reste la limite (les éléments du niveau qui
 bougent avec le temps ne sont plus au même endroit pour les images de la meilleure course).
+
+### Le réalignement de phase
+
+**Le problème mesuré.** Une arrivée en avance à un point de passage ne joue plus la suite de la
+meilleure course : ce qui bouge avec le temps (plateformes mobiles, lasers, patrouilles) n'est plus
+au même endroit pour ses images. Sur `sylvanox_01`, l'entraînement « fresh » de la nuit (sans course
+de départ, avec le planificateur) arrive au CP2 en 23,925 s, 6,2 s avant la meilleure course d'alors
+(30,125 s), mais au CP3 en 39,517 s, presque en même temps qu'elle (39,642 s) ; sa course entière,
+1:19.275, garde surtout l'avance des sections 1, 2, 4, 5 et du boss.
+
+**Ce qui fixe le CP3 vers 39,5 s** (mesuré avec `--study`, le chemin de Nova toutes les 0,25 s) :
+pas un minuteur du niveau. La course « fresh » reste **4 s devant la porte o171** (x ≈ 4300, de
+27,9 s à 32,0 s) avant de se retourner pour tirer l'onde sur le récepteur o172 qu'elle a dépassé
+(énergie 150 → 140 à 31,65 s) ; la meilleure course le tire en chemin et passe la porte à 32,4 s :
+les deux passent la porte à 0,3 s près, puis les plateformes mobiles (o186 à o188 : périodes 7,4 s,
+5,26 s et 6,76 s) du même cycle. Rejouer les images de la meilleure course derrière l'arrivée en
+avance passe la porte (après 16 images d'attente : l'énergie) mais tombe aux plateformes : avec
+6,1 s d'avance et des périodes de 6,8 et 7,4 s, la seule attente qui remet ces deux plateformes en
+phase est l'avance entière. Gagner là demande un autre passage des plateformes (le faisceau, le
+planificateur), plus tôt dans leur cycle — d'où les pistes de phase ci-dessous, qui donnent ce
+départ au faisceau.
+
+**Le réalignement** (`tools/tas/Phase.h`, générique : rien n'y connaît un niveau) :
+
+* **Les éléments périodiques** du niveau (`periodicElements`) : une plateforme mobile (ni
+  déclenchée ni à l'arrêt) a pour période l'aller et retour, attentes comprises
+  (2 × (longueur / vitesse + attente)) ; une orbite 2πr / vitesse ; un laser allumé + éteint. La
+  **période rencontrée** par une section (`periodMet`) : la plus longue de ceux dont la zone (élargie
+  de 96 px) touche le chemin de la source dans la section.
+* **Les attentes** : depuis l'arrivée en avance, les images de la source pour la section, jouées
+  après k images sans rien appuyer, k de 0 à min(avance + 0,5 s, période rencontrée + 0,5 s, 8 s)
+  (0,5 s au moins), toutes les 4 images puis image par image juste sous les meilleures ; depuis le
+  début de la section de la source et depuis l'image où Nova y était la plus proche (après
+  l'attente). k = l'avance remet tout le monde périodique en phase : la recherche ne perd jamais
+  l'avance par l'attente, elle cherche **la plus petite** attente qui marche.
+* **Hors de phase** : un essai à plus de 96 px du chemin de la source 40 images de suite s'arrête ;
+  les deux qui sont allés le plus loin reçoivent **une seconde attente** au dernier endroit, avant
+  leur sortie du chemin, où la source avait les pieds au sol (un arrêt propre), dans ce qui reste de
+  l'avance. Un essai qui ne peut plus arriver avant les arrivées gardées (au rythme de la source,
+  moins 0,5 s), ou plus de 1,5 s après le temps de la source pour la section, s'arrête aussi ; une
+  mort n'est jamais gardée.
+* **Plusieurs sources** : chaque section essaie chaque source qui l'a (la meilleure course, les
+  guides, les `--phase-source`, la branche, les arrivées en avance du tour) : une course peut prendre
+  la section d'une source après l'arrivée d'une autre, remise en phase — une somme des meilleurs
+  segments qui se joue vraiment. La course entière est rejouée depuis le chargement, puis vérifiée
+  par la lecture normale des replays comme toute course (source `phase`).
+* **Les touches des pouvoirs suivent les pouvoirs** (`remapSlots`, `Sim.h`) : un replay appuie la
+  touche d'un **emplacement** ; une source qui porte d'autres pouvoirs, ou les mêmes à d'autres
+  emplacements (« dash, onde, impulsion » contre « dash, onde, bouclier, impulsion »), voit ses
+  touches d'emplacement (et la réponse à une offre de pouvoir) déplacées vers l'emplacement qui porte
+  le même pouvoir dans le monde joué ; un pouvoir que ce monde ne porte pas : sa touche est retirée.
+  `RunStudy` garde pour chaque image la disposition des emplacements de la source.
+* **Quelles arrivées continuent** (aux fins de section) : d'abord la suite **pure** de la source dont
+  le préfixe est le début (ses sections suivantes, sans attente) — le réalignement ne fait jamais pire
+  que cette source ; puis un **ensemble de Pareto** : les arrivées les plus tôt (un cœur perdu compte
+  0,25 s), et une plus tardive seulement si elle garde plus d'énergie ou de santé que toutes celles
+  déjà gardées (6 au plus). Mesuré : la section 4 de « fresh » derrière le CP3 de « main » arrive
+  1,5 s plus tôt, mais avec moins d'énergie, et le boss ne se fait plus : sans ces deux règles, la
+  seule suite qui finissait était perdue.
+* **Pareto par phase** : une arrivée plus tôt qui attend atteint, debout, toutes les phases plus
+  tardives du monde périodique ; les attentes jusqu'à l'avance couvrent donc les arrivées plus
+  tardives qui ne diffèrent que par la phase. Ce qu'elles ne couvrent pas : la vitesse et l'énergie
+  gardées (l'ensemble de Pareto ci-dessus) et les ennemis déplacés par Nova (la position d'un ennemi
+  dépend d'elle).
+* **Rien ne finit** : `--realign-out` écrit alors la voie réalignée la plus avancée (jusqu'à la fin
+  de sa dernière section atteinte) : le point de départ d'une **branche** (ci-dessous), où le
+  faisceau cherche ce que les images d'une source ne refont pas (un combat).
+
+**Dans la recherche** :
+
+* **Les pistes de phase** (`SearchOptions::phaseLeads`, `--no-phase-leads` pour comparer) : quand la
+  course est en avance d'au moins 0,25 s sur la meilleure course (ou un guide) au début d'une section,
+  les images de cette source pour la section sont aussi offertes au faisceau **après l'attente qui
+  les mène le plus loin sur leur chemin** (`Worker::phaseWait` : k de 0 à l'avance + 0,5 s, 8 s au
+  plus, toutes les 4 images ; la première qui arrive, sinon celle qui va le plus loin, 1 s au moins) :
+  une piste comme les autres (place gardée dans le faisceau, qui en part) ; son arrivée est classée,
+  raccordée et vérifiée comme toutes (source `phase`). Le journal le dit (« phase : la course en
+  avance de 6,20 s sur un guide ; ses images de la section 3 après 0,133 s d'attente »).
+* **Les arrivées en avance gardées** (`SearchOutcome::early`) : à la fin de chaque section, les
+  arrivées au moins 0,25 s avant la meilleure course qui ne se raccordent pas (les deux plus tôt par
+  section, aussi saines ou plus) ; un entraînement avec `--phase` les réaligne après le tour.
+
+**Dans un entraînement** (`cosmic_tas`) :
+
+| Option | Rôle |
+|---|---|
+| `--realign <replay>` | les premières sections du replay gardées (jusqu'à chacune de ses sections, ou `--realign-through <n>`), la suite réalignée sur la meilleure course (`--seed-replay`), le replay lui-même et chaque `--realign-source <replay>` ; une course plus rapide est vérifiée et écrite ; `--realign-out <fichier>` : la plus rapide trouvée, plus rapide ou non ; sans `--until-stopped`, rien d'autre |
+| `--phase` | au début de chaque tour dont les sources ont changé, chaque avance d'une source sur une autre à la fin d'une section (0,1 s au moins, les plus grandes d'abord) réalignée sur toutes ; après chaque tour, ses arrivées en avance |
+| `--phase-source <replay>` | (plusieurs) une course de ce niveau relue **à chaque tour** (le meilleur fichier d'un autre entraînement) : une source du réalignement et un guide du tour ; implique `--phase` |
+| `--phase-budget <minutes>` | le temps d'un réalignement (3) |
+| `--phase-wait <s>`, `--phase-keep <n>` | l'attente la plus longue (8 s) ; les arrivées gardées par section (3) |
+| `--phase-trace` | chaque essai dans le journal (mesures) |
+| `--phase-min-wait <s>` | l'attente tentée même sans élément périodique rencontré (0,5 s) |
+| `--study <replay> [de à]` | le chemin de Nova toutes les 0,25 s du chrono (pieds, vitesse, énergie, santé, pouvoirs portés) et les fins de section, rien d'autre |
+
+**Mesure** (`sylvanox_01` ANY%, 1 fil, la machine partagée avec deux entraînements sur 4 cœurs) :
+
+| Essai | Résultat |
+|---|---|
+| `--realign` de la course « fresh » (1:19.275, CP2 à 23,925 s) jusqu'au CP2, sur la meilleure course « main » (1:26.025) et sur elle-même | **1:19.175** vérifiée et écrite en 28 s (2 706 essais) : la section 7 de « main » après le CP6 de « fresh », 2 images d'attente (3,175 s au lieu de 3,258 s) ; les sections 3 à 6 restent celles de « fresh » |
+| Les images de « main » pour la section 3 derrière le CP2 de « fresh » (`--phase-trace`) | sans attente, bloquées à la porte o171 ; dès 16 images d'attente (l'énergie de l'onde), la porte passée vers 26,4 s, mais chute aux plateformes o186 à o188 pour toute attente sous l'avance (6,1 s) : leurs périodes (6,76 et 7,4 s) dépassent l'avance ; la seconde attente arrive au mieux à 40,04 s |
+| Piste de phase dans une branche (préfixe de « fresh » jusqu'au CP2, un tour de 6 min) | la piste « 0,133 s d'attente » met le faisceau après la porte à 27,1 s (x = 4589 ; « fresh » y restait jusqu'à 32,0 s) ; le faisceau attend ensuite le même cycle des plateformes : CP3 à 39,267 s au mieux (0,25 s d'avance), CP5 à 61,833 s (0,73 s), sans course plus rapide |
+| Réalignement des arrivées en avance de ce tour (CP3 39,267 s, CP4 47,858 s, CP5 61,833 s) | aucune ne finit avec la suite d'une source : l'arène de la section 4 et le boss (section 6) dépendent de l'état (ennemis réveillés autrement, énergie, santé), pas d'une phase |
+| `--realign` de « main » (1:12.975, le boss en 5,3 s) jusqu'au CP3, sur « main » et « fresh » (1:18.767), touches remappées | la section 4 de « fresh » (dash, onde) arrive au CP4 en 49,900 s au lieu de 51,367 s ; la section 5 de « main » au CP5 en 64,325 s (0,24 s d'avance) ; mais le boss de « main » ne se refait pas : la course gardée est « main » elle-même (1:12.975, sa suite pure), la voie jusqu'au CP5 écrite pour une branche |
+
+Ce que cela dit : la phase compte là où le niveau est **périodique** (plateformes, lasers : la section 7, la porte de la section 3) ; les arènes et le boss ne se « réalignent » pas, ils se cherchent. **Le CP3 vers 39,5 s est fixé par le cycle des plateformes o186 et o188** (une arrivée au CP2 vers 22,6 s, ou un autre passage, le précédent) — la course de NovaRider (version 2.88 du niveau) l'a pris au cycle précédent (CP3 à 33,04 s). Le boss se bat en **5,3 s** dans la course « main » de la nuit (1:12.975, trouvée par son faisceau : la porte o345 s'ouvre quand le Gardien tombe), contre 13,45 s dans « fresh » ; ses images ne refont pas ce combat derrière une autre arrivée (même 0,24 s plus tôt et avec plus d'énergie) : un combat se cherche, il ne se rejoue pas — d'où la branche engagée sur le CP5 de « fresh » (2 s devant « main ») avec « main » comme guide.
+
+### La branche
+
+`--branch <replay> [--branch-through <n>]` (`tools/tas/Branch.h`) : un entraînement qui **s'engage**
+sur les `n` premières sections du replay (2 par défaut : une arrivée en avance), gardées exactement,
+et entraîne **la suite**, tour après tour, fenêtres comprises (elles tournent sur les sections après
+le préfixe seulement), depuis **sa propre meilleure course** :
+
+* sa meilleure course est **gardée même plus lente que la meilleure course** (vérifiée par la
+  lecture normale des replays, écrite dans son propre fichier : `--branch-out <dossier>`, par défaut
+  `<--out>/branch` ; jamais `data/tas`) ; au redémarrage, la branche repart de ce fichier si sa course
+  commence par le préfixe ;
+* `--branch-share <f>` : la part des tours de la branche (0,5 : un sur deux) ; un tour de la branche
+  commence par réaligner le préfixe sur toutes les sources (sa meilleure course, la meilleure course,
+  les guides, les `--phase-source`), puis cherche sa fenêtre ; sans course encore, il cherche depuis
+  la fin du préfixe ;
+* **le retour** : une course de la branche plus rapide que la meilleure course **est** la meilleure
+  course (vérifiée et écrite comme d'habitude) ; dans les tours de la meilleure course, la meilleure
+  course de la branche est un guide (ses sections offertes, réalignées, raccordées, assemblées) et
+  une source du réalignement de phase.
+
+**Mesure** (`sylvanox_01` ANY%, 1 fil, tours de 5 min) : une branche engagée sur les 5 premières
+sections de « fresh » (1:18.767 ; CP5 à 62,567 s, 2 s devant « main ») avec « main » (1:12.958 ; le
+boss en 5,3 s) comme meilleure course, donc comme guide : au premier tour, la deuxième passe du
+faisceau sur le boss arrive au CP6 en **69,025 s** (6,46 s de combat ; « fresh » : 13,45 s), puis la
+piste de phase de la section 7 de « main » (0,167 s d'attente : l'ascenseur o364, période 6,12 s)
+finit : **1:12.367**, vérifiée par la lecture normale des replays et écrite (branche et meilleure
+course), 1,2 min après le départ — plus rapide que les deux entraînements de la nuit (1:12.958 et
+1:18.767), là où ni le réalignement seul (le combat ne se rejoue pas) ni « fresh » seul (ses fenêtres
+sur le boss partent de sa propre course lente) n'y arrivaient.
 
 ### Vérification au fil de l'eau (2.99)
 

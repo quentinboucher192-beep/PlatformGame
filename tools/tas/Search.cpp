@@ -4,6 +4,8 @@
 #include <atomic>
 #include <bit>
 #include <chrono>
+#include <map>
+#include <tuple>
 #include <cmath>
 #include <cstdio>
 #include <memory>
@@ -351,6 +353,75 @@ public:
 
     /// The best run played from the load, measured at every step (where it reaches each section's end).
     Guide study(const std::vector<InputFrame>& frames);
+
+    /// The waits (idle frames, 0..maxK by `step`) before `g`'s frames for section `s` (docs/TAS.md
+    /// « Le réalignement de phase »): the shortest that arrives at the section's end, and the shortest
+    /// that takes them the furthest along their own path (past a door, up to the next element out of
+    /// phase: where the beam takes over); -1 when none (at least a second on the path).
+    struct PhaseWait {
+        int arrive = -1, reach = -1;
+        float arrival = -1.0f;  // the clock at the section's end after `arrive`
+    };
+    PhaseWait phaseWait(const Guide& g, size_t s, int target, int maxK, int step) {
+        PhaseWait out;
+        const size_t from = g.sectionStart(s);
+        if (from == Guide::kNone || from >= g.exitAt || g.feet.empty()) return out;
+        const size_t end = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+        auto rung = takeSnap();
+        world_.restore(*base_);
+        uint32_t held = basePad_.held;
+        int bestK = -1;
+        size_t bestReach = 0;
+        float bestArrive = -1.0f;
+        for (int k = 0; k <= maxK && !sh_.stopped(); ++k) {
+            if (k % step == 0) {
+                world_.save(*rung);
+                const int deaths = world_.world().stats().deaths;
+                size_t i = from;
+                int off = 0;
+                bool arrived = false;
+                for (; i < end; ++i) {
+                    InputFrame f = g.frames[i];
+                    if (i == from) {
+                        f.pressed = f.held & ~held;
+                        f.released = held & ~f.held;
+                    }
+                    world_.step(f);
+                    if (broken(deaths)) break;
+                    if (reachedTarget(target)) {
+                        arrived = true;
+                        break;
+                    }
+                    const size_t bi = std::min(i + 1, g.feet.size() - 1);
+                    if ((world_.world().player().feet() - g.feet[bi]).length() > 96.0f) {
+                        if (++off >= 40) break;
+                    } else {
+                        off = 0;
+                    }
+                }
+                sh_.count();
+                const size_t reach = i - from - std::min<size_t>(i - from, static_cast<size_t>(off));
+                const float clock = world_.world().timer().elapsed();
+                world_.restore(*rung);
+                if (arrived) {
+                    // (the waits are tried in order: the first that arrives is the shortest)
+                    bestArrive = clock;
+                    out.arrive = k;
+                    out.arrival = clock;
+                    break;
+                }
+                // (progress for the time spent: a longer wait must take them clearly further than it costs)
+                if (bestK < 0 || static_cast<long>(reach) - k > static_cast<long>(bestReach) - bestK + 12) bestReach = reach, bestK = k;
+            }
+            InputFrame idle;
+            idle.released = held;
+            held = 0;
+            world_.step(idle);
+        }
+        giveSnap(std::move(rung));
+        if (bestReach >= 120 && (bestArrive < 0.0f || bestK < out.arrive)) out.reach = bestK;
+        return out;
+    }
 
     /// The beam from the base to the waypoint `target` (reached: arrivals), until `deadline`.
     /// `guides`: the best run's frames for this section (each is played on and joins the beam).
@@ -1275,6 +1346,8 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             if (w->baseDigest() != d0) return false;
         return true;
     };
+    // The waits of the phase leads (guidesFor), by section, source and the run's length so far.
+    std::map<std::tuple<size_t, size_t, size_t>, Worker::PhaseWait> phaseWaits;
     // The run so far is the best run's own beginning.
     auto onGuide = [&] { return !guide.frames.empty() && run.size() <= guide.frames.size() && std::equal(run.begin(), run.end(), guide.frames.begin()); };
     // The best run's frames for section `s`, from the base: while the run is the best run's own,
@@ -1298,6 +1371,52 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             gs.push_back({name, seamed(g.frames, from, to - from, held)});
             for (size_t j : g.nearest(n.feet, n.vel, from, 120, 1))
                 if (j != from) gs.push_back({name, seamed(g.frames, j, to - from, held)});
+        }
+        // Phase leads (docs/TAS.md « Le réalignement de phase »): when the run is EARLY on a source
+        // here, that source's frames for the section after the wait that takes them furthest along
+        // its path (what moves with time back in phase; a wait for the energy, a door...).
+        if (opt.phaseLeads) {
+            const float now = workers[0]->baseProgress().clock;
+            for (size_t k = 0; k < nsrc; ++k) {
+                const Guide& g = sourceOf(k);
+                const size_t from = g.sectionStart(s);
+                if (g.frames.empty() || !g.finishes() || from == Guide::kNone || from >= g.exitAt) continue;
+                const float lead = g.clockAt[std::min(from, g.clockAt.size() - 1)] - now;
+                if (lead < SearchOutcome::kEarlyLead) continue;
+                const auto key = std::make_tuple(s, k, run.size());
+                auto it = phaseWaits.find(key);
+                if (it == phaseWaits.end()) {
+                    const int maxK = static_cast<int>(std::lround(std::min(8.0f, lead + 0.5f) * 120.0f));
+                    const Worker::PhaseWait w = workers[0]->phaseWait(g, s, course.sectionEnds()[s], maxK, 4);
+                    it = phaseWaits.emplace(key, w).first;
+                    std::string what;
+                    char b[120];
+                    if (w.arrive >= 0) {
+                        std::snprintf(b, sizeof b, "arrivée après %.3f s d'attente (%.3f s au chrono)", w.arrive / 120.0, static_cast<double>(w.arrival));
+                        what = b;
+                    }
+                    if (w.reach >= 0) {
+                        std::snprintf(b, sizeof b, "%sle plus loin sur son chemin après %.3f s d'attente", what.empty() ? "" : " ; ", w.reach / 120.0);
+                        what += b;
+                    }
+                    char line[300];
+                    std::snprintf(line, sizeof line, "    phase : la course en avance de %.2f s sur %s ; ses images de la section %zu : %s", static_cast<double>(lead),
+                                  k == 0 ? "la meilleure course" : "un guide", s + 1, what.empty() ? "aucune attente ne les remet en phase" : what.c_str());
+                    log(line);
+                }
+                const size_t to = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+                // (an arrival after a wait that ate the lead is not worth a place in the beam)
+                const float srcEnd = g.clockAt[std::min(s < g.ends.size() ? g.ends[s] : g.exitAt, g.clockAt.size() - 1)];
+                const int arrive = it->second.arrival + SearchOutcome::kEarlyLead <= srcEnd ? it->second.arrive : -1;
+                for (const int w : {it->second.reach, arrive}) {
+                    if (w <= 0) continue;  // (none, or no wait: the source's frames as they are, offered above)
+                    std::vector<InputFrame> fr(static_cast<size_t>(w));
+                    fr.front().released = held;
+                    const std::vector<InputFrame> rest = seamed(g.frames, from, to - from, 0);
+                    fr.insert(fr.end(), rest.begin(), rest.end());
+                    gs.push_back({"phase", std::move(fr)});
+                }
+            }
         }
         return gs;
     };
@@ -1388,6 +1507,33 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             // margin: an arrival that cannot re-join is a guess. Without a best run: by cost.
             const float hurt = (x.a.cost - static_cast<float>(x.a.frames.size())) / 120.0f;
             x.j.finish = canJoin ? x.a.p.clock + rest + hurt + 0.25f : 1.0e6f + x.a.cost;
+        }
+        // The early arrivals that did not re-join (out of phase for the best run's next sections):
+        // kept for the phase realignment, the earliest two per section (docs/TAS.md).
+        if (guide.finishes() && s < guide.ends.size() && s + 1 < sections) {
+            const float split = guide.clockAt[std::min(guide.ends[s], guide.clockAt.size() - 1)];
+            for (const Ranked& x : r) {
+                if (x.j.measured || x.a.p.finished || x.a.p.clock + SearchOutcome::kEarlyLead > split) continue;
+                std::vector<SearchOutcome::EarlyArrival*> same;
+                for (auto& e : out.early)
+                    if (e.sections == s + 1) same.push_back(&e);
+                bool dominated = false;
+                for (const auto* e : same) dominated = dominated || (e->clock <= x.a.p.clock + 1e-4f && e->health >= x.a.p.health);
+                if (dominated) continue;
+                SearchOutcome::EarlyArrival e;
+                e.run = run;
+                e.run.insert(e.run.end(), x.a.frames.begin(), x.a.frames.end());
+                e.sections = s + 1;
+                e.clock = x.a.p.clock;
+                e.lead = split - x.a.p.clock;
+                e.health = x.a.p.health;
+                if (same.size() < 2) {
+                    out.early.push_back(std::move(e));
+                } else {
+                    auto* worst = *std::max_element(same.begin(), same.end(), [](const auto* a, const auto* b) { return a->clock < b->clock; });
+                    if (worst->clock > e.clock) *worst = std::move(e);
+                }
+            }
         }
         // Measured first (by their finish): an arrival that cannot re-join often got there by leaving
         // something the rest needs behind (a power, a lever); then the others, by their estimate.

@@ -15820,6 +15820,8 @@
     "le planificateur (sauts et dashs planifiés)": "the planner (planned jumps and dashes)",
     "l'exploration (Go-Explore)": "the exploration (Go-Explore)",
     "le polissage des timings": "the timing polish",
+    "le réalignement de phase (attendre que le niveau revienne en phase)": "the phase realignment (waiting for the level to come back in phase)",
+    "réalignement de phase": "phase realignment",
     "planificateur": "planner",
     "polissage": "polish",
     "liste de {0} temps au plus, croissants, dans le temps du point": "list of {0} times at most, increasing, within the point's time",

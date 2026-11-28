@@ -530,6 +530,7 @@ std::string tasStrategyLabel(const std::string& id) {
     if (id == "refine") return "affinage";
     if (id == "planner") return "planificateur";
     if (id == "guides") return "guides";
+    if (id == "phase") return "réalignement de phase";
     return id;
 }
 
