@@ -6,7 +6,7 @@
 
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { MAX_CURVE_POINTS, MAX_CURVE_WINDOWS } from "../src/tas";
+import { MAX_CLOUD_FINISHES_PER_WINDOW, MAX_CLOUD_POINTS, MAX_CLOUD_SAMPLE_PER_CHECKPOINT, MAX_CURVE_POINTS, MAX_CURVE_WINDOWS, thinCloud } from "../src/tas";
 import { LEVEL_HASH, LEVEL_HASH_V2, api, buildReplay, publishV2, registerPlayer, seedAll, type TestPlayer } from "./helpers";
 
 beforeEach(seedAll);
@@ -542,6 +542,107 @@ describe("TAS: the training curve (best times and attempts sent with the lease)"
         expect((await beatWith(a, id, 20, { curve: [point(50_000)] })).body.data.curve.refused).toBe(1);
     });
 
+    it("the clouds (2.98): each window's finished attempts and checkpoint times, checked, placed on the server's training time, bounded", async () => {
+        const [a, b] = await admins();
+        const id = (await lease(a)).body.data.lease_id;
+        const cp = (o: Record<string, unknown> = {}) => ({ reached: 40, best_ms: 12_000, median_ms: 12_300, worst_ms: 13_000, sample: [[0, 12_000], [4_000, 12_500]], ...o });
+        const cloudy = (o: Record<string, unknown> = {}) => win({ finishes: [[0, 41_000], [2_500, 45_000], [5_000, 50_000]], checkpoints: [cp(), cp({ reached: 0, best_ms: 0, median_ms: 0, worst_ms: 0, sample: [] })], ...o });
+        const bad = async (w: Record<string, unknown>) => {
+            const r = await beatWith(a, id, 10, { attempts: [w] });
+            if (r.status !== 400) console.log(JSON.stringify(r.body));
+            expect(r.status).toBe(400);
+            expect(r.body.error.code).toBe("VALIDATION_ERROR");
+        };
+        await bad(cloudy({ finishes: [[0, 40_000]] }));  // faster than the window's best
+        await bad(cloudy({ finishes: [[0, 51_000]] }));  // slower than its worst
+        await bad(cloudy({ finishes: [[5_001, 41_000]] }));  // after the window's end
+        await bad(cloudy({ finishes: [[-1, 41_000]] }));
+        await bad(cloudy({ finishes: Array.from({ length: 11 }, () => [0, 41_000]) }));  // more points than finished attempts
+        await bad(cloudy({ finished: 1000, stopped: [0, 0, 0], broken: [0, 0, 0], best_ms: 41_000, finishes: Array.from({ length: MAX_CLOUD_FINISHES_PER_WINDOW + 1 }, () => [0, 41_000]) }));
+        await bad(cloudy({ finishes: "nope" }));
+        await bad(cloudy({ checkpoints: [cp({ reached: 1001 })] }));  // more than the attempts
+        await bad(cloudy({ checkpoints: [cp({ median_ms: 11_000 })] }));
+        await bad(cloudy({ checkpoints: [cp({ sample: [[0, 11_000]] })] }));
+        await bad(cloudy({ checkpoints: [cp({ sample: Array.from({ length: MAX_CLOUD_SAMPLE_PER_CHECKPOINT + 1 }, () => [0, 12_000]) })] }));
+        await bad(cloudy({ checkpoints: [cp({ reached: 0 })] }));
+        await bad(cloudy({ checkpoints: [cp({ extra: 1 })] }));
+        await bad(cloudy({ checkpoints: Array.from({ length: 33 }, () => cp()) }));
+        // A good one: on the server's training time (the window's start plus each point's offset).
+        await age(60_000);
+        const r = await beatWith(a, id, 50_000, { attempts: [cloudy({ age_ms: 10_000 })] });
+        expect(r.status).toBe(200);
+        const c = await api("GET", `${V}/admin/tas/test_01/ANY_PERCENT/curve`, { token: b.token });
+        const w = c.body.data.versions[0].windows[0];
+        expect(w.end_ms).toBe(r.body.data.training.total_ms - 10_000);
+        expect(w.finishes).toEqual([
+            [w.start_ms, 41_000],
+            [w.start_ms + 2_500, 45_000],
+            [w.end_ms, 50_000],
+        ]);
+        expect(w.checkpoints[0]).toEqual({ reached: 40, best_ms: 12_000, median_ms: 12_300, worst_ms: 13_000, sample: [[w.start_ms, 12_000], [w.start_ms + 4_000, 12_500]] });
+        expect(w.checkpoints[1].reached).toBe(0);
+        // A window without clouds (a game before 2.98) is still taken, with none.
+        expect((await beatWith(a, id, 60_000, { attempts: [win()] })).status).toBe(200);
+        const c2 = await api("GET", `${V}/admin/tas/test_01/ANY_PERCENT/curve`, { token: b.token });
+        expect(c2.body.data.versions[0].windows[1].finishes).toEqual([]);
+        // The version's cap: beyond it, a window keeps only its best points.
+        await env.DB.prepare("UPDATE tas_curve_windows SET points = ?1 WHERE seq = 1").bind(MAX_CLOUD_POINTS).run();
+        expect((await beatWith(a, id, 70_000, { attempts: [cloudy()] })).status).toBe(200);
+        const last = await env.DB.prepare("SELECT finishes, checkpoints, points FROM tas_curve_windows ORDER BY seq DESC LIMIT 1").first<any>();
+        expect(JSON.parse(last.finishes).map((p: number[]) => p[1])).toEqual([41_000]);
+        expect(JSON.parse(last.checkpoints)[0].sample.map((p: number[]) => p[1])).toEqual([12_000]);
+        expect(last.points).toBe(2);
+        // Thinning keeps the best and spreads the rest.
+        const pts: [number, number][] = Array.from({ length: 500 }, (_, i) => [i, 90_000 - (i === 321 ? 5_000 : i % 7)]);
+        const thin = thinCloud(pts, 96);
+        expect(thin).toHaveLength(96);
+        expect(thin.some((p) => p[1] === 85_000)).toBe(true);
+    });
+
+    it("where the gain is (2.99): each point's splits and source, checked, kept and given back", async () => {
+        const [a, b] = await admins();
+        const id = (await lease(a)).body.data.lease_id;
+        await age(60_000);
+        const bad = async (extra: Record<string, unknown>) => {
+            const r = await beatWith(a, id, 10, extra);
+            expect(r.status).toBe(400);
+            expect(r.body.error.code).toBe("VALIDATION_ERROR");
+        };
+        await bad({ curve: [{ ...point(41_000), splits: [9_000, 8_000] }] }); // going back
+        await bad({ curve: [{ ...point(41_000), splits: [9_000, 42_000] }] }); // beyond the run's time
+        await bad({ curve: [{ ...point(41_000), splits: Array.from({ length: 33 }, (_, i) => i + 1) }] });
+        await bad({ curve: [{ ...point(41_000), splits: [-1] }] });
+        await bad({ curve: [{ ...point(41_000), source: "Beam!" }] });
+        await bad({ curve: [{ ...point(41_000), source: "x".repeat(17) }] });
+        const r = await beatWith(a, id, 30_000, {
+            curve: [
+                { ...point(41_250, 20_000, 5_000, "start"), splits: [9_000, 0, 30_000] },
+                { ...point(41_234, 10_000, 20_000), splits: [9_000, 20_000, 29_984], source: "splice" },
+            ],
+        });
+        expect(r.status).toBe(200);
+        expect(r.body.data.curve.points[1].splits).toEqual([9_000, 20_000, 29_984]);
+        expect(r.body.data.curve.points[1].source).toBe("splice");
+        const curve = await curveOf(b);
+        expect(curve.points[0].splits).toEqual([9_000, 0, 30_000]);
+        expect(curve.points[0].source).toBeUndefined();
+        expect(curve.points[1].source).toBe("splice");
+        // A point without them (a game before 2.99) is still taken, with none.
+        const old = await beatWith(a, id, 31_000, { curve: [point(41_200)] });
+        expect(old.status).toBe(200);
+        expect(old.body.data.curve.points[0].splits).toBeUndefined();
+    });
+
+    it("a run guided by players' runs says so (guidedBy, 2.99), checked like the rest of the record", async () => {
+        const [a] = await admins();
+        const bad = await publish(a, { record: record({ guidedBy: [{ player: "x".repeat(65), timeMs: 1, replayId: "r" }] }), replay: await replay(41_250) });
+        expect(bad.status).toBe(422);
+        const many = await publish(a, { record: record({ guidedBy: Array.from({ length: 9 }, () => ({ player: "p", timeMs: 1, replayId: "r" })) }), replay: await replay(41_250) });
+        expect(many.status).toBe(422);
+        const ok = await publish(a, { record: record({ guidedBy: [{ player: "NovaRider", timeMs: 78_442, replayId: "abc" }] }), replay: await replay(41_250) });
+        expect(ok.status).toBe(201);
+    });
+
     it("windows beyond the cap are added to the last one of the session", async () => {
         const [a] = await admins();
         const id = (await lease(a)).body.data.lease_id;
@@ -564,5 +665,14 @@ describe("TAS: the training curve (best times and attempts sent with the lease)"
         expect(last.finished).toBe(10);
         expect(JSON.parse(last.stopped)).toEqual([100, 810, 90]);
         expect(JSON.parse(last.broken)).toEqual([10, 51, 0]);
+        // Its clouds too, bounded per window.
+        const more = await beatWith(a, id, 4000, {
+            attempts: [win({ finishes: Array.from({ length: 10 }, (_, i) => [i * 100, 41_000 + i]), checkpoints: [{ reached: 5, best_ms: 1000, median_ms: 1100, worst_ms: 1200, sample: [[0, 1000]] }] })],
+        });
+        expect(more.status).toBe(200);
+        const merged = await env.DB.prepare("SELECT * FROM tas_curve_windows ORDER BY seq DESC LIMIT 1").first<any>();
+        expect(JSON.parse(merged.finishes)).toHaveLength(10);
+        expect(JSON.parse(merged.checkpoints)[0].reached).toBe(5);
+        expect(merged.points).toBe(11);
     });
 });

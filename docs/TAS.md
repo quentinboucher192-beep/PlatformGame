@@ -58,6 +58,7 @@ data/tas/<niveau>/<CATÉGORIE>.cprz
 | `route` | les pieds de Nova toutes les 0,25 s du chronomètre, pour dessiner le tracé |
 | `deaths`, `damageTaken`, `collectibles` | pour la fiche de la course |
 | `replay` | le nom du replay, dans le même dossier (format CPRZ du jeu, `game/online/Replay.h`) |
+| `guidedBy` | (2.99, absent sans guide) les courses de joueurs qui ont guidé la recherche : `player`, `timeMs` (son temps quand elle finit la catégorie, sinon 0), `replayId` ; voir « Les guides » |
 
 Lecture (`game/tas/TasFile.h`) : `tasFor(content, fingerprints, niveau, catégorie)` rend la
 course **seulement** si son fichier existe et se lit, si son `levelHash` est l'empreinte du niveau
@@ -91,7 +92,16 @@ cmake --build build --target cosmic_tas
 | `--progress <fichier>` | la progression, réécrite (atomiquement) toutes les demi-secondes : `game/tas/TasProgress.h` |
 | `--stop-file <fichier>` | s'arrêter proprement dès que ce fichier existe |
 | `--stop-on-stdin` | s'arrêter proprement quand l'entrée standard lit `stop` ou se ferme (le jeu fermé, même par un plantage) |
+| `--no-planner` | sans le planificateur (« Le planificateur », ci-dessous) : pour comparer |
+| `--portfolio` | le portefeuille de stratégies (faisceau, exploration, polissage, affinage) et la séparation et évaluation : [Le portefeuille](#le-portefeuille) |
+| `--arms <a,b,…>` | le portefeuille avec ces bras seulement (`beam`, `explore`, `timing`, `refine`, ou un bras ajouté) |
+| `--slice <secondes>` | la durée d'une tranche du portefeuille (45 ; une passe du faisceau : trois tranches au plus) |
+| `--no-bnb`, `--bound-slack <s>` | sans séparation et évaluation ; ou avec une marge sur le temps à battre |
 | `--user-dir <dossier>`, `--server <url>` | le niveau tel que le jeu le joue sur cet ordinateur : les révisions en ligne (campagne, entités) que le jeu a téléchargées |
+| `--guide <replay> [--guide-name <joueur>]` | (2.99, plusieurs fois, 8 au plus) une course d'un joueur qui guide la recherche : un replay exact de **cette version** du niveau et de la simulation ; d'une autre version du même niveau, son **tracé** seulement (jamais ses entrées) ; d'un autre niveau, refusé (« Guide refusé (…) : … ») ; voir « Les guides » |
+| `--phase`, `--phase-source <replay>`, `--realign <replay>` | le réalignement de phase : une arrivée en avance continuée par la suite des autres courses, après les attentes qui remettent le niveau en phase ; voir [Le réalignement de phase](#le-réalignement-de-phase) |
+| `--branch <replay> [--branch-through <n>]` | une branche : les `n` premières sections du replay gardées, la suite entraînée avec sa propre meilleure course ; voir [La branche](#la-branche) |
+| `--no-phase-leads` | sans les pistes de phase (pour comparer) |
 
 La course trouvée est **vérifiée** avant d'être écrite ; un fichier qui garde une course plus
 rapide (ou égale) du même niveau et de la même simulation n'est pas remplacé. Arrêtée (fichier ou
@@ -106,7 +116,9 @@ Le fichier de progression (`--progress`) :
  "improvements": 1, "round": 2, "threads": 4, "sequence": 123, "message": "…"}
 ```
 
-`phase` : `starting`, `searching`, `verifying`, `stopped`, `failed` ; `bestMs` : la meilleure course
+2.99 : `bestSplits` (les temps de `bestMs` à chaque point de passage), `bestSource`, `verifying` (un
+candidat en vérification), `guides` (les courses de joueurs qui la guident : `player`, `timeMs`,
+`splits`). `phase` : `starting`, `searching`, `verifying`, `stopped`, `failed` ; `bestMs` : la meilleure course
 vérifiée de la session (celle de départ ou une plus rapide écrite) ; `candidateMs` : une course plus
 rapide que la recherche tient, pas encore vérifiée ; `improvements` : les courses plus rapides que
 celle de départ, vérifiées et écrites.
@@ -122,9 +134,9 @@ le plus court détour, l'ordre dans chaque section cherché (plus proche voisin 
 distances du niveau). Les distances viennent du modèle de déplacement de l'analyse des niveaux
 (`LevelNavigator`, `game/levels/LevelAnalyzer.h` : la grille de 8 px, tomber partout, monter et
 aller de côté à portée d'un appui, tous les pouvoirs, les portes ouvertes) : un champ de distance
-vers chaque repère. La navigation des joueurs simulés des raids (`game/raid/nav`) n'a pas été
-reprise : elle est faite pour les zones d'un raid et des cibles qui bougent, la recherche n'a
-besoin que d'une distance le long du niveau, partout.
+vers chaque repère. La navigation des joueurs simulés des raids (`game/raid/nav`) ne sert pas à
+cette distance (elle est faite pour les zones d'un raid et des cibles qui bougent) ; sa copie des
+mouvements de Nova et du terrain sert au **planificateur** (ci-dessous).
 
 **La progression d'un état** : la distance le long des repères déjà passés moins la distance des
 pieds de Nova au suivant, plus ce que le monde a fait en route, lu de façon générique : portes et
@@ -168,8 +180,580 @@ aussi tôt avec moins d'entrées). Les états sauvegardés tous les 2 s de la co
 rejouer depuis le début.
 
 **Course de départ** (`--seed-replay`) : jouée d'abord ; si elle finit la catégorie, c'est la
-course à battre, ses états rejoignent les faisceaux de chaque section tant que la recherche la
-suit, et l'affinage part d'elle si rien n'est plus rapide.
+course à battre (la « meilleure course ») et elle guide toute la recherche (ci-dessous) ;
+l'affinage part d'elle si rien n'est plus rapide.
+
+### La meilleure course guide la recherche
+
+* **Ses images, à chaque section, même après une divergence.** Chaque section est proposée aux
+  faisceaux avec les images de la meilleure course pour cette section : par l'index de la section
+  et, quand la course trouvée l'a quittée, aussi depuis l'instant où Nova y était la plus proche de
+  son état présent (position et vitesse, à ± 1 s). Elles sont jouées depuis l'état où la recherche
+  se trouve (l'appui de la jointure recalculé comme un joueur appuierait) ; leurs états rejoignent
+  le faisceau à chaque génération (le faisceau peut en partir), et leur arrivée est une arrivée
+  comme les autres. Avant, elles n'étaient proposées que tant que la course restait identique à
+  la meilleure : à la première divergence, les sections suivantes étaient cherchées à l'aveugle.
+* **Les raccords.** À la fin de chaque section, les meilleures arrivées (et celles de la meilleure
+  course) sont jouées jusqu'à la sortie **avec la suite de la meilleure course**, reprise à
+  quelques endroits proches (là où Nova y était la plus proche, et sa propre arrivée à ± 2 pas) :
+  un raccord qui finit plus vite est une course entière plus rapide, aussitôt (rejouée depuis le
+  départ avant d'être gardée, puis vérifiée par la lecture normale des replays comme toute course).
+* **Le gagnant d'une section** est l'arrivée qui donne **la meilleure fin mesurée** (par son
+  raccord) ; seulement quand aucune ne se raccorde, la meilleure fin estimée (sa propre arrivée plus
+  le reste de la meilleure course depuis la sienne, un cœur perdu compté en temps, une marge de
+  0,25 s). Une arrivée plus tôt mais dans un plus mauvais état ne passe plus devant : sur
+  `sylvanox_01`, des arrivées de plus d'une seconde en avance au premier point de passage ne se
+  raccordent jamais (elles ont laissé derrière elles ce dont la suite a besoin), et la recherche
+  d'avant s'y perdait jusqu'à la fin de son budget.
+
+### Le planificateur
+
+`tools/tas/Planner.h` : une **source de plus** de candidats pour les faisceaux, à côté des images de
+la meilleure course. Les coups tirés au hasard du faisceau enchaînent mal les dashs, les sauts
+longs, les sauts muraux et les pouvoirs ; le planificateur les **planifie**, depuis l'état réel de
+la course, vers le prochain repère (la fin de la section).
+
+* **Où il planifie** : dans la copie légère des mouvements de Nova des joueurs simulés des raids
+  (`game/raid/nav/BodySim`, vérifiée contre le vrai joueur par `tests/test_raid_nav.cpp` : la
+  course, le saut et sa hauteur tenue, le temps de coyote et le saut tamponné, le double et le
+  triple saut, la glissade et le saut mural, l'accroupi et la glissade au sol, la descente à
+  travers une plateforme, les échelles, l'eau, les courants d'air, le dash et le saut long, la
+  poussée ; **son énergie, sa régénération et ses temps de recharge**), contre une copie de la
+  physique du niveau (`game/raid/nav/Terrain` : les plateformes mobiles là où elles **seront**, les
+  plateformes qui s'effondrent, les zones). Un pas de la copie coûte environ 0,4 µs, contre 20 à
+  75 µs pour un pas du vrai moteur et 0,1 à 0,3 ms pour restaurer un état sauvegardé : un plan de
+  12 s se cherche en quelques dizaines de millisecondes.
+* **Comment** : un faisceau synchrone dans le temps, sur des manœuvres de 8 pas : courir, le saut
+  tenu (sa hauteur), relâché puis appuyé de nouveau à deux moments (le double saut, le saut mural,
+  **le saut appuyé avant l'atterrissage**, que le tampon garde), un saut bas, Bas (glissade, chute
+  rapide, descente à travers une plateforme), le dash à plat et en diagonale, **le saut long** (un
+  saut appuyé pendant le dash au sol), le dash fini par un saut en l'air, la poussée. Un dash n'est
+  proposé **que si l'énergie, la recharge et les usages en l'air le permettent** dans la manœuvre :
+  sinon le faisceau attend la régénération ou fait autre chose. Tous les états d'une génération
+  ont joué le même nombre de pas : la première arrivée est la plus rapide trouvée. Les états sont
+  classés par une estimation du temps qui reste : la distance du niveau au repère (`LevelNavigator`)
+  là où Nova est et là où son élan la portera un instant plus tard (**garder l'élan** plutôt
+  qu'arriver « près » mais lent), moins un peu pour l'énergie et les sauts gardés ; un seul état par
+  endroit, vitesse et ressources. Sans arrivée dans l'horizon (12 s), les plans les plus avancés.
+* **Validé par le vrai jeu** : la copie ne connaît ni les ennemis, ni les coups, ni les dégâts.
+  Chaque plan est joué dans le vrai monde de la recherche, morceau par morceau comme les images
+  de la meilleure course ; **chacun de ses préfixes est proposé au faisceau, qui ne le garde que
+  sur son mérite réel** (pas de place réservée, contrairement à la meilleure course) ; son
+  arrivée est une arrivée comme les autres, classée, raccordée et vérifiée de la même façon ; la
+  course finale est toujours vérifiée par la lecture normale des replays.
+* **Quand** : au début de chaque section (depuis l'état de départ) et toutes les 8 générations
+  depuis le meilleur état du faisceau (6 plans en cours au plus par fil). Les mêmes entrées
+  donnent les mêmes plans (rien d'aléatoire).
+* **La borne inférieure** (`Planner::lowerBoundSeconds`, `lowerBoundToFinish`) : un temps que Nova
+  ne peut **jamais** battre pour toucher un repère (ou la sortie, en ligne droite : une course peut
+  laisser des repères de côté), pour l'élagage des autres sources (« horloge + borne ≥ meilleur
+  temps intermédiaire connu » : inutile de continuer). Par axe, l'écart entre la boîte de Nova et
+  celle du repère divisé par la vitesse la plus grande possible sur cet axe : la course, la
+  glissade, les sauts, le saut mural, le recul d'un coup, les tremplins et les plateformes mobiles
+  du niveau, et les pouvoirs — portés, ou que le niveau peut encore donner (comptés comme portés) ;
+  **le dash et la poussée ne comptent qu'à partir du moment où l'énergie et la recharge les
+  permettent** ; une téléportation couvre sa distance d'un coup (une par recharge) ; un retour en
+  arrière (le rappel) annule la borne. Admissible par construction (lignes droites, vitesses
+  maximales), donc large : vérifiée sur la course livrée de `sylvanox_01` (une borne tous les
+  30 pas vers chaque repère encore devant, jamais au-dessus du temps réellement mis) et sous les
+  temps d'une force brute et du planificateur sur de petits mondes (`tests/test_tas_planner.cpp`).
+  Ce qu'elle suppose : aucune mort ne rapproche du repère (la réapparition se fait à un point de
+  passage déjà touché, derrière).
+* **Ce qu'il compte** (journal, `SearchOutcome::planner`) : plans proposés, plans dont un état a
+  été gardé par un faisceau, plans arrivés au bout de la section dans le vrai jeu, sections dont la
+  gagnante vient d'un plan, et **l'écart entre la copie et le vrai jeu** (les pieds de Nova, en
+  pixels, par nombre de pas joués du plan).
+* **Un chemin humain** (facultatif, `SearchOptions::routeHints` : les positions et les temps de la
+  trajectoire d'un fantôme) : seulement un point de départ (un chemin humain n'est pas la limite).
+  Le planificateur vise toujours le repère, et aussi le point de ce chemin une seconde plus loin
+  que Nova (une étape intermédiaire), tant qu'il est sur le chemin du repère ; de moins en moins
+  souvent (un plan sur 2, 4… 16) dès que Nova y est aussi tôt que l'humain, ou plus tôt.
+* Chaque plan est une `Lead` de source `planner` (comme la meilleure course et les guides, mais sans
+  place réservée) : une section gagnée par un plan et une course plus rapide qui en vient le disent
+  (`bestSource`).
+* Une section ne s'arrête pas (quelques générations après la première arrivée) tant que les images
+  de la meilleure course et des guides jouent encore : une arrivée plus tôt (celle d'un plan) ne
+  doit pas cacher celle qui se raccorde.
+* `--no-planner` l'arrête (pour comparer).
+
+**Mesure du planificateur** (`sylvanox_01` ANY%, depuis la course livrée 1:26.692, 7 min, 1 fil,
+graine 1, une recherche du niveau entier ; les deux recherches en même temps sur 4 cœurs partagés) :
+
+| Point de passage (chrono) | livrée | sans planificateur | avec |
+|---|---|---|---|
+| CP1 (Seuil des Anciens) | 11,0 s | 10,975 s | **9,167 s** |
+| CP2 (Canopée brisée) | 30,1 s | 29,525 s | **25,275 s** |
+| CP3 | 39,7 s | 45,850 s | 40,592 s |
+| CP4 | 51,4 s | 58,733 s | 55,267 s |
+| CP5 | 64,7 s | 71,458 s | 67,067 s |
+| sortie (la recherche seule) | 1:26,692 | 1:35,033 | 1:34,542 |
+
+Le planificateur gagne 1,8 s sur la première section et 2,4 s de plus sur la deuxième (le joueur
+le plus rapide : 1,8 s et 4,1 s devant la course livrée). Ces arrivées ne se raccordent pas à la
+course livrée (fin estimée) et le combat du boss, cherché de zéro en quelques minutes, reste bien
+plus lent que celui de la course livrée : la course gardée reste 1:26,692 (1:26,675 sans le
+planificateur, par un raccord après la section 1). Le gain vient des faisceaux qui partent des
+préfixes des plans (63 plans sur 144 gardés au moins une fois), aucun plan entier n'est arrivé tel
+quel au bout de sa section dans le vrai jeu. Écart copie / jeu : 8,5 px en moyenne sur les 32
+premiers pas d'un plan, 38 px jusqu'à 128 pas, 79 px au-delà (les ennemis, les coups et les
+plateformes hors de la fenêtre de la copie). Coût : 6,2 s de planification sur 3,5 min (16 M pas de
+la copie, environ 0,4 µs chacun) ; les essais par seconde ne baissent pas de façon mesurable.
+
+### Les tours
+
+Un entraînement (`--until-stopped`) cherche par **tours** (`--round`, 10 min dans le jeu). Le
+**premier tour** cherche tout le niveau, section par section, guidé comme ci-dessus. Dès le
+**deuxième** (avec une course vérifiée), un tour cherche une **fenêtre** d'une ou deux sections
+consécutives (une seule pour un niveau d'une ou deux sections) :
+
+* les sections de la meilleure course **avant** la fenêtre sont **gardées exactement** (l'affinage
+  n'y touche pas non plus) ; **après** la fenêtre, la course **rejoint la meilleure course** par
+  ses raccords (si aucun ne finit, la recherche continue section par section, guidée, jusqu'à un
+  raccord ou la sortie) ;
+* la fenêtre est cherchée **en plusieurs passes**, de plus en plus profondes (faisceau ×1 à ×4,
+  plus de coups par état, plus de générations après la première arrivée) ; sur une fenêtre de deux
+  sections, une passe sur deux part de l'arrivée la plus tôt de la première section (son gain peut
+  n'apparaître qu'avec la section suivante cherchée) ; le dernier sixième du tour est l'affinage, à
+  partir du début de la fenêtre ;
+* **les fenêtres tournent sur tout le niveau** (`WindowPlanner`, gardé tant que le processus vit) :
+  d'abord les sections cherchées il y a le plus longtemps, et plus tôt de nouveau celles où un tour
+  a gagné du temps (le poids d'un gain diminue de moitié à chaque tour qui n'y gagne rien) ;
+* **jamais pire** : seule une course vérifiée plus rapide remplace la meilleure.
+
+La progression (`--progress`) donne la fenêtre du tour (`focusFirst`, `focusLast` ; 0 : tout le
+niveau) ; la courbe l'affiche (« Tour 3 · sections 4 à 5 (le reste suit la meilleure course) »).
+Pendant une fenêtre, **« Finis » reste bas** : les essais du faisceau s'arrêtent à la fin de la
+section cherchée ; ne vont jusqu'à la sortie que les raccords et l'affinage.
+
+**Mesure** (2.98, `sylvanox_01` ANY%, depuis la course livrée 1:26.692, 4 fils, graine 1) : avant,
+3 tours de 4 min restent à 1:26.692 (chaque tour recherchait tout le niveau, ne finissait pas la
+section 3 dans son budget et rendait la course de départ) ; après, 2 tours de 3 min donnent
+1:26.667 (tour 1 : raccords après les sections 1 et 4) puis 1:26.650 (tour 2, fenêtre 1 à 2).
+
+### Le portefeuille
+
+`--portfolio` (ou `--arms faisceau,…`) : un **portefeuille de stratégies** se partage chaque tour
+(`tools/tas/Portfolio.*`). Avec une course de départ qui finit la catégorie, chaque tour cherche
+une fenêtre dès le **premier** tour (`WindowPlanner` : d'abord les sections 1 et 2) et se découpe
+en **tranches** (`--slice`, 45 s ; une passe du faisceau : deux tranches au plus) :
+
+| Bras (`--arms`) | Stratégie | Fichiers |
+|---|---|---|
+| `beam` (faisceau) | une passe du faisceau sur la fenêtre (ci-dessus), raccords compris | `Search.cpp` |
+| `explore` (exploration) | Go-Explore, ci-dessous | `Explore.*` |
+| `timing` (polissage) | le polissage des timings, ci-dessous | `Timing.*` |
+| `refine` (affinage) | l'affinage existant (dernier sixième du tour) | `Search.cpp` |
+| autres | un bras ajouté par `Portfolio::addArm` (propositions du planificateur, raccords de guides…) | — |
+
+* **Le bandit** (`Bandit`) : chaque tranche va, avec tous les fils, au bras tiré par
+  *échantillonnage de Thompson* sur son **taux de gain** (millisecondes gagnées par seconde de
+  calcul, loi gamma ; les tranches récentes pèsent plus, ×0,9 par tranche), avec un **plancher** :
+  un bras sous 8 % du temps (moins s'ils sont nombreux) passe d'abord ; l'exploration garde
+  **20 %** quoi que gagnent les autres (ses gains sont rares, et c'est elle qui cherche au-delà des
+  routes connues, celle d'un joueur comprise). Le faisceau tourne pendant
+  les cinq premiers sixièmes du tour, l'affinage seulement dans le dernier ; l'exploration, le
+  polissage et les bras ajoutés partout.
+* **Qui a trouvé quoi** : chaque course plus rapide est créditée au bras dont la tranche tournait ;
+  le journal l'écrit (« Tranche exploration (45 s) : meilleure course … (améliorée) », puis
+  « Portefeuille : faisceau 41 % du temps, … ») et le fichier de progression les donne
+  (`strategies` : temps, gain, nombre de courses par bras). La courbe d'entraînement en fait deux
+  lignes sous les comptes (« Trouvé par : exploration 2 · polissage 1 », « Part du temps : … »).
+* **Les temps aux points de passage** de la course de départ et de chaque course écrite sont dans
+  le journal (« Temps aux points de passage : CP1 10.975 CP2 30.110 … »).
+
+**Go-Explore** (`Explore.*`) : une archive de **cellules** — l'endroit de Nova (grille de 24 px),
+sa vitesse (par 50 px/s, montée ou chute), au sol ou non, sauts en l'air et Dash restants, énergie
+(par quart), cœurs, pouvoirs portés et prêts, repère, ce que le monde a fait (jalons) — qui garde
+pour chacune **le chemin le plus rapide connu** (ses entrées depuis le chargement, en arbre partagé,
+et son état sauvegardé tant que la mémoire le permet : 140 par fil, les plus anciens oubliés et
+rejoués depuis leur ancêtre le plus proche). On tire une cellule selon sa **promesse** (son avance
+sur la meilleure course à progression égale, peu choisie, améliorée récemment) et selon son
+**endroit** (la case de la grille, le repère, les jalons — pas la vitesse ni les sauts) : le poids
+d'un endroit est partagé entre ses cellules, si bien qu'un endroit atteint par une seule cellule (le
+premier pas d'un détour) est tiré aussi souvent que le sol le long de la meilleure course, connu à
+toutes les vitesses. On y **revient** par son état sauvegardé, on **explore** quelques coups au
+hasard (un saut tenu à la fin d'un coup l'est parfois encore au suivant : un saut complet, 58 px,
+tient la touche plus longtemps qu'un coup ne dure) et ceux d'un planificateur, si un crochet
+`proposals` en fournit ; chaque état **nouveau ou atteint plus tôt** devient ou améliore une
+cellule. Rien n'est jeté pour être « loin du prochain repère » : c'est ce qui laisse vivre
+d'autres routes. Une fin de section atteinte **plus tôt** que la meilleure course est jouée
+jusqu'à la sortie avec la suite de la meilleure course (raccord réaligné) ; plus rapide, elle est
+rejouée depuis le chargement puis offerte. L'exploration va **une section au-delà de la fenêtre** :
+une arrivée plus tôt qui ne se raccorde pas tout de suite peut y trouver son propre chemin. L'archive vit tant que le processus vit (tour après tour,
+une par fil : un état sauvegardé n'appartient qu'à son arène), bornée à 6 000 cellules par fil (quand
+elle est réduite, la cellule la plus tôt de chaque endroit passe avant les autres : la carte des
+endroits atteints reste entière) ; la course de chaque tour y entre comme une suite de cellules
+« ancres » (toutes les 0,5 s). Des
+**indices de route**, facultatifs (`GoExplore::routeHints` : des positions avec leur temps, prises
+par exemple de la trajectoire d'un fantôme), favorisent les cellules proches de ce chemin (×1,5, et
+jusqu'à ×3,5 quand elles y sont aussi tôt que l'indice ou plus tôt : ses temps aux points de
+passage sont des cibles souples). Ils ne font qu'**amorcer** l'exploration : leur faveur diminue de
+moitié toutes les 1 500 visites, et la nouveauté (cellules peu choisies, nouvelles ou améliorées)
+comme l'avance sur la meilleure course continuent de choisir, hors de ce chemin aussi : la route
+d'un joueur est un départ, pas la limite. Sans eux, l'archive trouve ses routes seule.
+
+**Le polissage des timings** (`Timing.*`) : la fenêtre de la meilleure course vue comme ses
+**événements d'entrée** (appui et relâchement de chaque touche, à leur image), puis, contre le vrai
+jeu depuis des états sauvegardés toutes les secondes :
+
+1. chaque événement **décalé de ±1 à ±3 images** (force brute image par image, comme les
+   brute-forcers de TAS), d'abord ceux qui précèdent une **perte de vitesse** (vitesse horizontale
+   qui chute, atterrissage, mur) ;
+2. des **appuis courts ajoutés** (saut, touche d'un pouvoir, direction ; 1, 6 ou 12 images, juste
+   avant ces pertes) ou **relâchés un instant**, des **appuis courts supprimés** ; puis ±4 à ±6 ;
+3. une **évolution différentielle** (population 10) sur le vecteur des décalages des 8 événements
+   les plus proches des pertes, arrondi aux images : les changements conjoints.
+
+Mesure : la progression de Nova (le score de la recherche) à l'image où la meilleure course finit la
+fenêtre ; une modification plus avancée est jouée jusqu'à la sortie avec la suite (raccord) ; plus
+rapide, elle est rejouée depuis le chargement. Les images d'avant la fenêtre, d'une cinématique,
+d'un passage de cinématique ou d'une réponse à un pouvoir ne changent jamais.
+
+### Séparation et évaluation
+
+Avec le portefeuille (`--no-bnb` pour l'enlever, `--bound-slack <s>` pour une marge), le faisceau
+et l'exploration **abandonnent un état** quand son chrono plus une **borne inférieure** du temps
+qu'il lui faut encore pour finir sa section dépasse le temps de la meilleure course à ce point de
+passage (plus le retard pris avant la section, pour ne pas condamner une course déjà en retard)
+(`Bound.*`). La borne doit rester **admissible** (jamais plus que la vérité) :
+
+* horizontalement, l'écart à la boîte du point de passage (moins ce qu'une téléportation portée
+  franchit d'un coup) sur la plus grande vitesse horizontale du jeu de pouvoirs : course, glissade,
+  saut mural, recul, chaque vitesse des pouvoirs portés (Dash, Impulsion, Grappin…), sa vitesse du
+  moment et la plus grande vitesse de la meilleure course (tremplins, vents), le tout **+25 %** ;
+* le long du parcours, la distance du champ de `LevelNavigator` (×0,7 : sa grille et sa portée
+  sont grossières) jusqu'au point de passage, ou jusqu'à la région où il compte comme dépassé, sur
+  la plus grande vitesse dans toutes les directions (chutes, sauts) ;
+* un crochet `Portfolio::lowerBound` prend une borne plus serrée d'ailleurs (le planificateur) :
+  la plus grande de deux bornes admissibles l'est encore.
+
+Le test (`tests/test_tas_portfolio.cpp`) rejoue la course livrée de `sylvanox_01` image par image :
+la borne ne dépasse **jamais** le temps qu'il lui restait vraiment, aucun de ses états n'est abandonné,
+et la même course retardée de 2 s l'est avant le premier point de passage. Les états que le
+faisceau proposait lui-même (ses images de la meilleure course) ne sont jamais abandonnés ; une
+génération entièrement abandonnée termine la section au lieu de la recommencer.
+
+### Mesure du portefeuille
+
+`sylvanox_01` ANY%, depuis la course livrée (1:26.692), entraînement en tours de 5 min, 2 fils,
+graine 1, 20 min chacun, l'un après l'autre (machine de 4 cœurs partagée avec d'autres
+compilations : les temps sont bruités). Meilleure course **vérifiée** à la fin de chaque tour :
+
+| Configuration | 5 min | 10 min | 15 min | 20 min | Essais (20 min) | Gains trouvés par |
+|---|---|---|---|---|---|---|
+| Recherche d'avant (tour 1 : tout le niveau) | 1:26.675 | 1:26.667 | 1:26.667 | 1:26.642 | 1,84 M | faisceau (raccords) |
+| Portefeuille entier (`--portfolio`) | 1:26.675 | 1:26.675 | 1:26.650 | **1:26.092** | 1,76 M | faisceau 6, exploration 0, polissage 0, affinage 0 |
+| Exploration seule (`--arms explore`) | 1:26.675 | 1:26.675 | 1:26.675 | 1:26.675 | — | exploration 1 |
+| Faisceau seul dans le portefeuille (`--arms beam,refine`) | 1:26.675 | 1:26.675 | 1:26.650 | 1:26.175 | 2,71 M | faisceau 3, affinage 1 |
+
+Temps aux points de passage de la course finale (CP1 « Seuil des Anciens », CP2 « Canopée brisée ») :
+
+| Course | CP1 | CP2 | CP3 | CP4 | CP5 | CP6 | Fin |
+|---|---|---|---|---|---|---|---|
+| Livrée | 11.025 | 30.142 | 39.658 | 51.433 | 64.667 | 83.525 | 86.692 |
+| Recherche d'avant, 20 min | 10.983 | 30.117 | 39.633 | 51.408 | 64.617 | 83.475 | 86.642 |
+| Portefeuille, 20 min | 10.983 | 30.125 | 39.642 | 51.417 | 64.625 | **82.917** | 86.092 |
+| Exploration seule, dès 3 min | **10.850** | 30.125 | 39.642 | 51.417 | 64.650 | 83.508 | 86.675 |
+| Faisceau seul dans le portefeuille, 20 min | 10.983 | 30.125 | 39.642 | 51.417 | 64.625 | 82.942 | 86.175 |
+
+Ce que cela dit, honnêtement :
+
+* **Le gain de 0,55 s du portefeuille est au segment du boss** (CP5 → CP6 : 18,29 s au lieu de
+  18,86 s), trouvé par le **faisceau** pendant le tour 4, dont la fenêtre était les sections 6 et 7 :
+  avec le portefeuille, les fenêtres commencent dès le tour 1 (sections 1-2, 2-3, 4-5, 6-7), alors
+  que la recherche d'avant passe son premier tour sur tout le niveau et n'y était pas encore au bout
+  de 20 min (1-2, 2-3, 4-5). Le faisceau seul dans le même cadre (fenêtres dès le tour 1,
+  séparation et évaluation) trouve le même gain (1:26.175) : **il vient du calendrier des fenêtres
+  et du faisceau, pas de l'exploration ni du polissage**, qui ont pris 39 % du temps sans gain ici
+  (l'écart 1:26.092 / 1:26.175 est du bruit entre deux tirages). Le portefeuille n'est donc pas
+  activé par défaut.
+* **L'exploration finit le segment 1 en 10,850 s** (0,13 s plus tôt que le faisceau, 0,18 s plus tôt
+  que la course livrée) : le gain à la fin n'est que de 17 ms, parce que **CP2 tombe à 30,125 s dans
+  toutes les courses** : quelque chose du monde (une plateforme, une porte à minuterie…) fixe ce
+  temps, et une avance au segment 1 est absorbée. Les arrivées jusqu'à 0,6 s plus tôt à CP2 que le
+  faisceau trouve ne se raccordent pas à la suite de la meilleure course (leur monde n'est plus en
+  phase) ; la séparation et évaluation les coupe à la section suivante quand elles ne peuvent plus
+  battre le temps du point de passage. Gagner des secondes aux segments 1 et 2 demande donc de
+  chercher **les sections suivantes depuis ces arrivées**, pas de rejouer la fin de la meilleure.
+* **Le polissage** n'a rien trouvé sur cette course (7 tranches, ±1 à ±6 images, ajouts, retraits,
+  évolution) : l'affinage d'avant l'a déjà beaucoup décalée image par image, et la plupart des
+  décalages n'y changent rien (98 sur 130 au segment 1) ou cassent la suite (32) : le temps y est
+  fixé plus loin. Il retrouve une image perdue quand elle compte (test).
+* **Sur le petit niveau du test** (un mur, une porte au pied qui s'ouvre à 12 s, le champ de
+  distance disant « par la porte », trois marches de 50 px menant au rebord au-dessus du mur) :
+  avant la simulation 20, l'exploration passait en 11,8 s parce qu'une glissade traversait la porte
+  FERMÉE (défaut corrigé). Ensuite, elle ne trouvait plus que la porte : **15,900 s en 150 s**
+  (240 000 visites). Les cellules des marches et du rebord étaient bien atteintes, mais presque
+  jamais tirées, puis **jetées à la réduction de l'archive** : la montée coûte du temps à progression
+  égale (avance de -0,2 à -0,8 s), et des milliers de cellules du sol (mêmes endroits, autres
+  vitesses, autres sauts) passaient avant elles ; de plus, un coup au hasard ne tenait jamais le
+  saut plus de 24 images (48,6 px, moins qu'une marche : il fallait le double saut à chaque
+  marche). Avec le poids par endroit, la carte des endroits gardée et le saut tenu d'un coup à
+  l'autre : **12,167 s en 2 822 visites (1,4 s)**, le mur passé à 6,54 s par le rebord. Sur
+  8 graines, trouvé chaque fois, entre 2 800 et 8 200 visites (sans le saut tenu : entre 1 000 et
+  16 600 ; et alors, en 60 s, le poids par endroit seul échoue sur une graine sur quatre, la carte
+  gardée seule sur deux). Sur `sylvanox_01` (sections 1-2, 90 s, un fil), ni avant ni après aucun
+  gain : 4 039 visites au lieu de 3 007, 23 910 cellules nouvelles au lieu de 14 925.
+### Les guides (2.99)
+
+Une recherche qui reste près de sa meilleure course ne trouve pas un autre chemin ni une autre
+technique : sur `sylvanox_01`, le PB d'un joueur avait plus de 4 s d'avance avant le boss (ses
+segments 1 à 5 : 1,8 s, 4,1 s, 0,7 s, 0,7 s et 0,9 s plus rapides ; la machine, 10,6 s plus rapide
+sur le boss). **Les rounds reviennent-ils sur les points de passage déjà passés ?** Oui : les
+fenêtres tournent sur toutes les sections (`WindowPlanner`). Mais chaque fenêtre cherche **près de
+la meilleure course** : un raccourci, un autre chemin, un autre ordre ou un autre usage des
+pouvoirs restent hors de portée, sauf si un **guide** les apporte.
+
+* `--guide <replay>` (plusieurs) : des courses de joueurs, chacune un replay exact de cette version
+  du niveau (empreinte de classement, `kSimulationVersion`, touches par emplacement, course seule) ;
+  sinon refusée avec la raison. Au départ, chacune est **mesurée** : son temps quand elle finit la
+  catégorie (vérifiée comme une course de la machine), ses temps à chaque point de passage.
+* Comme la meilleure course, chaque guide est **offert à chaque section** (par l'index de la section
+  et réaligné sur la position de Nova : `Lead`, une suite d'entrées nommée par sa source, que le
+  faisceau suit et dont il part) et chaque arrivée est **raccordée** à la meilleure course **et à
+  chaque guide** qui finit (la fin la plus rapide).
+* **L'assemblage** (la première chose qu'un tour fait avec des guides, puis à chaque meilleure
+  course nouvelle) : depuis le départ, section par section, la voie de chaque source (la meilleure
+  course, chaque guide : par l'index de la section et réalignée) est jouée depuis où l'assemblage
+  en est ; les arrivées sont classées par la fin qu'elles donnent (raccordées, mesurées) et la
+  meilleure est prise : une « somme des meilleurs segments » **qui se joue vraiment** (les états
+  aux points de passage diffèrent : vitesse, énergie, santé, pouvoirs ; le raccord autour de chaque
+  point de passage les absorbe, et ce qui ne se raccorde pas n'est pas pris). Une course entière
+  plus rapide est rejouée depuis le départ puis vérifiée comme toute course ; le tour cherche
+  ensuite **à partir d'elle**.
+* **Honnêteté** : la course écrite dit qui l'a guidée (`guidedBy` : joueur, temps, replay) ; la
+  courbe le dit (« Guidé par la course de NovaRider (1:18.442) ») ; elle reste « meilleur temps
+  trouvé par la machine », jamais dans les classements ; aucun guide n'est cru : la course finale
+  est vérifiée par la lecture normale des replays.
+* **Dans le jeu** : l'entraînement d'une paire reçoit le **PB de cet ordinateur** (la tentative la
+  plus rapide de la catégorie sur cette version du niveau dont le replay est gardé, non refusée ;
+  « Guide : votre PB (oui / non) » dans les réglages, gardé dans `settings.json`).
+* **Le tracé d'une ancienne version.** Une course d'une **autre version** du niveau (ses animations,
+  ses cinématiques ont pu changer : ses entrées ne se rejouent plus pareil) n'est **jamais**
+  rejouée ni assemblée : `--guide` la prend pour son **tracé** (`RouteHint` : les positions
+  enregistrées dans son replay, à sa cadence, et ses temps aux points de passage). À chaque
+  génération d'une section, en plus de sa sélection, le faisceau garde quelques états qui suivent
+  ce tracé le plus loin (à 24 px d'un de ses points) : la recherche cherche les entrées
+  d'aujourd'hui qui prennent le chemin du joueur, avec les règles d'aujourd'hui, et toute course
+  est vérifiée comme d'habitude. La liste `routeHints` est générique (d'autres modules peuvent en
+  proposer). Dit honnêtement : « Guidé par le tracé de la course de NovaRider (ancienne version du
+  niveau) », et ses temps « CP5 : TAS +4,200 s sur NovaRider (ancienne version) » (une partie de
+  l'écart peut venir du niveau changé, pas du jeu) ; ils n'entrent pas dans la somme des meilleurs
+  segments. Le jeu passe le PB de cette version, sinon celui d'une ancienne version.
+* **Un départ, jamais un plafond.** Un temps de joueur à un point de passage est une borne à
+  battre : rien ne s'arrête ni ne ralentit quand la machine l'égale ; le tracé n'attire plus une
+  section dès que la meilleure course y arrive aussi tôt que lui ; après un gain par un guide, les
+  tours continuent comme d'habitude (fenêtres, affinage) ; l'écart passe au vert quand la machine
+  passe devant.
+* **Ce qui n'est pas encore fait** : les records du monde en ligne et les replays des meilleurs
+  segments comme guides (le téléchargement des replays vérifiés existe, le lien avec
+  l'entraînement non) ; un choix guide par guide ; les ensembles d'arrivées de Pareto aux points
+  de passage (une arrivée plus lente mais plus rapide en vitesse ou en énergie gardée pour la
+  suite ; la phase du monde, elle, est couverte par les attentes du réalignement de phase).
+
+Mesure (2.99, `sylvanox_01` ANY%, 2 fils, depuis la course livrée 1:26.692 avec comme guide une
+course 1:26.617 d'un autre entraînement) : 1:26.600 vérifiée et écrite **6 s** après le départ (un
+raccord dans le guide après la section 1), 1:26.592 à 24 s, 1:26.567 au deuxième tour (1 min 40).
+Avec le record de NovaRider (1:34.392, jeu 2.88, simulation 17 : son tracé seulement), 1 fil : la
+recherche arrive au CP1 en 9,667 s (la machine 11,025 s, le joueur 9,225 s), mais l'avance fond
+aux CP2 (28,825 s) et CP3 (39,433 s) et ne se raccorde pas à la meilleure course : **continuer
+après une arrivée de plusieurs secondes en avance** reste la limite (les éléments du niveau qui
+bougent avec le temps ne sont plus au même endroit pour les images de la meilleure course).
+
+### Le réalignement de phase
+
+**Le problème mesuré.** Une arrivée en avance à un point de passage ne joue plus la suite de la
+meilleure course : ce qui bouge avec le temps (plateformes mobiles, lasers, patrouilles) n'est plus
+au même endroit pour ses images. Sur `sylvanox_01`, l'entraînement « fresh » de la nuit (sans course
+de départ, avec le planificateur) arrive au CP2 en 23,925 s, 6,2 s avant la meilleure course d'alors
+(30,125 s), mais au CP3 en 39,517 s, presque en même temps qu'elle (39,642 s) ; sa course entière,
+1:19.275, garde surtout l'avance des sections 1, 2, 4, 5 et du boss.
+
+**Ce qui fixe le CP3 vers 39,5 s** (mesuré avec `--study`, le chemin de Nova toutes les 0,25 s) :
+pas un minuteur du niveau. La course « fresh » reste **4 s devant la porte o171** (x ≈ 4300, de
+27,9 s à 32,0 s) avant de se retourner pour tirer l'onde sur le récepteur o172 qu'elle a dépassé
+(énergie 150 → 140 à 31,65 s) ; la meilleure course le tire en chemin et passe la porte à 32,4 s :
+les deux passent la porte à 0,3 s près, puis les plateformes mobiles (o186 à o188 : périodes 7,4 s,
+5,26 s et 6,76 s) du même cycle. Rejouer les images de la meilleure course derrière l'arrivée en
+avance passe la porte (après 16 images d'attente : l'énergie) mais tombe aux plateformes : avec
+6,1 s d'avance et des périodes de 6,8 et 7,4 s, la seule attente qui remet ces deux plateformes en
+phase est l'avance entière. Gagner là demande un autre passage des plateformes (le faisceau, le
+planificateur), plus tôt dans leur cycle — d'où les pistes de phase ci-dessous, qui donnent ce
+départ au faisceau.
+
+**Le CP2 « fixé » vers 30,1 s** des mesures d'avant ne l'était pas par le niveau : la meilleure
+course d'alors perd environ 3 s à monter vers x ≈ 1870 (de 13,4 s à 17,9 s ; « fresh » y monte en
+1,5 s) et 0,5 s arrêtée vers x ≈ 3665 ; mais toute arrivée au CP2 entre 22,6 s et 30,5 s environ
+passe les plateformes de la section 3 au même cycle et arrive au CP3 vers 39,5 s : la fin mesurée ne
+change pas, et le gagnant d'une section (classé par la fin mesurée) ne préférait jamais un CP2 plus tôt.
+
+**Le réalignement** (`tools/tas/Phase.h`, générique : rien n'y connaît un niveau) :
+
+* **Les éléments périodiques** du niveau (`periodicElements`) : une plateforme mobile (ni
+  déclenchée ni à l'arrêt) a pour période l'aller et retour, attentes comprises
+  (2 × (longueur / vitesse + attente)) ; une orbite 2πr / vitesse ; un laser allumé + éteint. La
+  **période rencontrée** par une section (`periodMet`) : la plus longue de ceux dont la zone (élargie
+  de 96 px) touche le chemin de la source dans la section.
+* **Les attentes** : depuis l'arrivée en avance, les images de la source pour la section, jouées
+  après k images sans rien appuyer, k de 0 à min(avance + 0,5 s, période rencontrée + 0,5 s, 8 s)
+  (0,5 s au moins), toutes les 4 images puis image par image juste sous les meilleures ; depuis le
+  début de la section de la source et depuis l'image où Nova y était la plus proche (après
+  l'attente). k = l'avance remet tout le monde périodique en phase : la recherche ne perd jamais
+  l'avance par l'attente, elle cherche **la plus petite** attente qui marche.
+* **Hors de phase** : un essai à plus de 96 px du chemin de la source 40 images de suite s'arrête ;
+  les deux qui sont allés le plus loin reçoivent **une seconde attente** au dernier endroit, avant
+  leur sortie du chemin, où la source avait les pieds au sol (un arrêt propre), dans ce qui reste de
+  l'avance. Un essai qui ne peut plus arriver avant les arrivées gardées (au rythme de la source,
+  moins 0,5 s), ou plus de 1,5 s après le temps de la source pour la section, s'arrête aussi ; une
+  mort n'est jamais gardée.
+* **Plusieurs sources** : chaque section essaie chaque source qui l'a (la meilleure course, les
+  guides, les `--phase-source`, la branche, les arrivées en avance du tour) : une course peut prendre
+  la section d'une source après l'arrivée d'une autre, remise en phase — une somme des meilleurs
+  segments qui se joue vraiment. La course entière est rejouée depuis le chargement, puis vérifiée
+  par la lecture normale des replays comme toute course (source `phase`).
+* **Les touches des pouvoirs suivent les pouvoirs** (`remapSlots`, `Sim.h`) : un replay appuie la
+  touche d'un **emplacement** ; une source qui porte d'autres pouvoirs, ou les mêmes à d'autres
+  emplacements (« dash, onde, impulsion » contre « dash, onde, bouclier, impulsion »), voit ses
+  touches d'emplacement (et la réponse à une offre de pouvoir) déplacées vers l'emplacement qui porte
+  le même pouvoir dans le monde joué ; un pouvoir que ce monde ne porte pas : sa touche est retirée.
+  `RunStudy` garde pour chaque image la disposition des emplacements de la source.
+* **Quelles arrivées continuent** (aux fins de section) : d'abord la suite **pure** de la source dont
+  le préfixe est le début (ses sections suivantes, sans attente) — le réalignement ne fait jamais pire
+  que cette source ; puis un **ensemble de Pareto** : les arrivées les plus tôt (un cœur perdu compte
+  0,25 s), et une plus tardive seulement si elle garde plus d'énergie ou de santé que toutes celles
+  déjà gardées (6 au plus). Mesuré : la section 4 de « fresh » derrière le CP3 de « main » arrive
+  1,5 s plus tôt, mais le boss de « main » ne se refait plus derrière elle : sans la suite pure, la
+  seule suite qui finissait était perdue.
+* **Pareto par phase** : une arrivée plus tôt qui attend atteint, debout, toutes les phases plus
+  tardives du monde périodique ; les attentes jusqu'à l'avance couvrent donc les arrivées plus
+  tardives qui ne diffèrent que par la phase. Ce qu'elles ne couvrent pas : la vitesse et l'énergie
+  gardées (l'ensemble de Pareto ci-dessus) et les ennemis déplacés par Nova (la position d'un ennemi
+  dépend d'elle).
+* **Rien ne finit** : `--realign-out` écrit alors la voie réalignée la plus avancée (jusqu'à la fin
+  de sa dernière section atteinte) : le point de départ d'une **branche** (ci-dessous), où le
+  faisceau cherche ce que les images d'une source ne refont pas (un combat).
+
+**Dans la recherche** :
+
+* **Les pistes de phase** (`SearchOptions::phaseLeads`, `--no-phase-leads` pour comparer) : quand la
+  course est en avance d'au moins 0,25 s sur la meilleure course (ou un guide) au début d'une section,
+  les images de cette source pour la section sont aussi offertes au faisceau **après l'attente qui
+  les mène le plus loin sur leur chemin** (`Worker::phaseWait` : k de 0 à l'avance + 0,5 s, 8 s au
+  plus, toutes les 4 images ; deux pistes : la plus courte attente qui arrive, si elle garde au moins
+  0,25 s d'avance, et celle qui va le plus loin pour le temps attendu — images sur le chemin moins
+  images d'attente, une seconde au moins — : passé une porte, jusqu'au prochain élément hors de phase) :
+  une piste comme les autres (place gardée dans le faisceau, qui en part) ; son arrivée est classée,
+  raccordée et vérifiée comme toutes (source `phase`). Le journal le dit (« phase : la course en
+  avance de 6,20 s sur un guide ; ses images de la section 3 : […] le plus loin sur son chemin après
+  0,133 s d'attente »).
+* **Les arrivées en avance gardées** (`SearchOutcome::early`) : à la fin de chaque section, les
+  arrivées au moins 0,25 s avant la meilleure course qui ne se raccordent pas (les deux plus tôt par
+  section, aussi saines ou plus) ; un entraînement avec `--phase` les réaligne après le tour.
+
+**Dans un entraînement** (`cosmic_tas`) :
+
+| Option | Rôle |
+|---|---|
+| `--realign <replay>` | les premières sections du replay gardées (jusqu'à chacune de ses sections, ou `--realign-through <n>`), la suite réalignée sur la meilleure course (`--seed-replay`), le replay lui-même et chaque `--realign-source <replay>` ; une course plus rapide est vérifiée et écrite ; `--realign-out <fichier>` : la plus rapide trouvée, plus rapide ou non ; sans `--until-stopped`, rien d'autre |
+| `--phase` | au début de chaque tour dont les sources ont changé, chaque préfixe d'une source qui, suivi des meilleurs segments des autres, pourrait battre la plus rapide (0,1 s au moins ; les plus prometteurs d'abord), réaligné sur toutes, une avance par fil (`--threads`) ; après chaque tour, ses arrivées en avance |
+| `--phase-source <replay>` | (plusieurs) une course de ce niveau relue **à chaque tour** (le meilleur fichier d'un autre entraînement) : une source du réalignement et un guide du tour ; implique `--phase` |
+| `--phase-budget <minutes>` | le temps d'un réalignement (3) |
+| `--phase-wait <s>`, `--phase-keep <n>` | l'attente la plus longue (8 s) ; les arrivées gardées par section (3) |
+| `--phase-trace` | chaque essai dans le journal (mesures) |
+| `--phase-min-wait <s>` | l'attente tentée même sans élément périodique rencontré (0,5 s) |
+| `--study <replay> [de à]` | le chemin de Nova toutes les 0,25 s du chrono (pieds, vitesse, énergie, santé, pouvoirs portés) et les fins de section, rien d'autre |
+
+> **Simulation 20 (2.100) : ces temps ne tiennent plus.** Les mesures de cette partie et de « La
+> branche » ont été faites en simulation 19 : les courses « main » (1:12.958 à 1:12.975), « fresh »
+> (1:18.767 à 1:19.275) et les branches en 1:12.x **passaient la porte fermée o345 de l'arène de
+> Thornwarden en glissant contre elle**, le Gardien vivant (la boîte de la glissade, plus large que
+> celle de Nova debout, commençait dans la porte, et les collisions ne voient un mur que devant la
+> boîte) : « le boss en 5,3 s » n'était pas un combat gagné. La simulation 20 corrige ce bug
+> (`kSlideInWallsSimulation`, `tests/test_slide_walls.cpp`) ; ces courses ne finissent plus. Les
+> mécanismes mesurés (phase, réalignement, branche) restent valables, leurs temps non : voir « La
+> nuit sur le jeu corrigé ».
+
+**Mesure** (`sylvanox_01` ANY%, 1 fil, la machine partagée avec deux entraînements sur 4 cœurs) :
+
+| Essai | Résultat |
+|---|---|
+| `--realign` de la course « fresh » (1:19.275, CP2 à 23,925 s) jusqu'au CP2, sur la meilleure course « main » (1:26.025) et sur elle-même | **1:19.175** vérifiée et écrite en 28 s (2 706 essais) : la section 7 de « main » après le CP6 de « fresh », 2 images d'attente (3,175 s au lieu de 3,258 s) ; les sections 3 à 6 restent celles de « fresh » |
+| Les images de « main » pour la section 3 derrière le CP2 de « fresh » (`--phase-trace`) | sans attente, bloquées à la porte o171 ; dès 16 images d'attente (l'énergie de l'onde), la porte passée vers 26,4 s, mais chute aux plateformes o186 à o188 pour toute attente sous l'avance (6,1 s) : leurs périodes (6,76 et 7,4 s) dépassent l'avance ; la seconde attente arrive au mieux à 40,04 s |
+| Piste de phase dans une branche (préfixe de « fresh » jusqu'au CP2, un tour de 6 min) | la piste « 0,133 s d'attente » met le faisceau après la porte à 27,1 s (x = 4589 ; « fresh » y restait jusqu'à 32,0 s) ; le faisceau attend ensuite le même cycle des plateformes : CP3 à 39,267 s au mieux (0,25 s d'avance), CP5 à 61,833 s (0,73 s), sans course plus rapide |
+| Réalignement des arrivées en avance de ce tour (CP3 39,267 s, CP4 47,858 s, CP5 61,833 s) | aucune ne finit avec la suite d'une source : l'arène de la section 4 et le boss (section 6) dépendent de l'état (ennemis réveillés autrement, énergie, santé), pas d'une phase |
+| `--realign` de « main » (1:12.975, le boss en 5,3 s) jusqu'au CP3, sur « main » et « fresh » (1:18.767), touches remappées | la section 4 de « fresh » (dash, onde) arrive au CP4 en 49,900 s au lieu de 51,367 s ; la section 5 de « main » au CP5 en 64,325 s (0,24 s d'avance) ; mais le boss de « main » ne se refait pas : la course gardée est « main » elle-même (1:12.975, sa suite pure), la voie jusqu'au CP5 écrite pour une branche |
+
+Ce que cela dit : la phase compte là où le niveau est **périodique** (plateformes, lasers : la section 7, la porte de la section 3) ; les arènes et le boss ne se « réalignent » pas, ils se cherchent. **Le CP3 vers 39,5 s est fixé par le cycle des plateformes o186 et o188** (une arrivée au CP2 vers 22,6 s, ou un autre passage, le précédent) — la course de NovaRider (version 2.88 du niveau) l'a pris au cycle précédent (CP3 à 33,04 s). Le boss se bat en **5,3 s** dans la course « main » de la nuit (1:12.975, trouvée par son faisceau : la porte o345 s'ouvre quand le Gardien tombe), contre 13,45 s dans « fresh » ; ses images ne refont pas ce combat derrière une autre arrivée (même 0,24 s plus tôt et avec plus d'énergie) : un combat se cherche, il ne se rejoue pas — d'où la branche engagée sur le CP5 de « fresh » (2 s devant « main ») avec « main » comme guide. **La fin est quantifiée** par l'ascenseur o364 de la dernière section (période 6,12 s) : des arrivées au CP6 jusqu'à 0,52 s plus tôt que la course 1:12.358 (une branche, tour 1) finissent toutes, réalignées, en 1:12.358 — une avance plus courte que la période est absorbée par l'attente, et le classement par la fin mesurée ne la voit pas ; de même le CP3 avec les plateformes de la section 3. Pour gagner là : une période entière d'avance (la branche garde une avance qui ne paie pas encore).
+
+### La branche
+
+`--branch <replay> [--branch-through <n>]` (`tools/tas/Branch.h`) : un entraînement qui **s'engage**
+sur les `n` premières sections du replay (2 par défaut : une arrivée en avance), gardées exactement,
+et entraîne **la suite**, tour après tour, fenêtres comprises (elles tournent sur les sections après
+le préfixe seulement), depuis **sa propre meilleure course** :
+
+* sa meilleure course est **gardée même plus lente que la meilleure course** (vérifiée par la
+  lecture normale des replays, écrite dans son propre fichier : `--branch-out <dossier>`, par défaut
+  `<--out>/branch` ; jamais `data/tas`) ; au redémarrage, la branche repart de ce fichier si sa course
+  commence par le préfixe ;
+* `--branch-share <f>` : la part des tours de la branche (0,5 : un sur deux) ; un tour de la branche
+  commence par réaligner le préfixe sur toutes les sources (sa meilleure course, la meilleure course,
+  les guides, les `--phase-source`), puis cherche sa fenêtre ; sans course encore, il cherche depuis
+  la fin du préfixe ;
+* **le retour** : une course de la branche plus rapide que la meilleure course (dès le départ aussi)
+  **est** la meilleure course (vérifiée et écrite comme d'habitude) ; dans les tours de la meilleure course, la meilleure
+  course de la branche est un guide (ses sections offertes, réalignées, raccordées, assemblées) et
+  une source du réalignement de phase.
+
+**Mesure** (`sylvanox_01` ANY%, 1 fil, tours de 5 min) : une branche engagée sur les 5 premières
+sections de « fresh » (1:18.767 ; CP5 à 62,567 s, 2 s devant « main ») avec « main » (1:12.958 ; le
+boss en 5,3 s) comme meilleure course, donc comme guide : au premier tour, la deuxième passe du
+faisceau sur le boss arrive au CP6 en **69,025 s** (6,46 s de combat ; « fresh » : 13,45 s), puis la
+piste de phase de la section 7 de « main » (0,167 s d'attente : l'ascenseur o364, période 6,12 s)
+finit : **1:12.367**, vérifiée par la lecture normale des replays et écrite (branche et meilleure
+course), 1,2 min après le départ — plus rapide que les deux entraînements de la nuit (1:12.958 et
+1:18.767), là où ni le réalignement seul (le combat ne se rejoue pas) ni « fresh » seul (sans la course
+de « main » pour guide) n'y arrivaient.
+Puis une branche engagée sur les 2 premières sections de cette course (CP2 à 23,925 s ; tours de
+8 min, sections 3 à 7) : 1:12.283 au troisième tour (sa fenêtre 6 à 7 : une meilleure sortie), puis
+1:12.267 par l'affinage ; ses arrivées en avance aux CP3 (0,25 s), CP5 (0,73 s) et CP6 (0,52 s)
+réalignées finissent en 1:12.358 : l'avance est absorbée par les plateformes et l'ascenseur.
+
+### La nuit sur le jeu corrigé (2.100)
+
+`sylvanox_01` ANY%, simulation 20 (la glissade ne traverse plus les murs, les portes fermées ni les
+plafonds bas), `--portfolio --round 10`, la course de NovaRider pour guide, les courses de la nuit
+(rejouées en simulation 20 : elles s'arrêtent à la porte) en `--phase-source` ; 3 fils, puis un
+second entraînement à 1 fil (`--branch` sur les 5 premières sections d'une course de la nuit).
+Chaque meilleure course est passée au détecteur de traversée (la boîte de Nova dans un solide,
+image par image) : aucune.
+
+| Heure (Paris) | Meilleure course | Trouvée par |
+|---|---|---|
+| départ | 1:26.025 | la meilleure course propre de la simulation 19 |
+| 4h15 | 1:25.217 | faisceau (sections 3 à 7), affinage, polissage |
+| 6h10 | 1:24.367 | faisceau 85.183 → 84.750 (une sortie de section), exploration 84.717 → 84.700, faisceau → 84.408, affinage |
+| 7h20 | **1:23.900** | faisceau 84.342 → 84.042 → 83.983, affinage → 83.925, faisceau → 83.900 |
+
+Points de passage de la course livrée : CP1 10,983 s, CP2 27,017 s, CP3 39,550 s, CP4 51,317 s,
+CP5 64,525 s, CP6 80,875 s, arrivée 83,900 s (le boss : 16,35 s du CP5 au CP6). Le faisceau donne
+l'essentiel des gains (une meilleure sortie de section, puis l'affinage la règle à l'image près) ;
+l'exploration n'en donne qu'un. Ce qui reste : au CP3, la course attend encore 3,1 s le cycle des
+plateformes o186 et o188 (7,4 s) — une arrivée au CP2 assez tôt pour le cycle précédent gagnerait
+une période entière ; et la fin attend l'ascenseur o364 (6,12 s).
+
+### Vérification au fil de l'eau (2.99)
+
+Chaque course entière plus rapide que la recherche tient (raccord, assemblage, course trouvée,
+affinage) est confiée **aussitôt** à un fil de vérification (`SearchOptions::onRun`) pendant que la
+recherche continue : vérifiée par la lecture normale des replays (ci-dessous), **écrite** si elle
+est plus rapide, sinon rien. Une plus lente en attente est oubliée au profit de la plus rapide. La
+progression le dit en quelques secondes : `candidateMs` et `verifying` (« candidat 1:26.642 ·
+vérification… »), puis `bestMs`, ses temps aux points de passage et l'origine du gain
+(`bestSplits`, `bestSource` : `beam` la recherche, `guide`, `splice` l'assemblage, `polish`
+l'affinage, `planner` le planificateur ; avec le portefeuille, `explore` et `timing` ; `phase` le
+réalignement de phase, `branch` une branche qui part plus vite que la meilleure course). Le tour
+suivant part de la meilleure course vérifiée. Jamais une course non vérifiée n'est écrite.
 
 ## Vérification
 
@@ -264,6 +848,9 @@ les anciennes restent, en lecture seule (rien ne les entraîne plus). Modèle :
 * `bestMs`, `bestElapsedMs`, `bestExplored` : le meilleur temps vérifié, le moment de la session où
   il l'a été et les essais simulés alors ;
 * `section` / `sections` : la section cherchée (0 : l'affinage d'une course entière) ;
+* `focusFirst` / `focusLast` (2.98) : la fenêtre du tour (0 : tout le niveau ; absents des
+  fichiers d'avant : tout le niveau) ; `checkpoints` : les points de passage du niveau que les
+  fenêtres comptent, CP1 d'abord (l'ordre du parcours, leur nom dans le niveau) ;
 * `windows` : les **fenêtres d'essais** (les 24 dernières, les plus anciennes d'abord) : les essais de la
   recherche sont **comptés, jamais listés**, par fenêtre de 5 s (fermée plus tôt quand la section
   ou le tour change) : combien, combien **finissent** (la sortie atteinte, la catégorie gardée) et
@@ -271,7 +858,13 @@ les anciennes restent, en lecture seule (rien ne les entraîne plus). Modèle :
   les autres la **section où ils se sont arrêtés**, combien d'entre eux sont **morts** (ou touchés
   en Sans dégât) et jusqu'où ils sont allés sur le parcours (médiane et maximum, en ‰). Un essai
   du faisceau qui casse la catégorie compte là où son coup commençait ; un essai de l'affinage
-  (une course entière rejouée) est mesuré là où il s'arrête.
+  (une course entière rejouée) est mesuré là où il s'arrête. Depuis 2.98, chaque fenêtre garde
+  aussi ses **nuages** : **chaque essai fini** (son temps et son instant, 400 au plus par fenêtre ;
+  au-delà, un échantillon uniforme où son meilleur est toujours) et, **par point de passage**
+  (CP1, CP2… : les points de passage du niveau, comme les temps intermédiaires les numérotent ; un
+  essai l'atteint quand il l'allume), combien d'essais l'ont atteint, leurs temps meilleur /
+  médian / pire (la médiane d'un échantillon) et un **échantillon** de 32 temps au plus (son
+  meilleur toujours). Les fichiers d'avant se lisent toujours (sans nuage).
 
 Le jeu lit ce fichier toutes les demi-secondes (`TasTraining::noteCurve`) :
 
@@ -282,6 +875,15 @@ Le jeu lit ce fichier toutes les demi-secondes (`TasTraining::noteCurve`) :
 * chaque **fenêtre d'essais**, placée de même ;
 * les **courses publiées** sont des marques de la courbe de leur version (le serveur les donne,
   avec le temps d'entraînement au moment de la publication, la session en cours comprise).
+
+Les nuages sont bornés : 30 000 points d'essais finis et autant de temps aux points de passage par
+version sur cet ordinateur (au-delà, les plus anciennes fenêtres ne gardent que leur meilleur) ;
+un battement en emporte au plus 96 par fenêtre et 8 par point de passage (4 fenêtres) ; le serveur
+les vérifie comme les fenêtres (rôle de la session, bornes, chaque point dans sa fenêtre et entre
+son meilleur et son pire temps, jamais plus de points que d'essais), les place sur sa propre mesure
+du temps d'entraînement et en garde 60 000 par version (au-delà, une fenêtre ne garde que ses
+meilleurs points ; migration `0235_tas_curve_clouds.sql`). Un serveur qui ne les connaît pas encore
+les refuse : le jeu renvoie alors la courbe sans eux.
 
 **Gardée sur cet ordinateur** (`saves/tas_local/.training/<niveau>_<CATÉGORIE>.curve.json`, lue et
 écrite sur un fil à part : jamais sur le fil principal ; au plus 1 000 points et 1 500 fenêtres par
@@ -313,20 +915,52 @@ celles du serveur pour les sessions des autres ordinateurs. Routes : [API.md](on
 * une ligne **sélectionnée** (clic, Entrée / A ; flèches et croix pour y aller) ouvre sa courbe
   **sous le tableau** (le tableau garde trois lignes au moins, à 1280 × 720 comme à 1920 × 1080) ;
   Échap / B, « Fermer » ou la même ligne la referment ;
+* **des onglets** au-dessus de la courbe : **« TOUT »** (la course entière : les temps à
+  l'arrivée) puis **CP1, CP2… CPn** (les points de passage du niveau ; leur nom au-dessus des
+  chiffres) ; à la souris, ou au clavier et à la manette quand la rangée a le focus (← →, LB / RB :
+  ADMINISTRATION ne change alors pas d'onglet) ; les étiquettes rapetissent (puis « … ») quand il y
+  en a beaucoup ;
+* **les nuages** : derrière la ligne du meilleur temps, chaque essai fini (« TOUT ») ou chaque
+  temps échantillonné au point de passage (CPk) est un petit point translucide (la densité se
+  voit), le meilleur de chaque fenêtre plus vif ; l'échelle des temps s'arrête au 95ᵉ centile du
+  nuage : les points plus lents sont des marques sur le bord haut, comptés dans une note (« Hors de
+  la vue : 12 plus lents ») ; quand le nuage n'est qu'un échantillon, il le dit (« Nuage : 1 234
+  points sur 5 678 ») ; sur un onglet CPk, la ligne est le meilleur temps à ce point de passage le
+  long de l'entraînement et les chiffres à droite sont les siens (atteint, meilleur, médian, pire,
+  l'échantillon) ; au-delà de 16 000 points dans la vue, une part régulière est dessinée (les
+  meilleurs de chaque fenêtre toujours) ;
+* **le zoom**, sur chaque axe indépendamment (`ui/widgets/ChartView.h`), jusqu'à 3 s
+  d'entraînement et 4 ms à l'écran (1:26.658 et 1:26.660 bien séparés) : la molette autour du
+  curseur (Maj ou Ctrl + molette : les temps seulement), glisser pour se déplacer, clic droit
+  glissé (ou Maj + glisser) pour zoomer dans un rectangle ; au clavier, un réticule (← → ↑ ↓,
+  + / − pour zoomer autour de lui, 0 ou Origine pour revenir) ; à la manette, le stick gauche ou la
+  croix, les gâchettes ou le stick droit, Y pour revenir. Zoomée, une **vue d'ensemble** en haut à
+  droite de la courbe montre où l'on est, et « Réinitialiser le zoom » est au bout des onglets ;
+  les graduations suivent (millisecondes en ordonnée, secondes en abscisse : « 5 h 02:13 »),
+  mesurées et éclaircies quand elles se serrent. En direct, la vue par défaut suit les nouvelles
+  données, une vue zoomée reste où elle est ;
 * **la courbe** : en abscisse le temps d'entraînement cumulé (graduations « 30 min », « 2 h »,
   « 1 h 30 »), en ordonnée le meilleur temps (« 1:26.692 ») ; une ligne en escalier qui descend
   jusqu'au temps d'entraînement actuel, un point plein par amélioration, un anneau pour la course
   de départ, un losange par course publiée ; les temps **livré** et **en ligne** en lignes
   pointillées, nommées à leur droite ; derrière, pour chaque fenêtre, un trait fin du meilleur au
-  pire temps des essais finis et une marque à leur médiane ; sous l'axe, les **tours** de
-  `cosmic_tas` (« Tour 3 (en cours) ») ; en dessous, la bande des **sections atteintes** (par
+  pire temps des essais finis et une marque à leur médiane (les fenêtres sans nuage : d'avant
+  2.98, ou d'autres ordinateurs) ; sous l'axe, les **tours** de `cosmic_tas` avec ce qu'ils
+  cherchent quand c'est connu (« Tour 3 (en cours) · sections 4 à 5 ») ; un tour recommence à 1 à
+  chaque session : quand la courbe en a plusieurs, chaque marque dit la sienne (« S2 · Tour 3 ») ;
+  les marques trop serrées sont éclaircies, le détail reste dans la bulle de la bande ; en dessous,
+  la bande des **sections atteintes** (par
   fenêtre, la part de ses essais qui atteint chaque section, l'arrivée en haut : plus c'est sombre,
   moins ils y arrivent) ; une légende de chaque marque ; une grille discrète, des textes dans les
   couleurs du texte, des formes distinctes (pas seulement des couleurs) ;
+* **ce que fait le tour**, à droite sous ses chiffres : « Tour 3 · sections 4 à 5 (le reste suit
+  la meilleure course) », et pourquoi « Finis » reste bas pendant une fenêtre ;
 * **les chiffres**, à droite : pour **tout l'entraînement** et pour **le tour en cours** (ou le
   dernier) : essais, essais finis et leur part, meilleur / médian / pire temps des essais finis,
   morts ; puis les **arrêts par section** (une barre, la part des morts en rouge, le nombre, les
-  morts, ceux du tour), l'arrivée en dernier ; quand des essais ont été faits avant le suivi par
+  morts, ceux du tour), l'arrivée en dernier (toujours visible) ; quand toutes les sections ne
+  tiennent pas, « … N autres sections » (souris, Entrée / A) les déplie toutes dans une zone qui
+  défile (molette, barre, flèches, croix), « Réduire » les replie ; quand des essais ont été faits avant le suivi par
   fenêtre, la part détaillée est dite (« Détail de 1,2 M essais sur 12,3 M ») ;
 * une **bulle** sur chaque point (temps, gain sur le précédent, temps d'entraînement, essais, date,
   l'ordinateur de quel administrateur, en attente de partage ou non) et sur chaque fenêtre (tour et
@@ -335,6 +969,33 @@ celles du serveur pour les sessions des autres ordinateurs. Routes : [API.md](on
 * tout se met à jour **en direct** pendant que la paire s'entraîne ici ; une paire jamais entraînée
   pour cette version le dit (« Cette paire n'a jamais été entraînée pour cette version du
   niveau. ») ; « ‹ Version actuelle › » montre les anciennes versions, en lecture seule.
+
+### Où est le gain (2.99)
+
+Chaque meilleur temps vérifié garde ses **temps aux points de passage** (CP1 d'abord, la
+numérotation des onglets ; `bestSplits` de la progression, `splits` du point de la courbe), et
+d'où vient le gain (`source`). Comparés au meilleur point d'avant, ils disent **dans quel segment**
+est le gain (`tasSegmentDeltas`) :
+
+* la **bulle** d'une amélioration : « CP2 → CP3 : −16 ms », « Autres segments : = », « Trouvée par :
+  l'assemblage des guides » ;
+* la **ligne** de la paire en entraînement : « meilleur 1:26.642 · dernier gain −16 ms · CP2 → CP3 » ;
+* chaque **onglet CPk** : un point par amélioration dont le segment qui finit à ce point de
+  passage a changé (vert : plus rapide), à son temps là ; les temps des **guides** à ce point de
+  passage et la **somme des meilleurs segments** (des guides et de la meilleure course) en lignes
+  pointillées ; dans les chiffres, l'écart « CP5 : TAS +4,200 s sur NovaRider ».
+
+Les temps aux points de passage partent avec le point (battement, verrou rendu : bornés, 32 au
+plus) ; le serveur les vérifie comme le reste de la courbe (entiers, croissants, dans le temps du
+point ; `source` : un mot court) et les garde (migration `0240_tas_curve_splits.sql`). Un serveur
+qui ne les connaît pas les refuse avec les nuages : le jeu renvoie la courbe sans eux et les garde
+ici. Les fichiers d'avant se lisent toujours (sans temps aux points de passage).
+
+**Publier pendant l'entraînement** : dès que `cosmic_tas` a écrit une course plus rapide, le jeu
+relit ses courses (quelques secondes) et « Publier » devient possible ; publier n'arrête, ne met
+en pause ni ne remet à zéro l'entraînement (la courbe marque la publication). Grisé, sa bulle dit
+pourquoi : « Rien de plus rapide que la version en ligne », « Vérification en cours… », « Tenu
+par X ».
 
 ## Courses publiées en ligne
 

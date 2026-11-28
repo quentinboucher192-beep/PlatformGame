@@ -22,6 +22,7 @@
 
 #include <functional>
 #include <future>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -32,12 +33,14 @@
 #include "engine/core/Paths.h"
 #include "engine/rendering/Text.h"
 #include "game/online/OnlineTypes.h"
+#include "ui/widgets/ChartView.h"
 #include "ui/widgets/Charts.h"
 
 namespace cosmic {
 
 class GameServices;
 class TasTraining;
+class TasCurve;
 struct TasCurveVersion;
 struct TasCurveWindow;
 
@@ -93,6 +96,9 @@ std::vector<Local> scanLocal(const fs::path& userDir, const std::string& server)
 std::string durationText(int64_t ms);
 /// "27/11 · 14:05" (local time) of an ISO date of the server, « — » when it is not one.
 std::string stamp(const std::string& iso);
+/// « dernier gain −16 ms · CP2 → CP3 »: the last improvement of the pair's curve at this version and the
+/// segments where it gained (its splits against the best point before it); empty: none known.
+std::string lastGainText(const TasCurve* curve, const std::string& hash);
 /// A tick of the training time: « 0 », « 30 s », « 12 min », « 2 h », « 1 h 30 ».
 std::string durationTick(int64_t ms);
 /// « 1 234 567 » (French digit groups), « 12,3 M » / « 456 k » when compact.
@@ -106,8 +112,22 @@ std::vector<int64_t> axisTicks(int64_t lo, int64_t hi, int maxCount, const std::
 const std::vector<int64_t>& durationSteps();
 const std::vector<int64_t>& runTimeSteps();
 /// Where the rounds of cosmic_tas start along the training time (a new session or a new round of
-/// the windows, in order): {training time, round}.
-std::vector<std::pair<int64_t, int>> roundStarts(const std::vector<TasCurveWindow>& windows);
+/// the windows, in order): its training time, its number, its window of sections (0: the whole
+/// level) and whether that is known (windows of this computer; the server's do not say).
+struct RoundStart {
+    int64_t atMs = 0;
+    int round = 0;
+    int session = 0;  // the version's training session (a round's number starts again with each one)
+    int focusFirst = 0, focusLast = 0;
+    bool known = false;
+};
+std::vector<RoundStart> roundStarts(const std::vector<TasCurveWindow>& windows);
+/// What a round searches: « tout le niveau », « section 4 », « sections 4 à 5 » (`tail`: with
+/// « (le reste suit la meilleure course) »).
+std::string focusText(int first, int last, bool tail);
+/// « Tour 3 », « Tour 3 (en cours) »; with `session` > 0 (several sessions: a round's number starts
+/// again with each one), « S2 · Tour 3 ».
+std::string roundText(int round, bool live, int session = 0);
 
 }  // namespace tasadmin
 
@@ -129,7 +149,21 @@ struct AdminTasLayout {
     // strip of the sections reached, the counts.
     Rect detail, plot, strip, stats;
     int pointsDrawn = 0, windowsDrawn = 0, roundsDrawn = 0, referenceLines = 0;
+    int gainMarks = 0;  // a CP tab: the improvements marked where the segment ending at it changed
+    int referenceGaps = 0;  // a CP tab: the lines « CPk : TAS +x s sur <guide> » of the stats
+    // « Arrêts par section »: unfolded or not, its section rows on screen, the region they scroll in,
+    // the arrival row (pinned under it), the control that unfolds / folds it.
+    bool stopsOpen = false;
+    int stopRows = 0;
+    Rect stopsList, stopsArrival, stopsToggle;
     bool emptyCurve = false;  // « jamais entraînée » / no point yet
+    // 2.98: the tabs above the chart (« TOUT », CP1…), the cloud's points drawn (and kept), the
+    // zoom: its view, the overview shown while zoomed, « Réinitialiser le zoom ».
+    std::vector<Rect> tabs;
+    int cloudDrawn = 0, cloudKept = 0, offView = 0;
+    charts::ChartView view;
+    Rect minimap, zoomReset;
+    int xTicks = 0, yTicks = 0;
 };
 
 class AdminTas {
@@ -155,15 +189,24 @@ public:
     bool selected(const std::string& levelId, RunCategory c) const { return !selLevel_.empty() && selLevel_ == levelId && selCat_ == c; }
     /// Échap / B closes the curve first (ADMINISTRATION does not leave).
     bool capturesBack() const { return !selLevel_.empty(); }
+    /// The curve's tabs have the keyboard / gamepad focus: LB / RB are theirs (not ADMINISTRATION's).
+    bool capturesTabs() const { return !selLevel_.empty() && tabsFocused_; }
+    /// The curve's tab (0: « TOUT », k: CPk) and its zoomed view (the tests).
+    int curveTab() const { return cpTab_; }
+    void setCurveTab(int tab) { cpTab_ = std::max(0, tab); }
+    charts::ChartView& curveView(int tab);
+    /// « Arrêts par section » unfolded (every section, scrolled) or folded (the busiest ones).
+    void setStopsOpen(bool open) { stopsOpen_ = open; }
     /// The tooltip of the curve (a point, a window of attempts), over everything: drawn last.
     void drawTooltip();
     const charts::Tip& tip() const { return tip_; }
+    const charts::Tip& rowTip() const { return rowTip_; }
 
 private:
     void loadServer();
     void loadCurve();
     void drawDetail(const tasadmin::Row& row, const Rect& area);
-    void drawStats(const tasadmin::Row& row, const TasCurveVersion* v, const Rect& r, bool training, int round);
+    void drawStats(const tasadmin::Row& row, const TasCurveVersion* v, const Rect& r, bool training, int round, int focusFirst, int focusLast);
     void publish(const tasadmin::Row& r, std::function<void(bool)> done);
     void publishNext();
     std::vector<const tasadmin::Local*> shown() const;
@@ -201,11 +244,30 @@ private:
     RunCategory selCat_ = RunCategory::AnyPercent;
     int selVersion_ = 0;
     int pointCursor_ = -1, windowCursor_ = -1;
+    // 2.98: the tab (0: « TOUT », k: CPk), each tab's zoomed view and keyboard reticle (data
+    // units: training ms, time ms), a drag of the mouse on the chart (pan, or a rectangle to zoom
+    // into), the tabs focused last frame.
+    int cpTab_ = 0;
+    std::vector<charts::ChartView> views_;
+    struct Reticle {
+        bool set = false;
+        double x = 0.0, y = 0.0;
+    };
+    std::vector<Reticle> reticles_;
+    enum class Drag { None, Pan, Box };
+    Drag drag_ = Drag::None;
+    Vec2 dragFrom_;
+    charts::ChartView dragView_;
+    bool tabsFocused_ = false;
     bool scrollToSel_ = false;
     charts::Tip tip_;
+    charts::Tip rowTip_;  // a row's tooltip (why « Publier » is grey), drawn with the curve's
+    std::map<std::string, int64_t> seenBest_;  // per pair in training: the best time verified last seen (a new one: read the folder again)
     bool curveBusy_ = false;
     float curveT_ = -100.0f;
     bool inList_ = false;  // drawing the rows (their scroll region cuts what is out of it)
+    Rect textClip_;        // a scroll region of the curve's panel being drawn: what it cuts is not placed
+    bool stopsOpen_ = false;  // « Arrêts par section »: every section unfolded (scrolled), or the busiest ones
 
     AdminTasLayout layout_;
 };

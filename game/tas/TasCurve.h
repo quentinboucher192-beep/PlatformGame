@@ -12,7 +12,9 @@
 //     bestElapsedMs, bestExplored) or given by the server — never computed in between;
 //   * the WINDOWS: the attempts of the search counted every few seconds (TasAttemptWindow: how
 //     many, how many finished and their times, where the others stopped), placed on the same
-//     training time.
+//     training time; with their CLOUDS (2.98): each finished attempt a point (400 a window at
+//     most, then a sample with its best), and a sample of the times at which the attempts reached
+//     each checkpoint of the level (CP1, CP2…: 32 a window and a checkpoint, with their best).
 //
 // Kept on this computer (<saves>/tas_local/.training/<level>_<CATEGORY>.curve.json, TasCurveBook:
 // read and written on a thread of their own) and shared: the new points and a downsampled summary
@@ -62,6 +64,12 @@ struct TasCurvePoint {
     std::string by;          // the administrator: whose computer found it, who published it
     int revision = 0;        // a publication: its revision
     int session = 0;         // the session of the version (the server's count) that found it
+    /// 2.99 (docs/TAS.md « Où est le gain »): the run's splits at the level's checkpoints (CP1
+    /// first; tasSplitsFromJson) — compared with the best point before it, they say in which
+    /// segment the gain is — and where the gain came from (TasProgress::bestSource). Empty
+    /// before 2.99, and for a publication.
+    std::vector<int64_t> splits;
+    std::string source;
     TasShare share = TasShare::Shared;
     // Pending (this game only, never written): its lease, when it was found (its age when sent),
     // the session's attempts then.
@@ -97,12 +105,27 @@ struct TasCurveVersion {
     int simVersion = 0;
     std::vector<TasCurvePoint> points;    // by training time; the best ones each strictly faster
     std::vector<TasCurveWindow> windows;  // by training time
+    /// The level's checkpoints the windows count (CP1 first), as this computer's trainings named
+    /// them (empty: never trained here; the tabs then say « CP n » only).
+    std::vector<TasCheckpoint> checkpoints;
+    /// The players' runs that guided this computer's last training of the version (cosmic_tas
+    /// --guide): their splits, the references drawn at each checkpoint (empty: none).
+    std::vector<TasProgress::Reference> references;
+    /// The best point before `points[i]` that has splits comparable with it (nullptr: none).
+    const TasCurvePoint* previousBest(size_t i) const;
     /// The fastest best time (0: none), the number of best points.
     int64_t bestMs() const;
     size_t bests() const;
     /// The training time the curve reaches (its last point or window).
     int64_t lastTrainingMs() const;
 };
+
+/// The sum of the best segments (docs/TAS.md « Les guides »): segment by segment, the fastest of
+/// the version's references (the players' runs that guide it) and of its best run (its splits),
+/// added up to the checkpoint `cp` (1-based; 0: to the exit). 0 without a reference with splits.
+int64_t tasSumOfBest(const TasCurveVersion& v, int cp);
+/// Where a gain came from (TasCurvePoint::source), in French: « la recherche », « un guide »…
+std::string tasSourceLabel(const std::string& source);
 
 /// Every window's counts added (TasAttemptWindow::merged): the whole training, a round...
 TasAttemptWindow tasAttemptTotal(const std::vector<const TasCurveWindow*>& windows);
@@ -111,6 +134,9 @@ class TasCurve {
 public:
     static constexpr size_t kMaxPoints = 1000;   // best points per version (the server keeps as many)
     static constexpr size_t kMaxWindows = 1500;  // windows per version kept here (neighbours merged beyond)
+    /// The clouds' points per version kept here: the finished attempts, and as many checkpoint
+    /// times; beyond, the oldest windows keep only their best (the curve says how many are shown).
+    static constexpr size_t kMaxCloudPoints = 30000;
     std::string levelId;
     RunCategory category = RunCategory::AnyPercent;
     std::vector<TasCurveVersion> versions;

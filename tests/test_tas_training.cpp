@@ -342,7 +342,7 @@ TEST_CASE("tas curve: points only on improvement, per version, publish marks, ca
     CHECK(total.attempts == 200 && total.finished == 2 && total.stopped[0] == 180);
     // The rounds marked along the training time.
     const auto starts = tasadmin::roundStarts(wv->windows);
-    CHECK(starts.size() == 2 && starts[0].first == 1000 && starts[1].first == 7000);
+    CHECK(starts.size() == 2 && starts[0].atMs == 1000 && starts[1].atMs == 7000 && starts[1].session == 4);
 }
 
 TEST_CASE("tas curve: a heartbeat's summary of the windows is bounded; the book writes and reads the curves") {
@@ -737,6 +737,9 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             p.explored = x * 40;
             p.at = "2026-11-27T10:00:00Z";
             p.by = "Administrateur_Tres_Long";
+            // 2.99: its splits at the three checkpoints (a gain in every segment).
+            if (k != TasCurveKind::Publish) p.splits = {11000 - (86692 - t) / 4, 30000 - (86692 - t) / 2, 49000 - (86692 - t) * 3 / 4};
+            p.source = k == TasCurveKind::Improvement ? "splice" : "";
             return p;
         };
         // Along the 11 days of training the server counts for it (987 654 321 ms).
@@ -758,7 +761,7 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             w.stats.id = i + 1;
             w.stats.round = 1 + (i / 10) % 3;
             w.stats.section = 1 + i % 3;
-            w.stats.sections = 3;
+            w.stats.sections = 8;  // more sections than « Arrêts par section » shows folded
             w.stats.attempts = 120000;
             w.stats.finished = 30;
             w.stats.bestMs = 85000 + i * 10;
@@ -766,17 +769,51 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             w.stats.worstMs = 95000;
             w.stats.routeMedian = 420;
             w.stats.routeMax = 980;
-            w.stats.stopped = {60000, 40000, 19970};
-            w.stats.broken = {2000, 500, 0};
+            w.stats.stopped = {30000, 20000, 15000, 15000, 10000, 10000, 10000, 9970};
+            w.stats.broken = {2000, 500, 0, 0, 0, 0, 0, 0};
+            // 2.98: the round's window (this computer's), the finished attempts as points (one
+            // far slower than the others: above the scale), the times at three checkpoints.
+            w.stats.focusFirst = i < 10 ? 0 : 1 + i % 2;
+            w.stats.focusLast = i < 10 ? 0 : 2 + i % 2;
+            for (int k = 0; k < 30; ++k) w.stats.finishes.push_back({int64_t(k) * 300000, k == 0 ? w.stats.bestMs : k == 29 ? 95000 : 86000 + (k * 37 + i * 11) % 3000});
+            for (int cp = 0; cp < 3; ++cp) {
+                TasAttemptWindow::Checkpoint ck;
+                ck.reached = 50000 - cp * 10000;
+                ck.bestMs = 11000 + cp * 19000 - i * 3;
+                ck.medianMs = ck.bestMs + 400;
+                ck.worstMs = ck.bestMs + 2000;
+                for (int k = 0; k < 8; ++k) ck.sample.push_back({int64_t(k) * 1000000, k == 0 ? ck.bestMs : ck.bestMs + 100 + k * 150});
+                w.stats.checkpoints.push_back(ck);
+            }
             c.addWindow(hash, kSimulationVersion, w);
         }
+        c.version(hash, kSimulationVersion).checkpoints = {{"o63", "Seuil des Anciens"}, {"o140", "Canopée brisée"}, {"o206", ""}};
+        // 2.99: a player's run guides it (its splits: the references at each checkpoint, the sum of the best segments).
+        c.version(hash, kSimulationVersion).references = {{"UnTresLongPseudo", 85000, {9500, 26000, 43000}},
+                                                          {"NovaRider", 0, {9000, 25000, 41000}, true}};  // an older version: its route only
         CHECK(c.addBest(std::string(64, 'b'), kSimulationVersion, pt(TasCurveKind::Improvement, 80000, 1000)));
         page.select("level_0", RunCategory::AnyPercent);
         CHECK(page.selected("level_0", RunCategory::AnyPercent) && page.capturesBack());
     }
 
+    // Every tab (« TOUT », CP1, CP3), in the default view and zoomed as deep as it goes.
     for (Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}})
-        for (Language lang : {Language::French, Language::English}) {
+        for (Language lang : {Language::French, Language::English})
+            for (int pass = 0; pass < 7; ++pass) {
+            const int tabNow = pass == 0 || pass == 3 || pass >= 5 ? 0 : pass == 1 || pass == 4 ? 1 : 3;
+            const bool deep = pass == 3 || pass == 4;
+            // Passes 5 and 6: « Arrêts par section » unfolded (every section, scrolled), then folded again.
+            page.setStopsOpen(pass == 5);
+            page.setCurveTab(tabNow);
+            if (deep) {
+                charts::ChartView& zv = page.curveView(tabNow);
+                zv.reset();
+                // Around the best point of the last window (« TOUT »: its best finished attempt; CPk: its best time there).
+                const double t = tabNow == 0 ? 85000.0 + 59 * 10 : 11000.0 + (tabNow - 1) * 19000.0 - 59 * 3;
+                for (int z = 0; z < 80; ++z) zv.zoomAt(59.0 * 16000000.0, t, 0.5, 0.5);
+            } else {
+                page.curveView(tabNow).reset();
+            }
             r.app.setWindowSize(static_cast<int>(size.x), static_cast<int>(size.y));
             r.app.renderer().refreshOutputSize();
             i18n::setLanguage(lang);
@@ -790,11 +827,13 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             const Rect body{x0, bodyY, W, ui.screenH() - bodyY - ui.s(64)};
             const Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
             if (lang == Language::English) i18n::startAudit();
-            // The curve's plot focused with the keyboard: the tooltip of its last point.
+            // The curve's plot focused with the keyboard: the tooltip of the point nearest its reticle
+            // (on « TOUT », its last best time).
             ui.setFocus("tas/curve/plot");
             ui.setUsingPointer(false);
             page.draw(inner);
-            CHECK(page.tip().show && !page.tip().title.empty() && page.tip().rows.size() >= 5);
+            if (!page.tip().show) std::printf("  [%.0f onglet %d%s] pas de bulle au clavier\n", size.x, tabNow, deep ? " zoom" : "");
+            CHECK(page.tip().show && !page.tip().title.empty() && page.tip().rows.size() >= (tabNow == 0 && !deep ? 5u : 3u));
             const Rect tipR = charts::tipBox(ui, page.tip());
             CHECK(tipR.x >= -0.5f && tipR.right() <= ui.screenW() + 0.5f && tipR.y >= -0.5f && tipR.bottom() <= ui.screenH() + 0.5f);
             page.drawTooltip();
@@ -807,6 +846,7 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             ui.setUsingPointer(false);
             page.draw(inner);
             CHECK(page.tip().show && page.tip().rows.size() >= 6);
+            CHECK(page.curveTab() == tabNow);
             page.drawTooltip();
             ui.end();
             ui.setUsingPointer(true);
@@ -820,16 +860,53 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             }
             const AdminTasLayout& L = page.lastLayout();
             const char* where = lang == Language::French ? "fr" : "en";
-            if (L.rowsDrawn < 3 || L.detail.empty() || L.pointsDrawn != 5 || L.windowsDrawn != 60 || L.roundsDrawn < 2 || L.referenceLines != 2)
-                std::printf("  [%s %.0f] lignes %d, courbe %.0f x %.0f, points %d, fenêtres %d, références %d, tours %d, vide %d\n", where, size.x, L.rowsDrawn,
-                            L.detail.w, L.detail.h, L.pointsDrawn, L.windowsDrawn, L.referenceLines, L.roundsDrawn, L.emptyCurve ? 1 : 0);
+            if (L.rowsDrawn < 3 || L.detail.empty() || (pass == 0 && (L.pointsDrawn != 5 || L.windowsDrawn != 60 || L.roundsDrawn < 2 || L.referenceLines != 4)))
+                std::printf("  [%s %.0f onglet %d%s] lignes %d, courbe %.0f x %.0f, points %d, fenêtres %d, références %d, tours %d, vide %d\n", where, size.x, tabNow,
+                            deep ? " zoom" : "", L.rowsDrawn, L.detail.w, L.detail.h, L.pointsDrawn, L.windowsDrawn, L.referenceLines, L.roundsDrawn, L.emptyCurve ? 1 : 0);
             CHECK(L.rowsDrawn >= 3);  // the list keeps room for its rows, under it the curve
             CHECK(L.list.y < inner.bottom() - ui.s(150));
-            // The curve: under the table, inside the page; its plot, its strip, its counts beside.
+            // The curve: under the table, inside the page; its tabs, its plot, its strip, its counts beside.
             CHECK(!L.detail.empty() && L.detail.y >= L.list.bottom() && L.detail.bottom() <= inner.bottom() + 0.5f);
             CHECK(L.detail.containsRect(L.plot) && L.detail.containsRect(L.strip) && L.detail.containsRect(L.stats));
             CHECK(L.plot.w > ui.s(400) && L.plot.h > ui.s(80) && L.strip.y > L.plot.bottom() && L.stats.x > L.plot.right());
-            CHECK(L.pointsDrawn == 5 && L.windowsDrawn == 60 && L.referenceLines == 2 && L.roundsDrawn >= 2 && !L.emptyCurve);
+            CHECK(L.tabs.size() == 4);  // « TOUT », CP1, CP2, CP3
+            for (size_t t = 0; t < L.tabs.size(); ++t) {
+                CHECK(L.detail.containsRect(L.tabs[t]) && L.tabs[t].bottom() <= L.plot.y);
+                for (size_t u = t + 1; u < L.tabs.size(); ++u) CHECK(!overlaps(L.tabs[t], L.tabs[u]));
+                for (const Rect& b : L.buttons) CHECK(!overlaps(L.tabs[t], b));
+            }
+            if (L.xTicks < 1 || L.yTicks < 2 || (L.cloudDrawn <= 0 && L.pointsDrawn <= 0) || L.emptyCurve || L.windowsDrawn < 1)
+                std::printf("  [%s %.0f onglet %d%s] graduations %d x %d, nuage %d, vide %d, fenêtres %d, vue %.0f..%.0f x %.1f..%.1f\n", where, size.x, tabNow,
+                            deep ? " zoom" : "", L.xTicks, L.yTicks, L.cloudDrawn, L.emptyCurve ? 1 : 0, L.windowsDrawn, L.view.x0, L.view.x1, L.view.y0, L.view.y1);
+            CHECK(!L.emptyCurve && (L.cloudDrawn > 0 || L.pointsDrawn > 0) && L.windowsDrawn >= 1 && L.xTicks >= 1 && L.yTicks >= 2);
+            if (pass == 0) {
+                // Shipped, online, the guide and the sum of the best segments.
+                CHECK(L.pointsDrawn == 5 && L.windowsDrawn == 60 && L.referenceLines == 4 && L.roundsDrawn >= 2);
+                CHECK(L.cloudKept == 60 * 30 && L.offView >= 1);  // every point kept; the slowest above the scale, said
+            }
+            if (pass >= 5) {
+                // « Arrêts par section »: folded, « … N autres sections » unfolds it when they do not all fit;
+                // unfolded, every section scrolls in its region, the arrival pinned under it, « Réduire » after.
+                if (L.stopRows == 0) std::printf("  [%s %.0f] arrêts par section : pas de place dans les chiffres\n", where, size.x);
+                CHECK(L.stopRows == 0 || (L.stopsOpen == (pass == 5) && !L.stopsArrival.empty()));
+                if (pass == 5 && !L.stopsList.empty()) {
+                    CHECK(L.stats.containsRect(L.stopsList) && L.stopsArrival.y >= L.stopsList.bottom() - 0.5f);
+                    CHECK(!L.stopsToggle.empty() && L.stopsToggle.y >= L.stopsArrival.bottom() - 0.5f && L.stats.containsRect(L.stopsToggle));
+                }
+                if (pass == 6 && L.stopRows > 0 && L.stopRows < 8) CHECK(!L.stopsToggle.empty() && L.stopsToggle.bottom() <= L.stopsArrival.y + 0.5f);
+                if (pass == 6 && L.stopRows < 8 && size.x < 1500) std::printf("  [%s %.0f] arrêts : %d sections sur 8 repliées\n", where, size.x, L.stopRows);
+            }
+            if (!deep && tabNow > 0) {
+                // A CP tab: the gains marked where its segment changed, the guide's time there and the gap.
+                CHECK(L.gainMarks >= 1 && L.referenceLines >= 2 && L.referenceGaps == 2);
+            }
+            if (deep) {
+                // As deep as it goes: a few seconds, a few milliseconds; the overview and « Réinitialiser le zoom » shown.
+                CHECK(L.view.zoomed && L.view.width() <= 3000.0 + 1e-6 && L.view.height() <= 4.0 + 1e-6);
+                CHECK(!L.minimap.empty() && L.plot.containsRect(L.minimap) && !L.zoomReset.empty() && L.detail.containsRect(L.zoomReset));
+            } else {
+                CHECK(!L.view.zoomed && L.minimap.empty());
+            }
             CHECK(L.sparklines >= 1);
             CHECK(pointLayout.texts.size() == L.texts.size());  // the same page whichever tooltip shows
             int checked = 0;
@@ -859,7 +936,9 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
                 CHECK(b.x >= inner.x - 0.5f && b.right() <= inner.right() + 0.5f && b.bottom() <= inner.bottom() + 0.5f);
                 for (size_t j = i + 1; j < L.buttons.size(); ++j) CHECK(!overlaps(b, L.buttons[j]));
             }
-        }
+            }
+    page.setCurveTab(0);
+    page.curveView(0).reset();
     // The row selected again closes the curve; a pair never trained says so.
     i18n::setLanguage(Language::French);
     page.select("level_0", RunCategory::AnyPercent);

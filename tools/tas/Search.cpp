@@ -4,10 +4,13 @@
 #include <atomic>
 #include <bit>
 #include <chrono>
+#include <map>
+#include <tuple>
 #include <cmath>
 #include <cstdio>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <thread>
 #include <unordered_set>
 
@@ -19,7 +22,10 @@
 #include "game/player/Player.h"
 #include "game/powers/Power.h"
 #include "game/tas/ArenaWorld.h"
+#include "tools/tas/Bound.h"
 #include "tools/tas/Course.h"
+#include "tools/tas/Planner.h"
+#include "tools/tas/Portfolio.h"
 
 namespace cosmic::tas {
 
@@ -91,6 +97,13 @@ struct Tuning {
     int len = 16;    // steps per move
 };
 
+/// How a section is searched: the beam's tuning, the generations kept after the first arrival.
+struct Effort {
+    int beam = 24, moves = 10, len = 16;
+    int settle = 4;
+    bool route = true;  // the route hints followed (SearchOptions::routeHints): not once the best run is as fast there
+};
+
 /// A state of the beam (its world in a savestate of the worker's arena).
 struct Node {
     int tree = -1;
@@ -103,7 +116,7 @@ struct Node {
 };
 
 struct Candidate {
-    int parent = 0;
+    int parent = 0;  // the beam's state it comes from; negative: the guide -1 - parent
     std::vector<InputFrame> frames;
     Pad pad;
     Progress p;
@@ -116,6 +129,77 @@ struct Arrival {
     float cost = 0.0f;               // steps, a lost heart counting as time lost
     Progress p;
     Pad pad;
+    int guide = -1;  // the lead that arrived (its index in the section's leads), or -1: the beam's own, or a plan's
+    std::string source = "beam";  // where its way comes from: "beam", or its lead's source ("planner": a plan)
+};
+
+/// A way through a section offered to the beam besides its own moves (Worker::section): played on
+/// from where it starts while it has not arrived, its state joining the beam at every generation
+/// (the beam branches from it), its arrival an arrival like the others. The best run's frames, a
+/// guide's (a player's run), the planner's plans, or any other source that proposes inputs — each
+/// named (`source`: "best", "guide", "planner", ...), so that a gain says where it came from.
+struct Lead {
+    std::string source;
+    std::vector<InputFrame> frames;
+};
+
+/// The best run (the seed run): what the search keeps of it to be guided by it everywhere
+/// (docs/TAS.md « La meilleure course guide la recherche »).
+struct Guide {
+    std::vector<InputFrame> frames;  // from the load
+    std::vector<size_t> ends;        // per section reached: the frame index just after its end
+    std::vector<Vec2> feet, vel;     // Nova after i frames (i = 0..exitAt)
+    std::vector<float> clockAt;      // the level's clock after i frames
+    size_t exitAt = 0;               // the frames up to the exit (all of them when it does not finish)
+    float clock = -1.0f;             // its time when it finishes the category, else negative
+    bool finishes() const { return clock >= 0.0f; }
+    static constexpr size_t kNone = static_cast<size_t>(-1);
+    /// The frame index where section `s` starts (kNone: the run does not get there).
+    size_t sectionStart(size_t s) const { return s == 0 ? 0 : s - 1 < ends.size() ? ends[s - 1] : kNone; }
+    /// The `k` frame indices around `center` (± `radius`) where Nova was nearest to `f` (her feet)
+    /// moving as `v`, at least 3 steps apart, the nearest first.
+    std::vector<size_t> nearest(Vec2 f, Vec2 v, size_t center, size_t radius, int k) const {
+        std::vector<std::pair<float, size_t>> d;
+        const size_t lo = center > radius ? center - radius : 0, hi = std::min(exitAt, center + radius);
+        for (size_t i = lo; i < hi && i < feet.size(); ++i) d.push_back({(feet[i] - f).length() + 0.02f * (vel[i] - v).length(), i});
+        std::sort(d.begin(), d.end());
+        std::vector<size_t> out;
+        for (const auto& [dist, i] : d) {
+            bool close = false;
+            for (size_t o : out) close = close || (o > i ? o - i : i - o) < 3;
+            if (!close) out.push_back(i);
+            if (static_cast<int>(out.size()) >= k) break;
+        }
+        return out;
+    }
+};
+
+/// The frames of `src` from `from` (at most `count`), the first one's presses and releases
+/// recomputed from the keys `held` before it (the seam of two runs, as a player would press).
+std::vector<InputFrame> seamed(const std::vector<InputFrame>& src, size_t from, size_t count, uint32_t held) {
+    std::vector<InputFrame> out;
+    if (from >= src.size() || count == 0) return out;
+    out.assign(src.begin() + static_cast<std::ptrdiff_t>(from), src.begin() + static_cast<std::ptrdiff_t>(std::min(src.size(), from + count)));
+    out.front().pressed = out.front().held & ~held;
+    out.front().released = held & ~out.front().held;
+    return out;
+}
+
+/// What an arrival gives at the exit when the rest of the best run follows it (measured), or not.
+struct JoinResult {
+    bool measured = false;
+    float finish = 0.0f;
+    size_t seedAt = 0, played = 0;  // the best run's frames from seedAt, `played` of them
+    int tried = 0;
+    size_t src = 0;  // the run re-joined: 0 the best run, k the guide k (SearchOptions::guides[k - 1])
+};
+
+/// An arrival with the finish it gives: measured (played on with the rest of the best run,
+/// realigned), or estimated (as if the rest went as the best run's from its own arrival there).
+struct Ranked {
+    Arrival a;
+    JoinResult j;
+    float finish() const { return j.finish; }
 };
 
 struct Shared {
@@ -124,7 +208,12 @@ struct Shared {
     const Course& course;
     const SearchOptions& opt;
     std::atomic<int64_t> explored{0};
+    std::atomic<int64_t> routeKept{0};
     std::atomic<bool> stop{false};
+    /// Branch-and-bound (tools/tas/Bound.h, with a portfolio): the states that cannot reach their
+    /// section's end before the best run's split are dropped from the beam.
+    Pruner pruner;
+    std::atomic<int64_t> pruned{0};
     std::mutex logMutex;
     /// The search ends as soon as it can: asked from outside (SearchOptions::stopRequested), or by itself.
     bool stopped() const { return stop.load() || (opt.stopRequested && opt.stopRequested->load()); }
@@ -140,6 +229,10 @@ struct Shared {
             if (waypoint > end) ++s;
         return std::min(s, std::max(0, static_cast<int>(course.sectionEnds().size()) - 1));
     }
+    /// A batch of attempts and the checkpoints they reached, for a training's counts.
+    void attempts(const std::vector<AttemptNote>& notes, const std::vector<Crossing>& crossings) const {
+        if (opt.onAttempts && (!notes.empty() || !crossings.empty())) opt.onAttempts(notes.data(), notes.size(), crossings.data(), crossings.size());
+    }
     Clock::time_point began = Clock::now();
     void log(const std::string& s) {
         std::lock_guard<std::mutex> l(logMutex);
@@ -154,13 +247,23 @@ public:
     Worker(Shared& sh, int index)
         : sh_(sh), index_(index), world_(sh.content, sh.level), rng_(sh.opt.seed * 7919u + static_cast<uint64_t>(index) * 104729u + 17u) {
         bound_ = sh.course.bind(const_cast<GameWorld&>(world_.world()));
+        const auto& wps = sh.course.waypoints();
+        for (size_t k = 0; k < wps.size(); ++k)
+            if (wps[k].kind == Waypoint::Kind::Checkpoint && cps_.size() < 32) cps_.push_back(dynamic_cast<const CheckpointEntity*>(bound_.waypointEntity[k]));
         base_ = std::make_unique<ArenaWorld::State>();
         world_.save(*base_);
         world_.save(origin_);
         baseProgress_ = measure(0);
+        baseNova_ = nova();
+        if (sh.opt.planner) {
+            planner_ = std::make_unique<Planner>(sh.course, &sh.content);
+            planner_->setRouteHints(sh.opt.routeHints);
+        }
     }
 
     ArenaWorld& world() { return world_; }
+    /// What its planner did (none: off).
+    PlanStats planStats() const { return planner_ ? planner_->stats : PlanStats{}; }
     /// The level just loaded.
     const ArenaWorld::State& origin() const { return origin_; }
     const Progress& baseProgress() const { return baseProgress_; }
@@ -169,6 +272,11 @@ public:
         world_.restore(*base_);
         return world_.digest();
     }
+    struct Nova {
+        Vec2 feet, vel;
+    };
+    Nova nova() const { return {world_.world().player().feet(), world_.world().player().vel}; }
+    const Nova& baseNova() const { return baseNova_; }
 
     /// Plays `frames` from the base: the new base.
     void advanceBase(const std::vector<InputFrame>& frames, const Pad& pad) {
@@ -177,6 +285,7 @@ public:
         world_.save(*base_);
         basePad_ = pad;
         baseProgress_ = measure(baseProgress_.waypoint);
+        baseNova_ = nova();
     }
 
     /// `frames` played from the base, as an arrival (the seed run's section kept as it is).
@@ -191,6 +300,29 @@ public:
         return a;
     }
 
+    /// `frames` played from the base until the waypoint `target` is reached (a source's way through
+    /// a section, for the splice): the arrival, or nothing (the rules broken, or out of frames).
+    std::optional<Arrival> playTo(const std::vector<InputFrame>& frames, int target) {
+        world_.restore(*base_);
+        Arrival a;
+        bool reached = false;
+        for (const InputFrame& f : frames) {
+            world_.step(f);
+            a.frames.push_back(f);
+            if (broken(baseProgress_.deaths)) return std::nullopt;
+            if (reachedTarget(target)) {
+                reached = true;
+                break;
+            }
+        }
+        a.p = measure(baseProgress_.waypoint);
+        if (a.p.rejected || !(reached || a.p.waypoint > target)) return std::nullopt;
+        a.pad.held = a.frames.empty() ? basePad_.held : a.frames.back().held;
+        const int maxHealth = world_.world().player().maxHealth();
+        a.cost = static_cast<float>(a.frames.size()) + 30.0f * static_cast<float>(std::max(0, maxHealth - a.p.health));
+        return a;
+    }
+
     /// The base: `frames` played from the load (going back to an earlier section).
     void resetBase(const std::vector<InputFrame>& frames, const Pad& pad) {
         world_.restore(origin_);
@@ -198,19 +330,114 @@ public:
         world_.save(*base_);
         basePad_ = pad;
         baseProgress_ = measure(0);
+        baseNova_ = nova();
+    }
+    /// The base kept as the start of a window's passes (markStart), and put back (backToStart).
+    void markStart() {
+        if (!start_) start_ = std::make_unique<ArenaWorld::State>();
+        world_.restore(*base_);
+        world_.save(*start_);
+        startPad_ = basePad_;
+        startProgress_ = baseProgress_;
+        startNova_ = baseNova_;
+    }
+    void backToStart() {
+        world_.restore(*start_);
+        world_.save(*base_);
+        basePad_ = startPad_;
+        baseProgress_ = startProgress_;
+        baseNova_ = startNova_;
     }
 
     Progress measure(int fromWaypoint) { return sh_.course.measure(const_cast<GameWorld&>(world_.world()), bound_, fromWaypoint); }
 
-    /// The beam from the base to the waypoint `target` (reached: arrivals), until `deadline`.
-    /// `seedFrames`: the seed run's frames for this section (it joins the beam), or empty.
-    std::vector<Arrival> section(int target, Clock::time_point deadline, int maxSteps, const std::vector<InputFrame>& seedFrames);
+    /// The best run played from the load, measured at every step (where it reaches each section's end).
+    Guide study(const std::vector<InputFrame>& frames);
 
-    /// Plays `frames` from the base until the exit (or `limit` steps): the clock at the exit, or a
+    /// The waits (idle frames, 0..maxK by `step`) before `g`'s frames for section `s` (docs/TAS.md
+    /// « Le réalignement de phase »): the shortest that arrives at the section's end, and the shortest
+    /// that takes them the furthest along their own path (past a door, up to the next element out of
+    /// phase: where the beam takes over); -1 when none (at least a second on the path).
+    struct PhaseWait {
+        int arrive = -1, reach = -1;
+        float arrival = -1.0f;  // the clock at the section's end after `arrive`
+    };
+    PhaseWait phaseWait(const Guide& g, size_t s, int target, int maxK, int step) {
+        PhaseWait out;
+        const size_t from = g.sectionStart(s);
+        if (from == Guide::kNone || from >= g.exitAt || g.feet.empty()) return out;
+        const size_t end = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+        auto rung = takeSnap();
+        world_.restore(*base_);
+        uint32_t held = basePad_.held;
+        int bestK = -1;
+        size_t bestReach = 0;
+        float bestArrive = -1.0f;
+        for (int k = 0; k <= maxK && !sh_.stopped(); ++k) {
+            if (k % step == 0) {
+                world_.save(*rung);
+                const int deaths = world_.world().stats().deaths;
+                size_t i = from;
+                int off = 0;
+                bool arrived = false;
+                for (; i < end; ++i) {
+                    InputFrame f = g.frames[i];
+                    if (i == from) {
+                        f.pressed = f.held & ~held;
+                        f.released = held & ~f.held;
+                    }
+                    world_.step(f);
+                    if (broken(deaths)) break;
+                    if (reachedTarget(target)) {
+                        arrived = true;
+                        break;
+                    }
+                    const size_t bi = std::min(i + 1, g.feet.size() - 1);
+                    if ((world_.world().player().feet() - g.feet[bi]).length() > 96.0f) {
+                        if (++off >= 40) break;
+                    } else {
+                        off = 0;
+                    }
+                }
+                sh_.count();
+                const size_t reach = i - from - std::min<size_t>(i - from, static_cast<size_t>(off));
+                const float clock = world_.world().timer().elapsed();
+                world_.restore(*rung);
+                if (arrived) {
+                    // (the waits are tried in order: the first that arrives is the shortest)
+                    bestArrive = clock;
+                    out.arrive = k;
+                    out.arrival = clock;
+                    break;
+                }
+                // (progress for the time spent: a longer wait must take them clearly further than it costs)
+                if (bestK < 0 || static_cast<long>(reach) - k > static_cast<long>(bestReach) - bestK + 12) bestReach = reach, bestK = k;
+            }
+            InputFrame idle;
+            idle.released = held;
+            held = 0;
+            world_.step(idle);
+        }
+        giveSnap(std::move(rung));
+        if (bestReach >= 120 && (bestArrive < 0.0f || bestK < out.arrive)) out.reach = bestK;
+        return out;
+    }
+
+    /// The beam from the base to the waypoint `target` (reached: arrivals), until `deadline`.
+    /// `guides`: the best run's frames for this section (each is played on and joins the beam).
+    std::vector<Arrival> section(int target, Clock::time_point deadline, int maxSteps, const std::vector<Lead>& guides, const Effort& effort);
+
+    /// `a` (from the base) played on with the rest of the best run after its section `s`, realigned
+    /// by a few steps: the fastest finish under `clockLimit` (none: it does not re-join). An arrival
+    /// at the exit is its own finish. The tries are attempts (`notes`, `crossings`).
+    JoinResult rejoin(const Guide& g, size_t s, const Arrival& a, float clockLimit, std::vector<AttemptNote>* notes, std::vector<Crossing>* crossings);
+
+    /// Plays `frames` from `at` until the exit (or `limit` steps): the clock at the exit, or a
     /// negative value when the run does not finish the category. `note` (an attempt of the
-    /// refinement): where it stopped, measured, when it does not finish.
+    /// refinement): where it stopped, measured, when it does not finish; `crossings`: the
+    /// checkpoints it reached.
     float evaluate(const std::vector<InputFrame>& frames, size_t from, const ArenaWorld::State& at, int fromWaypoint, uint32_t limit,
-                   AttemptNote* note = nullptr);
+                   AttemptNote* note = nullptr, std::vector<Crossing>* crossings = nullptr);
     /// The note of an attempt that did not finish, from where its furthest point is.
     AttemptNote stoppedAt(const Progress& p, bool broke) const {
         AttemptNote n;
@@ -233,17 +460,55 @@ private:
     }
     std::vector<Move> movesFor(const Node& n, const Tuning& t);
     bool reachedTarget(int target);
+    /// The rules broken now: a death beyond `deaths`, the category, the level failed.
+    bool broken(int deaths) const {
+        const GameWorld& w = world_.world();
+        const RunStats& s = w.stats();
+        return s.deaths > deaths || (sh_.opt.category == RunCategory::NoDeath && s.deaths > 0) ||
+               (sh_.opt.category == RunCategory::NoDamage && (s.deaths > 0 || s.damageTaken > 0)) || w.state() == WorldState::Failed;
+    }
+    // The checkpoints an attempt reaches: those lit since it started (looked at only on a step
+    // where the level's timer took a split).
+    struct Watch {
+        uint32_t lit = 0;
+        size_t splits = 0;
+    };
+    Watch watch() const {
+        Watch w;
+        for (size_t k = 0; k < cps_.size(); ++k)
+            if (cps_[k] && cps_[k]->activated()) w.lit |= 1u << k;
+        w.splits = world_.world().timer().splits().size();
+        return w;
+    }
+    void crossed(Watch& w, std::vector<Crossing>* out) const {
+        if (!out) return;
+        const auto& sp = world_.world().timer().splits();
+        if (sp.size() == w.splits) return;
+        w.splits = sp.size();
+        for (size_t k = 0; k < cps_.size(); ++k)
+            if (!((w.lit >> k) & 1u) && cps_[k] && cps_[k]->activated()) {
+                w.lit |= 1u << k;
+                out->push_back({static_cast<int>(k), sp.empty() ? world_.world().timer().elapsed() : sp.back()});
+            }
+    }
+    /// The best run played on from `at` (its frame `j` first, pressed from `held`) to the exit:
+    /// the clock there, or negative (broken, a death, past `clockLimit`, out of frames).
+    float playOn(const ArenaWorld::State& at, const Guide& g, size_t j, uint32_t held, float clockLimit, size_t& played, AttemptNote* note,
+                 std::vector<Crossing>* crossings);
 
     Shared& sh_;
     int index_;
     ArenaWorld world_;
     Course::Bound bound_;
+    std::vector<const CheckpointEntity*> cps_;  // the course's checkpoints, CP1 first
     Random rng_;
-    std::unique_ptr<ArenaWorld::State> base_;
+    std::unique_ptr<ArenaWorld::State> base_, start_, tmp_;
     ArenaWorld::State origin_;
-    Pad basePad_;
-    Progress baseProgress_;
+    Pad basePad_, startPad_;
+    Progress baseProgress_, startProgress_;
+    Nova baseNova_, startNova_;
     std::vector<std::unique_ptr<ArenaWorld::State>> pool_;
+    std::unique_ptr<Planner> planner_;
 };
 
 bool Worker::reachedTarget(int target) {
@@ -325,7 +590,40 @@ std::vector<Move> Worker::movesFor(const Node& n, const Tuning& t) {
     return out;
 }
 
-std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int maxSteps, const std::vector<InputFrame>& seedFrames) {
+Guide Worker::study(const std::vector<InputFrame>& frames) {
+    Guide g;
+    g.frames = frames;
+    world_.restore(origin_);
+    const auto& ends = sh_.course.sectionEnds();
+    auto keep = [&] {
+        const Nova n = nova();
+        g.feet.push_back(n.feet);
+        g.vel.push_back(n.vel);
+        g.clockAt.push_back(world_.world().timer().elapsed());
+    };
+    keep();
+    int wp = 0;
+    g.exitAt = frames.size();
+    for (size_t i = 0; i < frames.size(); ++i) {
+        world_.step(frames[i]);
+        keep();
+        if (g.ends.size() < ends.size()) {
+            const Progress p = measure(wp);
+            wp = p.waypoint;
+            while (g.ends.size() < ends.size() && p.waypoint > ends[g.ends.size()]) g.ends.push_back(i + 1);
+        }
+        const WorldState st = world_.world().state();
+        if (st == WorldState::Outro || st == WorldState::Completed) {
+            g.exitAt = i + 1;
+            break;
+        }
+    }
+    g.clock = evaluate(frames, 0, origin_, 0, static_cast<uint32_t>(frames.size()));
+    world_.restore(origin_);
+    return g;
+}
+
+std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int maxSteps, const std::vector<Lead>& guides, const Effort& effort) {
     std::vector<Arrival> arrivals;
     // The path of every state kept, as a tree (parent, frames of its move).
     std::vector<int> treeParent;
@@ -338,8 +636,11 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         if (last) out.insert(out.end(), last->begin(), last->end());
         return out;
     };
-    const Tuning base{sh_.opt.beam, 10, 16};
+    const Tuning base{effort.beam, effort.moves, effort.len};
     Tuning tune = base;
+    // The section this target ends (branch-and-bound compares with the best run's split there).
+    size_t sectionIdx = 0;
+    while (sectionIdx + 1 < sh_.course.sectionEnds().size() && sh_.course.sectionEnds()[sectionIdx] < target) ++sectionIdx;
     // A death is never kept, in any category: the beam goes on with the states still alive, and
     // when none is left it starts the section again, wider (a dead end found too greedily).
     const int baseDeaths = baseProgress_.deaths;
@@ -357,24 +658,85 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         beam.push_back(std::move(root));
     };
     makeRoot();
-    // The seed run joins the beam while it has not arrived (its state at every generation).
-    Node seed;
-    size_t seedAt = 0;
-    if (!seedFrames.empty()) {
-        seed.snap = takeSnap();
-        world_.restore(*base_);
-        world_.save(*seed.snap);
-        seed.pad = basePad_;
-        seed.p = baseProgress_;
-    }
+    // The leads (Lead): the best run's frames for this section, the guides', each played on from the
+    // base while it has not arrived; its state at every generation joins the beam (the beam branches
+    // from it). Then the planner's plans, leads too (source "planner").
+    struct GuideRun {
+        std::unique_ptr<ArenaWorld::State> snap;
+        size_t at = 0;  // its frames played
+        Pad pad;
+        Progress p;
+        int tree = -1;  // its last state kept in the beam's tree
+        size_t treeAt = 0;  // its frames up to that state (a plan's states are not all kept)
+        bool done = false;
+    };
+    // The leads played on and offered to the beam: the section's (`guides`: always kept), then the
+    // planner's plans (from the base or from a state of the beam: `seqRoot`, its tree; their states
+    // join the beam only on their merit, docs/TAS.md « Le planificateur »).
+    std::vector<Lead> seqs = guides;
+    const size_t nGuides = guides.size();
+    std::vector<int> seqRoot(nGuides, -1);
+    std::vector<std::vector<Vec2>> seqFeet(nGuides);
+    std::vector<uint8_t> seqKept(nGuides, 0);
+    std::vector<GuideRun> gr(guides.size());
+    auto startGuides = [&] {
+        for (size_t g = 0; g < guides.size(); ++g) {
+            GuideRun& G = gr[g];
+            G.at = 0;
+            G.tree = -1;
+            G.treeAt = 0;
+            G.done = guides[g].frames.empty();
+            G.pad = basePad_;
+            G.p = baseProgress_;
+            if (G.done) continue;
+            if (!G.snap) G.snap = takeSnap();
+            world_.restore(*base_);
+            world_.save(*G.snap);
+        }
+    };
+    startGuides();
+    // The planner's plans from a state of the beam (null: the base), played on as the guides are.
+    auto addPlans = [&](const Node* from) {
+        if (!planner_) return;
+        int live = 0;
+        for (size_t g = nGuides; g < seqs.size(); ++g) live += gr[g].done ? 0 : 1;
+        if (live >= 6) return;
+        world_.restore(from ? *from->snap : *base_);
+        const Pad pad = from ? from->pad : basePad_;
+        std::vector<Plan> plans = planner_->propose(world_.world(), target, pad.held, sh_.opt.plannerBudget);
+        for (Plan& pl : plans) {
+            seqs.push_back({"planner", std::move(pl.frames)});
+            seqRoot.push_back(from ? from->tree : -1);
+            seqFeet.push_back(std::move(pl.feet));
+            seqKept.push_back(0);
+            GuideRun G;
+            G.snap = takeSnap();
+            world_.save(*G.snap);
+            G.pad = pad;
+            G.p = from ? from->p : baseProgress_;
+            G.tree = from ? from->tree : -1;
+            gr.push_back(std::move(G));
+        }
+    };
+    auto dropPlans = [&] {
+        for (size_t g = nGuides; g < gr.size(); ++g) giveSnap(std::move(gr[g].snap));
+        seqs.resize(nGuides);
+        seqRoot.resize(nGuides);
+        seqFeet.resize(nGuides);
+        seqKept.resize(nGuides);
+        gr.resize(nGuides);
+    };
+    addPlans(nullptr);
     float bestScore = -1e30f;
     int stalled = 0, firstArrivalGen = -1, gen = 0;
-    const int window = 4;  // generations after the first arrival (later ones may arrive in a better state)
     uint32_t steps = 0;
     auto restart = [&] {
         for (Node& n : beam) giveSnap(std::move(n.snap));
         beam.clear();
         makeRoot();
+        dropPlans();
+        startGuides();
+        addPlans(nullptr);
         ++restarts;
         tune.beam = std::min(base.beam * 4, std::max(tune.beam, base.beam) * 3 / 2);
         tune.moves = std::min(32, tune.moves + 4);
@@ -385,29 +747,40 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         if (index_ == 0) sh_.log("    plus aucun état en vie : la section recommence, faisceau " + std::to_string(tune.beam));
     };
     while (!sh_.stopped() && Clock::now() < deadline && static_cast<int>(steps) < maxSteps) {
-        if (firstArrivalGen >= 0 && gen - firstArrivalGen >= window) break;
+        // A few generations after the first arrival — but never before the section's leads (the best
+        // run's own frames, the guides') have arrived (or stopped): an earlier arrival (a plan's)
+        // must not hide the one that re-joins.
+        bool guideLive = false;
+        for (size_t g = 0; g < nGuides; ++g) guideLive = guideLive || !gr[g].done;
+        if (firstArrivalGen >= 0 && gen - firstArrivalGen >= effort.settle && !guideLive) break;
+        for (size_t g = nGuides; g < gr.size(); ++g)
+            if (gr[g].done && gr[g].snap) giveSnap(std::move(gr[g].snap));  // a plan played to its end
+        if (gen > 0 && sh_.opt.plannerEvery > 0 && gen % sh_.opt.plannerEvery == 0 && !beam.empty()) addPlans(&beam.front());
         // Expansion: every move from every state.
         std::vector<Candidate> cands;
+        int prunedNow = 0;               // dropped by branch-and-bound
         std::vector<AttemptNote> notes;  // the attempts of this generation (a training's counts)
+        std::vector<Crossing> crossings;
         const bool noting = static_cast<bool>(sh_.opt.onAttempts);
         for (size_t b = 0; b < beam.size(); ++b) {
             const Node& n = beam[b];
             const std::vector<Move> moves = movesFor(n, tune);
             for (const Move& m : moves) {
                 world_.restore(*n.snap);
+                Watch wt;
+                if (noting) wt = watch();
                 Candidate c;
                 c.parent = static_cast<int>(b);
                 c.pad = n.pad;
                 c.frames.reserve(m.len);
-                bool broken = false;
+                bool brokenMove = false;
                 for (int t = 0; t < m.len; ++t) {
                     const InputFrame f = send(world_.world(), m.want(t), c.pad);
                     world_.step(f);
                     c.frames.push_back(f);
-                    const RunStats& s = world_.world().stats();
-                    if (s.deaths > baseDeaths || (sh_.opt.category == RunCategory::NoDeath && s.deaths > 0) ||
-                        (sh_.opt.category == RunCategory::NoDamage && (s.deaths > 0 || s.damageTaken > 0)) || world_.world().state() == WorldState::Failed) {
-                        broken = true;
+                    if (noting) crossed(wt, &crossings);
+                    if (broken(baseDeaths)) {
+                        brokenMove = true;
                         break;
                     }
                     if (reachedTarget(target)) {
@@ -418,7 +791,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                 }
                 sh_.count();
                 // A broken attempt counts where its move started (its last state kept).
-                if (broken) {
+                if (brokenMove) {
                     if (noting) notes.push_back(stoppedAt(n.p, true));
                     continue;
                 }
@@ -428,6 +801,12 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                     continue;
                 }
                 if (c.p.waypoint > target) c.arrived = true;
+                if (!c.arrived && sh_.pruner.active() && sh_.pruner.prune(world_.world(), sectionIdx, target, c.p.clock, baseProgress_.clock)) {
+                    ++prunedNow;
+                    sh_.pruned.fetch_add(1, std::memory_order_relaxed);
+                    if (noting) notes.push_back(stoppedAt(c.p, false));
+                    continue;
+                }
                 if (noting) {
                     if (c.p.finished) {
                         AttemptNote f;
@@ -441,44 +820,76 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
                 cands.push_back(std::move(c));
             }
         }
-        if (noting && !notes.empty()) sh_.opt.onAttempts(notes.data(), notes.size());
-        // The seed run's state at this generation.
-        int seedCand = -1;
-        if (seed.snap && seedAt < seedFrames.size()) {
-            world_.restore(*seed.snap);
+        sh_.attempts(notes, crossings);
+        // The guides' states at this generation (as many steps as the beam's moves).
+        std::vector<int> guideCand(seqs.size(), -1);
+        for (size_t g = 0; g < seqs.size(); ++g) {
+            GuideRun& G = gr[g];
+            if (G.done || !G.snap) continue;
+            if (G.at >= seqs[g].frames.size()) {
+                G.done = true;
+                continue;
+            }
+            world_.restore(*G.snap);
             Candidate c;
-            c.parent = -1;
-            c.pad = seed.pad;
-            const size_t end = std::min(seedFrames.size(), seedAt + static_cast<size_t>(tune.len));
-            for (size_t i = seedAt; i < end; ++i) {
-                world_.step(seedFrames[i]);
-                c.frames.push_back(seedFrames[i]);
-                c.pad.held = seedFrames[i].held;
+            c.parent = -1 - static_cast<int>(g);
+            c.pad = G.pad;
+            const size_t end = std::min(seqs[g].frames.size(), G.at + static_cast<size_t>(tune.len));
+            bool brokenRun = false;
+            for (size_t i = G.at; i < end; ++i) {
+                const InputFrame& f = seqs[g].frames[i];
+                world_.step(f);
+                c.frames.push_back(f);
+                c.pad.held = f.held;
+                if (broken(baseDeaths)) {
+                    brokenRun = true;
+                    break;
+                }
                 if (reachedTarget(target)) {
                     c.arrived = true;
                     break;
                 }
             }
-            seedAt += c.frames.size();
-            c.p = measure(seed.p.waypoint);
+            G.at += c.frames.size();
+            // A plan: how far the real game is from BodySim's prediction.
+            if (planner_ && g >= nGuides && G.at > 0 && G.at <= seqFeet[g].size())
+                planner_->stats.noteError(G.at, (world_.world().player().feet() - seqFeet[g][G.at - 1]).length());
+            if (brokenRun) {
+                G.done = true;
+                continue;
+            }
+            c.p = measure(G.p.waypoint);
+            if (c.p.rejected) {
+                G.done = true;
+                continue;
+            }
             if (c.p.waypoint > target) c.arrived = true;
-            world_.save(*seed.snap);
-            seed.pad = c.pad;
-            seed.p = c.p;
-            seedCand = static_cast<int>(cands.size());
+            world_.save(*G.snap);
+            G.pad = c.pad;
+            G.p = c.p;
+            if (c.arrived) G.done = true;
+            guideCand[g] = static_cast<int>(cands.size());
             cands.push_back(std::move(c));
         }
         if (cands.empty()) {
-            if (arrivals.empty()) restart();
-            else break;
+            if (arrivals.empty() && prunedNow == 0) restart();
+            else break;  // (all of them pruned: nothing here can beat the best run's split)
             continue;
         }
         // Arrivals.
         for (const Candidate& c : cands) {
             if (!c.arrived) continue;
             Arrival a;
-            a.frames = c.parent >= 0 ? pathOf(beam[static_cast<size_t>(c.parent)].tree, &c.frames) : std::vector<InputFrame>{};
-            if (c.parent < 0) a.frames.assign(seedFrames.begin(), seedFrames.begin() + static_cast<std::ptrdiff_t>(seedAt));
+            if (c.parent >= 0) {
+                a.frames = pathOf(beam[static_cast<size_t>(c.parent)].tree, &c.frames);
+            } else {
+                const size_t g = static_cast<size_t>(-1 - c.parent);
+                const std::vector<InputFrame> played(seqs[g].frames.begin(), seqs[g].frames.begin() + static_cast<std::ptrdiff_t>(gr[g].at));
+                a.frames = pathOf(seqRoot[g], &played);  // (a plan from a state of the beam: that state's path first)
+                a.source = seqs[g].source;
+                if (g < nGuides) a.guide = static_cast<int>(g);
+                else ++planner_->stats.arrivals;  // a plan: ranked like the beam's own
+            }
             const int maxHealth = world_.world().player().maxHealth();
             a.cost = static_cast<float>(a.frames.size()) + 30.0f * static_cast<float>(std::max(0, maxHealth - c.p.health));
             a.p = c.p;
@@ -486,7 +897,8 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
             arrivals.push_back(std::move(a));
             if (firstArrivalGen < 0) firstArrivalGen = gen;
         }
-        // Selection: the best of each place and situation, a few others for diversity.
+        // Selection: the best of each place and situation, a few others for diversity; the
+        // guides' states always.
         std::vector<int> order(cands.size());
         for (size_t i = 0; i < order.size(); ++i) order[i] = static_cast<int>(i);
         std::stable_sort(order.begin(), order.end(), [&](int a, int b) { return cands[static_cast<size_t>(a)].p.score > cands[static_cast<size_t>(b)].p.score; });
@@ -495,7 +907,7 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         std::vector<int> rest;
         for (int i : order) {
             const Candidate& c = cands[static_cast<size_t>(i)];
-            if (c.arrived || i == seedCand) continue;
+            if (c.arrived || (c.parent < 0 && static_cast<size_t>(-1 - c.parent) < nGuides)) continue;  // a plan's state: on its merit
             if (static_cast<int>(keep.size()) < tune.beam * 9 / 10 && cells.insert(c.p.cell).second) keep.push_back(i);
             else rest.push_back(i);
         }
@@ -504,6 +916,38 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
             if (cells.insert(cands[static_cast<size_t>(rest[k])].p.cell).second || rng_.chance(0.3f)) keep.push_back(rest[k]);
             rest.erase(rest.begin() + static_cast<std::ptrdiff_t>(k));
         }
+        for (size_t g = 0; g < nGuides; ++g)
+            if (guideCand[g] >= 0 && !cands[static_cast<size_t>(guideCand[g])].arrived) keep.push_back(guideCand[g]);
+        // The routes of older runs (SearchOptions::routeHints): a few more states, those that follow
+        // a route the furthest (the latest point of it within kRouteRadius px of Nova's feet).
+        if (const auto& hints = sh_.opt.routeHints; !hints.empty() && effort.route) {
+            const float r2 = SearchOptions::kRouteRadius * SearchOptions::kRouteRadius;
+            std::vector<std::pair<size_t, int>> along;
+            for (int i : rest) {
+                const Candidate& c = cands[static_cast<size_t>(i)];
+                if (c.arrived || c.parent < 0 || std::find(keep.begin(), keep.end(), i) != keep.end()) continue;
+                size_t far = 0;
+                bool near = false;
+                for (size_t h = 0; h < hints.size(); ++h)
+                    if ((hints[h].feet - c.p.feet).lengthSq() <= r2) far = h, near = true;
+                if (near) along.push_back({far, i});
+            }
+            std::sort(along.begin(), along.end(), [](const auto& a, const auto& b) { return a.first > b.first; });
+            const size_t extra = static_cast<size_t>(std::max(1, tune.beam / 6));
+            std::unordered_set<size_t> spots;
+            for (const auto& [h, i] : along) {
+                if (spots.size() >= extra) break;
+                if (!spots.insert(h / 8).second) continue;  // not all on the same stretch of it
+                keep.push_back(i);
+                sh_.routeKept.fetch_add(1, std::memory_order_relaxed);
+            }
+        }
+        // The plans whose state the beam kept (on its merit), once each.
+        for (int i : keep)
+            if (const int g = -1 - cands[static_cast<size_t>(i)].parent; g >= static_cast<int>(nGuides) && !seqKept[static_cast<size_t>(g)]) {
+                seqKept[static_cast<size_t>(g)] = 1;
+                ++planner_->stats.kept;
+            }
         // Progress and stall: the beam widens and the moves lengthen while nothing gets better.
         const float top = cands[static_cast<size_t>(order.front())].p.score;
         if (top > bestScore + 8.0f) {
@@ -522,26 +966,40 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         std::vector<Node> next;
         for (int i : keep) {
             Candidate& c = cands[static_cast<size_t>(i)];
-            const Node& parent = beam[static_cast<size_t>(c.parent)];
-            world_.restore(*parent.snap);
-            for (const InputFrame& f : c.frames) world_.step(f);
             Node n;
+            int parentTree = -1;
+            if (c.parent >= 0) {
+                const Node& parent = beam[static_cast<size_t>(c.parent)];
+                world_.restore(*parent.snap);
+                for (const InputFrame& f : c.frames) world_.step(f);
+                parentTree = parent.tree;
+                n.steps = parent.steps + static_cast<uint32_t>(c.frames.size());
+            } else {
+                const size_t g = static_cast<size_t>(-1 - c.parent);
+                GuideRun& G = gr[g];
+                world_.restore(*G.snap);
+                parentTree = G.tree;
+                n.steps = static_cast<uint32_t>(G.at);
+                // Its frames since its last state kept (all of a plan's states are not).
+                c.frames.assign(seqs[g].frames.begin() + static_cast<std::ptrdiff_t>(G.treeAt), seqs[g].frames.begin() + static_cast<std::ptrdiff_t>(G.at));
+                G.treeAt = G.at;
+            }
             n.snap = takeSnap();
             world_.save(*n.snap);
             n.pad = c.pad;
             n.p = c.p;
             n.actions = actionsOf(world_.world());
             n.slots = world_.world().player().powerSlots();
-            n.steps = parent.steps + static_cast<uint32_t>(c.frames.size());
-            treeParent.push_back(parent.tree);
+            treeParent.push_back(parentTree);
             treeFrames.push_back(std::move(c.frames));
             n.tree = static_cast<int>(treeParent.size()) - 1;
+            if (c.parent < 0) gr[static_cast<size_t>(-1 - c.parent)].tree = n.tree;
             next.push_back(std::move(n));
         }
         for (Node& n : beam) giveSnap(std::move(n.snap));
         beam = std::move(next);
         if (beam.empty()) {
-            if (!arrivals.empty()) break;
+            if (!arrivals.empty() || prunedNow > 0) break;
             restart();
             continue;
         }
@@ -557,14 +1015,95 @@ std::vector<Arrival> Worker::section(int target, Clock::time_point deadline, int
         }
     }
     for (Node& n : beam) giveSnap(std::move(n.snap));
-    giveSnap(std::move(seed.snap));
-    std::sort(arrivals.begin(), arrivals.end(), [](const Arrival& a, const Arrival& b) { return a.cost < b.cost; });
-    if (arrivals.size() > 4) arrivals.resize(4);
-    return arrivals;
+    for (GuideRun& G : gr) giveSnap(std::move(G.snap));
+    std::stable_sort(arrivals.begin(), arrivals.end(), [](const Arrival& a, const Arrival& b) { return a.cost < b.cost; });
+    // The six earliest, and the guides' arrivals whatever their rank (the best run's own way).
+    std::vector<Arrival> out;
+    for (size_t i = 0; i < arrivals.size(); ++i)
+        if (i < 6 || arrivals[i].guide >= 0) out.push_back(std::move(arrivals[i]));
+    return out;
 }
 
-float Worker::evaluate(const std::vector<InputFrame>& frames, size_t from, const ArenaWorld::State& at, int fromWaypoint, uint32_t limit, AttemptNote* note) {
+float Worker::playOn(const ArenaWorld::State& at, const Guide& g, size_t j, uint32_t held, float clockLimit, size_t& played, AttemptNote* note,
+                     std::vector<Crossing>* crossings) {
     world_.restore(at);
+    const int deaths = world_.world().stats().deaths;
+    Watch wt;
+    if (crossings) wt = watch();
+    played = 0;
+    auto stopped = [&](bool broke) {
+        if (note) *note = stoppedAt(measure(0), broke);
+        return -1.0f;
+    };
+    for (size_t i = j; i < g.frames.size(); ++i) {
+        InputFrame f = g.frames[i];
+        if (i == j) {
+            f.pressed = f.held & ~held;
+            f.released = held & ~f.held;
+        }
+        world_.step(f);
+        ++played;
+        crossed(wt, crossings);
+        if (broken(deaths)) return stopped(true);
+        const GameWorld& w = world_.world();
+        if (w.state() == WorldState::Outro || w.state() == WorldState::Completed) {
+            if (sh_.opt.category == RunCategory::HundredPercent && w.stats().collectibles() < w.stats().totalCollectibles()) return stopped(false);
+            if (note) {
+                *note = AttemptNote{};
+                note->finished = true;
+                note->clock = w.timer().elapsed();
+            }
+            return w.timer().elapsed();
+        }
+        if (w.timer().elapsed() > clockLimit) return stopped(false);
+    }
+    return stopped(false);
+}
+
+JoinResult Worker::rejoin(const Guide& g, size_t s, const Arrival& a, float clockLimit, std::vector<AttemptNote>* notes, std::vector<Crossing>* crossings) {
+    JoinResult r;
+    world_.restore(*base_);
+    for (const InputFrame& f : a.frames) world_.step(f);
+    if (a.p.finished) {
+        const GameWorld& w = world_.world();
+        if (sh_.opt.category == RunCategory::HundredPercent && w.stats().collectibles() < w.stats().totalCollectibles()) return r;
+        r.measured = true;
+        r.finish = w.timer().elapsed();
+        return r;
+    }
+    if (!g.finishes() || s >= g.ends.size()) return r;
+    if (!tmp_) tmp_ = std::make_unique<ArenaWorld::State>();
+    world_.save(*tmp_);
+    // Where to take the best run up: where Nova was nearest to her state now, around its own
+    // arrival there; and its arrival itself, a step or two either way.
+    const Nova n = nova();
+    std::vector<size_t> js = g.nearest(n.feet, n.vel, g.ends[s], 120, 3);
+    for (int d : {0, -2, 2}) {
+        const auto j = static_cast<ptrdiff_t>(g.ends[s]) + d;
+        if (j > 0 && static_cast<size_t>(j) < g.exitAt && std::find(js.begin(), js.end(), static_cast<size_t>(j)) == js.end()) js.push_back(static_cast<size_t>(j));
+    }
+    for (size_t j : js) {
+        size_t played = 0;
+        AttemptNote note;
+        const float c = playOn(*tmp_, g, j, a.pad.held, r.measured ? std::min(clockLimit, r.finish) : clockLimit, played, notes ? &note : nullptr, crossings);
+        sh_.count();
+        ++r.tried;
+        if (notes) notes->push_back(note);
+        if (c >= 0.0f && (!r.measured || c < r.finish)) {
+            r.measured = true;
+            r.finish = c;
+            r.seedAt = j;
+            r.played = played;
+        }
+    }
+    return r;
+}
+
+float Worker::evaluate(const std::vector<InputFrame>& frames, size_t from, const ArenaWorld::State& at, int fromWaypoint, uint32_t limit, AttemptNote* note,
+                       std::vector<Crossing>* crossings) {
+    world_.restore(at);
+    Watch wt;
+    if (crossings) wt = watch();
     // Where a run that does not finish stopped (measured once, from the start of the route).
     auto stopped = [&](bool broke) {
         if (note) *note = stoppedAt(measure(0), broke);
@@ -572,6 +1111,7 @@ float Worker::evaluate(const std::vector<InputFrame>& frames, size_t from, const
     };
     for (size_t i = from; i < frames.size() && i < limit; ++i) {
         world_.step(frames[i]);
+        crossed(wt, crossings);
         const GameWorld& w = world_.world();
         const RunStats& s = w.stats();
         if (w.state() == WorldState::Failed || (sh_.opt.category == RunCategory::NoDeath && s.deaths > 0) ||
@@ -631,6 +1171,51 @@ InputFrame playerFrame(const GameWorld& w, InputFrame want, int& cinematicSteps)
     return want;
 }
 
+// ------------------------------------------------------------------ the windows of the rounds
+
+WindowPlanner::WindowPlanner(int sections) : last_(static_cast<size_t>(std::max(0, sections)), 0), gain_(static_cast<size_t>(std::max(0, sections)), 0.0) {}
+
+std::pair<int, int> WindowPlanner::next(int round) const {
+    const int n = sections();
+    if (n <= 0) return {0, 0};
+    const int w = std::min(width(), n);
+    // Each window's score: how long ago its sections were searched (in rounds), their past gains,
+    // and its stalest section once more (a section left out the longest is taken first).
+    int bestStart = 0, bestStalest = -1;
+    double bestScore = -1.0;
+    for (int s = 0; s + w <= n; ++s) {
+        double score = 0.0;
+        int stalest = 0;
+        for (int k = s; k < s + w; ++k) {
+            const int age = std::max(0, round - last_[static_cast<size_t>(k)]);
+            score += static_cast<double>(age) + 2.0 * gain_[static_cast<size_t>(k)];
+            stalest = std::max(stalest, age);
+        }
+        score += stalest;
+        if (score > bestScore + 1e-9 || (std::abs(score - bestScore) <= 1e-9 && stalest > bestStalest)) {
+            bestScore = score;
+            bestStart = s;
+            bestStalest = stalest;
+        }
+    }
+    return {bestStart + 1, bestStart + w};
+}
+
+void WindowPlanner::done(int round, int first, int last, int64_t gainMs) {
+    const int n = sections();
+    if (n <= 0) return;
+    if (first <= 0) first = 1, last = n;  // the whole level
+    first = std::clamp(first, 1, n);
+    last = std::clamp(last, first, n);
+    for (int k = first - 1; k < last; ++k) {
+        last_[static_cast<size_t>(k)] = std::max(last_[static_cast<size_t>(k)], round);
+        double& g = gain_[static_cast<size_t>(k)];
+        g = gainMs > 0 ? std::min(3.0, g + 1.0) : g * 0.5;
+    }
+}
+
+// ------------------------------------------------------------------ the search
+
 SearchOutcome search(const ContentDatabase& content, const LevelData& level, const SearchOptions& opt) {
     SearchOutcome out;
     const auto start = Clock::now();
@@ -668,153 +1253,697 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                       std::chrono::duration<double, std::micro>(t2 - t1).count() / 50.0);
         log(line);
     }
+    const size_t sections = course.sectionEnds().size();
 
-    // The seed run: where it arrives at each section's end (when it finishes the category).
-    std::vector<size_t> seedEnds;  // frame index after the section's end, per section
-    float seedClock = -1.0f;
+    // The best run (the seed run): where it reaches each section's end, step by step.
+    Guide guide;
     if (!opt.seedRun.empty()) {
-        Worker& w0 = *workers[0];
-        ArenaWorld::State s0;
-        w0.world().save(s0);
-        size_t sec = 0;
-        int wp = 0;
-        for (size_t i = 0; i < opt.seedRun.size(); ++i) {
-            w0.world().step(opt.seedRun[i]);
-            if (sec < course.sectionEnds().size() && (i % 8 == 7 || i + 1 == opt.seedRun.size() || w0.world().world().state() == WorldState::Outro)) {
-                Progress p = w0.measure(wp);
-                wp = p.waypoint;
-                while (sec < course.sectionEnds().size() && p.waypoint > course.sectionEnds()[sec]) seedEnds.push_back(i + 1), ++sec;
-            }
-            const WorldState st = w0.world().world().state();
-            if (st == WorldState::Outro || st == WorldState::Completed) break;
-        }
-        seedClock = w0.evaluate(opt.seedRun, 0, s0, 0, static_cast<uint32_t>(opt.seedRun.size()));
-        w0.world().restore(s0);
+        guide = workers[0]->study(opt.seedRun);
         char line[160];
-        if (seedClock > 0.0f) std::snprintf(line, sizeof line, "Course de départ : termine la catégorie en %.3f s", static_cast<double>(seedClock));
+        if (guide.finishes()) std::snprintf(line, sizeof line, "Course de départ : termine la catégorie en %.3f s", static_cast<double>(guide.clock));
         else std::snprintf(line, sizeof line, "Course de départ : ne termine pas la catégorie (utilisée jusqu'où elle va)");
         log(line);
-        if (seedClock > 0.0f && opt.onBest) opt.onBest(seedClock);
+        if (guide.finishes() && opt.onBest) opt.onBest(guide.clock);
     }
+    // The guides (SearchOptions::guides: a player's runs), studied the same way: the sources of the
+    // search besides the best run (sourceOf(0) is the best run, sourceOf(k) the guide k).
+    std::vector<Guide> extra;
+    for (const std::vector<InputFrame>& g : opt.guides) {
+        if (g.empty()) continue;
+        extra.push_back(workers[0]->study(g));
+        const Guide& x = extra.back();
+        char line[200];
+        if (x.finishes())
+            std::snprintf(line, sizeof line, "Guide %zu : termine la catégorie en %.3f s, %zu section(s) atteinte(s)", extra.size(), static_cast<double>(x.clock),
+                          x.ends.size());
+        else
+            std::snprintf(line, sizeof line, "Guide %zu : ne termine pas la catégorie (utilisé jusqu'où il va : %zu section(s), la dernière finie au pas %zu, %.3f s au chrono)",
+                          extra.size(), x.ends.size(), x.ends.empty() ? size_t(0) : x.ends.back(),
+                          static_cast<double>(x.ends.empty() ? 0.0f : x.clockAt[std::min(x.ends.back(), x.clockAt.size() - 1)]));
+        log(line);
+    }
+    out.guideSources = static_cast<int>(extra.size());
+    const size_t nsrc = 1 + extra.size();
+    auto sourceOf = [&](size_t k) -> const Guide& { return k == 0 ? guide : extra[k - 1]; };
+    // The strategy whose slice runs now (the portfolio credits each faster run to it).
+    std::string arm = Portfolio::kBeam;
+    std::mutex offerMutex;
 
-    // Section by section. Each section keeps its best arrival for every set of powers carried
-    // (the answers to a power offer differ there): when a later section cannot be finished, the
-    // search goes back to the section before and takes its next arrival (a few times at most).
-    struct Decision {
-        size_t runSize = 0;
-        Pad pad;
-        std::vector<Arrival> options;
-        size_t used = 0;
+    // The best whole run of this search: the seed run, then each faster one found (verified from
+    // the load before it is kept).
+    std::vector<InputFrame> best;
+    float bestClock = -1.0f;
+    if (guide.finishes()) best = opt.seedRun, bestClock = guide.clock;
+    bool bestJoined = false;
+    size_t bestJoinAt = 0, bestJoinSeedAt = 0;
+    auto offer = [&](std::vector<InputFrame> run, float clock, bool joined, size_t joinAt, size_t joinSeedAt, const std::string& how, const std::string& source) {
+        std::lock_guard<std::mutex> offerLock(offerMutex);  // (the portfolio's strategies offer from their threads)
+        if (bestClock >= 0.0f && clock + 1e-6f >= bestClock) return;
+        if (opt.portfolio) opt.portfolio->credit(arm, bestClock, clock);
+        char line[200];
+        if (bestClock >= 0.0f) std::snprintf(line, sizeof line, "%s : %.3f s -> %.3f s", how.c_str(), static_cast<double>(bestClock), static_cast<double>(clock));
+        else std::snprintf(line, sizeof line, "%s : %.3f s", how.c_str(), static_cast<double>(clock));
+        log(line);
+        best = std::move(run);
+        bestClock = clock;
+        bestJoined = joined;
+        bestJoinAt = joinAt;
+        bestJoinSeedAt = joinSeedAt;
+        if (opt.onBest) opt.onBest(clock);
+        out.bestSource = source;
+        if (opt.onRun) opt.onRun(best, clock, source);
     };
-    std::vector<Decision> taken;
-    std::vector<InputFrame> run;
-    bool onSeed = !opt.seedRun.empty();
-    const size_t sections = course.sectionEnds().size();
-    int backtracks = 0;
+
+    // What the planners did (all threads), in the outcome and the log.
+    auto plannerReport = [&] {
+        if (!opt.planner) return;
+        PlanStats t;
+        for (auto& w : workers) t.add(w->planStats());
+        t.wins = out.planner.wins;
+        out.planner = t;
+        char line[400];
+        auto err = [&](int b) { return t.errN[b] > 0 ? t.err[b] / static_cast<double>(t.errN[b]) : 0.0; };
+        std::snprintf(line, sizeof line,
+                      "Planificateur : %lld plans (%lld arrivent dans la copie), %lld gardés par les faisceaux, %lld arrivés dans le vrai jeu, %lld sections gagnées ; "
+                      "écart copie / jeu %.1f px (<= 32 pas), %.1f px (<= 128), %.1f px (plus) ; %.1f s de planification, %lld pas simulés",
+                      static_cast<long long>(t.proposals), static_cast<long long>(t.arriving), static_cast<long long>(t.kept), static_cast<long long>(t.arrivals),
+                      static_cast<long long>(t.wins), err(0), err(1), err(2), t.ms / 1000.0, static_cast<long long>(t.simSteps));
+        log(line);
+    };
+    std::vector<InputFrame> run;  // the run so far
+    bool splicing = false;        // the splice under way (its gains are the splice's)
     auto adopt = [&](const Arrival& a) {
+        if (a.source == "planner") ++out.planner.wins;  // a section won by a plan
         std::vector<std::thread> pool;
         for (auto& w : workers) pool.emplace_back([&w, &a] { w->advanceBase(a.frames, a.pad); });
         for (auto& t : pool) t.join();
         run.insert(run.end(), a.frames.begin(), a.frames.end());
     };
-    for (size_t s = 0; s < sections;) {
-        const auto now = Clock::now();
-        if (now >= deadline || sh.stopped()) {
-            out.why = sh.stopped() ? "recherche arrêtée avant la fin du niveau" : "budget épuisé avant la fin du niveau";
-            break;
+    // Every arena must be the same world now (determinism, checked as the search goes).
+    auto sameWorlds = [&] {
+        const uint64_t d0 = workers[0]->baseDigest();
+        for (auto& w : workers)
+            if (w->baseDigest() != d0) return false;
+        return true;
+    };
+    // The waits of the phase leads (guidesFor), by section, source and the run's length so far.
+    std::map<std::tuple<size_t, size_t, size_t>, Worker::PhaseWait> phaseWaits;
+    // The run so far is the best run's own beginning.
+    auto onGuide = [&] { return !guide.frames.empty() && run.size() <= guide.frames.size() && std::equal(run.begin(), run.end(), guide.frames.begin()); };
+    // The best run's frames for section `s`, from the base: while the run is the best run's own,
+    // its next frames; else its frames of that section by the section's index, and from where
+    // Nova was nearest to her state now (realigned).
+    auto guidesFor = [&](size_t s) {
+        std::vector<Lead> gs;
+        const uint32_t held = workers[0]->basePad().held;
+        const Worker::Nova n = workers[0]->baseNova();
+        for (size_t k = 0; k < nsrc; ++k) {
+            const std::string name = k == 0 ? "best" : "guide";
+            const Guide& g = sourceOf(k);
+            const size_t from = g.sectionStart(s);
+            if (g.frames.empty() || from == Guide::kNone || from >= g.exitAt) continue;
+            const size_t to = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+            if (k == 0 && onGuide()) {
+                if (run.size() < to)
+                    gs.push_back({name, std::vector<InputFrame>(g.frames.begin() + static_cast<std::ptrdiff_t>(run.size()), g.frames.begin() + static_cast<std::ptrdiff_t>(to))});
+                continue;
+            }
+            gs.push_back({name, seamed(g.frames, from, to - from, held)});
+            for (size_t j : g.nearest(n.feet, n.vel, from, 120, 1))
+                if (j != from) gs.push_back({name, seamed(g.frames, j, to - from, held)});
         }
-        // An even share of what is left (the refinement keeps a sixth of the budget), up to three
-        // shares when the section needs them: a section ends as soon as it has its arrivals.
-        const auto reserve = (deadline - start) / 6;
-        const auto left = deadline - now > reserve * 2 ? deadline - now - reserve : (deadline - now) / 2;
-        const auto share = left / static_cast<int64_t>(sections - s);
-        std::vector<InputFrame> seedFrames;
-        if (onSeed && s < seedEnds.size()) {
-            const size_t from = run.size(), to = seedEnds[s];
-            if (to > from) seedFrames.assign(opt.seedRun.begin() + static_cast<std::ptrdiff_t>(from), opt.seedRun.begin() + static_cast<std::ptrdiff_t>(to));
+        // Phase leads (docs/TAS.md « Le réalignement de phase »): when the run is EARLY on a source
+        // here, that source's frames for the section after the wait that takes them furthest along
+        // its path (what moves with time back in phase; a wait for the energy, a door...).
+        if (opt.phaseLeads) {
+            const float now = workers[0]->baseProgress().clock;
+            for (size_t k = 0; k < nsrc; ++k) {
+                const Guide& g = sourceOf(k);
+                const size_t from = g.sectionStart(s);
+                if (g.frames.empty() || !g.finishes() || from == Guide::kNone || from >= g.exitAt) continue;
+                const float lead = g.clockAt[std::min(from, g.clockAt.size() - 1)] - now;
+                if (lead < SearchOutcome::kEarlyLead) continue;
+                const auto key = std::make_tuple(s, k, run.size());
+                auto it = phaseWaits.find(key);
+                if (it == phaseWaits.end()) {
+                    const int maxK = static_cast<int>(std::lround(std::min(8.0f, lead + 0.5f) * 120.0f));
+                    const Worker::PhaseWait w = workers[0]->phaseWait(g, s, course.sectionEnds()[s], maxK, 4);
+                    it = phaseWaits.emplace(key, w).first;
+                    std::string what;
+                    char b[120];
+                    if (w.arrive >= 0) {
+                        std::snprintf(b, sizeof b, "arrivée après %.3f s d'attente (%.3f s au chrono)", w.arrive / 120.0, static_cast<double>(w.arrival));
+                        what = b;
+                    }
+                    if (w.reach >= 0) {
+                        std::snprintf(b, sizeof b, "%sle plus loin sur son chemin après %.3f s d'attente", what.empty() ? "" : " ; ", w.reach / 120.0);
+                        what += b;
+                    }
+                    char line[300];
+                    std::snprintf(line, sizeof line, "    phase : la course en avance de %.2f s sur %s ; ses images de la section %zu : %s", static_cast<double>(lead),
+                                  k == 0 ? "la meilleure course" : "un guide", s + 1, what.empty() ? "aucune attente ne les remet en phase" : what.c_str());
+                    log(line);
+                }
+                const size_t to = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+                // (an arrival after a wait that ate the lead is not worth a place in the beam)
+                const float srcEnd = g.clockAt[std::min(s < g.ends.size() ? g.ends[s] : g.exitAt, g.clockAt.size() - 1)];
+                const int arrive = it->second.arrival + SearchOutcome::kEarlyLead <= srcEnd ? it->second.arrive : -1;
+                for (const int w : {it->second.reach, arrive}) {
+                    if (w <= 0) continue;  // (none, or no wait: the source's frames as they are, offered above)
+                    std::vector<InputFrame> fr(static_cast<size_t>(w));
+                    fr.front().released = held;
+                    const std::vector<InputFrame> rest = seamed(g.frames, from, to - from, 0);
+                    fr.insert(fr.end(), rest.begin(), rest.end());
+                    gs.push_back({"phase", std::move(fr)});
+                }
+            }
         }
-        if (opt.onStage) opt.onStage(static_cast<int>(s) + 1, static_cast<int>(sections));
+        return gs;
+    };
+    // A section searched by every thread from the base: the arrivals, each way once.
+    // A route hint is a start, never a ceiling: once the best run reaches the section's end no later
+    // than the route did (its point nearest to the section's checkpoint), the section is searched
+    // without it (its pull stops, the search goes on beyond the player's way).
+    auto routeWanted = [&](size_t s) {
+        const auto& hints = opt.routeHints;
+        if (hints.empty()) return false;
+        if (!guide.finishes() || s >= guide.ends.size()) return true;
+        const Vec2 at = course.waypoints()[static_cast<size_t>(course.sectionEnds()[s])].feet;
+        size_t h = 0;
+        for (size_t k = 1; k < hints.size(); ++k)
+            if ((hints[k].feet - at).lengthSq() < (hints[h].feet - at).lengthSq()) h = k;
+        return guide.clockAt[std::min(guide.ends[s], guide.clockAt.size() - 1)] > hints[h].clock;
+    };
+    auto searchSection = [&](size_t s, Clock::time_point until, const Effort& effort, const std::vector<Lead>& gs) {
+        Effort e = effort;
+        e.route = routeWanted(s);
         std::vector<std::vector<Arrival>> found(workers.size());
-        if (static_cast<int>(s) < opt.keepSeedSections && !seedFrames.empty()) {
-            // The seed run's section taken as it is (--keep-seed-sections).
-            found[0].push_back(workers[0]->arrivalOf(seedFrames));
-        } else {
-            const auto until = std::min(deadline, now + share * 3);
+        {
             std::vector<std::thread> pool;
-            for (size_t i = 0; i < workers.size(); ++i)
-                pool.emplace_back([&, i] { found[i] = workers[i]->section(course.sectionEnds()[s], until, 120 * 600, seedFrames); });
+            for (size_t i = 0; i < workers.size(); ++i) pool.emplace_back([&, i] { found[i] = workers[i]->section(course.sectionEnds()[s], until, 120 * 600, gs, e); });
             for (auto& t : pool) t.join();
         }
         std::vector<Arrival> all;
         for (auto& f : found)
-            for (Arrival& a : f) all.push_back(std::move(a));
-        std::stable_sort(all.begin(), all.end(), [](const Arrival& a, const Arrival& b) { return a.cost < b.cost; });
-        Decision d;
-        d.runSize = run.size();
-        d.pad = workers[0]->basePad();
-        for (Arrival& a : all) {
-            bool seen = false;
-            for (const Arrival& o : d.options) seen = seen || o.p.powerSet == a.p.powerSet;
-            if (!seen && d.options.size() < 3) d.options.push_back(std::move(a));
-        }
-        if (d.options.empty()) {
-            // Back to the section before, with its next arrival.
-            if (s > 0 && backtracks < 3 && taken.back().used + 1 < taken.back().options.size() && Clock::now() < deadline && !sh.stopped()) {
-                ++backtracks;
-                --s;
-                Decision& back = taken.back();
-                ++back.used;
-                run.resize(back.runSize);
-                {
-                    std::vector<std::thread> pool;
-                    for (auto& w : workers) pool.emplace_back([&w, &run, &back] { w->resetBase(run, back.pad); });
-                    for (auto& t : pool) t.join();
-                }
-                onSeed = false;
-                adopt(back.options[back.used]);
-                log("Retour à la section " + std::to_string(s + 1) + " : son arrivée suivante (autres pouvoirs)");
-                ++s;
-                continue;
+            for (Arrival& a : f) {
+                bool seen = false;
+                for (const Arrival& o : all) seen = seen || (o.frames.size() == a.frames.size() && o.frames == a.frames);
+                if (!seen) all.push_back(std::move(a));
             }
-            out.why = "section " + std::to_string(s + 1) + " non terminée dans le budget";
-            break;
+        std::stable_sort(all.begin(), all.end(), [](const Arrival& a, const Arrival& b) { return a.cost < b.cost; });
+        return all;
+    };
+    // The arrivals of section `s` ranked by the finish they give: the first ones (and the
+    // guides') played on with the rest of the best run (measured), the others estimated.
+    auto rank = [&](size_t s, std::vector<Arrival> all) {
+        std::vector<Ranked> r(all.size());
+        for (size_t i = 0; i < all.size(); ++i) r[i].a = std::move(all[i]);
+        // The sources an arrival can re-join here: the best run and every guide that finishes.
+        std::vector<size_t> joinable;
+        for (size_t k = 0; k < nsrc; ++k)
+            if (sourceOf(k).finishes() && s < sourceOf(k).ends.size()) joinable.push_back(k);
+        const bool canJoin = !joinable.empty();
+        std::vector<size_t> tried;
+        const size_t first = std::max<size_t>(8, 2 * workers.size());
+        for (size_t i = 0; i < r.size(); ++i)
+            if (r[i].a.p.finished || (canJoin && (i < first || r[i].a.guide >= 0))) tried.push_back(i);
+        float refClock = bestClock;
+        for (size_t k : joinable)
+            if (refClock < 0.0f || sourceOf(k).clock < refClock) refClock = sourceOf(k).clock;
+        const float limit = refClock + 5.0f;
+        {
+            std::vector<std::thread> pool;
+            for (size_t wi = 0; wi < workers.size(); ++wi)
+                pool.emplace_back([&, wi] {
+                    std::vector<AttemptNote> notes;
+                    std::vector<Crossing> crossings;
+                    const bool noting = static_cast<bool>(opt.onAttempts);
+                    for (size_t k = wi; k < tried.size(); k += workers.size()) {
+                        Ranked& x = r[tried[k]];
+                        // Into each source: the fastest finish (an arrival at the exit is its own).
+                        for (size_t src : joinable) {
+                            JoinResult j = workers[wi]->rejoin(sourceOf(src), s, x.a, x.j.measured ? std::min(limit, x.j.finish) : limit,
+                                                               noting ? &notes : nullptr, noting ? &crossings : nullptr);
+                            j.src = src;
+                            j.tried += x.j.tried;
+                            if (j.measured && (!x.j.measured || j.finish < x.j.finish)) x.j = j;
+                            else x.j.tried = j.tried;
+                            if (x.a.p.finished) break;
+                        }
+                    }
+                    sh.attempts(notes, crossings);
+                });
+            for (auto& t : pool) t.join();
         }
-        if (onSeed && (seedFrames.empty() || d.options.front().frames != seedFrames)) onSeed = false;
-        taken.push_back(std::move(d));
-        const Arrival& winner = taken.back().options.front();
-        adopt(winner);
-        // Every arena must be the same world now (determinism, checked as the search goes).
-        const uint64_t d0 = workers[0]->baseDigest();
-        for (auto& w : workers)
-            if (w->baseDigest() != d0) {
+        float rest = 0.0f;
+        for (size_t k : joinable) {
+            const Guide& g = sourceOf(k);
+            const float left = g.clock - g.clockAt[std::min(g.ends[s], g.clockAt.size() - 1)];
+            if (k == joinable.front() || left < rest) rest = left;
+        }
+        for (Ranked& x : r) {
+            if (x.j.measured) continue;
+            // As if the best run's rest followed from here (a heart lost counted as time), with a
+            // margin: an arrival that cannot re-join is a guess. Without a best run: by cost.
+            const float hurt = (x.a.cost - static_cast<float>(x.a.frames.size())) / 120.0f;
+            x.j.finish = canJoin ? x.a.p.clock + rest + hurt + 0.25f : 1.0e6f + x.a.cost;
+        }
+        // The early arrivals that did not re-join (out of phase for the best run's next sections):
+        // kept for the phase realignment, the earliest two per section (docs/TAS.md).
+        if (guide.finishes() && s < guide.ends.size() && s + 1 < sections) {
+            const float split = guide.clockAt[std::min(guide.ends[s], guide.clockAt.size() - 1)];
+            for (const Ranked& x : r) {
+                if (x.j.measured || x.a.p.finished || x.a.p.clock + SearchOutcome::kEarlyLead > split) continue;
+                std::vector<SearchOutcome::EarlyArrival*> same;
+                for (auto& e : out.early)
+                    if (e.sections == s + 1) same.push_back(&e);
+                bool dominated = false;
+                for (const auto* e : same) dominated = dominated || (e->clock <= x.a.p.clock + 1e-4f && e->health >= x.a.p.health);
+                if (dominated) continue;
+                SearchOutcome::EarlyArrival e;
+                e.run = run;
+                e.run.insert(e.run.end(), x.a.frames.begin(), x.a.frames.end());
+                e.sections = s + 1;
+                e.clock = x.a.p.clock;
+                e.lead = split - x.a.p.clock;
+                e.health = x.a.p.health;
+                if (same.size() < 2) {
+                    out.early.push_back(std::move(e));
+                } else {
+                    auto* worst = *std::max_element(same.begin(), same.end(), [](const auto* a, const auto* b) { return a->clock < b->clock; });
+                    if (worst->clock > e.clock) *worst = std::move(e);
+                }
+            }
+        }
+        // Measured first (by their finish): an arrival that cannot re-join often got there by leaving
+        // something the rest needs behind (a power, a lever); then the others, by their estimate.
+        std::stable_sort(r.begin(), r.end(), [](const Ranked& a, const Ranked& b) {
+            return a.j.measured != b.j.measured ? a.j.measured : a.finish() < b.finish();
+        });
+        // The fastest measured finish: a whole run, verified from the load, kept when faster.
+        const Ranked* top = nullptr;
+        for (const Ranked& x : r)
+            if (x.j.measured) {
+                ++out.rejoins;
+                if (!top || x.j.finish < top->j.finish) top = &x;
+            }
+        if (top && (bestClock < 0.0f || top->j.finish + 1e-6f < bestClock)) {
+            std::vector<InputFrame> whole = run;
+            whole.insert(whole.end(), top->a.frames.begin(), top->a.frames.end());
+            const size_t joinAt = whole.size();
+            const std::vector<InputFrame> tail = seamed(sourceOf(top->j.src).frames, top->j.seedAt, top->j.played, top->a.pad.held);
+            whole.insert(whole.end(), tail.begin(), tail.end());
+            const float c = workers[0]->evaluate(whole, 0, workers[0]->origin(), 0, static_cast<uint32_t>(whole.size()));
+            const std::string into = top->j.src == 0 ? std::string() : " (dans le guide " + std::to_string(top->j.src) + ")";
+            if (c >= 0.0f)
+                offer(std::move(whole), c, top->j.played > 0 && top->j.src == 0, joinAt, top->j.seedAt, "Raccord après la section " + std::to_string(s + 1) + into,
+                      splicing ? std::string("splice") : top->a.source == "best" ? std::string("beam") : top->a.source);
+            else log("Raccord après la section " + std::to_string(s + 1) + " non reproduit depuis le départ : ignoré");
+        }
+        return r;
+    };
+    auto sectionLine = [&](size_t s, const Arrival& w, const Ranked* how) {
+        char line[260];
+        std::snprintf(line, sizeof line, "Section %zu/%zu : %.3f s au chrono (%zu pas), santé %d, fin %s %.3f s, %lld essais", s + 1, sections,
+                      static_cast<double>(w.p.clock), run.size(), w.p.health, how && how->j.measured ? "mesurée" : "estimée",
+                      static_cast<double>(how ? how->finish() : 0.0f), static_cast<long long>(sh.explored.load()));
+        log(line);
+    };
+
+    // The splice (docs/TAS.md « Les guides »): from the load, section by section, every source's
+    // way through the section (the best run's and each guide's, by the section's index and
+    // realigned on Nova's position) is played from where the splice is; the arrivals are ranked by
+    // the finish they give (re-joined into every source, measured) and the best one is taken — a
+    // sum of the best segments that really plays. A faster whole run is offered at once (played
+    // from the load, then verified like any run); the round then builds on the best run so far.
+    auto resetAll = [&](const std::vector<InputFrame>& frames, Pad pad) {
+        std::vector<std::thread> pool;
+        for (auto& w : workers) pool.emplace_back([&w, &frames, pad] { w->resetBase(frames, pad); });
+        for (auto& t : pool) t.join();
+    };
+    if (opt.splice && !extra.empty() && sections > 0 && opt.startRun.empty() && !sh.stopped() && Clock::now() < deadline) {
+        splicing = true;
+        log("Assemblage : la meilleure course et " + std::to_string(extra.size()) + " guide(s), section par section");
+        run.clear();
+        resetAll(run, Pad{});
+        for (size_t s = 0; s < sections && !sh.stopped() && Clock::now() < deadline; ++s) {
+            if (opt.onStage) opt.onStage(static_cast<int>(s) + 1, static_cast<int>(sections));
+            const uint32_t held = workers[0]->basePad().held;
+            const Worker::Nova n = workers[0]->baseNova();
+            std::vector<std::pair<size_t, std::vector<InputFrame>>> ways;  // (source, its frames from the base)
+            for (size_t k = 0; k < nsrc; ++k) {
+                const Guide& g = sourceOf(k);
+                const size_t from = g.sectionStart(s);
+                if (g.frames.empty() || from == Guide::kNone || from >= g.exitAt) continue;
+                const size_t to = std::min(g.frames.size(), (s < g.ends.size() ? g.ends[s] : g.exitAt) + 240);
+                std::vector<size_t> starts = {from};
+                if (s > 0)
+                    for (size_t j : g.nearest(n.feet, n.vel, from, 120, 2))
+                        if (std::find(starts.begin(), starts.end(), j) == starts.end()) starts.push_back(j);
+                for (size_t j : starts)
+                    if (j < to) ways.emplace_back(k, seamed(g.frames, j, to - j, held));
+            }
+            std::vector<std::optional<Arrival>> got(ways.size());
+            {
+                std::vector<std::thread> pool;
+                for (size_t wi = 0; wi < workers.size(); ++wi)
+                    pool.emplace_back([&, wi] {
+                        for (size_t k = wi; k < ways.size(); k += workers.size()) {
+                            got[k] = workers[wi]->playTo(ways[k].second, course.sectionEnds()[s]);
+                            sh.count();
+                        }
+                    });
+                for (auto& t : pool) t.join();
+            }
+            std::vector<Arrival> all;
+            for (size_t k = 0; k < got.size(); ++k)
+                if (got[k]) {
+                    got[k]->guide = static_cast<int>(k);
+                    got[k]->source = ways[k].first == 0 ? "best" : "guide";
+                    all.push_back(std::move(*got[k]));
+                }
+            out.spliceWays += static_cast<int>(ways.size());
+            out.spliceArrivals += static_cast<int>(all.size());
+            if (all.empty()) {
+                log("Assemblage : aucune source ne passe la section " + std::to_string(s + 1) + " depuis là");
+                break;
+            }
+            std::vector<Ranked> ranked = rank(s, std::move(all));
+            for (const Ranked& x : ranked) out.spliceJoined += x.j.measured ? 1 : 0;
+            const Ranked top = ranked.front();
+            const size_t src = ways[static_cast<size_t>(top.a.guide)].first;
+            adopt(top.a);
+            if (!sameWorlds()) {
                 out.why = "les mondes des fils de la recherche divergent (non-déterminisme)";
                 return out;
             }
+            if (src != 0) ++out.splicedSections;
+            const std::string from = src == 0 ? std::string("la meilleure course") : "le guide " + std::to_string(src);
+            char line[240];
+            std::snprintf(line, sizeof line, "Assemblage, section %zu/%zu : %s, %.3f s au chrono, fin %s %.3f s", s + 1, sections, from.c_str(),
+                          static_cast<double>(top.a.p.clock), top.j.measured ? "mesurée" : "estimée", static_cast<double>(top.finish()));
+            log(line);
+            if (top.a.p.finished) break;
+        }
+        if (!run.empty()) {
+            const float c = workers[0]->evaluate(run, 0, workers[0]->origin(), 0, static_cast<uint32_t>(run.size()));
+            out.spliceClock = c;
+            if (c >= 0.0f) offer(run, c, false, 0, 0, "Assemblage des guides", "splice");
+        }
+        // The round builds on the best run so far (the splice's, or a re-join's, when faster).
+        if (bestClock >= 0.0f && (!guide.finishes() || bestClock + 1e-6f < guide.clock)) {
+            guide = workers[0]->study(best);
+            char line[160];
+            std::snprintf(line, sizeof line, "La recherche part de la meilleure course assemblée : %.3f s", static_cast<double>(guide.clock));
+            log(line);
+        }
+        run.clear();
+        resetAll(run, Pad{});
+        splicing = false;
+    }
+    // Branch-and-bound (tools/tas/Bound.h): with a portfolio and a best run, the beam drops the
+    // states that cannot reach their section's end before the best run's split (the best run the
+    // round builds on: after the splice, when it made a faster one).
+    std::unique_ptr<TimeBound> timeBound;
+    if (opt.portfolio && opt.portfolio->branchAndBound && guide.finishes()) {
+        timeBound = std::make_unique<TimeBound>(course, workers[0]->world().world());
+        float vx = 0.0f, v = 0.0f;
+        for (const Vec2& u : guide.vel) vx = std::max(vx, std::abs(u.x)), v = std::max(v, u.length());
+        timeBound->observe(vx, v);
+        timeBound->extra = opt.portfolio->lowerBound;
+        sh.pruner.bound = timeBound.get();
+        sh.pruner.slack = opt.portfolio->boundSlack;
+        for (size_t s = 0; s < guide.ends.size(); ++s) {
+            sh.pruner.split.push_back(guide.clockAt[std::min(guide.ends[s], guide.clockAt.size() - 1)]);
+            sh.pruner.startSplit.push_back(guide.clockAt[std::min(guide.sectionStart(s), guide.clockAt.size() - 1)]);
+        }
+    }
+
+    const Effort normal{opt.beam, 10, 16, 4};
+    const bool windowed = opt.windowFirst > 0 && guide.finishes() && sections > 0 && guide.ends.size() >= sections;
+    size_t kept = 0;
+    // The portfolio (tools/tas/Portfolio.h): a slice of a strategy other than the beam, from the
+    // best run, within the round's window (`armFirst`..`armLast`, 0-based; -1: to the exit).
+    int armFirst = 0, armLast = -1, slices = 0;
+    auto armSlice = [&](int a, Clock::time_point until, const std::function<void()>& refineSlice) {
+        Portfolio& P = *opt.portfolio;
+        const float before = bestClock;
+        const auto t0 = Clock::now();
+        arm = P.id(a);
+        if (arm == Portfolio::kRefine) {
+            refineSlice();
+        } else {
+            Slice sl;
+            sl.best = best;
+            sl.bestClock = bestClock;
+            sl.keep = kept;
+            sl.firstSection = armFirst;
+            sl.lastSection = armLast;
+            sl.until = until;
+            sl.threads = threads;
+            sl.seed = opt.seed * 131u + static_cast<uint64_t>(++slices) * 7919u;
+            sl.pruner = sh.pruner.active() ? &sh.pruner : nullptr;
+            sl.stopped = [&] { return sh.stopped(); };
+            sl.count = [&](int64_t n) {
+                sh.explored.fetch_add(n, std::memory_order_relaxed);
+                if (opt.exploredTotal) opt.exploredTotal->fetch_add(n, std::memory_order_relaxed);
+            };
+            sl.log = log;
+            sl.offer = [&](const std::vector<InputFrame>& r, float c, const std::string& how) { offer(r, c, false, 0, 0, how, arm); };  // (the arm: its source)
+            P.runSlice(a, sl);
+        }
+        arm = Portfolio::kBeam;
+        const double secs = std::chrono::duration<double>(Clock::now() - t0).count();
+        P.record(a, secs * threads, before, bestClock);
         char line[200];
-        std::snprintf(line, sizeof line, "Section %zu/%zu : %.3f s au chrono (%zu pas), santé %d, %lld essais", s + 1, sections,
-                      static_cast<double>(winner.p.clock), run.size(), winner.p.health, static_cast<long long>(sh.explored.load()));
+        std::snprintf(line, sizeof line, "Tranche %s (%.0f s) : meilleure course %.3f s%s", strategyLabel(P.id(a)).c_str(), secs, static_cast<double>(bestClock),
+                      bestClock + 1e-6f < before ? " (améliorée)" : "");
         log(line);
-        if (opt.onSection) opt.onSection(run);
-        if (winner.p.finished) break;
-        ++s;
+    };
+    if (!windowed) {
+        // The whole level, section by section. Each section keeps its best arrival for every set of
+        // powers carried (the answers to a power offer differ there): when a later section cannot
+        // be finished, the search goes back to the section before and takes its next arrival (a
+        // few times at most).
+        struct Decision {
+            size_t runSize = 0;
+            Pad pad;
+            std::vector<Arrival> options;
+            size_t used = 0;
+        };
+        std::vector<Decision> taken;
+        int backtracks = 0;
+        size_t s0 = 0;
+        if (!opt.startRun.empty()) {
+            // A run already under way: its frames kept, the search goes on from the section they end in.
+            run = opt.startRun;
+            Pad pad;
+            pad.held = run.back().held;
+            std::vector<std::thread> pool;
+            for (auto& w : workers) pool.emplace_back([&w, &run, pad] { w->resetBase(run, pad); });
+            for (auto& t : pool) t.join();
+            s0 = static_cast<size_t>(sh.sectionOf(workers[0]->baseProgress().waypoint));
+        }
+        for (size_t s = s0; s < sections;) {
+            const auto now = Clock::now();
+            if (now >= deadline || sh.stopped()) {
+                out.why = sh.stopped() ? "recherche arrêtée avant la fin du niveau" : "budget épuisé avant la fin du niveau";
+                break;
+            }
+            // An even share of what is left (the refinement keeps a sixth of the budget), up to three
+            // shares when the section needs them: a section ends as soon as it has its arrivals.
+            const auto reserve = (deadline - start) / 6;
+            const auto left = deadline - now > reserve * 2 ? deadline - now - reserve : (deadline - now) / 2;
+            const auto share = left / static_cast<int64_t>(sections - s);
+            if (opt.onStage) opt.onStage(static_cast<int>(s) + 1, static_cast<int>(sections));
+            std::vector<Ranked> ranked;
+            if (static_cast<int>(s) < opt.keepSeedSections && s < guide.ends.size() && guide.ends[s] > run.size() && onGuide()) {
+                // The seed run's section taken as it is (--keep-seed-sections).
+                Ranked k;
+                k.a = workers[0]->arrivalOf(std::vector<InputFrame>(guide.frames.begin() + static_cast<std::ptrdiff_t>(run.size()),
+                                                                    guide.frames.begin() + static_cast<std::ptrdiff_t>(guide.ends[s])));
+                ranked.push_back(std::move(k));
+            } else {
+                const bool following = onGuide();
+                const auto gs = guidesFor(s);
+                std::vector<Arrival> all = searchSection(s, std::min(deadline, now + share * 3), normal, gs);
+                if (!gs.empty() && !following) {
+                    ++out.guidedSections;
+                    if (std::any_of(all.begin(), all.end(), [](const Arrival& a) { return a.guide >= 0; })) ++out.guideArrivals;
+                }
+                ranked = rank(s, std::move(all));
+            }
+            Decision d;
+            d.runSize = run.size();
+            d.pad = workers[0]->basePad();
+            const Ranked* how = ranked.empty() ? nullptr : &ranked.front();
+            float howFinish = how ? how->finish() : 0.0f;
+            bool howMeasured = how && how->j.measured;
+            for (Ranked& x : ranked) {
+                bool seen = false;
+                for (const Arrival& o : d.options) seen = seen || o.p.powerSet == x.a.p.powerSet;
+                if (!seen && d.options.size() < 3) d.options.push_back(std::move(x.a));
+            }
+            if (d.options.empty()) {
+                // Back to the section before, with its next arrival.
+                if (s > s0 && !taken.empty() && backtracks < 3 && taken.back().used + 1 < taken.back().options.size() && Clock::now() < deadline && !sh.stopped()) {
+                    ++backtracks;
+                    --s;
+                    Decision& back = taken.back();
+                    ++back.used;
+                    run.resize(back.runSize);
+                    {
+                        std::vector<std::thread> pool;
+                        for (auto& w : workers) pool.emplace_back([&w, &run, &back] { w->resetBase(run, back.pad); });
+                        for (auto& t : pool) t.join();
+                    }
+                    adopt(back.options[back.used]);
+                    log("Retour à la section " + std::to_string(s + 1) + " : son arrivée suivante (autres pouvoirs)");
+                    ++s;
+                    continue;
+                }
+                out.why = "section " + std::to_string(s + 1) + " non terminée dans le budget";
+                break;
+            }
+            taken.push_back(std::move(d));
+            const Arrival& winner = taken.back().options.front();
+            adopt(winner);
+            if (!sameWorlds()) {
+                out.why = "les mondes des fils de la recherche divergent (non-déterminisme)";
+                return out;
+            }
+            Ranked shown;
+            shown.j.measured = howMeasured;
+            shown.j.finish = howFinish;
+            sectionLine(s, winner, how ? &shown : nullptr);
+            if (opt.onSection) opt.onSection(run);
+            if (winner.p.finished) break;
+            ++s;
+        }
+        // The run found, played again from the load.
+        if (out.why.empty() && !run.empty()) {
+            const float c = workers[0]->evaluate(run, 0, workers[0]->origin(), 0, static_cast<uint32_t>(run.size()));
+            if (c >= 0.0f) offer(run, c, false, 0, 0, "Course entière trouvée", "beam");
+            else if (bestClock < 0.0f) out.why = "la course trouvée ne termine pas la catégorie";
+        }
+    } else {
+        // A window round: the seed run's sections before the window kept exactly, the window
+        // searched again and again (deeper each pass), the run re-joining the seed run after it.
+        const size_t wa = static_cast<size_t>(std::clamp(opt.windowFirst - 1, 0, static_cast<int>(sections) - 1));
+        const size_t wb = static_cast<size_t>(std::clamp(std::max(opt.windowLast, opt.windowFirst) - 1, static_cast<int>(wa), static_cast<int>(sections) - 1));
+        out.windowFirst = static_cast<int>(wa) + 1;
+        out.windowLast = static_cast<int>(wb) + 1;
+        kept = guide.sectionStart(wa);
+        out.keptFrames = kept;
+        run.assign(guide.frames.begin(), guide.frames.begin() + static_cast<std::ptrdiff_t>(kept));
+        {
+            Pad pad;
+            pad.held = run.empty() ? 0 : run.back().held;
+            std::vector<std::thread> pool;
+            for (auto& w : workers)
+                pool.emplace_back([&w, &run, pad] {
+                    w->resetBase(run, pad);
+                    w->markStart();
+                });
+            for (auto& t : pool) t.join();
+        }
+        {
+            char line[200];
+            std::snprintf(line, sizeof line, "Tour en fenêtre : sections %zu à %zu ; la course de départ gardée avant (%zu pas), suivie après", wa + 1, wb + 1, kept);
+            log(line);
+        }
+        const auto windowEnd = opt.refine ? deadline - (deadline - start) / 6 : deadline;
+        armFirst = static_cast<int>(wa);
+        armLast = static_cast<int>(wb);
+        for (int pass = 0; Clock::now() < windowEnd && !sh.stopped(); ++pass) {
+            // The portfolio: this slice to the beam (one pass, at most three slices long) or to another strategy.
+            auto passEnd = windowEnd;
+            int beamArm = -1;
+            if (opt.portfolio) {
+                const int a = opt.portfolio->pick(true);
+                if (a < 0) break;
+                if (opt.portfolio->id(a) != Portfolio::kBeam) {
+                    armSlice(a, std::min(windowEnd, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 1000.0))), [] {});
+                    --pass;
+                    continue;
+                }
+                beamArm = a;
+                passEnd = std::min(windowEnd, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 3000.0)));
+            }
+            const auto passStarted = Clock::now();
+            if (pass > 0) {
+                std::vector<std::thread> pool;
+                for (auto& w : workers) pool.emplace_back([&w] { w->backToStart(); });
+                for (auto& t : pool) t.join();
+                run.resize(kept);
+            }
+            const int k = pass % 4;
+            const Effort e{opt.beam * (1 + k), 10 + 2 * k, 16, 4 + 2 * k};
+            const float before = bestClock;
+            std::string end = "interrompue";
+            for (size_t s = wa; s < sections; ++s) {
+                const auto now = Clock::now();
+                if (now >= passEnd || sh.stopped()) break;
+                if (opt.onStage) opt.onStage(static_cast<int>(s) + 1, static_cast<int>(sections));
+                const size_t left = s <= wb ? wb - s + 1 : sections - s;
+                const auto share = (passEnd - now) / static_cast<int64_t>(left);
+                const bool following = onGuide();
+                const auto gs = guidesFor(s);
+                std::vector<Arrival> all = searchSection(s, std::min(passEnd, now + share * 3), e, gs);
+                if (!gs.empty() && !following) {
+                    ++out.guidedSections;
+                    if (std::any_of(all.begin(), all.end(), [](const Arrival& a) { return a.guide >= 0; })) ++out.guideArrivals;
+                }
+                if (all.empty()) {
+                    end = "section " + std::to_string(s + 1) + " sans arrivée";
+                    break;
+                }
+                std::vector<Ranked> ranked = rank(s, std::move(all));
+                // After the window, a measured re-join ends the pass (its run was offered).
+                if (s >= wb && std::any_of(ranked.begin(), ranked.end(), [](const Ranked& x) { return x.j.measured; })) {
+                    end = "raccord après la section " + std::to_string(s + 1);
+                    break;
+                }
+                // The winner: the best finish; on odd passes inside a window of two sections, the
+                // earliest arrival (its gain may need the next section searched to show).
+                size_t pick = 0;
+                if (s < wb && pass % 2 == 1)
+                    for (size_t i = 1; i < ranked.size(); ++i)
+                        if (ranked[i].a.cost < ranked[pick].a.cost) pick = i;
+                const Ranked chosen = ranked[pick];
+                adopt(chosen.a);
+                if (!sameWorlds()) {
+                    out.why = "les mondes des fils de la recherche divergent (non-déterminisme)";
+                    return out;
+                }
+                sectionLine(s, chosen.a, &chosen);
+                if (chosen.a.p.finished) {
+                    end = "sortie atteinte";
+                    break;
+                }
+            }
+            ++out.passes;
+            if (beamArm >= 0) opt.portfolio->record(beamArm, std::chrono::duration<double>(Clock::now() - passStarted).count() * threads, before, bestClock);
+            char line[200];
+            std::snprintf(line, sizeof line, "Passe %d (faisceau %d, coups %d) : %s ; meilleure course %.3f s%s", pass + 1, e.beam, e.moves, end.c_str(),
+                          static_cast<double>(bestClock), bestClock + 1e-6f < before ? " (améliorée)" : "");
+            log(line);
+        }
     }
-    // The run found (else the seed run, when it finishes the category), played again from the load.
-    std::vector<InputFrame> current;
-    float currentClock = -1.0f;
-    if (out.why.empty()) {
-        currentClock = workers[0]->evaluate(run, 0, workers[0]->origin(), 0, static_cast<uint32_t>(run.size()));
-        if (currentClock >= 0.0f) current = run;
-    }
-    if (seedClock >= 0.0f && (currentClock < 0.0f || seedClock < currentClock)) {
-        current = opt.seedRun;
-        currentClock = seedClock;
-    }
-    if (currentClock < 0.0f) {
+
+    plannerReport();
+    if (bestClock < 0.0f) {
         if (out.why.empty()) out.why = "la course trouvée ne termine pas la catégorie";
         out.explored = sh.explored.load();
         return out;
     }
     out.why.clear();
+    std::vector<InputFrame> current = best;
+    float currentClock = bestClock;
+    out.beforeRefinement = best;
+    out.rejoined = bestJoined;
+    out.rejoinAt = bestJoinAt;
+    out.rejoinSeedAt = bestJoinSeedAt;
     {
         char line[160];
         std::snprintf(line, sizeof line, "Course trouvée : %.3f s ; affinage jusqu'à la fin du budget", static_cast<double>(currentClock));
@@ -825,7 +1954,10 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
 
     // Refinement: a change of input (a press or a release of a key) moved by one or two steps, or
     // a press dropped; kept when the run still finishes the category earlier (or as early with
-    // fewer changes of input). The frames of a cinematic stay as they were.
+    // fewer changes of input). The frames of a cinematic stay as they were; in a window round,
+    // the frames before the window too.
+    const size_t minFrame = std::max<size_t>(1, kept);
+    auto refineUntil = deadline;  // (a slice of the portfolio ends sooner)
     std::mutex mutex;
     int currentChanges = changes(current);
     std::atomic<uint64_t> version{0};
@@ -857,10 +1989,10 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                 aw.step(mine[i]);
             }
         };
-        while (!sh.stopped() && Clock::now() < deadline) {
+        while (!sh.stopped() && Clock::now() < refineUntil) {
             if (mineVersion != version.load()) rebuild();
-            if (mine.size() < 4) break;
-            const size_t i = static_cast<size_t>(rng.rangeInt(1, static_cast<int>(mine.size()) - 1));
+            if (mine.size() < minFrame + 4) break;
+            const size_t i = static_cast<size_t>(rng.rangeInt(static_cast<int>(minFrame), static_cast<int>(mine.size()) - 1));
             const uint32_t changed = (mine[i].held ^ mine[i - 1].held);
             if (!changed) continue;
             uint32_t b = 0;
@@ -887,15 +2019,19 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
                 // The press dropped: the key is not held until its release.
                 for (hi = i; hi < mine.size() && (mine[hi].held & b); ++hi) edited[hi].held &= ~b;
             }
+            if (lo < minFrame) continue;  // the window round's kept sections stay exactly as they are
             bool frozen = false;
             for (size_t k = lo > 0 ? lo - 1 : 0; k <= std::min(mine.size() - 1, hi); ++k) frozen = frozen || cinematic[k];
             if (frozen) continue;
             repress(edited, lo, hi);
             const size_t rung = std::min(ladder.size() - 1, (lo > 0 ? lo - 1 : 0) / kRung);
             AttemptNote note;
-            const float clock = w.evaluate(edited, rung * kRung, *ladder[rung], 0, static_cast<uint32_t>(edited.size()), opt.onAttempts ? &note : nullptr);
+            std::vector<Crossing> crossings;
+            const bool noting = static_cast<bool>(opt.onAttempts);
+            const float clock = w.evaluate(edited, rung * kRung, *ladder[rung], 0, static_cast<uint32_t>(edited.size()), noting ? &note : nullptr,
+                                           noting ? &crossings : nullptr);
             sh.count();
-            if (opt.onAttempts) opt.onAttempts(&note, 1);
+            if (noting) opt.onAttempts(&note, 1, crossings.data(), crossings.size());
             if (clock < 0.0f) continue;
             const int ch = changes(edited);
             std::lock_guard<std::mutex> l(mutex);
@@ -917,21 +2053,90 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             }
             current = std::move(edited);
             if (clock + 1e-6f < currentClock && opt.onBest) opt.onBest(clock);
+            if (clock + 1e-6f < currentClock) out.bestSource = "polish";
+            if (clock + 1e-6f < currentClock && opt.onRun) opt.onRun(current, clock, "polish");
             currentClock = clock;
             currentChanges = changes(current);
             version.fetch_add(1);
         }
     };
-    {
+    if (opt.portfolio && guide.finishes()) {
+        // The rest of the round: slices to the strategies other than the beam (the refinement one of them).
+        auto refineSlice = [&] {
+            {
+                std::lock_guard<std::mutex> l(mutex);
+                if (bestClock + 1e-6f < currentClock) {
+                    current = best;
+                    currentClock = bestClock;
+                    currentChanges = changes(current);
+                    version.fetch_add(1);
+                }
+            }
+            std::vector<std::thread> pool;
+            for (int i = 0; i < threads; ++i) pool.emplace_back(refine, i);
+            for (auto& t : pool) t.join();
+            if (currentClock + 1e-6f < bestClock) offer(current, currentClock, false, 0, 0, "Affinage", "polish");
+        };
+        while (!sh.stopped() && Clock::now() < deadline) {
+            const int a = opt.portfolio->pick(false);
+            if (a < 0) break;
+            refineUntil = std::min(deadline, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 1000.0)));
+            armSlice(a, refineUntil, refineSlice);
+        }
+        if (bestClock + 1e-6f < currentClock) current = best, currentClock = bestClock;
+        log("Portefeuille : " + opt.portfolio->summary());
+    } else if (opt.refine) {
         std::vector<std::thread> pool;
         for (int i = 0; i < threads; ++i) pool.emplace_back(refine, i);
         for (auto& t : pool) t.join();
     }
+    out.routeKept = sh.routeKept.load();
     out.found = true;
     out.inputs = std::move(current);
     out.clock = currentClock;
     out.explored = sh.explored.load();
     return out;
+}
+
+// ------------------------------------------------------------------ for the tests
+
+Rejoin rejoinBest(const ContentDatabase& content, const LevelData& level, RunCategory category, const std::vector<InputFrame>& prefix,
+                  const std::vector<InputFrame>& best, int section) {
+    Rejoin out;
+    SearchOptions opt;
+    opt.category = category;
+    opt.threads = 1;
+    Course course(level, content, category);
+    Shared sh{content, level, course, opt};
+    Worker w(sh, 0);
+    const Guide g = w.study(best);
+    if (!g.finishes() || section < 0 || static_cast<size_t>(section) >= g.ends.size()) return out;
+    Pad pad;
+    pad.held = prefix.empty() ? 0 : prefix.back().held;
+    w.resetBase(prefix, pad);
+    Arrival a;
+    a.pad = pad;
+    a.p = w.baseProgress();
+    a.p.finished = false;
+    const JoinResult r = w.rejoin(g, static_cast<size_t>(section), a, g.clock + 5.0f, nullptr, nullptr);
+    out.tried = r.tried;
+    if (!r.measured) return out;
+    out.found = true;
+    out.clock = r.finish;
+    out.seedAt = r.seedAt;
+    out.inputs = prefix;
+    const std::vector<InputFrame> tail = seamed(g.frames, r.seedAt, r.played, pad.held);
+    out.inputs.insert(out.inputs.end(), tail.begin(), tail.end());
+    return out;
+}
+
+std::vector<size_t> sectionEndsOf(const ContentDatabase& content, const LevelData& level, RunCategory category, const std::vector<InputFrame>& run) {
+    SearchOptions opt;
+    opt.category = category;
+    Course course(level, content, category);
+    Shared sh{content, level, course, opt};
+    Worker w(sh, 0);
+    return w.study(run).ends;
 }
 
 }  // namespace cosmic::tas

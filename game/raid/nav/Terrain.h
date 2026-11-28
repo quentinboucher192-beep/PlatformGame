@@ -105,6 +105,9 @@ public:
     void advance(Run& r, Body& b, const BodySim& sim);
     /// The copy as the world is now (after each candidate).
     void end(Run& r);
+    /// The TAS planner (tools/tas/Planner.cpp, a tree of runs): the copy's crumbling platforms as `r` left them, to go on
+    /// with `r` after another run (the moving platforms are put where they are at each step by advance).
+    void resume(const Run& r);
     /// What hurts a body's box at step k of the lookahead (0: now).
     Harm harm(const Rect& box, int k) const;
     /// Where the moving platform of collider `id` will be at step k (its box), and whether it is one.

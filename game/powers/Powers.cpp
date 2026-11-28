@@ -22,7 +22,7 @@ void DashPower::onActivate(Player& p, GameWorld& w) {
     if (!p.grounded()) --airUses_;
     float speed = def_.param("speed", 430.0f);
     float duration = def_.param("duration", 0.16f);
-    p.beginDash(dir, speed, duration);
+    p.beginDash(w, dir, speed, duration);
     if (dir.x != 0.0f) p.facing = signf(dir.x);
     p.setInvulnerable(duration + kDashGuardSeconds);
     if (w.simulationVersion() >= kLongDashGuardSimulation) p.setBlowGuard(duration + kDashBlowGuardSeconds);  // 2.90
@@ -165,7 +165,7 @@ bool ImpulsePower::canActivate(const Player& p, const GameWorld& /*w*/) const { 
 void ImpulsePower::onActivate(Player& p, GameWorld& w) {
     if (!p.grounded()) --uses_;
     float v = def_.param("velocity", 380.0f);
-    p.launch({p.vel.x * 0.8f, -v}, false);
+    p.launch(w, {p.vel.x * 0.8f, -v}, false);
     float radius = def_.param("radius", 46.0f);
     Vec2 c = p.box.bottomCenter() + Vec2{0, -4};
     Rect area = Rect::fromCenter(c, {radius * 2, radius * 1.4f});

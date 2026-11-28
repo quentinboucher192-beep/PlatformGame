@@ -61,6 +61,9 @@ struct TasTrainingSettings {
     int threadsPerJob = 2;
     int parallel = 1;        // trainings at once
     int budgetMinutes = 30;  // per pair, then the next pair of the queue (0: until stopped)
+    /// The player's best run of this computer (its PB, with its replay) guides the training of
+    /// its pair (docs/TAS.md « Les guides »): on by default, switched off here.
+    bool guidePb = true;
 
     /// The cores of this computer shared between the trainings: cores / threads per training,
     /// at least 1, at most kMaxParallel.
@@ -144,6 +147,18 @@ public:
     /// The replay of the best valid run this computer has for the pair (its own trainings', the
     /// downloaded ones, the shipped one): the seed of a training. Empty: from scratch.
     std::function<fs::path(const TasPair&)> seedFor;
+    /// A run of a player that guides the training of a pair (cosmic_tas --guide): its replay file
+    /// (an exact replay of this version of the level), whose it is, its time.
+    struct GuideRun {
+        fs::path file;
+        std::string player;
+        int64_t timeMs = 0;
+        std::string replayId;
+    };
+    /// The guides of `pair` at `levelHash`: this computer's PB (TasTrainingSettings::guidePb), the
+    /// fastest attempt of the pair's category on this version of the level that kept its replay
+    /// and was not refused. Public for the screen (« Guides : votre PB … ») and the tests.
+    std::vector<GuideRun> guidesOf(const TasPair& pair, const std::string& levelHash) const;
     /// The level's ranked fingerprint as this game plays it (the version of the level the lease
     /// and the training are for, with kSimulationVersion). Empty: not trainable.
     std::function<std::string(const std::string& levelId)> hashFor;
@@ -162,11 +177,14 @@ public:
     /// (`curve`, at most kSendPoints) and its pending windows downsampled to kSendWindows
     /// (`attempts`); the ids of what was sent. Public for the tests.
     static constexpr size_t kSendPoints = 16, kSendWindows = 4;
+    /// The clouds' points a window sent carries (2.98): its finished attempts, each checkpoint's sample.
+    static constexpr size_t kSendFinishes = 96, kSendCheckpointSample = 8;
     struct CurveSend {
         Json points = Json::array(), windows = Json::array();
         std::vector<int64_t> pointIds, windowIds;
+        bool cloud = false;  // the windows carry their clouds' points
     };
-    static CurveSend curveSend(const TasCurveVersion& v, const std::string& leaseId, int64_t nowMs);
+    static CurveSend curveSend(const TasCurveVersion& v, const std::string& leaseId, int64_t nowMs, bool cloud = true);
     /// A new best time and the new windows of the progress file of a training, on the curve.
     void noteCurve(Job& j);
 
@@ -184,14 +202,16 @@ private:
     void curveAnswer(const TasPair& p, const std::string& hash, const std::string& lease, const CurveSend& sent, const ApiResult& r);
     /// The lease's pending points and windows (none once the server refused them).
     CurveSend pendingCurve(const TasPair& p, const std::string& hash, const std::string& lease) const;
-    /// A server that does not know the curve refused the call because of it (400): true, and the
-    /// curve is no longer sent (the call goes again without it: the lease is never lost for it).
-    bool curveRefused(const CurveSend& sent, const ApiResult& r);
+    /// A server that does not know the clouds (then the curve) refused the call because of them
+    /// (400): they are no longer sent (the call goes again without them: the lease is never lost
+    /// for them).
+    enum class Refusal { None, Cloud, Curve };
+    Refusal curveRefused(const CurveSend& sent, const ApiResult& r);
     void sendRelease(const TasPair& p, const std::string& lease, const std::string& hash, int64_t explored, bool withCurve);
 
     OnlineService& online_;
     TasCurveBook curves_;
-    bool curveUnsupported_ = false;
+    bool curveUnsupported_ = false, cloudUnsupported_ = false;
     TasTrainingSettings settings_;
     std::vector<std::unique_ptr<Job>> jobs_;
     std::deque<TasPair> queue_;
