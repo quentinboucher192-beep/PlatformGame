@@ -37719,6 +37719,12 @@
    ]
   },
   {
+   "fr": "la branche (une avance gardée, la suite entraînée)",
+   "where": [
+    "game/tas/TasCurve.cpp"
+   ]
+  },
+  {
    "fr": "La cache de la rive !",
    "where": [
     "data/levels/pyralis_02.json"

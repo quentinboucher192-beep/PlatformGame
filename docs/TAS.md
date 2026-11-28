@@ -564,6 +564,12 @@ phase est l'avance entière. Gagner là demande un autre passage des plateformes
 planificateur), plus tôt dans leur cycle — d'où les pistes de phase ci-dessous, qui donnent ce
 départ au faisceau.
 
+**Le CP2 « fixé » vers 30,1 s** des mesures d'avant ne l'était pas par le niveau : la meilleure
+course d'alors perd environ 3 s à monter vers x ≈ 1870 (de 13,4 s à 17,9 s ; « fresh » y monte en
+1,5 s) et 0,5 s arrêtée vers x ≈ 3665 ; mais toute arrivée au CP2 entre 22,6 s et 30,5 s environ
+passe les plateformes de la section 3 au même cycle et arrive au CP3 vers 39,5 s : la fin mesurée ne
+change pas, et le gagnant d'une section (classé par la fin mesurée) ne préférait jamais un CP2 plus tôt.
+
 **Le réalignement** (`tools/tas/Phase.h`, générique : rien n'y connaît un niveau) :
 
 * **Les éléments périodiques** du niveau (`periodicElements`) : une plateforme mobile (ni
@@ -664,7 +670,7 @@ le préfixe seulement), depuis **sa propre meilleure course** :
   commence par réaligner le préfixe sur toutes les sources (sa meilleure course, la meilleure course,
   les guides, les `--phase-source`), puis cherche sa fenêtre ; sans course encore, il cherche depuis
   la fin du préfixe ;
-* **le retour** : une course de la branche plus rapide que la meilleure course **est** la meilleure
+* **le retour** : une course de la branche plus rapide que la meilleure course (dès le départ aussi) **est** la meilleure
   course (vérifiée et écrite comme d'habitude) ; dans les tours de la meilleure course, la meilleure
   course de la branche est un guide (ses sections offertes, réalignées, raccordées, assemblées) et
   une source du réalignement de phase.
@@ -688,7 +694,8 @@ est plus rapide, sinon rien. Une plus lente en attente est oubliée au profit de
 progression le dit en quelques secondes : `candidateMs` et `verifying` (« candidat 1:26.642 ·
 vérification… »), puis `bestMs`, ses temps aux points de passage et l'origine du gain
 (`bestSplits`, `bestSource` : `beam` la recherche, `guide`, `splice` l'assemblage, `polish`
-l'affinage, `planner` le planificateur ; avec le portefeuille, `explore` et `timing`). Le tour
+l'affinage, `planner` le planificateur ; avec le portefeuille, `explore` et `timing` ; `phase` le
+réalignement de phase, `branch` une branche qui part plus vite que la meilleure course). Le tour
 suivant part de la meilleure course vérifiée. Jamais une course non vérifiée n'est écrite.
 
 ## Vérification

@@ -951,6 +951,11 @@ int main(int argc, char** argv) {
     Verifier branchVerifier;
     branchVerifier.check = keepBranch;
     if (branching) branchVerifier.start();
+    // A branch that starts faster than the best run: the best run at once (verified and written as usual).
+    if (branching && branch.bestMs() > 0 && (bestMs == 0 || branch.bestMs() < bestMs)) {
+        verifier.submit(branch.best(), branch.bestMs(), "branch");
+        verifier.drain();
+    }
     const auto mainOnRun = opt.onRun;
     auto branchOnRun = [&](const std::vector<InputFrame>& run, float clock, const std::string& source) {
         if (!onBranch(run)) return mainOnRun(run, clock, source);  // (it left the prefix: the best run's line only)
