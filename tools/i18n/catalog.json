@@ -61780,6 +61780,12 @@
    ]
   },
   {
+   "fr": "Raids : toujours sept groupes, un par branche (14 à 56 joueurs, liste d'attente au-delà) ; les paires se font par un même groupe à 3 s près ; un groupe ne quitte sa branche que pour remplacer un groupe éliminé ; défaite au bout de 60 min ou quand tous les groupes sont éliminés.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
    "where": [
     "data/news/changelog.json"
