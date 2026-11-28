@@ -88,6 +88,7 @@ struct BossView {
         /// 2.98 (the Cœur): in its fight, a health orb only where a single jump from a place of the graph takes it (one that needs
         /// a double jump was waited under for good: a third of their time in its last phase).
         bool orbsInReach = false;
+        bool holdersFire = false;    // 2.98: a player on its place strikes the creatures near it from there (Voidworm's parasites)
     } plan;
 };
 

@@ -3991,6 +3991,88 @@ la première fenêtre de ses ventricules) ; c'est le combat d'un seul groupe jus
 `kCoopSimulationVersion`, `kRankingGeneration` restent) ; seuls les joueurs simulés du Cœur choisissent autrement
 (`BossView::Plan::pullX`, `orbsInReach`, lus par `game/raid/RaidBots.cpp`). Aucun texte nouveau.
 
+### Voidworm (2.98) : joueurs simulés
+
+*Demandé* : que les joueurs simulés battent Voidworm (l'Abdomen), vite — 8 Experts, sans invincibilité ni sauvetage,
+difficulté 3 / 5, au moins 4 départs sur 5 gagnés en 15 min ; et dire ce que font les petits groupes (un groupe de raid
+compte maintenant 2 à 8 joueurs). Seuls les joueurs simulés changent : ni sa routine, ni ses règles, ni son antre, ni
+aucune version.
+
+**La mesure** : le banc du §36 (`COSMIC_GOAT_BENCH=1 COSMIC_GOAT_PARTS=abdomen COSMIC_GOAT_SEEDS=5`) ; nouveau,
+`COSMIC_GOAT_PLAYERS` : la taille du groupe (8 par défaut). Mesuré sur la 2.98 (simulation 19) ; repris après la fusion
+de la 2.101 (simulation 21 : glissades sous les plafonds bas) : à huit, les départs 1 à 5 donnent exactement les mêmes
+combats. Départs 1 à 5 (V : vaincu, E : groupe éliminé, D : debout au bout des 15 min ; entre parenthèses, la vie qui
+lui reste) :
+
+| Groupe | avant : vaincus | avant : vie restante | avant : temps | après : vaincus | après : vie restante | après : temps |
+|---|---|---|---|---|---|---|
+| 8 joueurs | 4 / 5 | 7 % | V 285 · E 683 (37 %) · V 422 · V 387 · V 363 s | **5 / 5** | **0 %** | V 312 · V 435 · V 348 · V 424 · V 434 s |
+| 4 joueurs | 4 / 5 | 8 % | E 625 (40 %) · V 392 · V 315 · V 302 · V 429 s | 4 / 5 | 8 % | V 354 · E 377 (42 %) · V 509 · V 356 · V 442 s |
+| 2 joueurs | 1 / 5 | 38 % | E 391 · E 367 · E 314 · E 332 · V 475 s | 2 / 5 | 33 % | E 254 · V 460 · E 672 · E 326 · V 454 s |
+
+Sur dix départs (1 à 10), où un départ de plus ou de moins compte moins :
+
+| Groupe | avant | après |
+|---|---|---|
+| 8 joueurs | 9 / 10, 403 s en moyenne pour une victoire, 47 morts | **10 / 10**, 445 s, 33 morts |
+| 4 joueurs | 7 / 10, 14 % de vie restante, 347 s | **9 / 10**, 4 %, 381 s |
+| 2 joueurs | 1 / 10, 43 % de vie restante (aucun groupe ne passait la phase 2 en neuf départs) | **6 / 10**, 22 %, 517 s |
+
+Les victoires prennent 5 à 11 min de jeu, sans être plus rapides qu'avant (à huit, les départs 6 à 10 durent 355 à
+684 s, avant 346 à 491 s) : des groupes qui perdaient un départ sur dix à huit, trois sur dix à quatre et neuf sur dix à
+deux le finissent maintenant.
+
+**Ce qui bloquait** (sondes `COSMIC_GOAT_DEATHS`, `_SEAT`, `_FOES`, `_HIST`) :
+
+* **à deux, les crochets.** Chaque crochet fermé le reste 30 s (40 s à deux joueurs en jeu, 60 s seul) : il suffit de
+  les fermer tous dans la même fenêtre, pas de les tenir ensemble. Mais un joueur debout sur un crochet fermé le gardait
+  (2.84 : « qui se tient sur une place la garde ») : à deux, chacun sur le sien, le troisième n'était jamais fermé, et le
+  groupe restait en phase 2 jusqu'à mourir sous ses coups (le même blocage, à huit, quand il ne reste que deux joueurs
+  debout : le départ 2, 180 s à deux joueurs à 37 % puis éliminé) ;
+* **en phase 2, les porteurs de crochets.** Ses parasites sortent près des crochets (deux sorties à côté de chacun) : leurs
+  morsures et les orbes des feux follets tuaient les porteurs, qui ne faisaient que lever leur bouclier ; à quatre, les
+  trois porteurs n'avaient personne pour les garder. La première cause de morts de la phase 2 avant ces réglages ;
+* **en phase 3, l'estomac** (signalé plus bas) : la plupart des morts restantes, à huit, sont des joueurs avalés pendant
+  ou juste avant une marée d'acide.
+
+**Ce qui change** (`game/raid/bots/TacticVoidworm.cpp` ; un réglage du plan de combat dans `RaidBots`, pour Voidworm seul) :
+
+* **un crochet fermé est lâché** quand il y a moins de joueurs libres (en jeu, hors de l'estomac) que de crochets et qu'il
+  reste fermé encore plus de 16 s (`Gigaboss::reopenIn`, ce qu'un joueur compte en le voyant se fermer) : son porteur va
+  fermer le suivant, et y revient quand il est sur le point de se rallumer. À huit, cela ne joue presque jamais ;
+* **les porteurs défendent leur place** (`Plan::holdersFire`) : debout sur leur crochet, ils tirent l'onde sur la créature
+  la plus proche à moins de 240 px qu'une de ses huit directions atteint, sans faire un pas (pensée « défend sa place ») ;
+  l'énergie du bouclier reste en réserve ;
+* **avalé, le bouclier contre la marée** : un joueur dans l'estomac voit l'acide y entrer (la marée blesse sous sa surface,
+  estomac compris) et le prend sous son bouclier quand il est prêt.
+
+Étape par étape (départs 1 à 5, 8 · 4 · 2 joueurs) : les crochets lâchés seuls 4 / 5 · 4 / 5 · **4 / 5** (huit et quatre :
+les mêmes départs qu'avant ; deux : 7 / 10 sur dix départs) ; plus les porteurs qui défendent leur place **5 / 5** · 4 / 5 ·
+2 / 5 (à huit, le départ 2 n'est plus une cascade : 4 morts au lieu de 8, vaincu en 444 s) ; plus le bouclier dans l'estomac
+5 / 5 · 4 / 5 · 2 / 5 (9 morts au lieu de 10 à huit, trois morts dans l'estomac au lieu de six). À deux, les porteurs qui
+défendent leur place ne changent rien de mesurable (6 / 10 au lieu de 7 / 10 : un départ, dans le chaos du combat).
+
+**Ce qui bloque encore** : à deux et à quatre, les morts près de son corps (la Cage de tentacules et le Tentacule fouisseur
+au pied du ver) et le réanimateur qui attend à côté d'une âme tombée là (« attend que ce soit sûr pour réanimer ») jusqu'à
+tomber à son tour ; le crochet de la couronne, long à atteindre (sept étages au-dessus du sol, à côté de sa tête) ; à huit,
+en phase 3, l'estomac.
+
+**Signalé, sans y toucher : l'acide dans l'estomac.** Un joueur avalé en phase 3 pendant une marée d'acide meurt presque
+toujours. La marée (`BossHazards::Flood` : sol 992, de x 576 à 3 776, 150 px) blesse tout joueur sous sa surface dans cette
+largeur — y compris l'estomac, la poche fermée **sous le sol** (1 504..1 760 × 1 024..1 104) où l'avalé est enfermé : rien à
+gravir, aucune sortie, 2 de dégâts toutes les 1,5 s (son invulnérabilité) pendant les 10,5 s de la marée, plus la digestion
+(1 toutes les 3 s). Le bouclier (2,2 s, 5 s de recharge) n'en prend qu'une partie ; seule la poche crevée le sauve, et en
+phase 3 elle est dure à atteindre (contre l'avant de son corps, ses frappeurs au-dessus de l'acide) : au départ 3 (8
+joueurs), `COSMIC_GOAT_FOES` la montre à 28 / 28 pendant 4 s, à 24 / 28 quand l'avalé meurt, 8 s après avoir été avalé.
+Sur les départs 1 à 10, 16 des 47 morts sont dans l'estomac avant, 10 des 33 après. La routine décrit l'estomac comme
+une poche fermée où seule la digestion blesse : que la marée l'épargne serait une règle de la routine, pas des joueurs
+simulés.
+
+**Versions** : aucune (`TITAN_REVISION`, `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les
+empreintes de référence ne bougent pas ; les joueurs simulés n'existent que dans les tests). Les autres Gigaboss ne lisent
+pas `Plan::holdersFire` (faux par défaut) : leurs combats ne changent pas. Une pensée nouvelle, « défend sa place », a son
+anglais dans `data/i18n/en.json`.
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)
