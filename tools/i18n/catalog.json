@@ -17901,6 +17901,12 @@
    ]
   },
   {
+   "fr": "Correctif : en glissant collée à un mur ou à une porte fermée, Nova passait au travers (la porte fermée d'une arène, le boss encore vivant), et en se relevant d'une glissade sous un plafond bas (dash, rebond, coup reçu), elle le traversait vers le haut. Les replays d'avant se rejouent avec leurs règles et les records sont gardés.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Correctif : en raid et en coopération en ligne, la touche Échap ouvrait la pause puis la refermait aussitôt ; la pause reste maintenant ouverte. En ligne, elle ne met en pause que le joueur qui l'a demandée (le groupe continue) ; le test admin d'Asterion, seul sur son ordinateur, s'arrête entièrement.",
    "where": [
     "data/news/changelog.json"
@@ -73544,6 +73550,12 @@
    ]
   },
   {
+   "fr": "TAS : la recherche essaie aussi d'attendre le bon cycle des plateformes et des ascenseurs (une courte attente plutôt qu'un cycle manqué).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "TAS : les états sauvegardés de la recherche (cosmic_tas) sont vérifiés pas à pas et sans dépendre de la mémoire inutilisée, sous Windows comme sous Linux.",
    "where": [
     "data/news/changelog.json"
@@ -73577,6 +73589,12 @@
    "fr": "TAS de ce niveau",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "TAS des Ruines Suspendues (ANY%) : 1:23.900, calculé sur le jeu corrigé (1:26.692 avant).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

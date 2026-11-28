@@ -646,6 +646,16 @@ change pas, et le gagnant d'une section (classé par la fin mesurée) ne préfé
 | `--phase-min-wait <s>` | l'attente tentée même sans élément périodique rencontré (0,5 s) |
 | `--study <replay> [de à]` | le chemin de Nova toutes les 0,25 s du chrono (pieds, vitesse, énergie, santé, pouvoirs portés) et les fins de section, rien d'autre |
 
+> **Simulation 20 (2.100) : ces temps ne tiennent plus.** Les mesures de cette partie et de « La
+> branche » ont été faites en simulation 19 : les courses « main » (1:12.958 à 1:12.975), « fresh »
+> (1:18.767 à 1:19.275) et les branches en 1:12.x **passaient la porte fermée o345 de l'arène de
+> Thornwarden en glissant contre elle**, le Gardien vivant (la boîte de la glissade, plus large que
+> celle de Nova debout, commençait dans la porte, et les collisions ne voient un mur que devant la
+> boîte) : « le boss en 5,3 s » n'était pas un combat gagné. La simulation 20 corrige ce bug
+> (`kSlideInWallsSimulation`, `tests/test_slide_walls.cpp`) ; ces courses ne finissent plus. Les
+> mécanismes mesurés (phase, réalignement, branche) restent valables, leurs temps non : voir « La
+> nuit sur le jeu corrigé ».
+
 **Mesure** (`sylvanox_01` ANY%, 1 fil, la machine partagée avec deux entraînements sur 4 cœurs) :
 
 | Essai | Résultat |
@@ -691,6 +701,29 @@ Puis une branche engagée sur les 2 premières sections de cette course (CP2 à 
 8 min, sections 3 à 7) : 1:12.283 au troisième tour (sa fenêtre 6 à 7 : une meilleure sortie), puis
 1:12.267 par l'affinage ; ses arrivées en avance aux CP3 (0,25 s), CP5 (0,73 s) et CP6 (0,52 s)
 réalignées finissent en 1:12.358 : l'avance est absorbée par les plateformes et l'ascenseur.
+
+### La nuit sur le jeu corrigé (2.100)
+
+`sylvanox_01` ANY%, simulation 20 (la glissade ne traverse plus les murs, les portes fermées ni les
+plafonds bas), `--portfolio --round 10`, la course de NovaRider pour guide, les courses de la nuit
+(rejouées en simulation 20 : elles s'arrêtent à la porte) en `--phase-source` ; 3 fils, puis un
+second entraînement à 1 fil (`--branch` sur les 5 premières sections d'une course de la nuit).
+Chaque meilleure course est passée au détecteur de traversée (la boîte de Nova dans un solide,
+image par image) : aucune.
+
+| Heure (Paris) | Meilleure course | Trouvée par |
+|---|---|---|
+| départ | 1:26.025 | la meilleure course propre de la simulation 19 |
+| 4h15 | 1:25.217 | faisceau (sections 3 à 7), affinage, polissage |
+| 6h10 | 1:24.367 | faisceau 85.183 → 84.750 (une sortie de section), exploration 84.717 → 84.700, faisceau → 84.408, affinage |
+| 7h20 | **1:23.900** | faisceau 84.342 → 84.042 → 83.983, affinage → 83.925, faisceau → 83.900 |
+
+Points de passage de la course livrée : CP1 10,983 s, CP2 27,017 s, CP3 39,550 s, CP4 51,317 s,
+CP5 64,525 s, CP6 80,875 s, arrivée 83,900 s (le boss : 16,35 s du CP5 au CP6). Le faisceau donne
+l'essentiel des gains (une meilleure sortie de section, puis l'affinage la règle à l'image près) ;
+l'exploration n'en donne qu'un. Ce qui reste : au CP3, la course attend encore 3,1 s le cycle des
+plateformes o186 et o188 (7,4 s) — une arrivée au CP2 assez tôt pour le cycle précédent gagnerait
+une période entière ; et la fin attend l'ascenseur o364 (6,12 s).
 
 ### Vérification au fil de l'eau (2.99)
 

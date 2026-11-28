@@ -1,4 +1,9 @@
 {
+  "2.100.0": [
+    "Correctif : en glissant collée à un mur ou à une porte fermée, Nova passait au travers (la porte fermée d'une arène, le boss encore vivant), et en se relevant d'une glissade sous un plafond bas (dash, rebond, coup reçu), elle le traversait vers le haut. Les replays d'avant se rejouent avec leurs règles et les records sont gardés.",
+    "TAS des Ruines Suspendues (ANY%) : 1:23.900, calculé sur le jeu corrigé (1:26.692 avant).",
+    "TAS : la recherche essaie aussi d'attendre le bon cycle des plateformes et des ascenseurs (une courte attente plutôt qu'un cycle manqué)."
+  ],
   "2.99.0": [
     "TAS : l'entraînement s'appuie sur vos courses (votre PB guide la recherche, assemblage des meilleurs segments, tracé des courses d'une ancienne version), chaque course plus rapide est vérifiée et publiable en quelques secondes, et la courbe dit dans quel segment est chaque gain.",
     "TAS : un planificateur prévoit dashs, sauts longs, sauts muraux et sauts tamponnés selon les pouvoirs et l'énergie disponibles et propose ses plans à la recherche, qui les juge dans le vrai jeu.",
