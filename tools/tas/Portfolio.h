@@ -31,6 +31,7 @@ class Course;
 class Sim;
 class GoExplore;
 class TimingPolish;
+class TrajectoryOptimizer;
 
 /// The bandit alone (the tests drive it with arms of their own).
 class Bandit {
@@ -80,6 +81,7 @@ public:
     static constexpr const char* kExplore = "explore";
     static constexpr const char* kTiming = "timing";
     static constexpr const char* kRefine = "refine";
+    static constexpr const char* kTrajectory = "trajectory";
 
     Portfolio(const ContentDatabase& content, const LevelData& level, RunCategory category, int threads, uint64_t seed);
     ~Portfolio();
@@ -90,6 +92,8 @@ public:
     int addArm(const std::string& id, std::function<void(const Slice&)> run);
     /// Only these arms (ids; empty: all). The others are never drawn.
     void only(const std::vector<std::string>& ids);
+    /// The arm may be drawn (--arms).
+    bool allowed(int arm) const;
     Bandit& bandit() { return bandit_; }
     /// The arm of the next slice: during the beam's part of a round (`beamPart`: every arm but the
     /// refinement), or after it (every arm but the beam). -1: none allowed.
@@ -104,7 +108,7 @@ public:
 
     /// Runs a slice of a non-beam arm that the portfolio itself plays (explore, timing, or one
     /// registered): false when the arm is the search's own (beam, refine).
-    bool runSlice(int arm, const Slice& slice);
+    bool runSlice(int arm, const Slice& slice, int simOffset = 0);
     /// What the slice of `arm` gained (ms) and cost (s x threads): the bandit learns it.
     void record(int arm, double cpuSeconds, float before, float after);
     /// A faster run found by `arm` (the progress file shows who found each gain).
@@ -115,21 +119,25 @@ public:
 
     GoExplore& explore();
     TimingPolish& timing();
+    TrajectoryOptimizer& trajectory();
     const Course& course() const { return *course_; }
 
 private:
-    std::vector<Sim*> sims(int n);
+    std::vector<Sim*> sims(int n, int offset = 0);
+    std::vector<Sim*> exploreSims(int n);  // the exploration's own (its archives keep their savestates)
     const ContentDatabase& content_;
     const LevelData& level_;
     RunCategory category_;
     std::unique_ptr<Course> course_;
-    std::vector<std::unique_ptr<Sim>> sims_;
+    std::vector<std::unique_ptr<Sim>> sims_, exploreSims_;
     std::unique_ptr<GoExplore> explore_;
     std::unique_ptr<TimingPolish> timing_;
+    std::unique_ptr<TrajectoryOptimizer> trajectory_;
     Bandit bandit_;
     std::vector<std::function<void(const Slice&)>> extra_;  // per arm (empty for the built-in ones)
     std::vector<std::string> only_;                         // the arms allowed (empty: all)
     mutable std::mutex m_;
+    std::mutex simsMutex_;
     std::vector<FoundGain> gains_;
     int64_t began_ = 0;
 };

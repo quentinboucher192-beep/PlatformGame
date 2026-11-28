@@ -21,10 +21,10 @@
 // point, each window of attempts is kept; both go to the server with the next heartbeat or the
 // release of their lease (pending until it took them).
 //
-// Several pairs train at once (« Entraînements en parallèle », « Threads par entraînement »); a
-// queue (« Tout entraîner ») keeps that many running, a pair held by another administrator
-// skipped; with a budget per pair, a pair stops after it and goes back to the end of the queue
-// (round-robin). The queue lives as long as the game, not the page.
+// 2.101: ONE pair trains at a time, on every core allotted to it (« Cœurs alloués »), with the
+// TAS's mind (« IA du TAS »: cosmic_tas --portfolio --director) and its memory (« Mémoire »: the
+// configurations already solved, kept on this computer for every level). Starting a pair stops
+// the one under way; « Durée » stops it after that long (0: until stopped).
 
 #include <chrono>
 #include <cstdint>
@@ -58,9 +58,11 @@ struct TasPair {
 struct TasTrainingSettings {
     static constexpr int kMaxParallel = 16;
     static constexpr int kMaxThreads = 16;
-    int threadsPerJob = 2;
-    int parallel = 1;        // trainings at once
-    int budgetMinutes = 30;  // per pair, then the next pair of the queue (0: until stopped)
+    int threadsPerJob = 2;   // the cores allotted to the training (its essayeurs)
+    int parallel = 1;        // trainings at once: always 1 since 2.101
+    int budgetMinutes = 0;   // how long the training runs (0: until stopped)
+    bool director = true;    // the TAS's mind plans the cores and says why (cosmic_tas --director)
+    bool memory = true;      // the configurations already solved are used and kept (cosmic_tas --memory)
     /// The player's best run of this computer (its PB, with its replay) guides the training of
     /// its pair (docs/TAS.md « Les guides »): on by default, switched off here.
     bool guidePb = true;
@@ -68,6 +70,8 @@ struct TasTrainingSettings {
     /// The cores of this computer shared between the trainings: cores / threads per training,
     /// at least 1, at most kMaxParallel.
     static int defaultParallel(int threadsPerJob, int cores);
+    /// The cores a training gets by default: all but one (the game), at least 1.
+    static int defaultThreads(int cores);
     Json toJson() const;
     static TasTrainingSettings fromJson(const Json& j, int cores);
 };
@@ -121,8 +125,11 @@ public:
     TasTrainingSettings& settings() { return settings_; }
     const TasTrainingSettings& settings() const { return settings_; }
 
-    /// « Continuer l'entraînement »: the pair first in the queue, started as soon as a place is free.
+    /// « Entraîner »: this pair alone — the training under way (another pair) is stopped, the
+    /// queue emptied; it starts as soon as that one has exited.
     void train(const TasPair& p);
+    /// The memory's file of this computer (tools/tas/Memory.h).
+    static fs::path memoryFile();
     /// « Tout entraîner »: these pairs at the end of the queue (those already queued or training are skipped).
     int enqueue(const std::vector<TasPair>& pairs);
     void unqueue(const TasPair& p);

@@ -409,16 +409,19 @@ TEST_CASE("tas curve: a heartbeat's summary of the windows is bounded; the book 
     CHECK(yt.size() >= 2 && yt.size() <= 6 && yt.front() >= 86000 && yt.back() <= 87000);
 }
 
-TEST_CASE("tas training: the settings share the cores between the trainings") {
-    CHECK(TasTrainingSettings::defaultParallel(2, 8) == 4);
-    CHECK(TasTrainingSettings::defaultParallel(4, 2) == 1);
-    CHECK(TasTrainingSettings::defaultParallel(1, 64) == TasTrainingSettings::kMaxParallel);
-    auto s = TasTrainingSettings::fromJson(Json::object(), 8);
-    CHECK(s.threadsPerJob == 2 && s.parallel == 4 && s.budgetMinutes == 30);
-    s = TasTrainingSettings::fromJson({{"threadsPerJob", 99}, {"parallel", -3}, {"budgetMinutes", -1}}, 8);
-    CHECK(s.threadsPerJob == TasTrainingSettings::kMaxThreads && s.parallel == 1 && s.budgetMinutes == 0);
+TEST_CASE("tas training: one training at a time gets the cores (2.101), with the mind and its memory") {
+    CHECK(TasTrainingSettings::defaultThreads(8) == 7);
+    CHECK(TasTrainingSettings::defaultThreads(1) == 1);
+    CHECK(TasTrainingSettings::defaultThreads(64) == TasTrainingSettings::kMaxThreads);
+    // Settings of before 2.101 (several trainings at once): every core but one to the one training.
+    auto s = TasTrainingSettings::fromJson({{"threadsPerJob", 2}, {"parallel", 4}, {"budgetMinutes", 30}}, 8);
+    CHECK(s.threadsPerJob == 7 && s.parallel == 1 && s.budgetMinutes == 0 && s.director && s.memory);
+    s = TasTrainingSettings::fromJson({{"single", true}, {"threadsPerJob", 99}, {"budgetMinutes", -1}, {"director", false}, {"memory", false}}, 8);
+    CHECK(s.threadsPerJob == TasTrainingSettings::kMaxThreads && s.parallel == 1 && s.budgetMinutes == 0 && !s.director && !s.memory);
+    s.threadsPerJob = 3;
+    s.budgetMinutes = 60;
     auto back = TasTrainingSettings::fromJson(s.toJson(), 8);
-    CHECK(back.threadsPerJob == s.threadsPerJob && back.parallel == s.parallel && back.budgetMinutes == s.budgetMinutes);
+    CHECK(back.threadsPerJob == 3 && back.parallel == 1 && back.budgetMinutes == 60 && back.director == s.director && back.memory == s.memory);
     CHECK(TasTraining::leasePath({"sylvanox_01", RunCategory::HundredPercent}) == "/api/v1/admin/tas/sylvanox_01/HUNDRED_PERCENT/lease");
 }
 
@@ -802,8 +805,56 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             for (int pass = 0; pass < 7; ++pass) {
             const int tabNow = pass == 0 || pass == 3 || pass >= 5 ? 0 : pass == 1 || pass == 4 ? 1 : 3;
             const bool deep = pass == 3 || pass == 4;
-            // Passes 5 and 6: « Arrêts par section » unfolded (every section, scrolled), then folded again.
-            page.setStopsOpen(pass == 5);
+            // Passes 5 and 6 (2.101): a training's progress file with the TAS's mind (its thoughts, its
+            // essayeurs, its memory) shown under the curve, the progress beside it.
+            if (pass >= 5) {
+                TasProgress mind;
+                mind.levelId = "level_0";
+                mind.director = true;
+                mind.threads = 6;
+                mind.round = 3;
+                mind.bestMs = 85100;
+                mind.candidateMs = 85050;
+                mind.elapsedMs = 8040000;
+                mind.explored = 29000000;
+                auto thought = [](int64_t at, const char* kind, const char* code, std::vector<double> n, std::string s = {}) {
+                    TasThought t;
+                    t.atMs = at;
+                    t.kind = kind;
+                    t.code = code;
+                    t.n = std::move(n);
+                    t.s = std::move(s);
+                    return t;
+                };
+                mind.thoughts = {thought(7000000, "observe", "spot", {7.908, 1236, 1.24}),
+                                 thought(7100000, "gain", "trajectory", {1.233, 1236, 0, 13, 45, 44}),
+                                 thought(7200000, "memory", "learn", {96, 32, 150, 1.233}, "dash"),
+                                 thought(7300000, "decide", "plan_places_left", {5, 1, 2, 3}, "trajectory:5,explore:1"),
+                                 thought(7400000, "memory", "recall", {4410, 96, 150}, "level_0"),
+                                 thought(7500000, "decide", "lead", {0.725, 2, 2762}),
+                                 thought(7600000, "decide", "branch", {1, 1.225}),
+                                 thought(7700000, "verify", "clip", {49.567, 76.85}),
+                                 thought(7800000, "verify", "verified", {85.1}, "trajectory"),
+                                 thought(7900000, "decide", "plan_bandit", {38, 5, 2, 3}, "timing:5,explore:1")};
+                for (int k = 0; k < 6; ++k) mind.workers.push_back({k < 5 ? "trajectory" : "explore", 1, 2, 4000000 + k * 123457});
+                mind.memorySize = 214;
+                mind.memoryTop = {{96, 32, 0, 150, "dash", 148, 3, 1284, "level_0"}, {0, 0, 140, 150, "dash,wave", 36, 5, 310, "level_0"}, {48, 64, 0, 125, "", 14, 2, 120, "level_1"}};
+                mind.strategies = {{"beam", 3000000, 1108, 9}, {"trajectory", 2400000, 1233, 2}, {"explore", 1200000, 17, 1}, {"timing", 900000, 17, 1}};
+                for (int k = 0; k < 4; ++k) {
+                    TasAttemptWindow w;
+                    w.startMs = 7800000 + k * 5000;
+                    w.endMs = w.startMs + 5000;
+                    w.sections = 4;
+                    w.attempts = 18000;
+                    w.finished = 7000;
+                    w.stopped = {0, 6000, 5000, 0};
+                    w.broken = {0, 10, 0, 0};
+                    mind.windows.push_back(w);
+                }
+                page.setPreviewProgress(mind);
+            } else {
+                page.setPreviewProgress(std::nullopt);
+            }
             page.setCurveTab(tabNow);
             if (deep) {
                 charts::ChartView& zv = page.curveView(tabNow);
@@ -826,14 +877,26 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             const float bodyY = ui.s(36) + ui.s(52) + ui.s(22) + ui.s(52) + ui.s(16);
             const Rect body{x0, bodyY, W, ui.screenH() - bodyY - ui.s(64)};
             const Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
+            // 2.101: a short column keeps the curve whole and gives the TAS's mind its own tab « IA »
+            // (pass 6 shows it there; at 1920 x 1080 the mind is under the curve).
+            bool mindTabNow = false;
+            int mindTabIdx = -1;
+            if (pass == 6) {
+                page.draw(inner);
+                ui.end();
+                mindTabIdx = page.lastLayout().mindTab;
+                if (mindTabIdx >= 0) page.setCurveTab(mindTabIdx), mindTabNow = true;
+                r.app.runFrames(1);
+                ui.begin(r.app, 1.0f / 60.0f);
+            }
             if (lang == Language::English) i18n::startAudit();
             // The curve's plot focused with the keyboard: the tooltip of the point nearest its reticle
             // (on « TOUT », its last best time).
             ui.setFocus("tas/curve/plot");
             ui.setUsingPointer(false);
             page.draw(inner);
-            if (!page.tip().show) std::printf("  [%.0f onglet %d%s] pas de bulle au clavier\n", size.x, tabNow, deep ? " zoom" : "");
-            CHECK(page.tip().show && !page.tip().title.empty() && page.tip().rows.size() >= (tabNow == 0 && !deep ? 5u : 3u));
+            if (!mindTabNow && !page.tip().show) std::printf("  [%.0f onglet %d%s passe %d] pas de bulle au clavier (graphe %.0f x %.0f)\n", size.x, tabNow, deep ? " zoom" : "", pass, page.lastLayout().plot.w, page.lastLayout().plot.h);
+            CHECK(mindTabNow || (page.tip().show && !page.tip().title.empty() && page.tip().rows.size() >= (tabNow == 0 && !deep ? 5u : 3u)));
             const Rect tipR = charts::tipBox(ui, page.tip());
             CHECK(tipR.x >= -0.5f && tipR.right() <= ui.screenW() + 0.5f && tipR.y >= -0.5f && tipR.bottom() <= ui.screenH() + 0.5f);
             page.drawTooltip();
@@ -845,8 +908,8 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             ui.setFocus("tas/curve/strip");
             ui.setUsingPointer(false);
             page.draw(inner);
-            CHECK(page.tip().show && page.tip().rows.size() >= 6);
-            CHECK(page.curveTab() == tabNow);
+            CHECK(mindTabNow || (page.tip().show && page.tip().rows.size() >= 6));
+            CHECK(page.curveTab() == (mindTabNow ? mindTabIdx : tabNow));
             page.drawTooltip();
             ui.end();
             ui.setUsingPointer(true);
@@ -867,34 +930,43 @@ TEST_CASE("tas training: ADMINISTRATION > TAS fits at 1280 x 720 and 1920 x 1080
             CHECK(L.list.y < inner.bottom() - ui.s(150));
             // The curve: under the table, inside the page; its tabs, its plot, its strip, its counts beside.
             CHECK(!L.detail.empty() && L.detail.y >= L.list.bottom() && L.detail.bottom() <= inner.bottom() + 0.5f);
+            if (!mindTabNow) {
             CHECK(L.detail.containsRect(L.plot) && L.detail.containsRect(L.strip) && L.detail.containsRect(L.stats));
             CHECK(L.plot.w > ui.s(400) && L.plot.h > ui.s(80) && L.strip.y > L.plot.bottom() && L.stats.x > L.plot.right());
-            CHECK(L.tabs.size() == 4);  // « TOUT », CP1, CP2, CP3
+            }
+            CHECK(L.tabs.size() == (L.mindTab >= 0 ? 5u : 4u));  // « TOUT », CP1, CP2, CP3 (and « IA »)
             for (size_t t = 0; t < L.tabs.size(); ++t) {
-                CHECK(L.detail.containsRect(L.tabs[t]) && L.tabs[t].bottom() <= L.plot.y);
+                CHECK(L.detail.containsRect(L.tabs[t]) && (mindTabNow ? L.tabs[t].bottom() <= L.mind.y : L.tabs[t].bottom() <= L.plot.y));
                 for (size_t u = t + 1; u < L.tabs.size(); ++u) CHECK(!overlaps(L.tabs[t], L.tabs[u]));
                 for (const Rect& b : L.buttons) CHECK(!overlaps(L.tabs[t], b));
             }
             if (L.xTicks < 1 || L.yTicks < 2 || (L.cloudDrawn <= 0 && L.pointsDrawn <= 0) || L.emptyCurve || L.windowsDrawn < 1)
                 std::printf("  [%s %.0f onglet %d%s] graduations %d x %d, nuage %d, vide %d, fenêtres %d, vue %.0f..%.0f x %.1f..%.1f\n", where, size.x, tabNow,
                             deep ? " zoom" : "", L.xTicks, L.yTicks, L.cloudDrawn, L.emptyCurve ? 1 : 0, L.windowsDrawn, L.view.x0, L.view.x1, L.view.y0, L.view.y1);
-            CHECK(!L.emptyCurve && (L.cloudDrawn > 0 || L.pointsDrawn > 0) && L.windowsDrawn >= 1 && L.xTicks >= 1 && L.yTicks >= 2);
+            CHECK(mindTabNow || (!L.emptyCurve && (L.cloudDrawn > 0 || L.pointsDrawn > 0) && L.windowsDrawn >= 1 && L.xTicks >= 1 && L.yTicks >= 2));
             if (pass == 0) {
                 // Shipped, online, the guide and the sum of the best segments.
                 CHECK(L.pointsDrawn == 5 && L.windowsDrawn == 60 && L.referenceLines == 4 && L.roundsDrawn >= 2);
                 CHECK(L.cloudKept == 60 * 30 && L.offView >= 1);  // every point kept; the slowest above the scale, said
             }
-            if (pass >= 5) {
-                // « Arrêts par section »: folded, « … N autres sections » unfolds it when they do not all fit;
-                // unfolded, every section scrolls in its region, the arrival pinned under it, « Réduire » after.
-                if (L.stopRows == 0) std::printf("  [%s %.0f] arrêts par section : pas de place dans les chiffres\n", where, size.x);
-                CHECK(L.stopRows == 0 || (L.stopsOpen == (pass == 5) && !L.stopsArrival.empty()));
-                if (pass == 5 && !L.stopsList.empty()) {
-                    CHECK(L.stats.containsRect(L.stopsList) && L.stopsArrival.y >= L.stopsList.bottom() - 0.5f);
-                    CHECK(!L.stopsToggle.empty() && L.stopsToggle.y >= L.stopsArrival.bottom() - 0.5f && L.stats.containsRect(L.stopsToggle));
-                }
-                if (pass == 6 && L.stopRows > 0 && L.stopRows < 8) CHECK(!L.stopsToggle.empty() && L.stopsToggle.bottom() <= L.stopsArrival.y + 0.5f);
-                if (pass == 6 && L.stopRows < 8 && size.x < 1500) std::printf("  [%s %.0f] arrêts : %d sections sur 8 repliées\n", where, size.x, L.stopRows);
+            if (tabNow == 0 && !deep && !mindTabNow) {
+                // « TOUT » (2.101): the ruler of the references, the segments' rows.
+                if (L.rulerMarks < 2 || L.segmentRows < 1) std::printf("  [%s %.0f] repères %d, segments %d\n", where, size.x, L.rulerMarks, L.segmentRows);
+                CHECK(L.rulerMarks >= 2 && L.segmentRows >= 1);
+            }
+            if (pass >= 5 && L.mindTab >= 0 && !mindTabNow) {
+                // A short column: the curve whole, the mind in its tab (not under the curve).
+                CHECK(L.mind.empty());
+            } else if (pass >= 5) {
+                // The TAS's mind under the curve (inside the panel, under the plot) or in its tab
+                // « IA » (the panel's whole width): its thoughts, essayeurs and memory drawn (as many as fit).
+                if (L.thoughtsDrawn < 2 || L.workersDrawn < 2 || L.memoryDrawn < 1)
+                    std::printf("  [%s %.0f] IA : pensées %d, essayeurs %d, mémoire %d\n", where, size.x, L.thoughtsDrawn, L.workersDrawn, L.memoryDrawn);
+                CHECK(!L.mind.empty() && L.detail.containsRect(L.mind));
+                if (!mindTabNow) CHECK(L.mind.y >= L.strip.bottom() - 0.5f && L.mind.right() <= L.stats.x);
+                CHECK(L.thoughtsDrawn >= 2 && L.workersDrawn >= 2 && L.memoryDrawn >= 1);
+            } else {
+                CHECK(L.mind.empty());
             }
             if (!deep && tabNow > 0) {
                 // A CP tab: the gains marked where its segment changed, the guide's time there and the gap.

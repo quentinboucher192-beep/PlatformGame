@@ -2359,6 +2359,12 @@
    ]
   },
   {
+   "fr": "ADMINISTRATION › TAS : un niveau et une catégorie à la fois, sur les cœurs alloués ; nouveau panneau d'avancement (meilleur temps vérifié, repères, segments, qui trouve les gains) et, sous la courbe, l'IA du TAS : ses pensées, ses essayeurs, sa mémoire.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Admins",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -4267,7 +4273,6 @@
    "fr": "Arrivée",
    "where": [
     "game/tas/TasProgress.cpp",
-    "ui/screens/AdminTasCurve.cpp",
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -4335,6 +4340,12 @@
    ]
   },
   {
+   "fr": "arrivée {0}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Arrivée {0}  ·  fantôme {1}",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -4384,9 +4395,9 @@
    ]
   },
   {
-   "fr": "Arrêts par section",
+   "fr": "Arrêter l'entraînement",
    "where": [
-    "ui/screens/AdminTasCurve.cpp"
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -8588,6 +8599,12 @@
    ]
   },
   {
+   "fr": "Barre : part du temps de calcul ; à droite : ce que la stratégie a fait gagner.",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Barre de progression",
    "where": [
     "saves/HudLayout.cpp"
@@ -9829,6 +9846,12 @@
    ]
   },
   {
+   "fr": "Branche : je garde le début jusqu'au CP{0} ({1} s d'avance) et j'entraîne la suite.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Branche : {0} · antre : zone {1}, « {2} »",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -10336,12 +10359,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "Budget par paire",
-   "where": [
-    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -12610,12 +12627,6 @@
    ]
   },
   {
-   "fr": "Ce tour",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
    "fr": "Ce verrou n'est plus le vôtre (expiré ou repris).",
    "where": [
     "server/src/tas.ts"
@@ -13580,6 +13591,12 @@
    "fr": "Chaque partie détruite retire au titan ce que sa ligne décrit : plus elles sont nombreuses à tomber, plus le dernier combat est à votre portée.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque passage résolu y est gardé, pour tous les niveaux.",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -15541,6 +15558,7 @@
     "game/online/OnlineGlobe.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineTypes.cpp",
+    "game/tas/TasProgress.cpp",
     "saves/Settings.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -16794,6 +16812,12 @@
    ]
   },
   {
+   "fr": "Configuration déjà vue à x {0} (obstacle de {1} px), mais sa suite de touches ne rejoint pas la course ici : je cherche à nouveau.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Configuration par défaut restaurée",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -17907,6 +17931,12 @@
    ]
   },
   {
+   "fr": "Correctif : en lançant un pouvoir pendant une glissade ou une escalade sous un plafond bas, Nova se relevait dans le plafond et le traversait. Les replays d'avant se rejouent avec leurs règles et les records sont gardés.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Correctif : en raid et en coopération en ligne, la touche Échap ouvrait la pause puis la refermait aussitôt ; la pause reste maintenant ouverte. En ligne, elle ne met en pause que le joueur qui l'a demandée (le groupe continue) ; le test admin d'Asterion, seul sur son ordinateur, s'arrête entièrement.",
    "where": [
     "data/news/changelog.json"
@@ -18837,6 +18867,12 @@
    ]
   },
   {
+   "fr": "Course de {0} s refusée : Nova passe à travers un solide à {1} s.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Course du vendredi",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -18865,6 +18901,12 @@
    "fr": "Course non terminée.",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Course plus rapide : je l'affine sur les {0} cœurs.",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -20117,6 +20159,12 @@
    ]
   },
   {
+   "fr": "Cœurs alloués",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
    "fr": "cœurs hors limites",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
@@ -20993,6 +21041,12 @@
    ]
   },
   {
+   "fr": "depuis le départ ({0})",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Depuis le départ du niveau, sans point de contrôle",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -21080,6 +21134,18 @@
    "fr": "Dernier fouet",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Dernier gain : {0}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "Dernier gain : {0}, il y a {1} d'entraînement",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -22993,6 +23059,7 @@
     "game/powers/PowerStats.cpp",
     "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminTas.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/GhostRun.cpp"
    ]
@@ -23439,6 +23506,12 @@
    "fr": "Décevant",
    "where": [
     "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Décision",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -24619,6 +24692,7 @@
    "where": [
     "game/tas/TasProgress.cpp",
     "ui/screens/AdminTasCurve.cpp",
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/ChainTrainingScene.cpp",
     "ui/screens/StatisticsArt.cpp",
     "ui/screens/StatisticsLevels.cpp",
@@ -24903,12 +24977,6 @@
    "fr": "Désépingler",
    "where": [
     "ui/online/CommentsPanel.cpp"
-   ]
-  },
-  {
-   "fr": "Détail de {0} essais sur {1} (les autres ne sont pas comptés par fenêtre).",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
    ]
   },
   {
@@ -25767,6 +25835,12 @@
    ]
   },
   {
+   "fr": "EN COURS",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "En cours",
    "where": [
     "game/online/Raids.cpp",
@@ -25788,7 +25862,7 @@
    ]
   },
   {
-   "fr": "En cours et en file ({0})",
+   "fr": "En cours ({0})",
    "where": [
     "ui/screens/AdminTas.cpp"
    ]
@@ -26000,6 +26074,7 @@
     "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/AdminTas.cpp",
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/MainMenuScene.cpp",
@@ -27246,15 +27321,15 @@
    ]
   },
   {
-   "fr": "Entraînements en parallèle",
+   "fr": "Entraîner",
    "where": [
     "ui/screens/AdminTas.cpp"
    ]
   },
   {
-   "fr": "Entraîner",
+   "fr": "Entraîné {0} en tout",
    "where": [
-    "ui/screens/AdminTas.cpp"
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -27954,9 +28029,27 @@
    ]
   },
   {
+   "fr": "essais par seconde",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Essayage",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Essayeur {0}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "ESSAYEURS",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -29759,15 +29852,9 @@
    ]
   },
   {
-   "fr": "Finis : seuls les essais qui atteignent la sortie ; la recherche avance section par section et ses essais s'arrêtent à la fin de chacune, jusqu'à la dernière et l'affinage.",
+   "fr": "finissent",
    "where": [
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
-   "fr": "Finis : seuls les essais qui atteignent la sortie. Pendant la fenêtre, les essais s'arrêtent à la fin de la section cherchée ; ne finissent que les raccords avec la meilleure course et l'affinage.",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -30668,6 +30755,12 @@
    ]
   },
   {
+   "fr": "Gagné",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Gagné : {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -30689,6 +30782,18 @@
    "fr": "gagné par {0} joueurs",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Gagné {0}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "Gagné {0} · reste {1} jusqu'au repère suivant",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -30718,7 +30823,8 @@
   {
    "fr": "Gain",
    "where": [
-    "ui/screens/AdminTasCurve.cpp"
+    "ui/screens/AdminTasCurve.cpp",
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -32888,18 +32994,6 @@
    ]
   },
   {
-   "fr": "Guidé par la course de",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
-   "fr": "Guidé par le tracé (ancienne version du niveau) de",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
    "fr": "Guinée",
    "where": [
     "data/online/countries.json",
@@ -33834,7 +33928,20 @@
    "fr": "IA",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "ui/online/RaidChatUi.cpp"
+    "ui/online/RaidChatUi.cpp",
+    "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "IA du TAS : non",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "IA du TAS : oui",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -34345,6 +34452,30 @@
    "fr": "Il rejoint la bibliothèque de l'éditeur.",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Il reste des passages à chercher : 1 cœur aux trajectoires, 1 à l'exploration.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "Il reste des passages à chercher : les trajectoires sur 1 cœur.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "Il reste des passages à chercher : les trajectoires sur {0} cœurs.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "Il reste des passages à chercher : {0} cœurs aux trajectoires, 1 à l'exploration.",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -35934,6 +36065,12 @@
    ]
   },
   {
+   "fr": "J'ai déjà fait cette configuration de saut (obstacle de {0} px, élan {1} px/s) : je l'applique à x {2} sans tout réessayer.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "J'ai rebranché · Reprendre",
    "where": [
     "ui/screens/DeviceLostUi.cpp"
@@ -35967,6 +36104,12 @@
    "fr": "jamais affronté",
    "where": [
     "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "Jamais entraîné",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -36069,9 +36212,21 @@
    ]
   },
   {
+   "fr": "Je donne le travail à « {0} » ({1} % du temps jusqu'ici, pour ce qu'elle a gagné).",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Je m'inscris",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Je retiens cette configuration (obstacle de {0} px à {1} px, élan {2} px/s) : {3} s d'avance.",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -37401,6 +37556,12 @@
    "fr": "L'hôte n'a pas gardé le fichier de ce niveau et Cosmic Online est injoignable : téléchargez-le dans NIVEAUX EN LIGNE, puis rejoignez la partie.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'IA DU TAS",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -38995,6 +39156,12 @@
    "fr": "la recherche (faisceau)",
    "where": [
     "game/tas/TasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "LA RECHERCHE EN CE MOMENT",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -41717,6 +41884,12 @@
    ]
   },
   {
+   "fr": "Le passage de x {0} donne {1} s d'avance jusqu'au CP{2}, mais la suite de la course ne tient plus : une branche le gardera.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Le passage Nerfs optiques – Tempe est ouvert",
    "where": [
     "data/raids/asterion/crane/branch.json"
@@ -43670,6 +43843,12 @@
    ]
   },
   {
+   "fr": "Les essayeurs démarrent avec le premier tour.",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Les fantômes laissent maintenant la traînée de leur joueur (la vôtre derrière vos propres fantômes), aussi translucide qu'eux.",
    "where": [
     "data/news/changelog.json"
@@ -44495,9 +44674,9 @@
    ]
   },
   {
-   "fr": "Les tours reviennent sur chaque section (les fenêtres tournent sur tout le niveau), mais cherchent près de la meilleure course : un autre chemin ou une autre technique (un raccourci, un autre ordre des pouvoirs) n'est trouvé que si un guide l'apporte.",
+   "fr": "les trajectoires (chaque passage essayé avec tous ses sauts et pouvoirs)",
    "where": [
-    "ui/screens/AdminTasCurve.cpp"
+    "game/tas/TasCurve.cpp"
    ]
   },
   {
@@ -45424,6 +45603,12 @@
    ]
   },
   {
+   "fr": "Livré",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Livrée",
    "where": [
     "ui/screens/AdminTas.cpp"
@@ -45883,6 +46068,12 @@
    "fr": "Maintenance en cours : réessayez dans quelques minutes.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Maintenant",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -46676,12 +46867,6 @@
    ]
   },
   {
-   "fr": "Meilleur fini",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
    "fr": "Meilleur possible à l'arrivée",
    "where": [
     "ui/screens/TrainingSession.cpp"
@@ -46734,6 +46919,12 @@
    "fr": "Meilleur temps trouvé par la machine, hors classement",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "MEILLEUR TEMPS VÉRIFIÉ",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -49125,6 +49316,30 @@
    "where": [
     "data/achievements/achievements.json",
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "MÉMOIRE",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "Mémoire",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "Mémoire : non",
+   "where": [
+    "ui/screens/AdminTas.cpp"
+   ]
+  },
+  {
+   "fr": "Mémoire : oui",
+   "where": [
+    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -51894,9 +52109,33 @@
    ]
   },
   {
+   "fr": "Observation",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Observe la zone",
    "where": [
     "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "observe, se souvient, décide",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "observe, se souvient, décide · {0} essayeur",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "observe, se souvient, décide · {0} essayeurs",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -51910,6 +52149,12 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Obstacle de {0} px à {1} px · élan {2} px/s",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -53177,6 +53422,12 @@
    ]
   },
   {
+   "fr": "OÙ EN EST-ON ? (plus rapide vers la droite)",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "OÙ ET COMMENT",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -53202,6 +53453,12 @@
    ]
   },
   {
+   "fr": "OÙ GAGNER DU TEMPS · PAR SEGMENT",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Où il vit",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -53223,6 +53480,12 @@
    "fr": "OÙ LE COMBAT S'ARRÊTE",
    "where": [
     "ui/screens/StatisticsBoss.cpp"
+   ]
+  },
+  {
+   "fr": "Où s'arrêtent les essais (section par section, puis l'arrivée)",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -54491,6 +54754,12 @@
    "fr": "Pas encore de parties",
    "where": [
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de pensée : l'IA observe le début de l'entraînement.",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -60652,6 +60921,12 @@
    ]
   },
   {
+   "fr": "QUI TROUVE LES GAINS",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "quitte le secteur qui s'inverse",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -64291,6 +64566,12 @@
    ]
   },
   {
+   "fr": "Repère",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Repérez l'ouverture de l'anneau et passez par elle.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -64473,6 +64754,12 @@
    "fr": "reste {0}",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Reste {0} jusqu'au repère suivant",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -65423,6 +65710,12 @@
    "fr": "Rouge : blesse au contact ou attaque",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rouge : le TAS est plus lent que le meilleur repère (du temps à gagner). ◆ : cherché maintenant.",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -68632,12 +68925,6 @@
    ]
   },
   {
-   "fr": "Section {0}",
-   "where": [
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
    "fr": "section {0}",
    "where": [
     "ui/screens/AdminTas.cpp"
@@ -68695,6 +68982,7 @@
   {
    "fr": "Segment",
    "where": [
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SegmentsScene.cpp",
@@ -68776,6 +69064,12 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SobMontageScene.cpp",
     "ui/screens/StatisticsLevels.cpp"
+   ]
+  },
+  {
+   "fr": "segment {0}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -70174,6 +70468,12 @@
    ]
   },
   {
+   "fr": "Sol plat · élan {0} px/s",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Sol vitrifié",
    "where": [
     "data/enemies/monolithe.json"
@@ -70227,6 +70527,7 @@
   {
    "fr": "Somme des meilleurs",
    "where": [
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/ReplayGapSources.cpp",
     "ui/screens/ReplayScene.cpp",
@@ -72914,6 +73215,12 @@
    ]
   },
   {
+   "fr": "S{0} {1}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "S{0} · {1}",
    "where": [
     "ui/screens/AdminTas.cpp",
@@ -73520,6 +73827,7 @@
    "fr": "TAS",
    "where": [
     "ui/screens/AdminScene.cpp",
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -73575,6 +73883,24 @@
   },
   {
    "fr": "TAS : un planificateur prévoit dashs, sauts longs, sauts muraux et sauts tamponnés selon les pouvoirs et l'énergie disponibles et propose ses plans à la recherche, qui les juge dans le vrai jeu.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "TAS : une course où Nova passe à travers un solide est toujours refusée. Les monstres hors des arènes ne comptent plus : la recherche ne les tue plus s'ils la ralentissent.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "TAS : une IA intégrée au jeu, sur l'ordinateur de l'administrateur. Elle repère les passages où la course perd de la vitesse et y essaie toutes les trajectoires (moment du saut, saut tenu plus ou moins longtemps, double saut, pouvoirs), répartit les cœurs entre ses stratégies et dit pourquoi, en pensées.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "TAS : une mémoire des configurations de saut déjà résolues, pour tous les niveaux : retrouvée, une configuration est rejouée aussitôt au lieu d'être cherchée à nouveau.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -75304,12 +75630,6 @@
    ]
   },
   {
-   "fr": "Threads par entraînement",
-   "where": [
-    "ui/screens/AdminTas.cpp"
-   ]
-  },
-  {
    "fr": "Thème principal",
    "where": [
     "data/music/tracks.json"
@@ -76323,6 +76643,12 @@
    ]
   },
   {
+   "fr": "Tous les passages de la course en {0} s ont été cherchés.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Tous les pouvoirs du niveau",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -76368,14 +76694,7 @@
   {
    "fr": "Tout",
    "where": [
-    "ui/screens/AdminAssets.cpp",
-    "ui/screens/AdminTasCurve.cpp"
-   ]
-  },
-  {
-   "fr": "Tout arrêter",
-   "where": [
-    "ui/screens/AdminTas.cpp"
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -76413,12 +76732,6 @@
    "fr": "Tout en or",
    "where": [
     "data/achievements/achievements.json"
-   ]
-  },
-  {
-   "fr": "Tout entraîner ({0})",
-   "where": [
-    "ui/screens/AdminTas.cpp"
    ]
   },
   {
@@ -76911,6 +77224,36 @@
    "fr": "Trajectoire enregistrée (simulation désynchronisée)",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Trajectoire trouvée à x {0} : {1} s gagnées (saut à +{2} images tenu jusqu'au bout).",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "Trajectoire trouvée à x {0} : {1} s gagnées (saut à +{2} images tenu {3} images).",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "Trajectoire trouvée à x {0} : {1} s gagnées (saut à +{2} tenu {3} images, double saut à +{4} tenu jusqu'au bout).",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "Trajectoire trouvée à x {0} : {1} s gagnées (saut à +{2} tenu {3} images, double saut à +{4} tenu {5} images).",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "trajectoires",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -77411,6 +77754,12 @@
    ]
   },
   {
+   "fr": "Trou de {0} px · élan {1} px/s",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "Trou noir",
    "where": [
     "data/online/avatars.json"
@@ -77444,6 +77793,18 @@
    "fr": "Trouvé par : {0}",
    "where": [
     "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "trouvé par {0}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "trouvé par {0}, segment {1}",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -81868,12 +82229,6 @@
    ]
   },
   {
-   "fr": "Vider la file",
-   "where": [
-    "ui/screens/AdminTas.cpp"
-   ]
-  },
-  {
    "fr": "Vie de l'instance selon le groupe",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
@@ -84013,8 +84368,15 @@
    ]
   },
   {
+   "fr": "VÉRIFICATION",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "Vérification",
    "where": [
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/TasSheetScene.cpp"
    ]
   },
@@ -84161,6 +84523,12 @@
    "fr": "Vérifié par {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vérifiée dans le vrai jeu : {0} s.",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -86381,6 +86749,18 @@
    ]
   },
   {
+   "fr": "{0} configuration apprise",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "{0} configurations apprises",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "{0} consultations, la dernière le {1}",
    "where": [
     "game/online/AdminView.cpp"
@@ -86426,6 +86806,7 @@
    "fr": "{0} cœur",
    "where": [
     "ui/screens/AdminScene.cpp",
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -86437,6 +86818,7 @@
    "fr": "{0} cœurs",
    "where": [
     "ui/screens/AdminScene.cpp",
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -86445,7 +86827,7 @@
    ]
   },
   {
-   "fr": "{0} cœurs · {1} en cours · {2} en file",
+   "fr": "{0} cœurs sur cet ordinateur · un niveau et une catégorie à la fois",
    "where": [
     "ui/screens/AdminTas.cpp"
    ]
@@ -86850,6 +87232,12 @@
    "fr": "{0} essais explorés",
    "where": [
     "ui/screens/TasSheetScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} essais par seconde",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {
@@ -88159,12 +88547,6 @@
    ]
   },
   {
-   "fr": "{0} paire(s) ajoutée(s) à la file d'entraînement.",
-   "where": [
-    "ui/screens/AdminTas.cpp"
-   ]
-  },
-  {
    "fr": "{0} participe au raid commun {1} : inscrivez-vous",
    "where": [
     "server/src/notifications.ts"
@@ -88907,6 +89289,12 @@
    ]
   },
   {
+   "fr": "{0} trouvé, en vérification…",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "{0} trouvée !",
    "where": [
     "game/gameplay/entities/PickupEntities.cpp"
@@ -89414,9 +89802,27 @@
    ]
   },
   {
+   "fr": "{0} · section {1}",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · section {1} à la fin",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "{0} · section {1}/{2}",
    "where": [
     "ui/screens/AdminTasCurve.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · sections {1} à {2}",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -89447,6 +89853,12 @@
    "fr": "{0} · sur place",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · toute la course",
+   "where": [
+    "game/tas/TasProgress.cpp"
    ]
   },
   {
@@ -90598,6 +91010,12 @@
    ]
   },
   {
+   "fr": "À L'ARRÊT",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
    "fr": "À l'arrêt",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -90809,6 +91227,18 @@
    ]
   },
   {
+   "fr": "À x {0} ({1} s), la course perd {2} s de vitesse : j'essaie toutes les trajectoires de ce passage.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
+   "fr": "À x {0} : {1} variations essayées, aucune ne rejoint la course plus tôt.",
+   "where": [
+    "game/tas/TasProgress.cpp"
+   ]
+  },
+  {
    "fr": "à {0} %",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
@@ -90970,6 +91400,7 @@
   {
    "fr": "Écart",
    "where": [
+    "ui/screens/AdminTasMind.cpp",
     "ui/screens/GhostRun.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
@@ -93300,6 +93731,24 @@
    "fr": "… et {0} lignes de plus",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "… {0} autre segment",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "… {0} autres essayeurs",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
+   ]
+  },
+  {
+   "fr": "… {0} autres segments",
+   "where": [
+    "ui/screens/AdminTasMind.cpp"
    ]
   },
   {

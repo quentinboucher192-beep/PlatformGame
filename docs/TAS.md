@@ -760,6 +760,78 @@ l'affinage, `planner` le planificateur ; avec le portefeuille, `explore` et `tim
 réalignement de phase, `branch` une branche qui part plus vite que la meilleure course). Le tour
 suivant part de la meilleure course vérifiée. Jamais une course non vérifiée n'est écrite.
 
+## L'IA du TAS (2.101)
+
+Une IA **intégrée** à `cosmic_tas` (aucun modèle de langage, aucun service : tout tourne sur
+l'ordinateur de l'administrateur, déterministe pour une graine et un nombre de cœurs donnés). Son but :
+**passer le moins de temps possible à chaque endroit du niveau** tout en faisant ce que la catégorie
+demande. Elle a trois parties.
+
+### Les trajectoires
+
+`tools/tas/Trajectory.h` : à chaque endroit où la meilleure course **perd de la vitesse** (Nova
+ralentit, attend, se cogne), l'optimiseur part de l'état sauvegardé de cet instant et essaie
+**toutes les variations** du passage : le moment du saut (à l'image près), la durée pendant
+laquelle il est tenu (un saut tenu plus longtemps va plus haut), le **double saut** (quand, tenu
+combien), la glissade, la chute rapide, le lâcher d'une plateforme, et chaque **pouvoir** prêt
+(quand, dans quelle direction, tenu combien). Chaque essai est joué jusqu'à ce qu'il **rejoigne**
+la meilleure course (même position, même vitesse à quelques pixels près) : l'avance au point de
+jonction est le gain. Le meilleur essai est raccordé à la suite de la course et vérifié. Une avance
+qui ne tient pas jusqu'au bout (la suite ne se rejoue plus : une plateforme, un ennemi au mauvais
+moment) n'est pas perdue : elle donne le début de la course jusqu'au point de passage le plus loin
+qu'elle atteint en avance, et **une branche** (ci-dessus) entraîne la suite depuis là, toute seule.
+
+`cosmic_tas --trajectories [--traj-from <s>] [--traj-to <s>] [--traj-out <dossier>]` : seulement les
+trajectoires de la meilleure course (sans le reste de la recherche), les passages et leurs gains
+écrits au fur et à mesure.
+
+### La mémoire
+
+`tools/tas/Memory.h` : chaque passage résolu (une avance d'au moins 6 images) est retenu sous la
+forme d'une **configuration** : la grille des solides devant Nova (16 × 10 cases de 16 px, une
+derrière elle, le sol sous ses pieds sur la dernière ligne), sa vitesse (par 25 px/s), au sol ou en
+l'air, ses sauts en l'air et son énergie restants, ses pouvoirs prêts. Avec elle, la suite de
+touches qui l'a résolue et ce qu'elle a fait gagner. Retrouvée plus tard, **dans ce niveau ou un
+autre**, la configuration est rejouée aussitôt (« j'ai déjà fait cette configuration de saut ») au
+lieu des milliers de variations ; si elle ne rejoint pas la course à cet endroit, la recherche
+complète reprend. Fichier : `<dossier utilisateur>/tas/memory.json` (4 000 configurations au plus ;
+la moins utile laisse sa place). `--memory <fichier>` ou `--no-memory`.
+
+### Le directeur et ses pensées
+
+`tools/tas/Director.h` : après le faisceau de chaque tour, le directeur décide, tranche après
+tranche, ce que fait **chaque cœur** (un « essayeur ») ; plusieurs stratégies tournent **côte à côte**,
+chacune sur ses cœurs et ses propres mondes :
+
+* une course plus rapide vient d'être trouvée : **l'affinage** sur tous les cœurs ;
+* il reste des passages de la meilleure course à chercher : **les trajectoires** sur tous les cœurs
+  sauf un, laissé à **l'exploration** (les routes que rien n'indique) ;
+* sinon : la stratégie qui a le plus gagné pour son temps (le portefeuille, ci-dessus).
+
+Chaque décision et chaque découverte est une **pensée** (`Thought` : un code et ses nombres, jamais
+une phrase : le jeu la formule dans la langue du joueur, `game/tas/TasProgress.cpp`) : un passage
+lent repéré, une trajectoire trouvée (saut à +n images tenu m images, double saut…), une
+configuration rappelée ou apprise, une branche, une course vérifiée, une course refusée. Le
+fichier de progression garde les 60 dernières, l'état de chaque essayeur (sa stratégie, ses
+sections, ses essais) et les configurations de la mémoire qui ont le plus gagné.
+
+### Jamais à travers un mur
+
+Chaque course gardée (meilleure course ou branche) passe d'abord par `Sim::clipAt` : rejouée image
+par image, la boîte de Nova vivante ne doit **jamais** recouvrir un solide. Sinon elle est refusée
+(pensée « course refusée : Nova passe à travers un solide à t s ») et rien n'est écrit. C'est ce
+contrôle qui a trouvé le défaut corrigé en simulation 21 : un pouvoir lancé pendant une glissade sous
+un plafond bas remettait Nova debout dans le plafond, et elle le traversait.
+
+### Mesure (`sylvanox_01` ANY%)
+
+À 7,908 s, la meilleure course (1:23.900) franchit une tour d'un saut simple et perd sa vitesse sur
+le bord ; les trajectoires trouvent un **double saut** (saut aussitôt tenu 13 images, second saut
+32 images plus tard tenu 44 images) qui passe sans rien perdre : **1,233 s d'avance**, encore
+1,225 s au CP1. La suite ne se rejouant plus, une branche est partie de là et a fini en 1:16.850 ;
+mais cette course contenait le défaut du pouvoir sous un plafond (49,567 à 49,975 s) : refusée, elle
+ne compte pas. L'entraînement reprend en simulation 21, avec le refus de toute traversée.
+
 ## Vérification
 
 Avant d'écrire quoi que ce soit (`tools/tas/Output.cpp`, les étapes 2 et 3 dans
@@ -800,21 +872,22 @@ précédent de cette version a laissée (`--save-partial`, `saves/tas_local/.tra
 chaque section : une première course plus longue qu'une session n'est pas perdue). Le jeu ne lie
 jamais la recherche ni son `operator new`.
 
-* **Plusieurs paires à la fois** : « Entraînements en parallèle » (par défaut : les cœurs de
-  l'ordinateur divisés par les threads d'un entraînement, 16 au plus), « Threads par
-  entraînement » (2), réglages gardés dans `saves/tas_local/settings.json`.
-* **« Tout entraîner »** met en file chaque paire affichée (filtres : catégorie, planète, « En
-  cours et en file ») qui n'est ni en cours ni tenue par un autre administrateur ; le jeu en garde
-  N en cours et lance la suivante dès qu'une s'arrête. **« Budget par paire »** (30 min par défaut,
-  ou « Sans limite ») : une paire arrêtée par son budget repart au bout de la file (chacune son
-  tour). La file vit tant que le jeu est ouvert (quitter la page ne l'arrête pas), pas au-delà.
+* **Un niveau et une catégorie à la fois** (2.101) : tous les cœurs alloués vont à une seule
+  paire. « Cœurs alloués » (par défaut : les cœurs de l'ordinateur moins un), « Durée » (sans
+  limite par défaut), « IA du TAS » (oui : `--portfolio --director`) et « Mémoire » (oui :
+  `--memory`, le fichier de cet ordinateur), réglages gardés dans `saves/tas_local/settings.json`.
+  Lancer une paire arrête celle qui tournait ; « Arrêter l'entraînement » l'arrête. La page de la
+  paire montre l'avancement (meilleur temps vérifié, repères, segments, la recherche en ce moment,
+  qui trouve les gains) et, sous la courbe, **l'IA du TAS** : ses pensées, ses essayeurs, sa mémoire
+  (sur un écran court, 1280 × 720, la courbe garde toute sa hauteur et l'IA a son onglet « IA »
+  après les points de passage).
 * **Le verrou** : avant de lancer `cosmic_tas`, le jeu prend le verrou de la paire **pour cette
   version du niveau** (`POST /admin/tas/{niveau}/{catégorie}/lease`) ; un battement par minute le
   garde ; trois minutes sans battement et il expire (un ordinateur éteint ou planté libère ses
   paires tout seul). Un autre administrateur voit « En entraînement par X » et ne peut pas la
-  lancer ; « Tout entraîner » la passe. Si le battement est refusé (verrou perdu) ou ne passe plus
+  lancer. Si le battement est refusé (verrou perdu) ou ne passe plus
   depuis près de trois minutes, l'entraînement s'arrête.
-* **« Arrêter »** (une paire) ou **« Tout arrêter »** : `cosmic_tas` reçoit l'ordre (fichier
+* **« Arrêter l'entraînement »** : `cosmic_tas` reçoit l'ordre (fichier
   d'arrêt et fin de son entrée standard), garde sa meilleure course (vérifiée, écrite dans
   `saves/tas_local/`), et le verrou est rendu **dès qu'il a fini** (sa dernière vérification,
   quelques secondes ; 20 s au plus) : sa dernière amélioration part avec le verrou rendu (voir
@@ -1032,7 +1105,7 @@ quand la simulation change (`kSimulationVersion`). Alors :
   ancienne version (« archive ») ; les verrous et les totaux d'entraînement sont **par version**.
 * **ADMINISTRATION › TAS** : une paire qui n'a de course que pour une ancienne version montre
   « À recalculer (niveau modifié) », l'ancien temps marqué « ancienne version, non comparable » ;
-  elle compte comme jamais entraînée pour la nouvelle version et « Tout entraîner » la prend.
+  elle compte comme jamais entraînée pour la nouvelle version.
   L'entraînement de la nouvelle version **part de rien** : une ancienne course n'est jamais donnée
   comme course de départ (rien ne dit jusqu'où elle vaut sur le niveau changé), et rien n'est
   publié qui n'a pas été vérifié sur la version en cours.

@@ -388,3 +388,6 @@ publish
 session
 versions
 windows
+gain
+observe
+−0,000 s

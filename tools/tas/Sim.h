@@ -95,6 +95,9 @@ public:
 
     Progress measure(int fromWaypoint);
     RunStudy study(const std::vector<InputFrame>& frames);
+    /// The clock where Nova is first inside a solid in `run` (a physics bug the search found: such
+    /// a run is never written, docs/TAS.md « Jamais à travers un mur »); -1: never.
+    float clipAt(const std::vector<InputFrame>& run);
     /// The rules broken now: a death beyond `deaths`, the category, the level failed.
     bool broken(int deaths) const;
     /// The exit reached now with the category kept (100 %: everything collected).

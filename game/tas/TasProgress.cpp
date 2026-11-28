@@ -1,6 +1,9 @@
 #include "game/tas/TasProgress.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 
 namespace cosmic {
 
@@ -443,7 +446,26 @@ Json TasProgress::toJson() const {
             {"sequence", sequence},
             {"message", message},
             {"windows", ws},
-            {"strategies", strategiesJson}};
+            {"strategies", strategiesJson},
+            {"director", director},
+            {"thoughts", [&] {
+                 Json a = Json::array();
+                 for (const TasThought& t : thoughts) a.push_back({{"atMs", t.atMs}, {"kind", t.kind}, {"code", t.code}, {"n", t.n}, {"s", t.s}});
+                 return a;
+             }()},
+            {"workers", [&] {
+                 Json a = Json::array();
+                 for (const TasWorker& w : workers) a.push_back({{"arm", w.arm}, {"first", w.first}, {"last", w.last}, {"attempts", w.attempts}});
+                 return a;
+             }()},
+            {"memorySize", memorySize},
+            {"memoryTop", [&] {
+                 Json a = Json::array();
+                 for (const TasMemoryEntry& e : memoryTop)
+                     a.push_back({{"rise", e.rise}, {"riseAt", e.riseAt}, {"gap", e.gap}, {"speed", e.speed}, {"powers", e.powers},
+                                  {"leadFrames", e.leadFrames}, {"uses", e.uses}, {"gainMs", e.gainMs}, {"level", e.level}});
+                 return a;
+             }()}};
 }
 
 std::optional<TasProgress> TasProgress::fromJson(const Json& j, std::string* error) {
@@ -514,6 +536,61 @@ std::optional<TasProgress> TasProgress::fromJson(const Json& j, std::string* err
             s.wins = std::max(0, jget<int>(x, "wins", 0));
             p.strategies.push_back(std::move(s));
         }
+    // The TAS's mind (absent before 2.101): every word and number bounded (the file is the tool's,
+    // but only what is shown is trusted that far).
+    p.director = jget<bool>(j, "director", false);
+    auto shortText = [](std::string s, size_t max) {
+        if (s.size() > max) {
+            size_t n = max;
+            while (n > 0 && (static_cast<unsigned char>(s[n]) & 0xC0) == 0x80) --n;
+            s.resize(n);
+        }
+        return s;
+    };
+    if (const Json ts = jfield(j, "thoughts", Json::array()); ts.is_array())
+        for (const Json& x : ts) {
+            if (!x.is_object()) continue;
+            TasThought t;
+            t.atMs = std::max<int64_t>(0, jget<int64_t>(x, "atMs", 0));
+            t.kind = shortText(jstr(x, "kind"), 16);
+            t.code = shortText(jstr(x, "code"), 32);
+            t.s = shortText(jstr(x, "s"), 120);
+            if (t.kind.empty() || t.code.empty()) continue;
+            if (const Json n = x.value("n", Json::array()); n.is_array())
+                for (const Json& v : n) {
+                    if (t.n.size() >= TasThought::kNumbers) break;
+                    const double d = v.is_number() ? v.get<double>() : 0.0;
+                    t.n.push_back(std::isfinite(d) ? std::clamp(d, -1.0e9, 1.0e9) : 0.0);
+                }
+            p.thoughts.push_back(std::move(t));
+        }
+    if (p.thoughts.size() > TasThought::kMax) p.thoughts.erase(p.thoughts.begin(), p.thoughts.end() - static_cast<std::ptrdiff_t>(TasThought::kMax));
+    if (const Json ws2 = jfield(j, "workers", Json::array()); ws2.is_array())
+        for (const Json& x : ws2) {
+            if (p.workers.size() >= TasWorker::kMax || !x.is_object()) break;
+            TasWorker w;
+            w.arm = shortText(jstr(x, "arm"), 32);
+            w.first = std::clamp(jget<int>(x, "first", 0), 0, TasAttemptWindow::kMaxSections);
+            w.last = std::clamp(jget<int>(x, "last", -1), -1, TasAttemptWindow::kMaxSections);
+            w.attempts = std::max<int64_t>(0, jget<int64_t>(x, "attempts", 0));
+            p.workers.push_back(std::move(w));
+        }
+    p.memorySize = std::max<int64_t>(0, jget<int64_t>(j, "memorySize", 0));
+    if (const Json ms = jfield(j, "memoryTop", Json::array()); ms.is_array())
+        for (const Json& x : ms) {
+            if (p.memoryTop.size() >= TasMemoryEntry::kMax || !x.is_object()) break;
+            TasMemoryEntry e;
+            e.rise = std::clamp(jget<int>(x, "rise", 0), 0, 1000);
+            e.riseAt = std::clamp(jget<int>(x, "riseAt", 0), 0, 1000);
+            e.gap = std::clamp(jget<int>(x, "gap", 0), 0, 1000);
+            e.speed = std::clamp(jget<int>(x, "speed", 0), -2000, 2000);
+            e.powers = shortText(jstr(x, "powers"), 80);
+            e.leadFrames = std::clamp(jget<int>(x, "leadFrames", 0), 0, 100000);
+            e.uses = std::clamp(jget<int>(x, "uses", 0), 0, 1000000);
+            e.gainMs = std::max<int64_t>(0, jget<int64_t>(x, "gainMs", 0));
+            e.level = shortText(jstr(x, "level"), 64);
+            p.memoryTop.push_back(std::move(e));
+        }
     p.message = jstr(j, "message");
     if (p.message.size() > 400) {
         size_t n = 400;  // never in the middle of a UTF-8 character
@@ -531,6 +608,7 @@ std::string tasStrategyLabel(const std::string& id) {
     if (id == "planner") return "planificateur";
     if (id == "guides") return "guides";
     if (id == "phase") return "réalignement de phase";
+    if (id == "trajectory") return "trajectoires";
     return id;
 }
 
@@ -558,6 +636,91 @@ std::optional<TasProgress> TasProgress::parse(const std::string& text, std::stri
         return std::nullopt;
     }
     return fromJson(j, error);
+}
+
+}  // namespace cosmic
+
+namespace cosmic {
+
+namespace {
+
+double num(const TasThought& t, size_t i) { return i < t.n.size() ? t.n[i] : 0.0; }
+
+}  // namespace
+
+std::string tasThoughtText(const TasThought& t) {
+    char b[400];
+    const std::string& c = t.code;
+    if (c == "spot") {
+        std::snprintf(b, sizeof b, "À x %.0f (%.3f s), la course perd %.2f s de vitesse : j'essaie toutes les trajectoires de ce passage.", num(t, 1), num(t, 0),
+                      num(t, 2));
+    } else if (c == "no_gain") {
+        std::snprintf(b, sizeof b, "À x %.0f : %.0f variations essayées, aucune ne rejoint la course plus tôt.", num(t, 0), num(t, 1));
+    } else if (c == "places_done") {
+        std::snprintf(b, sizeof b, "Tous les passages de la course en %.3f s ont été cherchés.", num(t, 0));
+    } else if (c == "recall") {
+        std::snprintf(b, sizeof b, "J'ai déjà fait cette configuration de saut (obstacle de %.0f px, élan %.0f px/s) : je l'applique à x %.0f sans tout réessayer.",
+                      num(t, 1), num(t, 2), num(t, 0));
+    } else if (c == "recall_miss") {
+        std::snprintf(b, sizeof b, "Configuration déjà vue à x %.0f (obstacle de %.0f px), mais sa suite de touches ne rejoint pas la course ici : je cherche à nouveau.",
+                      num(t, 0), num(t, 1));
+    } else if (c == "learn") {
+        std::snprintf(b, sizeof b, "Je retiens cette configuration (obstacle de %.0f px à %.0f px, élan %.0f px/s) : %.3f s d'avance.", num(t, 0), num(t, 1), num(t, 2),
+                      num(t, 3));
+    } else if (c == "trajectory") {
+        // One sentence per shape (the dictionary translates whole sentences).
+        const int press = static_cast<int>(num(t, 2)), hold = static_cast<int>(num(t, 3)), second = static_cast<int>(num(t, 4)), hold2 = static_cast<int>(num(t, 5));
+        if (hold < 0)
+            std::snprintf(b, sizeof b, "Trajectoire trouvée à x %.0f : %.3f s gagnées (saut à +%d images tenu jusqu'au bout).", num(t, 1), num(t, 0), press);
+        else if (second < 0)
+            std::snprintf(b, sizeof b, "Trajectoire trouvée à x %.0f : %.3f s gagnées (saut à +%d images tenu %d images).", num(t, 1), num(t, 0), press, hold);
+        else if (hold2 < 0)
+            std::snprintf(b, sizeof b, "Trajectoire trouvée à x %.0f : %.3f s gagnées (saut à +%d tenu %d images, double saut à +%d tenu jusqu'au bout).", num(t, 1), num(t, 0),
+                          press, hold, second);
+        else
+            std::snprintf(b, sizeof b, "Trajectoire trouvée à x %.0f : %.3f s gagnées (saut à +%d tenu %d images, double saut à +%d tenu %d images).", num(t, 1), num(t, 0), press,
+                          hold, second, hold2);
+    } else if (c == "lead") {
+        std::snprintf(b, sizeof b, "Le passage de x %.0f donne %.3f s d'avance jusqu'au CP%.0f, mais la suite de la course ne tient plus : une branche le gardera.",
+                      num(t, 2), num(t, 0), num(t, 1));
+    } else if (c == "branch") {
+        std::snprintf(b, sizeof b, "Branche : je garde le début jusqu'au CP%.0f (%.3f s d'avance) et j'entraîne la suite.", num(t, 0), num(t, 1));
+    } else if (c == "plan_places_left") {
+        const int traj = static_cast<int>(num(t, 0)), expl = static_cast<int>(num(t, 1));
+        if (expl > 0 && traj > 1) std::snprintf(b, sizeof b, "Il reste des passages à chercher : %d cœurs aux trajectoires, 1 à l'exploration.", traj);
+        else if (expl > 0) std::snprintf(b, sizeof b, "Il reste des passages à chercher : 1 cœur aux trajectoires, 1 à l'exploration.");
+        else if (traj > 1) std::snprintf(b, sizeof b, "Il reste des passages à chercher : les trajectoires sur %d cœurs.", traj);
+        else std::snprintf(b, sizeof b, "Il reste des passages à chercher : les trajectoires sur 1 cœur.");
+    } else if (c == "plan_after_gain") {
+        std::snprintf(b, sizeof b, "Course plus rapide : je l'affine sur les %.0f cœurs.", num(t, 0));
+    } else if (c == "plan_bandit") {
+        const std::string arm = tasStrategyLabel(t.s.substr(0, t.s.find(':')));
+        std::snprintf(b, sizeof b, "Je donne le travail à « %s » (%.0f %% du temps jusqu'ici, pour ce qu'elle a gagné).", arm.c_str(), num(t, 0));
+    } else if (c == "verified") {
+        std::snprintf(b, sizeof b, "Vérifiée dans le vrai jeu : %.3f s.", num(t, 0));
+    } else if (c == "clip") {
+        std::snprintf(b, sizeof b, "Course de %.3f s refusée : Nova passe à travers un solide à %.3f s.", num(t, 1), num(t, 0));
+    } else {
+        return {};
+    }
+    return b;
+}
+
+std::string tasWorkerText(const TasWorker& w) {
+    char b[160];
+    if (w.last < 0 && w.first <= 0) std::snprintf(b, sizeof b, "%s · toute la course", tasStrategyLabel(w.arm).c_str());
+    else if (w.last < 0) std::snprintf(b, sizeof b, "%s · section %d à la fin", tasStrategyLabel(w.arm).c_str(), w.first + 1);
+    else if (w.last == w.first) std::snprintf(b, sizeof b, "%s · section %d", tasStrategyLabel(w.arm).c_str(), w.first + 1);
+    else std::snprintf(b, sizeof b, "%s · sections %d à %d", tasStrategyLabel(w.arm).c_str(), w.first + 1, w.last + 1);
+    return b;
+}
+
+std::string tasMemoryText(const TasMemoryEntry& e) {
+    char b[200];
+    if (e.rise > 0) std::snprintf(b, sizeof b, "Obstacle de %d px à %d px · élan %d px/s", e.rise, e.riseAt, e.speed);
+    else if (e.gap > 0) std::snprintf(b, sizeof b, "Trou de %d px · élan %d px/s", e.gap, e.speed);
+    else std::snprintf(b, sizeof b, "Sol plat · élan %d px/s", e.speed);
+    return b;  // (the powers: shown apart, as written)
 }
 
 }  // namespace cosmic
