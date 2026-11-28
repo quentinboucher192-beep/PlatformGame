@@ -179,13 +179,71 @@ int64_t tasNowMs() {
 
 bool TasCurvePoint::sameAs(const TasCurvePoint& o) const {
     return kind == o.kind && timeMs == o.timeMs && trainingMs == o.trainingMs && explored == o.explored && at == o.at && by == o.by &&
-           revision == o.revision && session == o.session && share == o.share;
+           revision == o.revision && session == o.session && share == o.share && splits == o.splits && source == o.source;
+}
+
+namespace {
+
+/// 2.99: the splits and the source of a point (absent before: none).
+void readSplits(TasCurvePoint& p, const Json& j) {
+    if (auto sp = tasSplitsFromJson(jfield(j, "splits", Json::array()), p.timeMs)) p.splits = std::move(*sp);
+    p.source = jstr(j, "source");
+    if (p.source.size() > 16) p.source.clear();
+}
+
+}  // namespace
+
+int64_t tasSumOfBest(const TasCurveVersion& v, int cp) {
+    std::vector<std::pair<const std::vector<int64_t>*, int64_t>> runs;  // (splits, time at the exit)
+    for (const TasProgress::Reference& r : v.references)
+        if (r.timeMs > 0 && !r.splits.empty() && !r.oldVersion) runs.push_back({&r.splits, r.timeMs});
+    if (runs.empty()) return 0;
+    const TasCurvePoint* best = nullptr;
+    for (const TasCurvePoint& p : v.points)
+        if (p.best() && !p.splits.empty() && (!best || p.timeMs < best->timeMs)) best = &p;
+    if (best) runs.push_back({&best->splits, best->timeMs});
+    const size_t n = runs.front().first->size();
+    for (const auto& [sp, t] : runs)
+        if (sp->size() != n || std::any_of(sp->begin(), sp->end(), [](int64_t x) { return x <= 0; })) return 0;
+    const size_t upTo = cp <= 0 ? n + 1 : std::min(n + 1, static_cast<size_t>(cp));
+    int64_t sum = 0;
+    for (size_t k = 0; k < upTo; ++k) {
+        int64_t segment = INT64_MAX;
+        for (const auto& [sp, t] : runs) {
+            const int64_t to = k < n ? (*sp)[k] : t, from = k == 0 ? 0 : (*sp)[k - 1];
+            segment = std::min(segment, to - from);
+        }
+        sum += std::max<int64_t>(0, segment);
+    }
+    return sum;
+}
+
+std::string tasSourceLabel(const std::string& source) {
+    if (source == "beam") return "la recherche (faisceau)";
+    if (source == "guide") return "un guide (course d'un joueur)";
+    if (source == "splice") return "l'assemblage des guides";
+    if (source == "polish") return "l'affinage image par image";
+    if (source == "planner") return "le planificateur (sauts et dashs planifiés)";
+    if (source == "explore") return "l'exploration (Go-Explore)";
+    if (source == "timing") return "le polissage des timings";
+    if (source == "phase") return "le réalignement de phase (attendre que le niveau revienne en phase)";
+    if (source == "branch") return "la branche (une avance gardée, la suite entraînée)";
+    return source;
+}
+
+const TasCurvePoint* TasCurveVersion::previousBest(size_t i) const {
+    if (i >= points.size()) return nullptr;
+    for (size_t k = i; k-- > 0;)
+        if (points[k].best() && points[k].timeMs > points[i].timeMs) return points[k].splits.size() == points[i].splits.size() ? &points[k] : nullptr;
+    return nullptr;
 }
 
 Json TasCurvePoint::toJson() const {
     Json j = {{"kind", tasCurveKindId(kind)}, {"timeMs", timeMs}, {"trainingMs", trainingMs}, {"explored", explored}, {"at", at},
               {"by", by},                     {"session", session}, {"share", shareId(share)}};
     if (revision > 0) j["revision"] = revision;
+    if (!splits.empty()) j["splits"] = splits;
+    if (!source.empty()) j["source"] = source;
     return j;
 }
 
@@ -202,6 +260,7 @@ std::optional<TasCurvePoint> TasCurvePoint::fromJson(const Json& j) {
     p.session = std::max(0, jget<int>(j, "session", 0));
     p.share = shareFromId(jstr(j, "share"));
     if (p.share == TasShare::Pending) p.share = TasShare::Unshared;  // its lease ended with the game that wrote it
+    readSplits(p, j);
     return p;
 }
 
@@ -217,6 +276,7 @@ std::optional<TasCurvePoint> TasCurvePoint::fromServer(const Json& j) {
     p.revision = std::max(0, jget<int>(j, "revision", 0));
     p.session = std::max(0, jget<int>(j, "session", 0));
     p.share = TasShare::Shared;
+    readSplits(p, j);
     return p;
 }
 
@@ -406,6 +466,7 @@ bool TasCurve::mergeServerWindows(const std::string& hash, int sim, std::vector<
 void TasCurve::acknowledge(const std::string& hash, int sim, const std::string& leaseId, const std::vector<int64_t>& sentPoints,
                            const std::vector<TasCurvePoint>& added, const std::vector<int64_t>& sentWindows) {
     TasCurveVersion& v = version(hash, sim);
+    const std::vector<TasCurvePoint> before = v.points;
     v.points.erase(std::remove_if(v.points.begin(), v.points.end(),
                                   [&](const TasCurvePoint& p) {
                                       return p.share == TasShare::Pending && p.leaseId == leaseId &&
@@ -414,6 +475,11 @@ void TasCurve::acknowledge(const std::string& hash, int sim, const std::string& 
                    v.points.end());
     for (TasCurvePoint p : added) {
         p.share = TasShare::Shared;
+        // A server that does not keep them yet: the splits and the source found here stay.
+        for (const TasCurvePoint& o : before)
+            if (o.timeMs == p.timeMs && p.splits.empty()) p.splits = o.splits;
+        for (const TasCurvePoint& o : before)
+            if (o.timeMs == p.timeMs && p.source.empty()) p.source = o.source;
         v.points.push_back(std::move(p));
     }
     normalize(v);
@@ -440,7 +506,12 @@ Json TasCurve::toJson() const {
         for (const TasCurveWindow& w : v.windows) ws.push_back(w.toJson());
         Json cps = Json::array();
         for (const TasCheckpoint& c : v.checkpoints) cps.push_back({{"id", c.id}, {"label", c.label}});
-        vs.push_back({{"levelHash", v.levelHash}, {"simVersion", v.simVersion}, {"points", pts}, {"windows", ws}, {"checkpoints", cps}});
+        Json refs = Json::array();
+        for (const TasProgress::Reference& r : v.references) {
+            refs.push_back({{"player", r.player}, {"timeMs", r.timeMs}, {"splits", r.splits}});
+            if (r.oldVersion) refs.back()["oldVersion"] = true;
+        }
+        vs.push_back({{"levelHash", v.levelHash}, {"simVersion", v.simVersion}, {"points", pts}, {"windows", ws}, {"checkpoints", cps}, {"references", refs}});
     }
     return {{"format", kCurveFormat}, {"level", levelId}, {"category", categoryId(category)}, {"versions", vs}};
 }
@@ -467,6 +538,16 @@ std::optional<TasCurve> TasCurve::fromJson(const Json& j) {
             for (const Json& k : cps)
                 if (k.is_object() && v.checkpoints.size() < static_cast<size_t>(TasAttemptWindow::kMaxSections))
                     v.checkpoints.push_back({jstr(k, "id"), jstr(k, "label")});
+        if (const Json refs = jfield(x, "references", Json::array()); refs.is_array())
+            for (const Json& r : refs) {
+                if (!r.is_object() || v.references.size() >= TasProgress::kMaxReferences) continue;
+                TasProgress::Reference ref;
+                ref.player = jstr(r, "player");
+                ref.timeMs = std::max<int64_t>(0, jget<int64_t>(r, "timeMs", 0));
+                if (auto sp = tasSplitsFromJson(jfield(r, "splits", Json::array()), ref.timeMs)) ref.splits = std::move(*sp);
+                ref.oldVersion = jget<bool>(r, "oldVersion", false);
+                v.references.push_back(std::move(ref));
+            }
         normalize(v);
         sortWindows(v.windows);
         capWindows(v.windows);

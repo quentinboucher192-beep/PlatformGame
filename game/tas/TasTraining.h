@@ -61,6 +61,9 @@ struct TasTrainingSettings {
     int threadsPerJob = 2;
     int parallel = 1;        // trainings at once
     int budgetMinutes = 30;  // per pair, then the next pair of the queue (0: until stopped)
+    /// The player's best run of this computer (its PB, with its replay) guides the training of
+    /// its pair (docs/TAS.md « Les guides »): on by default, switched off here.
+    bool guidePb = true;
 
     /// The cores of this computer shared between the trainings: cores / threads per training,
     /// at least 1, at most kMaxParallel.
@@ -144,6 +147,18 @@ public:
     /// The replay of the best valid run this computer has for the pair (its own trainings', the
     /// downloaded ones, the shipped one): the seed of a training. Empty: from scratch.
     std::function<fs::path(const TasPair&)> seedFor;
+    /// A run of a player that guides the training of a pair (cosmic_tas --guide): its replay file
+    /// (an exact replay of this version of the level), whose it is, its time.
+    struct GuideRun {
+        fs::path file;
+        std::string player;
+        int64_t timeMs = 0;
+        std::string replayId;
+    };
+    /// The guides of `pair` at `levelHash`: this computer's PB (TasTrainingSettings::guidePb), the
+    /// fastest attempt of the pair's category on this version of the level that kept its replay
+    /// and was not refused. Public for the screen (« Guides : votre PB … ») and the tests.
+    std::vector<GuideRun> guidesOf(const TasPair& pair, const std::string& levelHash) const;
     /// The level's ranked fingerprint as this game plays it (the version of the level the lease
     /// and the training are for, with kSimulationVersion). Empty: not trainable.
     std::function<std::string(const std::string& levelId)> hashFor;

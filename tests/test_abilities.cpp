@@ -132,7 +132,7 @@ TEST_CASE("abilities: ground pound breaks a cracked floor and hits enemies") {
     for (int i = 0; i < 120; ++i) w.fixedUpdate(PlayerInput{}, kDt);
     CHECK(w.player().grounded());
     CHECK(w.player().feet().y < 641.0f);  // standing on the cracked floor
-    w.player().launch({0, -260}, true);
+    w.player().launch(w, {0, -260}, true);
     for (int i = 0; i < 20; ++i) w.fixedUpdate(PlayerInput{}, kDt);
     w.fixedUpdate(input({Action::MoveDown, Action::Attack}, {Action::Attack}), kDt);
     CHECK(w.player().movementPower() != nullptr);
