@@ -3971,8 +3971,9 @@ coûte zéro à deux morts ; tout se joue en phase 2, où le groupe s'éteint en
 
 **Gardé** : une âme près de son corps (sa boîte élargie de 220 px : sa Couronne atteint 340 px de son centre) attend qu'il
 s'en éloigne (`BossView::noRevive`, relu à chaque plan) ; une âme contre son corps n'est approchée que bouclier prêt
-(`Plan::reviveShielded`). Mesuré sur la 2.101 (difficulté 3 / 5, sans invincibilité, Expert ; la vie qui lui reste à la fin
-de chaque départ, puis sa durée — tous éliminés, aucun debout au bout des 15 min) :
+(`Plan::reviveShielded`). Mesuré sur la 2.101, l'après aussi sur la 2.102 (titan 16 : mêmes résultats départ par départ)
+(difficulté 3 / 5, sans invincibilité, Expert ; la vie qui lui reste à la fin de chaque départ, puis sa durée — tous
+éliminés, aucun debout au bout des 15 min) :
 
 | Groupe | Avant | Après |
 |---|---|---|
