@@ -3808,8 +3808,8 @@ des groupes d'une bulle : « Groupe 1 en attente », « Groupes 2, 8 (8 en atten
 ### Le Cœur d'Asterion (2.98) : joueurs simulés
 
 Le banc du §36 (`COSMIC_GOAT_BENCH=1 COSMIC_GOAT_PARTS=coeur`, les sept parties tombées, 8 joueurs simulés Experts, ni
-invincibilité ni sauvetage, difficulté 3 / 5, 15 min au plus), départs 1 à 5. Les sondes (`COSMIC_GOAT_HIST`, `_DEATHS`,
-`_TRACE`) ont montré deux pertes de temps, pas un manque de dégâts :
+invincibilité ni sauvetage, difficulté 3 / 5, 15 min au plus), départs 1 à 5, mesuré sur la 2.98 (simulation 19). Les
+sondes (`COSMIC_GOAT_HIST`, `_DEATHS`, `_TRACE`) ont montré deux pertes de temps, pas un manque de dégâts :
 
 * **le Cœur traîné sur une artère** : sa couronne le tire vers son joueur le plus proche, et le groupe, entré par l'ouest,
   le frappait depuis son côté ouest ; il dérivait de 2 850 à 1 900 px et s'arrêtait au-dessus de l'artère du balcon ouest
