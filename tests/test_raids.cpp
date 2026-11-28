@@ -39,7 +39,7 @@ Json eventJson(int64_t start, int lock = 30) {
                 {"kind", "world"},
                 {"name", "Asterion"},
                 {"format", "standard"},
-                {"format_min", 45},
+                {"format_min", 60},  // §41: the standard raid lasts 60 minutes
                 {"format_max", 60},
                 {"starts_at", raids::isoUtc(start)},
                 {"lock_at", raids::isoUtc(start - lock * 60)},
@@ -208,7 +208,12 @@ TEST_CASE("raids: states and countdowns as the server computes them") {
     CHECK(before.value == "3 j 21 h 40 min");
     CHECK(raids::countdownOf(e, start + 600, true).value == "00:50:00");
     CHECK(raids::countdownOf(e, start + 4000, false).value.empty());
-    CHECK(raids::formatLine(e) == "Raid standard · 45 à 60 min");
+    CHECK(raids::formatLine(e) == "Raid standard · 60 min");  // §41: the standard raid lasts 60 minutes
+    raids::Event court = e;
+    court.format = "court";
+    court.formatMin = 25;
+    court.formatMax = 30;
+    CHECK(raids::formatLine(court) == "Raid court · 25 à 30 min");
     CHECK(raids::eventName(e) == "Asterion · raid standard");
     CHECK(raids::difficultyLabel(4) == "Difficulté 4 / 5");
     CHECK(raids::formatLabel("legendaire") == "Raid légendaire");

@@ -10,20 +10,21 @@
 //   3 s and on each acceptance) and give it to their games at a step (RAID_STATE): a passage of
 //   another branch opens, its lasers go dark, its reinforcements are gone or its danger stops, at
 //   the same step on every computer of an instance. Nothing comes from a game.
-// * Placement (spec §8): 8 players at most per instance (a group of a clan on a branch), up to 50
-//   per clan. A player picks a branch (or lets the server choose where the clan needs them); the
-//   server places them in their clan's instance of that branch that has room (their own group of
-//   the roster first, then the groups already fighting), opens a new instance when all are full,
-//   and never places a ninth (one conditional statement: concurrent placements cannot overfill).
-//   The raid leader, the chief and the officers move a member or rebalance a branch. Every move
-//   is journaled (raid_placement_log, migration 0144).
+// * Placement, §41 (titan 16, docs/RAIDS.md): ALWAYS seven groups per clan at the start, group k in
+//   an instance of branch k (14 registered at least, 56 in play at most, the others on a waiting
+//   list; raids.ts groupsOf). A player only ever plays their group's instance: another branch or
+//   another group's instance is refused (no help, no new instance); a group leaves its branch only
+//   to replace a wiped group of its clan (raidWipe.ts retake) and, once the seven Gigaboss fell,
+//   for its own instance of the Cœur. The raid leader, the chief and the officers move a member
+//   between groups (2 to 8 players each, one conditional statement) or even them out. Every move is
+//   journaled (raid_placement_log, migration 0144).
 
 import { requireAuth } from "./auth";
 import { ask } from "./coop";
-import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
+import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import brasDroitJson from "./raidBranches.json";
 import titanJson from "./raidTitan.json";
-import { raidState } from "./raids";
+import { MAX_IN_PLAY, MIN_CLAN_PLAYERS, MIN_GROUP, RAID_GROUPS, groupsOf, raidState } from "./raids";
 import { requireEntry } from "./raidWorld";
 import { HEART_OBJECTIVE, gigabossDownIn, heartBodyState, heartOpenIn, heartView } from "./raidHeart";
 import { RULES, rateLimit } from "./ratelimit";
@@ -94,8 +95,6 @@ export const HEART: Catalog | undefined = TITAN.heart_catalog;
 /** The seven branches and the heart: what an instance may play. */
 const PLAYABLE: Catalog[] = HEART ? [...CATALOGS, HEART] : CATALOGS;
 export const INSTANCE_SIZE = 8;
-/** Instances of one clan on one branch (50 players fit in 7). */
-const MAX_CLAN_INSTANCES = 16;
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const PLAYER_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -320,21 +319,7 @@ async function canManage(db: D1Database, eventId: string, clanId: string, me: st
     return !!r && (r.officer === 1 || r.raid_leader === 1);
 }
 
-/** My group of 8 in my clan's roster (raids.ts groupsOf: the raid leader leads group 1). */
-async function rosterGroup(db: D1Database, eventId: string, clanId: string, playerId: string): Promise<number> {
-    const [entry, roster] = await db.batch([
-        db.prepare("SELECT leader_id FROM raid_clan_entries WHERE event_id = ?1 AND clan_id = ?2").bind(eventId, clanId),
-        db.prepare("SELECT p.id FROM raid_registrations r JOIN players p ON p.id = r.player_id WHERE r.event_id = ?1 AND r.clan_id = ?2 ORDER BY r.created_at, p.username").bind(eventId, clanId),
-    ]);
-    const leader = (entry!.results[0] as { leader_id: string | null } | undefined)?.leader_id ?? null;
-    const ids = (roster!.results as { id: string }[]).map((r) => r.id);
-    const li = leader ? ids.indexOf(leader) : -1;
-    if (li > 0) ids.unshift(...ids.splice(li, 1));
-    const at = ids.indexOf(playerId);
-    return at < 0 ? 0 : Math.floor(at / INSTANCE_SIZE) + 1;
-}
-
-// ------------------------------------------------------------------ placement
+// ------------------------------------------------------------------ placement: §41, the seven groups
 
 interface Placement {
     instance_id: string;
@@ -350,7 +335,7 @@ async function placementOf(db: D1Database, eventId: string, playerId: string) {
  * Puts `playerId` (of `clanId`) in instance `inst`, unless 8 others are already placed there (one
  * statement: two placements at once never make a ninth). Journals a change. True when placed.
  */
-export async function putIn(db: D1Database, eventId: string, clanId: string, playerId: string, inst: InstanceRow, by: string, reason: string): Promise<boolean> {
+export async function putIn(db: D1Database, eventId: string, clanId: string, playerId: string, inst: InstanceRow, by: string | null, reason: string): Promise<boolean> {
     const before = await placementOf(db, eventId, playerId);
     if (before?.instance_id === inst.id) return true;
     const now = nowIso();
@@ -372,109 +357,198 @@ export async function putIn(db: D1Database, eventId: string, clanId: string, pla
     return true;
 }
 
-async function placedCounts(db: D1Database, ids: string[]): Promise<Map<string, number>> {
-    const out = new Map<string, number>();
-    if (!ids.length) return out;
-    const rows = await db
-        .prepare(`SELECT instance_id, COUNT(*) AS n FROM raid_placements WHERE instance_id IN (${ids.map((_, i) => "?" + (i + 1)).join(", ")}) GROUP BY instance_id`)
-        .bind(...ids)
-        .all<{ instance_id: string; n: number }>();
-    for (const r of rows.results) out.set(r.instance_id, r.n);
-    return out;
-}
-
-async function clanInstances(db: D1Database, eventId: string, clanId: string, branch: string): Promise<InstanceRow[]> {
+/** Every instance of a clan in an event (its seven groups, the reliefs, the heart's), oldest first. */
+export async function clanInstancesOf(db: D1Database, eventId: string, clanId: string): Promise<InstanceRow[]> {
     return (
         await db
-            .prepare("SELECT * FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2 AND branch = ?3 ORDER BY group_no")
-            .bind(eventId, clanId, branch)
+            .prepare("SELECT * FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2 ORDER BY created_at, group_no, id LIMIT 100")
+            .bind(eventId, clanId)
             .all<InstanceRow>()
     ).results;
 }
 
 /**
- * A new instance of the clan on the branch (the next group number). `whenFull`: only when every
- * instance of the clan there has its 8 players placed (one statement: many players arriving at
- * once open one instance, not one each); null when another one has room.
+ * §41: where group `group` of a clan is now: its newest instance (a group that replaced a wiped one plays its relief
+ * instance; once the Cœur opened, its heart instance). Null when that newest instance was wiped (the group is out for
+ * good, its players spectators) or the group was never formed.
  */
-async function openInstance(db: D1Database, eventId: string, clanId: string, c: Catalog, whenFull = false): Promise<InstanceRow | null> {
+export function currentOf(rows: InstanceRow[], group: number): InstanceRow | null {
+    let cur: InstanceRow | null = null;
+    for (const i of rows) if (i.group_no === group) cur = i; // rows oldest first: the last one is the newest
+    return cur && cur.wiped_zone == null ? cur : null;
+}
+
+/** §41: the groups of a clan still in play (their current instance), by number. */
+export function groupsInPlay(rows: InstanceRow[]): InstanceRow[] {
+    const out: InstanceRow[] = [];
+    for (let k = 1; k <= RAID_GROUPS; ++k) {
+        const i = currentOf(rows, k);
+        if (i) out.push(i);
+    }
+    return out;
+}
+
+const TOO_FEW = (n: number) =>
+    Errors.conflict(
+        "RAID_TOO_FEW",
+        `Votre clan n'a que ${n} inscrit(s) : il en faut au moins ${MIN_CLAN_PLAYERS} pour commencer (sept groupes de 2 à 8 joueurs, un par branche du titan).`,
+        { registered: n, min: MIN_CLAN_PLAYERS },
+    );
+
+/**
+ * §41 (titan 16): the clan's seven groups, formed once (at the first join, view or move of the raid in progress): its
+ * roster in the order of registration (raids.ts groupsOf: the 56 first, as even as possible, the raid leader in group
+ * 1), group k in an instance of branch k of the titan, each player placed in their group. Fewer than 14 registered:
+ * refused (RAID_TOO_FEW). Two players at once form them once (the unique group/branch of an instance; a placement
+ * already there is kept). Returns every instance of the clan.
+ */
+export async function ensureGroups(db: D1Database, eventId: string, clanId: string): Promise<InstanceRow[]> {
+    const rows = await clanInstancesOf(db, eventId, clanId);
+    if (rows.length) return rows;
+    const [entry, roster] = await db.batch([
+        db.prepare("SELECT leader_id FROM raid_clan_entries WHERE event_id = ?1 AND clan_id = ?2").bind(eventId, clanId),
+        db
+            .prepare("SELECT p.id FROM raid_registrations r JOIN players p ON p.id = r.player_id WHERE r.event_id = ?1 AND r.clan_id = ?2 ORDER BY r.created_at, p.username LIMIT 200")
+            .bind(eventId, clanId),
+    ]);
+    const leader = (entry!.results[0] as { leader_id: string | null } | undefined)?.leader_id ?? null;
+    const list = roster!.results as { id: string }[];
+    if (Math.min(list.length, MAX_IN_PLAY) < MIN_CLAN_PLAYERS) throw TOO_FEW(list.length);
+    const groups = groupsOf(list, leader);
     const now = nowIso();
-    const id = crypto.randomUUID();
-    const full = whenFull
-        ? ` AND NOT EXISTS (SELECT 1 FROM raid_instances j WHERE j.event_id = ?2 AND j.clan_id = ?3 AND j.branch = ?4
-                AND j.wiped_zone IS NULL AND (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = j.id) < ${INSTANCE_SIZE})`
-        : "";
+    await db.batch(
+        groups.map((g) => {
+            const c = CATALOGS[g.branch]!;
+            return db
+                .prepare(
+                    `INSERT OR IGNORE INTO raid_instances (id, event_id, clan_id, group_no, branch, zone, players, created_at, updated_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?7)`,
+                )
+                .bind(crypto.randomUUID(), eventId, clanId, g.number, c.id, c.start_zone, now);
+        }),
+    );
+    const seats = JSON.stringify(groups.flatMap((g) => g.members.map((m) => [m.id, g.number, CATALOGS[g.branch]!.id])));
+    await db.batch([
+        db
+            .prepare(
+                `INSERT INTO raid_placements (event_id, player_id, clan_id, branch, instance_id, placed_by, reason, created_at, updated_at)
+                 SELECT ?1, json_extract(j.value, '$[0]'), ?2, i.branch, i.id, NULL, 'choix', ?4, ?4 FROM json_each(?3) j
+                 JOIN raid_instances i ON i.event_id = ?1 AND i.clan_id = ?2 AND i.group_no = json_extract(j.value, '$[1]') AND i.branch = json_extract(j.value, '$[2]')
+                 WHERE true ON CONFLICT (event_id, player_id) DO NOTHING`,
+            )
+            .bind(eventId, clanId, seats, now),
+        db
+            .prepare(
+                `INSERT INTO raid_placement_log (event_id, player_id, from_instance, to_instance, by_player, reason, created_at)
+                 SELECT ?1, p.player_id, NULL, p.instance_id, NULL, 'groupe', ?3 FROM raid_placements p
+                 WHERE p.event_id = ?1 AND p.clan_id = ?2 AND NOT EXISTS (SELECT 1 FROM raid_placement_log l WHERE l.event_id = ?1 AND l.player_id = p.player_id)`,
+            )
+            .bind(eventId, clanId, now),
+    ]);
+    return await clanInstancesOf(db, eventId, clanId);
+}
+
+/** §41: the instance of group `group` on `c` (the heart's), made once (the unique group/branch of an instance). */
+async function groupInstance(db: D1Database, eventId: string, clanId: string, group: number, c: Catalog): Promise<InstanceRow> {
+    const now = nowIso();
     await db
         .prepare(
             `INSERT OR IGNORE INTO raid_instances (id, event_id, clan_id, group_no, branch, zone, players, created_at, updated_at)
-             SELECT ?1, ?2, ?3, COALESCE(MAX(group_no), 0) + 1, ?4, ?5, 0, ?6, ?6 FROM raid_instances WHERE event_id = ?2 AND clan_id = ?3 AND branch = ?4${full}`,
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?7)`,
         )
-        .bind(id, eventId, clanId, c.id, c.start_zone, now)
+        .bind(crypto.randomUUID(), eventId, clanId, group, c.id, c.start_zone, now)
         .run();
-    return await db.prepare("SELECT * FROM raid_instances WHERE id = ?1").bind(id).first<InstanceRow>();
+    const inst = await db
+        .prepare("SELECT * FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2 AND group_no = ?3 AND branch = ?4")
+        .bind(eventId, clanId, group, c.id)
+        .first<InstanceRow>();
+    if (!inst) throw Errors.conflict("INSTANCE_BUSY", "Beaucoup de joueurs arrivent en même temps : réessayez.");
+    return inst;
 }
 
-/**
- * Places a player of a clan on a branch: their own instance there when they have one; else their
- * roster group's instance with room, then the clan's instances already fighting (the fewest
- * players first: they need them), then any with room; else a new instance (once all are full).
- */
-export async function placeOnBranch(db: D1Database, eventId: string, clanId: string, playerId: string, c: Catalog, by: string, reason: string): Promise<InstanceRow> {
-    const current = await placementOf(db, eventId, playerId);
-    if (current && current.branch === c.id) {
-        const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1").bind(current.instance_id).first<InstanceRow>();
-        if (inst && inst.wiped_zone == null) return inst;  // 2.75: never back in a wiped instance
-    }
-    const group = await rosterGroup(db, eventId, clanId, playerId);
-    // Others may be placed at the same time: read again and retry until a place is taken.
-    for (let attempt = 0; attempt < 12; ++attempt) {
-        const mine = (await clanInstances(db, eventId, clanId, c.id)).filter((i) => i.wiped_zone == null);  // 2.75
-        const counts = await placedCounts(
-            db,
-            mine.map((i) => i.id),
-        );
-        const room = (i: InstanceRow) => (counts.get(i.id) ?? 0) < INSTANCE_SIZE;
-        const order = [
-            ...mine.filter((i) => i.group_no === group && room(i)),
-            ...mine.filter((i) => i.players > 0 && room(i)).sort((a, b) => (counts.get(a.id) ?? 0) - (counts.get(b.id) ?? 0) || a.group_no - b.group_no),
-            ...mine.filter(room),
-        ];
-        const tried = new Set<string>();
-        for (const inst of order) {
-            if (tried.has(inst.id)) continue;
-            tried.add(inst.id);
-            if (await putIn(db, eventId, clanId, playerId, inst, by, reason)) return inst;
-        }
-        if (mine.length >= MAX_CLAN_INSTANCES) throw Errors.conflict("BRANCH_FULL", "Votre clan a déjà toutes ses instances pleines sur cette branche.");
-        const opened = await openInstance(db, eventId, clanId, c, true);
-        if (opened && (await putIn(db, eventId, clanId, playerId, opened, by, reason))) return opened;
-    }
-    throw Errors.conflict("INSTANCE_BUSY", "Beaucoup de joueurs arrivent en même temps : réessayez.");
-}
-
-/**
- * The branch where the clan needs a player who did not choose: one of the clan's instances in
- * combat that is not full (the fewest players first); else the branch where the clan has the
- * fewest players placed (the titan's order on a tie).
- */
-async function neededBranch(db: D1Database, eventId: string, clanId: string): Promise<Catalog> {
-    // 2.74 (phase 6): once the seven gigaboss fell, every group is needed at the heart (until it falls).
-    if (HEART) {
-        const done = await doneOf(db, eventId);
-        if (heartOpenIn(done) && !done.get(HEART.id)?.has(HEART_OBJECTIVE)) return HEART;
-    }
-    const [inst, placed] = await db.batch([
-        db.prepare("SELECT id, branch, players FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2").bind(eventId, clanId),
-        db.prepare("SELECT branch, instance_id FROM raid_placements WHERE event_id = ?1 AND clan_id = ?2").bind(eventId, clanId),
+/** §41: a player's place follows their group (its relief, the heart): their placement moved there, journaled. */
+export async function follow(db: D1Database, eventId: string, playerId: string, from: string | null, to: InstanceRow, reason: string): Promise<void> {
+    const now = nowIso();
+    await db.batch([
+        db
+            .prepare("UPDATE raid_placements SET instance_id = ?3, branch = ?4, updated_at = ?5 WHERE event_id = ?1 AND player_id = ?2")
+            .bind(eventId, playerId, to.id, to.branch, now),
+        db
+            .prepare("INSERT INTO raid_placement_log (event_id, player_id, from_instance, to_instance, by_player, reason, created_at) VALUES (?1, ?2, ?3, ?4, NULL, ?5, ?6)")
+            .bind(eventId, playerId, from, to.id, reason, now),
     ]);
-    const rows = inst!.results as { id: string; branch: string; players: number }[];
-    const places = placed!.results as { branch: string; instance_id: string }[];
-    const count = (id: string) => places.filter((p) => p.instance_id === id).length;
-    const fighting = rows.filter((r) => r.players > 0 && count(r.id) < INSTANCE_SIZE).sort((a, b) => count(a.id) - count(b.id));
-    const found = fighting.map((r) => catalogById(r.branch)).find((c) => !!c);
-    if (found) return found;
-    const per = (c: Catalog) => places.filter((p) => p.branch === c.id).length;
-    return [...CATALOGS].sort((a, b) => per(a) - per(b) || CATALOGS.indexOf(a) - CATALOGS.indexOf(b))[0]!;
+}
+
+const nameOf = (branch: string) => catalogById(branch)?.name ?? branch;
+
+/** §41: a registered player's rank in their clan's order of registration (0 first; -1: not registered). */
+async function rosterRank(db: D1Database, eventId: string, clanId: string, playerId: string): Promise<number> {
+    const rows = (
+        await db
+            .prepare("SELECT p.id FROM raid_registrations r JOIN players p ON p.id = r.player_id WHERE r.event_id = ?1 AND r.clan_id = ?2 ORDER BY r.created_at, p.username LIMIT 200")
+            .bind(eventId, clanId)
+            .all<{ id: string }>()
+    ).results;
+    return rows.findIndex((r) => r.id === playerId);
+}
+
+/**
+ * §41 (titan 16): a player's place: their group's instance, never another (group k plays branch k; a group that
+ * replaced a wiped one, its relief instance; once the seven Gigaboss fell, its own heart instance). `c`: the branch
+ * asked (refused when it is not the group's: RAID_OTHER_BRANCH); `wanted`: an instance asked (refused when it is not
+ * the group's: RAID_OTHER_GROUP — no help, no other group). A registered player without a place yet (a catch-up
+ * session's late registration) joins the smallest group with room; beyond the 56 in play: the waiting list.
+ */
+export async function groupPlace(db: D1Database, e: { id: string }, clanId: string, me: string, c?: Catalog, wanted?: string): Promise<InstanceRow> {
+    let rows = await ensureGroups(db, e.id, clanId);
+    let placement = await placementOf(db, e.id, me);
+    if (!placement || placement.clan_id !== clanId || !rows.some((i) => i.id === placement!.instance_id)) {
+        const order = await rosterRank(db, e.id, clanId, me);
+        if (order < 0 || order >= MAX_IN_PLAY) {
+            const rank = Math.max(1, order - MAX_IN_PLAY + 1);
+            throw new ApiError(
+                403,
+                "RAID_WAITLIST",
+                `Vous êtes sur la liste d'attente de votre clan (rang ${rank}) : seuls les ${MAX_IN_PLAY} premiers inscrits jouent, sept groupes de huit au plus.`,
+                { rank },
+            );
+        }
+        const counts = await db
+            .prepare("SELECT instance_id, COUNT(*) AS n FROM raid_placements WHERE event_id = ?1 AND clan_id = ?2 GROUP BY instance_id")
+            .bind(e.id, clanId)
+            .all<{ instance_id: string; n: number }>();
+        const n = (id: string) => counts.results.find((r) => r.instance_id === id)?.n ?? 0;
+        const open = groupsInPlay(rows).sort((a, b) => n(a.id) - n(b.id) || a.group_no - b.group_no);
+        let placed = false;
+        for (const g of open)
+            if (await putIn(db, e.id, clanId, me, g, null, "choix")) {
+                placed = true;
+                break;
+            }
+        if (!placed) throw Errors.conflict("INSTANCE_FULL", "Les sept groupes de votre clan sont complets (8 joueurs chacun).");
+        rows = await clanInstancesOf(db, e.id, clanId);
+        placement = await placementOf(db, e.id, me);
+    }
+    const group = rows.find((i) => i.id === placement!.instance_id)?.group_no ?? 0;
+    let cur = currentOf(rows, group);
+    if (!cur) throw Errors.conflict("INSTANCE_WIPED", "Votre groupe a été éliminé : vous ne pouvez plus que regarder les autres groupes.");
+    // 2.74 (phase 6), §41: the Cœur d'Asterion opens once the seven Gigaboss fell (validated): every group still in play
+    // fights it, each in its own instance (one health for all, raidHeart.ts).
+    const done = await doneOf(db, e.id);
+    const heartOpen = !!HEART && heartOpenIn(done);
+    if (c && HEART && c.id === HEART.id && !heartOpen)
+        throw Errors.conflict("HEART_SEALED", "Le Cœur d'Asterion s'ouvre quand les sept gigaboss sont tombés (" + gigabossDownIn(done) + " / " + CATALOGS.length + ").");
+    if (heartOpen && HEART && cur.branch !== HEART.id) cur = await groupInstance(db, e.id, clanId, group, HEART);
+    if (c && c.id !== cur.branch)
+        throw Errors.conflict(
+            "RAID_OTHER_BRANCH",
+            `Votre groupe joue la branche ${nameOf(cur.branch)} : chaque groupe joue la sienne, jamais une autre.`,
+            { branch: partOf(cur.branch) },
+        );
+    if (wanted && wanted !== cur.id)
+        throw Errors.conflict("RAID_OTHER_GROUP", "Chaque groupe joue sa propre instance : on ne rejoint ni n'aide un autre groupe (il ne vient que remplacer un groupe éliminé).");
+    if (placement!.instance_id !== cur.id) await follow(db, e.id, me, placement!.instance_id, cur, "choix");
+    return cur;
 }
 
 /** The answer of a join: the instance, its branch and the relay's level (made once). */
@@ -513,10 +587,10 @@ export async function enter(ctx: Ctx, e: EventRow, inst: InstanceRow, me: string
 // ------------------------------------------------------------------ routes: joining
 
 /**
- * POST /raids/events/{eventId}/branches/{part}/join {instance_id?}: my place on a branch (placed by
- * the server, see placeOnBranch), or, with `instance_id`, another group's instance of this branch
- * that I help or a friend's (when it has room). POST /raids/events/{eventId}/join {}: my place
- * where it is (or where my clan needs me). A registered player only, while the event runs.
+ * POST /raids/events/{eventId}/branches/{part}/join {instance_id?} and POST /raids/events/{eventId}/join {}: my place,
+ * my group's instance (§41: group k plays branch k; never another branch, never another group's instance: refused
+ * with RAID_OTHER_BRANCH / RAID_OTHER_GROUP). A registered player only, while the event runs; the clan's seven groups
+ * are formed at the first join (14 registered at least: RAID_TOO_FEW); beyond the 56 in play: RAID_WAITLIST.
  */
 export async function join(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
@@ -538,14 +612,6 @@ export async function join(ctx: Ctx): Promise<Response> {
         c = catalogByPart(part);
         if (!c) throw Errors.notFound("BRANCH_NOT_FOUND", "Cette branche du titan n'existe pas.");
     }
-    // 2.74 (phase 6): the Cœur d'Asterion opens once the seven gigaboss fell (validated).
-    const sealedHeart = async (branch: string) => {
-        if (!HEART || branch !== HEART.id) return;
-        const done = await doneOf(db, e.id);
-        if (!heartOpenIn(done))
-            throw Errors.conflict("HEART_SEALED", "Le Cœur d'Asterion s'ouvre quand les sept gigaboss sont tombés (" + gigabossDownIn(done) + " / " + CATALOGS.length + ").");
-    };
-    if (c) await sealedHeart(c.id);
     // 2.75: a player whose group was wiped only watches from now on (their seat is closed for good).
     const spect = await spectatorOf(db, e.id, me);
     if (spect) return spectatorAnswer(ctx, e, spect, me);
@@ -553,24 +619,42 @@ export async function join(ctx: Ctx): Promise<Response> {
         const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1 AND event_id = ?2").bind(wanted, e.id).first<InstanceRow>();
         if (!inst || (c && inst.branch !== c.id)) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
         if (inst.wiped_zone != null) throw Errors.conflict("INSTANCE_WIPED", "Ce groupe a été éliminé : sa zone attend un groupe qui la reprenne.");
-        await sealedHeart(inst.branch);
-        if (inst.players >= INSTANCE_SIZE || !(await putIn(db, e.id, reg.clan_id, me, inst, me, "aide")))
-            throw Errors.conflict("INSTANCE_FULL", "Ce groupe a déjà 8 joueurs.");
-        return enter(ctx, e, inst, me);
     }
-    if (!c) {
-        const current = await placementOf(db, e.id, me);
-        c = (current && catalogById(current.branch)) || (await neededBranch(db, e.id, reg.clan_id));
-    }
-    const inst = await placeOnBranch(db, e.id, reg.clan_id, me, c, me, "choix");
+    const inst = await groupPlace(db, e, reg.clan_id, me, c, wanted);
     return enter(ctx, e, inst, me);
 }
 
 // ------------------------------------------------------------------ routes: the clan's placement
 
+/** §41: the seven groups of a clan as the roster screen shows them (number, branch, instance, players, out, waiting). */
+function groupViews(rows: InstanceRow[], counts: Map<string, number>, done: Map<string, Set<string>>) {
+    const states = statesOf(done);
+    const out = [];
+    for (let k = 1; k <= RAID_GROUPS; ++k) {
+        const first = rows.find((i) => i.group_no === k);
+        if (!first) continue;
+        const cur = currentOf(rows, k);
+        const branch = cur?.branch ?? first.branch;
+        const c = catalogById(branch);
+        const giga = c?.objectives.find((o) => o.role === "gigaboss");
+        out.push({
+            group: k,
+            branch: partOf(branch),
+            branch_name: c?.name ?? "",
+            instance_id: cur?.id ?? null,
+            placed: cur ? (counts.get(cur.id) ?? 0) : 0,
+            out: !cur,
+            // its branch's Gigaboss fell: the group waits there (it leaves only to replace a wiped group)
+            waiting: !!cur && !!giga && !!c && isDone(states.get(c.id) ?? 0, giga.index) && !(HEART && cur.branch === HEART.id),
+            relieves: !!cur?.relieves,
+        });
+    }
+    return out;
+}
+
 /**
- * GET /raids/events/{eventId}/placements: my clan's players (registered) and their place (branch,
- * group, zone, in play or not), my clan's instances, and whether I may move them.
+ * GET /raids/events/{eventId}/placements: my clan's players (registered) and their place (branch, group, zone, in play
+ * or not), my clan's seven groups (§41), its waiting list, and whether I may move them.
  */
 export async function placements(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
@@ -579,7 +663,17 @@ export async function placements(ctx: Ctx): Promise<Response> {
     const e = await eventOf(db, ctx.params.eventId ?? "");
     const reg = await registrationOf(db, e.id, me);
     if (!reg) throw Errors.forbidden("RAID_NOT_REGISTERED", "Inscrivez-vous au raid pour voir la répartition de votre clan.");
-    const [members, insts] = await db.batch([
+    // §41: the seven groups are formed once the raid runs (14 registered at least).
+    let tooFew = false;
+    if (raidState(e, nowIso()) === "en_cours") {
+        try {
+            await ensureGroups(db, e.id, reg.clan_id);
+        } catch (err) {
+            if (!(err instanceof ApiError) || err.code !== "RAID_TOO_FEW") throw err;
+            tooFew = true;
+        }
+    }
+    const [members, insts, order] = await db.batch([
         db
             .prepare(
                 `SELECT p.id, p.username, pl.instance_id, pl.branch, pl.reason,
@@ -591,43 +685,61 @@ export async function placements(ctx: Ctx): Promise<Response> {
             .bind(e.id, reg.clan_id),
         db
             .prepare(
-                `SELECT i.id, i.branch, i.group_no, i.zone, i.players, i.clan_id, c.tag, (SELECT COUNT(*) FROM raid_placements x WHERE x.instance_id = i.id) AS placed
+                `SELECT i.*, c.tag, (SELECT COUNT(*) FROM raid_placements x WHERE x.instance_id = i.id) AS placed
                  FROM raid_instances i JOIN clans c ON c.id = i.clan_id
-                 WHERE i.event_id = ?1 AND (i.clan_id = ?2 OR i.id IN (SELECT instance_id FROM raid_placements WHERE event_id = ?1 AND clan_id = ?2))
-                 ORDER BY i.branch, i.group_no LIMIT 200`,
+                 WHERE i.event_id = ?1 AND i.clan_id = ?2 ORDER BY i.created_at, i.group_no, i.id LIMIT 100`,
             )
             .bind(e.id, reg.clan_id),
+        db
+            .prepare("SELECT p.id FROM raid_registrations r JOIN players p ON p.id = r.player_id WHERE r.event_id = ?1 AND r.clan_id = ?2 ORDER BY r.created_at, p.username LIMIT 200")
+            .bind(e.id, reg.clan_id),
     ]);
-    const instances = (insts!.results as { id: string; branch: string; group_no: number; zone: number; players: number; clan_id: string; tag: string; placed: number }[]).map((i) => ({
-        id: i.id,
-        branch: partOf(i.branch),
-        branch_name: catalogById(i.branch)?.name ?? "",
-        clan_tag: i.tag,
-        group: i.group_no,
-        zone: i.zone,
-        zone_name: catalogById(i.branch)?.zones.find((z) => z.id === i.zone)?.name ?? "",
-        players: i.players,
-        placed: i.placed,
-        mine: i.clan_id === reg.clan_id,
-    }));
-    const byId = new Map(instances.map((i) => [i.id, i]));
+    const rows = insts!.results as (InstanceRow & { tag: string; placed: number })[];
+    const counts = new Map(rows.map((i) => [i.id, i.placed]));
+    const current = new Set(groupsInPlay(rows).map((i) => i.id));
+    const instances = rows
+        .filter((i) => current.has(i.id))
+        .map((i) => ({
+            id: i.id,
+            branch: partOf(i.branch),
+            branch_name: catalogById(i.branch)?.name ?? "",
+            clan_tag: i.tag,
+            group: i.group_no,
+            zone: i.zone,
+            zone_name: catalogById(i.branch)?.zones.find((z) => z.id === i.zone)?.name ?? "",
+            players: i.players,
+            placed: i.placed,
+            mine: true,
+        }));
+    const byId = new Map(rows.map((i) => [i.id, i]));
+    const ranks = (order!.results as { id: string }[]).map((r) => r.id);
     return json(ctx, {
         event: { id: e.id, state: raidState(e, nowIso()) },
         clan_tag: reg.tag,
         can_manage: await canManage(db, e.id, reg.clan_id, me),
         branches: CATALOGS.map((c) => ({ part: partOf(c.id), name: c.name })),
+        // §41: the rules the screen keeps (7 groups of 2 to 8), whether the clan has its 14, its groups and waiting list.
+        rules: { groups: RAID_GROUPS, min_group: MIN_GROUP, max_group: INSTANCE_SIZE, min_players: MIN_CLAN_PLAYERS, max_in_play: MAX_IN_PLAY },
+        too_few: tooFew,
+        registered: ranks.length,
+        groups: groupViews(rows, counts, await doneOf(db, e.id)),
+        waitlist: ranks.slice(MAX_IN_PLAY).map((id, k) => ({ id, rank: k + 1 })),
         members: (members!.results as { id: string; username: string; instance_id: string | null; branch: string | null; reason: string | null; playing: number }[]).map((m) => {
             const i = m.instance_id ? byId.get(m.instance_id) : undefined;
+            const cur = i ? currentOf(rows, i.group_no) : null;
+            const rank = ranks.indexOf(m.id);
             return {
                 id: m.id,
                 username: m.username,
                 me: m.id === me,
-                branch: m.branch ? partOf(m.branch) : null,
-                instance_id: m.instance_id,
-                group: i ? `[${i.clan_tag}]·${i.group}` : null,
-                zone_name: i?.zone_name ?? null,
+                branch: cur ? partOf(cur.branch) : m.branch ? partOf(m.branch) : null,
+                instance_id: cur?.id ?? m.instance_id,
+                group: i ? `[${i.tag}]·${i.group_no}` : null,
+                group_no: i?.group_no ?? 0,
+                zone_name: cur ? (catalogById(cur.branch)?.zones.find((z) => z.id === cur.zone)?.name ?? null) : null,
                 playing: m.playing === 1,
                 reason: m.reason,
+                waiting_rank: rank >= MAX_IN_PLAY ? rank - MAX_IN_PLAY + 1 : 0,
             };
         }),
         instances,
@@ -646,96 +758,102 @@ async function requireManager(ctx: Ctx) {
     const reg = await registrationOf(db, e.id, me);
     if (!reg || !(await canManage(db, e.id, reg.clan_id, me)))
         throw Errors.forbidden("NOT_RAID_MANAGER", "Seuls le chef, les officiers et le chef de raid du clan répartissent les joueurs.");
+    if (st !== "en_cours") throw Errors.conflict("RAID_NOT_RUNNING", "Les groupes se forment au début du raid : la répartition se fait pendant l'événement.");
     return { me, db, e, clanId: reg.clan_id };
 }
 
 /**
- * POST /raids/events/{eventId}/placements {player_id, branch, instance_id?}: the raid leader, the
- * chief or an officer moves a member of the clan to a branch (the server picks the instance with
- * room) or to an instance of it. The player's game in progress is not cut: the place counts from
- * their next entry.
+ * POST /raids/events/{eventId}/placements {player_id, branch?, instance_id?}: the raid leader, the chief or an officer
+ * moves a member of the clan to another of its seven groups (the one playing `branch` now, or the instance given).
+ * §41: every group keeps 2 to 8 players — one statement checks both (two moves at once never break it). The player's
+ * game in progress is not cut: the place counts from their next entry.
  */
 export async function move(ctx: Ctx): Promise<Response> {
     const { me, db, e, clanId } = await requireManager(ctx);
     const body = await readJsonObject(ctx);
     const v = new Validator(body, ["player_id", "branch", "instance_id"]);
     const playerId = v.str("player_id", { max: 64, pattern: PLAYER_ID_RE })!;
-    const part = v.str("branch", { max: 32, pattern: /^[a-z_]{1,32}$/ })!;
+    const part = v.str("branch", { max: 32, pattern: /^[a-z_]{1,32}$/, optional: true });
     const wanted = v.str("instance_id", { min: 36, max: 36, pattern: ID_RE, optional: true });
+    if (part === undefined && wanted === undefined) v.fail("branch", "branche ou instance attendue");
     v.done();
-    const c = catalogByPart(part);
-    if (!c) throw Errors.validation([{ field: "branch", message: "branche inconnue" }]);
+    const c = part !== undefined ? catalogByPart(part) : undefined;
+    if (part !== undefined && !c) throw Errors.validation([{ field: "branch", message: "branche inconnue" }]);
     const target = await registrationOf(db, e.id, playerId);
     if (!target || target.clan_id !== clanId) throw Errors.notFound("PLAYER_NOT_FOUND", "Ce joueur n'est pas inscrit au raid avec votre clan.");
-    let inst: InstanceRow;
-    if (wanted) {
-        const i = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1 AND event_id = ?2 AND branch = ?3").bind(wanted, e.id, c.id).first<InstanceRow>();
-        if (!i) throw Errors.notFound("INSTANCE_NOT_FOUND", "Cette instance n'existe pas sur cette branche.");
-        if (!(await putIn(db, e.id, clanId, playerId, i, me, "chef"))) throw Errors.conflict("INSTANCE_FULL", "Cette instance a déjà 8 joueurs.");
-        inst = i;
-    } else {
-        // Their place on that branch (kept when they already have one there): the upsert moves them.
-        inst = await placeOnBranch(db, e.id, clanId, playerId, c, me, "chef");
+    const rows = await ensureGroups(db, e.id, clanId);
+    const from = await placementOf(db, e.id, playerId);
+    if (!from) throw Errors.conflict("RAID_WAITLIST", "Ce joueur est sur la liste d'attente du clan : il n'a pas de groupe.");
+    const groups = groupsInPlay(rows);
+    const dest = wanted ? groups.find((i) => i.id === wanted) : groups.find((i) => i.branch === c!.id);
+    if (!dest) throw Errors.notFound("INSTANCE_NOT_FOUND", "Aucun groupe de votre clan ne joue là : il y a sept groupes, un par branche.");
+    if (from.instance_id === dest.id) return json(ctx, { placement: { player_id: playerId, branch: partOf(dest.branch), instance_id: dest.id, group: dest.group_no } });
+    const now = nowIso();
+    const r = await db
+        .prepare(
+            `UPDATE raid_placements SET instance_id = ?3, branch = ?4, placed_by = ?5, reason = 'chef', updated_at = ?6
+             WHERE event_id = ?1 AND player_id = ?2 AND instance_id = ?7
+               AND (SELECT COUNT(*) FROM raid_placements WHERE instance_id = ?3) < ?8
+               AND (SELECT COUNT(*) FROM raid_placements WHERE instance_id = ?7) > ?9`,
+        )
+        .bind(e.id, playerId, dest.id, dest.branch, me, now, from.instance_id, INSTANCE_SIZE, MIN_GROUP)
+        .run();
+    if (!r.meta.changes) {
+        const n = await db.prepare("SELECT COUNT(*) AS n FROM raid_placements WHERE instance_id = ?1").bind(dest.id).first<{ n: number }>();
+        if ((n?.n ?? 0) >= INSTANCE_SIZE) throw Errors.conflict("INSTANCE_FULL", "Ce groupe a déjà 8 joueurs.");
+        throw Errors.conflict("GROUP_TOO_SMALL", `Un groupe garde au moins ${MIN_GROUP} joueurs : celui de ce joueur n'en a pas assez pour qu'il parte.`);
     }
-    return json(ctx, { placement: { player_id: playerId, branch: partOf(inst.branch), instance_id: inst.id, group: inst.group_no } });
+    await db
+        .prepare("INSERT INTO raid_placement_log (event_id, player_id, from_instance, to_instance, by_player, reason, created_at) VALUES (?1, ?2, ?3, ?4, ?5, 'chef', ?6)")
+        .bind(e.id, playerId, from.instance_id, dest.id, me, now)
+        .run();
+    return json(ctx, { placement: { player_id: playerId, branch: partOf(dest.branch), instance_id: dest.id, group: dest.group_no } });
 }
 
 /**
- * POST /raids/events/{eventId}/placements/rebalance {branch}: the clan's players of a branch spread
- * evenly over as few instances as they need (8 at most each): those of the groups beyond are
- * moved into the others, and the fullest groups give players to the emptiest. Players not in
- * play move first; those in play keep their game and change at their next entry.
+ * POST /raids/events/{eventId}/placements/rebalance {branch?}: §41, the clan's players spread evenly over its groups
+ * still in play (sizes differ by one at most; `branch` is no longer needed: every group at once). The fullest groups
+ * give players to the emptiest; players not in play move first, those in play keep their game and change at their next
+ * entry.
  */
 export async function rebalance(ctx: Ctx): Promise<Response> {
     const { me, db, e, clanId } = await requireManager(ctx);
     const body = await readJsonObject(ctx);
     const v = new Validator(body, ["branch"]);
-    const part = v.str("branch", { max: 32, pattern: /^[a-z_]{1,32}$/ })!;
+    v.str("branch", { max: 32, pattern: /^[a-z_]{1,32}$/, optional: true });
     v.done();
-    const c = catalogByPart(part);
-    if (!c) throw Errors.validation([{ field: "branch", message: "branche inconnue" }]);
-    const mine = await clanInstances(db, e.id, clanId, c.id);
+    const groups = groupsInPlay(await ensureGroups(db, e.id, clanId));
+    const ids = new Set(groups.map((g) => g.id));
     const rows = (
         await db
             .prepare(
                 `SELECT pl.player_id, pl.instance_id,
                         EXISTS (SELECT 1 FROM raid_instance_members m WHERE m.instance_id = pl.instance_id AND m.player_id = pl.player_id AND m.active = 1 AND m.left_at IS NULL) AS playing
-                 FROM raid_placements pl JOIN raid_instances i ON i.id = pl.instance_id
-                 WHERE pl.event_id = ?1 AND pl.clan_id = ?2 AND pl.branch = ?3 AND i.clan_id = ?2 ORDER BY pl.updated_at DESC`,
+                 FROM raid_placements pl WHERE pl.event_id = ?1 AND pl.clan_id = ?2 ORDER BY pl.updated_at DESC, pl.player_id`,
             )
-            .bind(e.id, clanId, c.id)
+            .bind(e.id, clanId)
             .all<{ player_id: string; instance_id: string; playing: number }>()
-    ).results;
+    ).results.filter((r) => ids.has(r.instance_id));
     const n = rows.length;
-    const k = Math.max(1, Math.ceil(n / INSTANCE_SIZE));
-    // The k groups kept: those with the most players in play, then the lowest numbers.
-    const playingIn = (id: string) => rows.filter((r) => r.instance_id === id && r.playing === 1).length;
-    const kept = [...mine].sort((a, b) => playingIn(b.id) - playingIn(a.id) || a.group_no - b.group_no).slice(0, k);
-    while (kept.length < k) {
-        const opened = await openInstance(db, e.id, clanId, c);
-        if (!opened) break;
-        kept.push(opened);
-    }
-    const target = new Map(kept.map((inst, i) => [inst.id, Math.floor(n / k) + (i < n % k ? 1 : 0)]));
+    const k = Math.max(1, groups.length);
     const size = (id: string) => rows.filter((r) => r.instance_id === id).length;
-    // Who moves: everyone of a group not kept, then the extra players of a kept group (not in play first).
-    const movers = rows
-        .filter((r) => !target.has(r.instance_id) || size(r.instance_id) > target.get(r.instance_id)!)
-        .sort((a, b) => a.playing - b.playing);
+    // The fullest groups keep the larger shares (fewer moves), the lowest numbers on a tie.
+    const byFill = [...groups].sort((a, b) => size(b.id) - size(a.id) || a.group_no - b.group_no);
+    const target = new Map(byFill.map((g, i) => [g.id, Math.floor(n / k) + (i < n % k ? 1 : 0)]));
+    // Who moves: the extra players of a group above its share (not in play first).
+    const movers = [...rows].sort((a, b) => a.playing - b.playing);
     const leaving = new Map<string, number>();
     const chosen: typeof rows = [];
     for (const r of movers) {
-        if (target.has(r.instance_id)) {
-            const extra = size(r.instance_id) - target.get(r.instance_id)! - (leaving.get(r.instance_id) ?? 0);
-            if (extra <= 0) continue;
-        }
+        const extra = size(r.instance_id) - target.get(r.instance_id)! - (leaving.get(r.instance_id) ?? 0);
+        if (extra <= 0) continue;
         leaving.set(r.instance_id, (leaving.get(r.instance_id) ?? 0) + 1);
         chosen.push(r);
     }
     let moved = 0;
     for (const r of chosen) {
-        // The kept group furthest below its share takes them.
-        const dest = [...kept].sort((a, b) => size(a.id) - target.get(a.id)! - (size(b.id) - target.get(b.id)!))[0]!;
+        // The group furthest below its share takes them.
+        const dest = [...groups].sort((a, b) => size(a.id) - target.get(a.id)! - (size(b.id) - target.get(b.id)!) || a.group_no - b.group_no)[0]!;
         if (size(dest.id) >= target.get(dest.id)!) break;
         if (await putIn(db, e.id, clanId, r.player_id, dest, me, "equilibrage")) {
             r.instance_id = dest.id;
@@ -744,7 +862,7 @@ export async function rebalance(ctx: Ctx): Promise<Response> {
     }
     return json(ctx, {
         moved,
-        instances: kept.map((i) => ({ id: i.id, group: i.group_no, placed: size(i.id) })),
+        instances: groups.map((i) => ({ id: i.id, group: i.group_no, branch: partOf(i.branch), placed: size(i.id) })),
     });
 }
 
@@ -773,6 +891,7 @@ interface InstRow {
     start_zone: number | null;
     relieves: string | null;
     seat_zones: string | null;  // 2.78: the zone of each seat
+    started_at: string | null;  // §41: the seven groups are made at the start: a branch is « inconnu » until its group plays
 }
 
 async function snapshot(db: D1Database, eventId: string) {
@@ -786,7 +905,7 @@ async function snapshot(db: D1Database, eventId: string) {
             .bind(eventId),
         db
             .prepare(
-                `SELECT i.id, i.branch, i.group_no, i.zone, i.players, i.clan_id, c.tag, i.wiped_zone, i.wiped_at, i.start_zone, i.relieves, i.seat_zones, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS placed
+                `SELECT i.id, i.branch, i.group_no, i.zone, i.players, i.clan_id, c.tag, i.wiped_zone, i.wiped_at, i.start_zone, i.relieves, i.seat_zones, i.started_at, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS placed
                  FROM raid_instances i JOIN clans c ON c.id = i.clan_id WHERE i.event_id = ?1 ORDER BY c.tag, i.branch, i.group_no LIMIT 500`,
             )
             .bind(eventId),
@@ -840,6 +959,27 @@ function linkViews(done: Map<string, Set<string>>, objectives: ObjRow[]) {
     });
 }
 
+/** Whether a branch's Gigaboss fell (validated) in these states. */
+export function gigabossFallen(c: Catalog, states: Map<string, number>): boolean {
+    const giga = c.objectives.find((o) => o.role === "gigaboss");
+    return !!giga && isDone(states.get(c.id) ?? 0, giga.index);
+}
+
+export type RaidOutcome = "victoire" | "defaite_temps" | "defaite_groupes" | "en_cours";
+
+/**
+ * §41 (titan 16): how the raid ends for a clan. « Victoire » once the Cœur d'Asterion fell (validated). « Défaite :
+ * temps écoulé » at the end of the event (60 min for the standard raid) with the Cœur standing — some Gigaboss still
+ * up, or the Cœur itself. « Défaite : tous les groupes éliminés » at once when every group of the clan is out (each one
+ * wiped: nobody is left to replace it). Else « en cours ». `rows`: the clan's instances (null: no clan, the time only).
+ */
+export function outcomeOf(e: { ends_at: string }, now: string, done: Map<string, Set<string>>, rows: InstanceRow[] | null): { id: RaidOutcome; text: string } {
+    if (HEART && done.get(HEART.id)?.has(HEART_OBJECTIVE)) return { id: "victoire", text: "Victoire : Asterion est tombé" };
+    if (rows && rows.length && groupsInPlay(rows).length === 0) return { id: "defaite_groupes", text: "Défaite : tous les groupes éliminés" };
+    if (now >= e.ends_at) return { id: "defaite_temps", text: "Défaite : temps écoulé" };
+    return { id: "en_cours", text: "En cours" };
+}
+
 /**
  * GET /raids/events/{eventId}/titan: the global map (maquette « Carte du titan »): each branch
  * (state, zones controlled, objectives, groups and players there, my clan's groups, its gigaboss
@@ -858,11 +998,13 @@ export async function titanView(ctx: Ctx): Promise<Response> {
     const body: Record<string, string> = {};
     let zonesControlled = 0;
     let gigabossDefeated = 0;
+    // §41 (titan 16): no zone asks for another group any more (a pair is done by one group, split in two): always empty.
     const needs: { branch: string; zone: number; name: string; groups: number; required: number }[] = [];
     const branches = CATALOGS.map((c) => {
         const mask = states.get(c.id) ?? 0;
         const reach = reachableIn(c, mask);
-        const here = instances.filter((i) => i.branch === c.id);
+        // §41: the groups exist from the start (seven instances): a branch is known once one of them played there.
+        const here = instances.filter((i) => i.branch === c.id && (i.players > 0 || !!i.started_at));
         const fighting = here.filter((i) => i.players > 0);
         const controlled = c.zones.filter((z) => controlledIn(c, z.id, mask)).length;
         zonesControlled += controlled;
@@ -884,12 +1026,6 @@ export async function titanView(ctx: Ctx): Promise<Response> {
                   ? "affaibli"
                   : "intact";
         body[partOf(c.id)] = state;
-        for (const z of c.zones) {
-            if (z.groups_required < 2) continue;
-            const open = c.objectives.filter((o) => o.zone === z.id && !o.optional && !isDone(mask, o.index)).length;
-            const groups = fighting.filter((i) => zonesOf(i).includes(z.id)).length;  // 2.78: its players may be spread
-            if (open > 0 && groups > 0 && groups < z.groups_required) needs.push({ branch: partOf(c.id), zone: z.id, name: z.name, groups, required: z.groups_required });
-        }
         return {
             part: partOf(c.id),
             id: c.id,
@@ -951,9 +1087,14 @@ export async function titanView(ctx: Ctx): Promise<Response> {
     // 2.74 (phase 6): the Cœur d'Asterion: sealed, open, fought (its shared health), fallen.
     const heart = await heartView(db, e.id, done, states, instances, reg?.clan_id ?? null);
     if (heart) body[heart.part] = heartBodyState(heart);
+    // §41: my clan's groups (seven, one per branch) and how the raid ends for it.
+    const mine = reg ? await clanInstancesOf(db, e.id, reg.clan_id) : [];
+    const myGroupNo = myInst?.group_no ?? 0;
+    const myCur = myGroupNo ? currentOf(mine, myGroupNo) : null;
     return json(ctx, {
         server_time: now,
-        event: { id: e.id, state: raidState(e, now), kind: e.kind },
+        event: { id: e.id, state: raidState(e, now), kind: e.kind, ends_at: e.ends_at },
+        outcome: outcomeOf(e, now, done, reg ? mine : null),
         titan: { revision: TITAN.revision },
         totals: {
             zones_controlled: zonesControlled,
@@ -980,6 +1121,17 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             clan_tag: reg?.tag ?? null,
             can_manage: reg ? await canManage(db, e.id, reg.clan_id, me) : false,
             placement: myInst ? { branch: partOf(myInst.branch), instance_id: myInst.id, group: groupTag(myInst.tag, myInst.group_no), zone: myInst.zone } : null,
+            // §41: my group now (its branch, waiting there once its Gigaboss fell, out once wiped), my clan's groups in play.
+            group: myGroupNo
+                ? {
+                      number: myGroupNo,
+                      branch: myCur ? partOf(myCur.branch) : null,
+                      instance_id: myCur?.id ?? null,
+                      out: !myCur,
+                      waiting: !!myCur && !!catalogById(myCur.branch) && !(HEART && myCur.branch === HEART.id) && gigabossFallen(catalogById(myCur.branch)!, states),
+                  }
+                : null,
+            groups_in_play: reg ? groupsInPlay(mine).length : 0,
         },
     });
 }
@@ -1069,6 +1221,15 @@ export async function branchView(ctx: Ctx): Promise<Response> {
     const retakes = await zonesToRetake(db, e.id, c, mask);
     const spect = await spectatorOf(db, e.id, me);
     const myZoneDone = !!mine && mine.wiped_zone == null && zoneFinished(c, myZone, mask);
+    // §41 (titan 16): only a group WAITING (its branch's Gigaboss fell, the Cœur not open yet) replaces a wiped group of
+    // its clan, in any branch where the clan has no group in play any more: it takes that zone, the branch's state kept.
+    const clanRows = reg ? await clanInstancesOf(db, e.id, reg.clan_id) : [];
+    const myGroupNo = clanRows.find((i) => i.id === placement?.instance_id)?.group_no ?? 0;
+    const myCur = myGroupNo ? currentOf(clanRows, myGroupNo) : null;
+    const myCat = myCur ? catalogById(myCur.branch) : undefined;
+    const myWaiting = !!myCur && !!myCat && !(HEART && myCur.branch === HEART.id) && gigabossFallen(myCat, states) && !heartOpenIn(done);
+    const clanHere = groupsInPlay(clanRows).some((i) => i.branch === c.id);
+    const ownRetakes = retakes.filter((r) => !r.relieved_by && clanRows.some((i) => i.id === r.instance_id));
     const links = linkViews(done, objectives);
     return json(ctx, {
         server_time: now,
@@ -1114,7 +1275,12 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             placed_branch: placement ? partOf(placement.branch) : null,
             spectator: spect ? { instance_id: spect.instance_id, zone: spect.zone, part: partOf(spect.branch) } : null,
             zone_finished: myZoneDone,
-            retake_offers: myZoneDone && !spect ? retakes.map((r) => ({ zone: r.zone, name: c.zones.find((z) => z.id === r.zone)?.name ?? "" })) : [],
+            retake_offers: myWaiting && !spect && !clanHere ? ownRetakes.map((r) => ({ zone: r.zone, name: c.zones.find((z) => z.id === r.zone)?.name ?? "" })) : [],
+            // §41: my group's instance now (any branch: the retake is asked from it) and whether it waits.
+            group: myGroupNo,
+            group_instance_id: myCur?.id ?? null,
+            group_branch: myCur ? partOf(myCur.branch) : null,
+            group_waiting: myWaiting,
         },
         to_retake: retakes,
         journal: mineDone.slice(0, 10).map((d) => ({ objective: d.objective_id, label: objectiveIn(c, d.objective_id)?.label ?? d.objective_id, by: by.get(d.objective_id) ?? null, at: d.accepted_at })),

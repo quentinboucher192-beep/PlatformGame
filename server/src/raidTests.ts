@@ -35,8 +35,10 @@ import { Validator, likePrefix, normalizeUsername, paging, queryString } from ".
 export const INVITE_TTL_MS = 3 * 60 * 1000;
 /** Real players invited at once at most (the relay's seats, the administrator's aside). */
 export const MAX_GUESTS = MAX_RAID_PLAYERS - 1;
-/** The full raid's simulation forms up to this many reinforcement groups after its own (raid::SimSetup::maxReinforcements). */
-export const REINFORCEMENTS = 8;
+/** §41 (titan 16): the full raid's simulation, as a real raid: always seven groups, 14 to 56 players spread over them. */
+export const SIM_GROUPS = 7;
+export const SIM_MIN_PLAYERS = 14;
+export const SIM_MAX_PLAYERS = 56;
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const FINGERPRINT_RE = /^[A-Za-z0-9._:|+-]{8,64}$/;
@@ -114,7 +116,7 @@ function readConfig(mode: Mode, raw: unknown, fail: (m: string) => never): { con
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) fail("objet attendu");
     const c = raw as Record<string, unknown>;
     const common = ["skill", "invincible", "bots_invincible", "difficulty"];
-    const keys = mode === "zone" ? [...common, "branch", "zone", "players", "start_phase", "parts", "relics"] : [...common, "groups", "bots", "full_groups"];
+    const keys = mode === "zone" ? [...common, "branch", "zone", "players", "start_phase", "parts", "relics"] : [...common, "players", "full_groups"];
     const v = new Validator(c, keys);
     const out: Record<string, unknown> = {};
     out.skill = v.int("skill", { min: 0, max: 2 });
@@ -132,12 +134,12 @@ function readConfig(mode: Mode, raw: unknown, fail: (m: string) => never): { con
         out.relics = v.int("relics", { min: 0, max: 7 });
         seats = (out.players as number | undefined) ?? 1;
     } else {
-        out.groups = v.int("groups", { min: 1, max: 14 });
-        out.bots = v.int("bots", { min: 1, max: MAX_RAID_PLAYERS - 1 });
+        // §41: the raid's players (14 to 56, the administrator's place counted) spread over seven groups (2 to 8 each).
+        out.players = v.int("players", { min: SIM_MIN_PLAYERS, max: SIM_MAX_PLAYERS });
         // 2.77.3 (« Joueurs par groupe »): the administrator's place of the other groups played by a simulated player too.
         out.full_groups = v.bool("full_groups", { optional: true }) ?? false;
-        groups = ((out.groups as number | undefined) ?? 1) + REINFORCEMENTS;
-        seats = ((out.bots as number | undefined) ?? 1) + 1;
+        groups = SIM_GROUPS;
+        seats = Math.min(MAX_RAID_PLAYERS, Math.floor(((out.players as number | undefined) ?? SIM_MIN_PLAYERS) / SIM_GROUPS)); // the smallest group's places
     }
     if (v.errors.length) fail(v.errors.map((e) => `${e.field} : ${e.message}`).join(", "));
     return { config: out, groups, seats };

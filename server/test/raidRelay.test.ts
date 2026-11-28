@@ -11,6 +11,7 @@ import { env, SELF, abortAllDurableObjects, runDurableObjectAlarm, runInDurableO
 import { beforeEach, describe, expect, it } from "vitest";
 import { FLAG_STANDBY, FLAG_VACANT, HISTORY_CHUNK, MAX_RAID_PLAYERS, Msg, decodeHistory, emptyFrame, encodeHistory, readFrames, type Frame } from "../src/coop";
 import { api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -47,6 +48,8 @@ async function clanOf(tag: string, n: number): Promise<TestPlayer[]> {
         await env.DB.prepare("INSERT INTO raid_registrations (event_id, player_id, clan_id, created_at) VALUES (?1, ?2, ?3, ?4)")
             .bind(ev, p.id, id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
             .run();
+    // §41: the clan's seven groups (14 registered at least), these players in the Bras droit's group.
+    await raidGroups(ev, id, { bras_droit: players });
     (players as TestPlayer[] & { event?: string }).event = ev;
     return players;
 }
@@ -237,7 +240,7 @@ describe("raids phase 7: the history stored by parts", () => {
 });
 
 describe("raids phase 7: the relay of an instance under real conditions", () => {
-    it("eight games, latency, jitter and inputs out of order: the same frames for all, every input in its step", async () => {
+    it("eight games, latency, jitter and inputs out of order: the same frames for all, every input in its step", { timeout: 30000 }, async () => {
         const players = await clanOf("OCTO", 8);
         const inst = await instanceFor(players);
         const games = await Promise.all(players.map((p) => connect(p, inst)));

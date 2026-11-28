@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { report } from "../src/raidZones";
 import { bodyOf, countingDb, directCtx } from "./d1count";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -51,6 +52,7 @@ async function setup(n: number): Promise<{ ev: string; inst: string; players: Te
         await env.DB.prepare("INSERT INTO raid_registrations (event_id, player_id, clan_id, created_at) VALUES (?1, ?2, ?3, ?4)")
             .bind(ev, p.id, clan, new Date(Date.now() - 60000 + ++k * 10).toISOString())
             .run();
+    await raidGroups(ev, clan, { bras_droit: players }); // §41: the clan's seven groups (14 registered at least)
     const j = await api("POST", `${V}/raids/events/${ev}/instance`, { token: chief.token, body: {} });
     expect(j.status, JSON.stringify(j.body)).toBe(200);
     const inst = j.body.data.instance.id as string;

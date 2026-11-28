@@ -1,14 +1,19 @@
 // Clan raids « Asterion », phase 4 (raidMap.ts, docs/RAIDS.md): the seven branches of the titan,
 // the links between them (an objective accepted in one branch acts on another, through the state
 // the relays give their games), the consensus on a new branch, the global map that aggregates
-// every instance, and the placement of the players (8 at most per instance, up to 50 per clan,
-// late joiners where they are needed, the raid leader's moves and rebalancing).
+// every instance, and the placement of the players: §41 (titan 16), always seven groups per clan, one
+// per branch (14 to 56 players, a waiting list beyond), never another branch or group, the raid leader's
+// moves between groups (2 to 8 each) and rebalancing, how the raid ends (60 min, every group eliminated).
 
-import { env } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { CATALOGS, TITAN, catalogByPart, lockOpenIn, reachableIn, stateMaskOf, statesOf } from "../src/raidMap";
+import { CATALOGS, HEART, PARTS, TITAN, catalogByPart, lockOpenIn, reachableIn, stateMaskOf, statesOf } from "../src/raidMap";
+import { Msg, WATCHER_SEAT } from "../src/coop";
+import { HEART_OBJECTIVE } from "../src/raidHeart";
+import { timesOf } from "../src/raids";
 import { branchMaskOf } from "../src/raidZones";
-import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { fillRoster, raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -118,6 +123,7 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
     it("the Skull: majority accepted, the liar journaled; the eyes act on the Left arm's state", async () => {
         const a = await clan("AUBE", 3);
         const ev = await runningEvent(a);
+        await raidGroups(ev, a.id, { crane: a.players }); // §41: the clan's seven groups, these three in the Crâne's
         const r = await join(a.players[0]!, ev, "crane");
         expect(r.status, JSON.stringify(r.body)).toBe(200);
         expect(r.body.data.instance.level).toBe("raid:asterion_crane");
@@ -151,6 +157,8 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
         const a = await clan("AUBE", 1);
         const b = await clan("NEBU", 1);
         const ev = await runningEvent(a, b);
+        await raidGroups(ev, a.id, { crane: a.players });
+        await raidGroups(ev, b.id, { bras_droit: b.players });
         const ia = (await join(a.players[0]!, ev, "crane")).body.data.instance.id as string;
         const ib = (await join(b.players[0]!, ev, "bras_droit")).body.data.instance.id as string;
         await playing(ia, a.players);
@@ -185,92 +193,216 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
     });
 });
 
-describe("raids phase 4: placement of the players", () => {
-    it("50 players of a clan on one branch: never more than 8 per instance, new instances as they fill", { timeout: 60000 }, async () => {
-        const a = await clan("CINQ", 50);
+describe("§41 (titan 16): seven groups, one per branch", () => {
+    const groupsOfClan = async (ev: string, clanId: string) =>
+        (
+            await env.DB.prepare(
+                `SELECT i.id, i.group_no, i.branch, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS n FROM raid_instances i
+                 WHERE i.event_id = ?1 AND i.clan_id = ?2 ORDER BY i.group_no`,
+            )
+                .bind(ev, clanId)
+                .all<{ id: string; group_no: number; branch: string; n: number }>()
+        ).results;
+
+    it("14 registered at least to start; then always 7 groups, group k in branch k, as even as possible", { timeout: 60000 }, async () => {
+        const a = await clan("SEPT", 13);
         const ev = await runningEvent(a);
-        // All at once (concurrent placements must never overfill an instance).
-        const answers = await Promise.all(a.players.map((p) => join(p, ev, "jambe_gauche")));
-        for (const r of answers) expect(r.status, JSON.stringify(r.body)).toBe(200);
-        const rows = await env.DB.prepare(
-            "SELECT i.id, i.group_no, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS n FROM raid_instances i WHERE i.event_id = ?1",
-        )
-            .bind(ev)
-            .all<{ id: string; group_no: number; n: number }>();
-        expect(rows.results.reduce((s, r) => s + r.n, 0)).toBe(50);
-        for (const r of rows.results) expect(r.n).toBeLessThanOrEqual(8);
-        expect(rows.results.filter((r) => r.n > 0).length).toBeGreaterThanOrEqual(7);
-        // Joining again keeps one's place.
-        const again = await join(a.players[3]!, ev, "jambe_gauche");
-        expect(again.body.data.instance.id).toBe(answers[3]!.body.data.instance.id);
+        const few = await join(a.players[0]!, ev);
+        expect(few.status).toBe(409);
+        expect(few.body.error.code).toBe("RAID_TOO_FEW");
+        expect(few.body.error.message).toContain("au moins 14");
+        expect((await groupsOfClan(ev, a.id)).length).toBe(0); // nothing formed
+        // The 14th (and six more: 20 registered) — the groups form at the first join: 3,3,3,3,3,3,2.
+        await fillRoster(ev, a.id, 7);
+        const r = await join(a.players[0]!, ev);
+        expect(r.status, JSON.stringify(r.body)).toBe(200);
+        expect(r.body.data.instance.group).toBe(1); // the raid leader (the chief) leads group 1: the Crâne
+        expect(r.body.data.instance.part).toBe("crane");
+        const groups = await groupsOfClan(ev, a.id);
+        expect(groups.map((g) => g.group_no)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+        expect(groups.map((g) => g.branch)).toEqual(CATALOGS.map((c) => c.id));
+        expect(groups.map((g) => g.n)).toEqual([3, 3, 3, 3, 3, 3, 2]);
+        // Every player of the clan joins their own group (never a new instance).
+        for (const p of a.players) expect((await join(p, ev)).status).toBe(200);
+        expect((await groupsOfClan(ev, a.id)).length).toBe(7);
+        // The roster screen: seven groups of 2 to 8.
+        const view = await api("GET", `${V}/raids/events/${ev}/placements`, { token: a.players[5]!.token });
+        expect(view.status).toBe(200);
+        expect(view.body.data.rules).toMatchObject({ groups: 7, min_group: 2, max_group: 8, min_players: 14, max_in_play: 56 });
+        expect(view.body.data.groups.map((g: { branch: string }) => g.branch)).toEqual(PARTS);
+        expect(view.body.data.too_few).toBe(false);
     });
 
-    it("a late joiner goes where the clan fights and needs players; the raid leader moves and rebalances", async () => {
-        const a = await clan("AUBE", 12);
+    it("56 in play at most, the others on a waiting list in their order; its first takes the place of one who unregisters", { timeout: 60000 }, async () => {
+        const a = await clan("FILE", 3);
+        // Registration open: the chief registers, then 54 placeholders, then two members (the 56th, the 57th). A clan holds
+        // 50 members and an event 50 registrations per clan at most (clans.ts, raid_events CHECK): past them, straight in
+        // the database, as a larger clan would register.
+        const id = crypto.randomUUID();
+        const now = new Date().toISOString();
+        await env.DB.prepare(
+            `INSERT INTO raid_events (id, kind, raid, format, clan_id, starts_at, lock_minutes, lock_at, ends_at, registration_open, capacity, clan_capacity, difficulty, rewards_text, published_at, created_at, updated_at)
+             VALUES (?1, 'world', 'asterion', 'standard', NULL, ?2, 30, ?3, ?4, 1, 0, 50, 3, '', ?5, ?5, ?5)`,
+        )
+            .bind(id, iso(120), iso(90), iso(180), now)
+            .run();
+        await env.DB.prepare("INSERT INTO raid_clan_entries (event_id, clan_id, registered_by, leader_id, instructions, created_at, updated_at) VALUES (?1, ?2, ?3, ?3, '', ?4, ?4)")
+            .bind(id, a.id, a.players[0]!.id, now)
+            .run();
+        expect((await api("POST", `${V}/raids/events/${id}/register`, { token: a.players[0]!.token, body: {} })).status).toBe(201);
+        await fillRoster(id, a.id, 54);
+        const late = async (p: TestPlayer, ms: number) =>
+            env.DB.prepare("INSERT INTO raid_registrations (event_id, player_id, clan_id, created_at) VALUES (?1, ?2, ?3, ?4)")
+                .bind(id, p.id, a.id, new Date(Date.now() + ms).toISOString())
+                .run();
+        const [, p56, p57] = a.players as [TestPlayer, TestPlayer, TestPlayer];
+        await late(p56, 5000);
+        await late(p57, 6000);
+        let sheet = await api("GET", `${V}/raids/events/${id}`, { token: p57.token });
+        expect(sheet.status).toBe(200);
+        expect(sheet.body.data.event.my_clan).toMatchObject({ players: 57, in_play: 56, waiting: 1, groups: 7, min_players: 14, max_in_play: 56, ready: true });
+        expect(sheet.body.data.waitlist.map((w: { id: string; rank: number }) => [w.id, w.rank])).toEqual([[p57.id, 1]]);
+        expect(sheet.body.data.roster.find((r: { id: string }) => r.id === p57.id).waiting_rank).toBe(1);
+        expect(sheet.body.data.roster.find((r: { id: string }) => r.id === p56.id).waiting_rank).toBeUndefined();
+        expect(sheet.body.data.groups.map((g: { members: unknown[] }) => g.members.length)).toEqual([8, 8, 8, 8, 8, 8, 8]);
+        expect(sheet.body.data.groups.map((g: { branch: string }) => g.branch)).toEqual(PARTS);
+        expect(sheet.body.data.rules).toMatchObject({ groups: 7, min_group: 2, max_group: 8, min_players: 14, max_in_play: 56, minutes: 60 });
+        // Someone in play unregisters before the start: the first waiting takes the place.
+        expect((await api("DELETE", `${V}/raids/events/${id}/register`, { token: a.players[0]!.token })).status).toBe(200);
+        sheet = await api("GET", `${V}/raids/events/${id}`, { token: p57.token });
+        expect(sheet.body.data.waitlist).toEqual([]);
+        expect(sheet.body.data.groups.flatMap((g: { members: { id: string }[] }) => g.members.map((m) => m.id))).toContain(p57.id);
+        // Back on, after everyone: the first of the waiting list now.
+        await late(a.players[0]!, 7000);
+        sheet = await api("GET", `${V}/raids/events/${id}`, { token: p57.token });
+        expect(sheet.body.data.waitlist.map((w: { id: string }) => w.id)).toEqual([a.players[0]!.id]);
+        // The raid starts: the waiting player never plays; the others are 7 groups of 8.
+        await env.DB.prepare("UPDATE raid_events SET starts_at = ?2, lock_at = ?3, ends_at = ?4 WHERE id = ?1").bind(id, iso(-1), iso(-31), iso(59)).run();
+        const waiting = await join(a.players[0]!, id);
+        expect(waiting.status).toBe(403);
+        expect(waiting.body.error.code).toBe("RAID_WAITLIST");
+        expect((await join(p57, id)).status).toBe(200);
+        const groups = await groupsOfClan(id, a.id);
+        expect(groups.map((g) => g.n)).toEqual([8, 8, 8, 8, 8, 8, 8]);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM raid_placements WHERE event_id = ?1 AND player_id = ?2").bind(id, a.players[0]!.id).first<{ n: number }>())!.n).toBe(0);
+    });
+
+    it("a player only plays their group's branch and instance: another branch, another group, help: refused", { timeout: 60000 }, async () => {
+        const a = await clan("SOLO", 14);
+        const b = await clan("AUTR", 14);
+        const ev = await runningEvent(a, b);
+        const mine = await join(a.players[0]!, ev, "crane");
+        expect(mine.status, JSON.stringify(mine.body)).toBe(200);
+        const other = await join(a.players[0]!, ev, "torse");
+        expect(other.status).toBe(409);
+        expect(other.body.error.code).toBe("RAID_OTHER_BRANCH");
+        expect(other.body.error.message).toContain("CRÂNE");
+        // Another group of my clan, another clan's group: never (no help, no other instance).
+        const torse = (await join(a.players[6]!, ev, "torse")).body.data.instance.id as string; // the 7th registered: group 4
+        expect((await join(a.players[0]!, ev, undefined, { instance_id: torse })).body.error.code).toBe("RAID_OTHER_GROUP");
+        const theirs = (await join(b.players[0]!, ev)).body.data.instance.id as string;
+        expect((await join(a.players[0]!, ev, "crane", { instance_id: theirs })).status).toBe(409);
+        // The phase-2 route too.
+        expect((await api("POST", `${V}/raids/events/${ev}/instance`, { token: a.players[0]!.token, body: { instance_id: torse } })).body.error.code).toBe("RAID_OTHER_GROUP");
+        // Seven instances per clan, never one more.
+        const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2").bind(ev, a.id).first<{ n: number }>();
+        expect(n!.n).toBe(7);
+        // The relay too: a seat only in my group's instance; another group's socket only watches.
+        const hello = Uint8Array.from([Msg.Hello, 1, 255, 4, 84, 101, 115, 116]);
+        const seatIn = async (p: TestPlayer, inst: string) => {
+            const res = await SELF.fetch(`http://cosmic.test${V}/raids/instances/${inst}/socket`, {
+                headers: { upgrade: "websocket", authorization: `Bearer ${p.token}`, "cf-connecting-ip": freshIp() },
+            });
+            expect(res.status).toBe(101);
+            const ws = res.webSocket!;
+            const got: Uint8Array[] = [];
+            ws.accept();
+            ws.binaryType = "arraybuffer";
+            ws.addEventListener("message", (m) => got.push(new Uint8Array(m.data as ArrayBuffer)));
+            ws.send(hello);
+            await new Promise((x) => setTimeout(x, 40));
+            ws.close();
+            return got.find((m) => m[0] === Msg.Welcome)?.[1];
+        };
+        expect(await seatIn(a.players[0]!, torse)).toBe(WATCHER_SEAT);
+        expect(await seatIn(a.players[0]!, mine.body.data.instance.id as string)).toBe(0);
+    });
+
+    it("the raid leader moves a member between groups (2 to 8 each, checked by the server) and evens them out", { timeout: 60000 }, async () => {
+        const a = await clan("CHEF", 14);
         const ev = await runningEvent(a);
         const chief = a.players[0]!;
-        // Five on the Torso, fighting; two on the Abdomen, not yet in play.
-        const torso = (await join(a.players[1]!, ev, "torse")).body.data.instance.id as string;
-        for (const p of a.players.slice(2, 6)) await join(p, ev, "torse");
-        await playing(torso, a.players.slice(1, 6));
-        for (const p of a.players.slice(6, 8)) await join(p, ev, "abdomen");
-        // A late joiner without a choice: the group in combat that has room.
-        const late = await join(a.players[8]!, ev);
-        expect(late.status).toBe(200);
-        expect(late.body.data.instance.id).toBe(torso);
-        expect(late.body.data.instance.part).toBe("torse");
-        // A member cannot move anyone; the raid leader (the chief here) can.
-        const p9 = a.players[9]!;
-        await join(p9, ev, "crane");
-        const refused = await api("POST", `${V}/raids/events/${ev}/placements`, { token: a.players[2]!.token, body: { player_id: p9.id, branch: "torse" } });
-        expect(refused.status).toBe(403);
-        const moved = await api("POST", `${V}/raids/events/${ev}/placements`, { token: chief.token, body: { player_id: p9.id, branch: "torse" } });
-        expect(moved.status, JSON.stringify(moved.body)).toBe(200);
-        expect(moved.body.data.placement.instance_id).toBe(torso);
-        expect(await placedIn(torso)).toBe(7);
-        // Two more on the Torso: the first one fills it (8), the next opens a second group.
-        await api("POST", `${V}/raids/events/${ev}/placements`, { token: chief.token, body: { player_id: a.players[10]!.id, branch: "torse" } });
-        const second = await api("POST", `${V}/raids/events/${ev}/placements`, { token: chief.token, body: { player_id: a.players[11]!.id, branch: "torse" } });
-        expect(second.body.data.placement.instance_id).not.toBe(torso);
-        expect(await placedIn(torso)).toBe(8);
-        // Into a full instance: refused.
-        const full = await api("POST", `${V}/raids/events/${ev}/placements`, { token: chief.token, body: { player_id: chief.id, branch: "torse", instance_id: torso } });
+        expect((await join(chief, ev)).status).toBe(200); // 7 groups of 2
+        const p2 = a.players[2]!; // group 2 (the Bras gauche)
+        // A member cannot move anyone.
+        expect((await api("POST", `${V}/raids/events/${ev}/placements`, { token: a.players[3]!.token, body: { player_id: p2.id, branch: "torse" } })).status).toBe(403);
+        // Group 2 has 2 players: one leaving would leave 1 — refused.
+        const small = await api("POST", `${V}/raids/events/${ev}/placements`, { token: chief.token, body: { player_id: p2.id, branch: "torse" } });
+        expect(small.status).toBe(409);
+        expect(small.body.error.code).toBe("GROUP_TOO_SMALL");
+        // Filled up to 8 in the Torse's group (direct placements), a ninth is refused.
+        await fillRoster(ev, a.id, 20);
+        const torse = (await env.DB.prepare("SELECT id FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2 AND group_no = 4").bind(ev, a.id).first<{ id: string }>())!.id;
+        const fillers = (await env.DB.prepare("SELECT player_id FROM raid_registrations WHERE event_id = ?1 AND clan_id = ?2 ORDER BY created_at DESC LIMIT 20").bind(ev, a.id).all<{ player_id: string }>()).results;
+        const crane = (await env.DB.prepare("SELECT id FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2 AND group_no = 1").bind(ev, a.id).first<{ id: string }>())!.id;
+        let k = 0;
+        for (const f of fillers) {
+            const to = k < 6 ? torse : crane;
+            await env.DB.prepare(
+                `INSERT INTO raid_placements (event_id, player_id, clan_id, branch, instance_id, placed_by, reason, created_at, updated_at)
+                 SELECT ?1, ?2, ?3, branch, id, NULL, 'choix', ?5, ?5 FROM raid_instances WHERE id = ?4`,
+            )
+                .bind(ev, f.player_id, a.id, to, new Date().toISOString())
+                .run();
+            ++k;
+        }
+        expect(await placedIn(torse)).toBe(8);
+        const full = await api("POST", `${V}/raids/events/${ev}/placements`, { token: chief.token, body: { player_id: a.players[13]!.id, branch: "torse" } });
         expect(full.status).toBe(409);
-        // Rebalanced: 9 players over 2 groups → 5 and 4 (the players in combat stay where they are).
-        const rb = await api("POST", `${V}/raids/events/${ev}/placements/rebalance`, { token: chief.token, body: { branch: "torse" } });
+        expect(full.body.error.code).toBe("INSTANCE_FULL");
+        // A move that keeps both groups in 2..8: the Crâne (16) gives one to the Abdomen (2).
+        const moved = await api("POST", `${V}/raids/events/${ev}/placements`, { token: chief.token, body: { player_id: a.players[1]!.id, branch: "abdomen" } });
+        expect(moved.status, JSON.stringify(moved.body)).toBe(200);
+        expect(moved.body.data.placement.group).toBe(5);
+        // Even them out: 34 players over 7 groups → 5,5,5,5,5,5,4 (sizes differ by one at most).
+        const rb = await api("POST", `${V}/raids/events/${ev}/placements/rebalance`, { token: chief.token, body: {} });
         expect(rb.status, JSON.stringify(rb.body)).toBe(200);
         const sizes = (rb.body.data.instances as { placed: number }[]).map((i) => i.placed).sort();
-        expect(sizes).toEqual([4, 5]);
-        const keptInCombat = await env.DB.prepare(
-            "SELECT COUNT(*) AS n FROM raid_placements WHERE instance_id = ?1 AND player_id IN (SELECT player_id FROM raid_instance_members WHERE instance_id = ?1)",
-        )
-            .bind(torso)
-            .first<{ n: number }>();
-        expect(keptInCombat!.n).toBe(5);
-        // The clan's view: every member and their place; the moves are journaled.
-        const view = await api("GET", `${V}/raids/events/${ev}/placements`, { token: a.players[4]!.token });
-        expect(view.status).toBe(200);
-        expect(view.body.data.can_manage).toBe(false);
-        expect(view.body.data.members.length).toBe(12);
-        expect(view.body.data.members.find((m: { id: string }) => m.id === p9.id).branch).toBe("torse");
+        expect(sizes).toEqual([4, 5, 5, 5, 5, 5, 5]);
+        expect(rb.body.data.instances.length).toBe(7);
         const log = await env.DB.prepare("SELECT COUNT(*) AS n FROM raid_placement_log WHERE event_id = ?1 AND reason IN ('chef', 'equilibrage')").bind(ev).first<{ n: number }>();
-        expect(log!.n).toBeGreaterThanOrEqual(4);
+        expect(log!.n).toBeGreaterThanOrEqual(2);
     });
 
-    it("helping another clan's group: only while it has room", async () => {
-        const a = await clan("AUBE", 8);
-        const b = await clan("NEBU", 1);
-        const ev = await runningEvent(a, b);
-        const ia = (await join(a.players[0]!, ev, "abdomen")).body.data.instance.id as string;
-        for (const p of a.players.slice(1, 7)) await join(p, ev, "abdomen");
-        await playing(ia, a.players.slice(0, 7));
-        const help = await join(b.players[0]!, ev, "abdomen", { instance_id: ia });
-        expect(help.status).toBe(200);
-        expect(help.body.data.instance.clan_tag).toBe("AUBE");
-        expect(await placedIn(ia)).toBe(8);
-        // The eighth of AUBE is placed in a new group of AUBE.
-        const last = await join(a.players[7]!, ev, "abdomen");
-        expect(last.body.data.instance.id).not.toBe(ia);
-        expect(last.body.data.instance.group).toBe(2);
+    it("defeat: « temps écoulé » at the end of the 60 min with the Cœur standing, « tous les groupes éliminés » at once; victory once it fell", { timeout: 60000 }, async () => {
+        // The standard raid lasts 60 minutes.
+        const t = timesOf(Date.parse("2026-12-01T20:00:00Z"), 30, "standard");
+        expect(Date.parse(t.ends_at) - Date.parse(t.starts_at)).toBe(60 * 60000);
+        const a = await clan("PERD", 14);
+        const ev = await runningEvent(a);
+        expect((await join(a.players[0]!, ev)).status).toBe(200);
+        const outcome = async () => (await api("GET", `${V}/raids/events/${ev}/titan`, { token: a.players[0]!.token })).body.data.outcome;
+        expect((await outcome()).id).toBe("en_cours");
+        // Every group wiped: defeated at once (nobody left to replace them).
+        const groups = await groupsOfClan(ev, a.id);
+        for (const g of groups.slice(0, 6)) await env.DB.prepare("UPDATE raid_instances SET wiped_zone = 1, wiped_at = ?2 WHERE id = ?1").bind(g.id, iso(-1)).run();
+        expect((await outcome()).id).toBe("en_cours"); // one group still plays
+        await env.DB.prepare("UPDATE raid_instances SET wiped_zone = 2, wiped_at = ?2 WHERE id = ?1").bind(groups[6]!.id, iso(-1)).run();
+        expect(await outcome()).toEqual({ id: "defaite_groupes", text: "Défaite : tous les groupes éliminés" });
+        const res = await api("GET", `${V}/raids/events/${ev}/results`, { token: a.players[0]!.token });
+        expect(res.body.data.outcome.id).toBe("defaite_groupes");
+        // Another clan, time over (the 60 min passed) with Gigaboss standing: « temps écoulé ».
+        const b = await clan("TARD", 14);
+        const ev2 = await runningEvent(b);
+        expect((await join(b.players[0]!, ev2)).status).toBe(200);
+        await env.DB.prepare("UPDATE raid_events SET starts_at = ?2, ends_at = ?3 WHERE id = ?1").bind(ev2, iso(-61), iso(-1)).run();
+        const late = (await api("GET", `${V}/raids/events/${ev2}/titan`, { token: b.players[0]!.token })).body.data.outcome;
+        expect(late).toEqual({ id: "defaite_temps", text: "Défaite : temps écoulé" });
+        expect((await api("GET", `${V}/raids/events/${ev2}/results`, { token: b.players[0]!.token })).body.data.outcome.id).toBe("defaite_temps");
+        // The Cœur fell (validated): victory, even at the end.
+        await env.DB.prepare("INSERT INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, NULL, ?4)")
+            .bind(ev2, HEART!.id, HEART_OBJECTIVE, iso(-2))
+            .run();
+        expect((await api("GET", `${V}/raids/events/${ev2}/titan`, { token: b.players[0]!.token })).body.data.outcome.id).toBe("victoire");
     });
 });

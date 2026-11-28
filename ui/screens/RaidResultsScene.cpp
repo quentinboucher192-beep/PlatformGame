@@ -131,8 +131,12 @@ public:
         if (ui.button("back", {page.x, page.y, bw, ui.s(44)}, "‹ Retour")) back = true;
         const float hx = page.x + bw + ui.s(16);
         std::string state = !loaded_ ? "" : res_.final ? "Classement final" : "Classement en cours · résultats validés par le serveur";
-        const float sw = std::min(textW(ui, state, 14), (page.right() - hx) * 0.45f);
-        if (!state.empty()) fit(ui, state, {page.right(), page.y + ui.s(22)}, 14, sw, res_.final ? kGreen : kGold, FontFace::Bold, Align::Right);
+        // §41 (titan 16): the raid decided for my clan says it first (« Défaite : temps écoulé », « Défaite : tous les groupes éliminés »).
+        const bool decided = loaded_ && (res_.outcome.defeat() || res_.outcome.victory());
+        if (decided) state = raids::outcomeText(res_.outcome.id) + (res_.final ? " · classement final" : "");
+        const Color stateColor = decided ? (res_.outcome.defeat() ? Color{255, 120, 120, 255} : kGreen) : res_.final ? kGreen : kGold;
+        const float sw = std::min(textW(ui, state, 14, FontFace::Bold), (page.right() - hx) * 0.45f);
+        if (!state.empty()) fit(ui, state, {page.right(), page.y + ui.s(22)}, 14, sw, stateColor, FontFace::Bold, Align::Right);
         // 2.78.1: the « fiche récapitulative » of the raid for my clan, once it is finished (or its heart fallen).
         const std::string recapLabel = "Fiche récapitulative", myClan = jstr(jfield(g_.online.myClan(), "clan"), "id");
         const bool heartDown = std::find(res_.defeatedBosses.begin(), res_.defeatedBosses.end(), "Cœur d'Asterion") != res_.defeatedBosses.end();

@@ -61,7 +61,7 @@
    "event": "Montée de magma toutes les 42 s (grilles hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.4
   },
   {
@@ -214,7 +214,7 @@
    "id": "forge_soufflet_ouest",
    "index": 3,
    "zone": 4,
-   "label": "Détruire le soufflet ouest (un groupe)",
+   "label": "Détruire le soufflet ouest (en même temps que l'est)",
    "optional": false,
    "role": "",
    "pair": "soufflets"
@@ -223,7 +223,7 @@
    "id": "forge_soufflet_est",
    "index": 4,
    "zone": 4,
-   "label": "Détruire le soufflet est (un autre groupe)",
+   "label": "Détruire le soufflet est (en même temps que l'ouest)",
    "optional": false,
    "role": "",
    "pair": "soufflets"

@@ -1,13 +1,14 @@
 // 2.65: the map of a branch of the raid (docs/RAIDS.md, maquette « Branche »): 2.68, any of the
 // seven branches of Asterion (« BRAS DROIT » first), its 8 sub-zones linked as on the titan's body
-// (two paths, the secret zone, the lock of several objectives, the shortcut, the zone that needs
-// two groups, the passages that another branch opens, the sealed lair of the gigaboss; 2.68,
+// (two paths, the secret zone, the lock of several objectives, the shortcut, the zone of a pair of
+// objectives, the passages that another branch opens, the sealed lair of the gigaboss; 2.68,
 // phase 3: the hand of the BRAS DROIT is the arena of its gigaboss Pyroclast).
 // Everything shown comes from the server (GET /raids/events/{id}/branches/{part}): the zones
 // controlled, the objectives done and by which group, the passages open, the links of the titan
 // received and given, the groups and where they are. At the right, the zone selected: its
-// objectives, what is inside, the links, the groups present, « Rejoindre » (my place on this
-// branch, placed by the server) and « Aider » (another group there, with a free place).
+// objectives, what is inside, the links, the groups present and « Rejoindre » (§41, titan 16: only on
+// my group's branch — group k plays branch k, never another, and nobody helps another group), and, my
+// group waiting (its Gigaboss fallen), « Remplacer le groupe éliminé » on a zone of my clan to retake.
 //
 // Keyboard, gamepad and mouse: the zones are focusable (arrows / stick, Entrée / A to select), the
 // buttons too; Échap / B goes back. Every text is measured into its room (raidui::fit, wrap).
@@ -310,33 +311,25 @@ public:
         int myFree = 8;
         int myZone = 0;
         const Json my = data_.value("my", Json::object());
-        Json help;
-        for (const auto& i : data_.value("instances", Json::array())) {
+        for (const auto& i : data_.value("instances", Json::array()))
             if (jstr(i, "id") == myInstance) {
                 myFree = jget<int>(i, "free", 8);
                 myZone = jget<int>(i, "zone", 0);
-            } else if (jget<int>(i, "zone", 0) == selected_ && jget<int>(i, "free", 0) > 0 && jget<int>(i, "players", 0) > 0 && !help.is_object()) {
-                help = i;
             }
-        }
         const bool registered = jget<bool>(my, "registered", false);
         const bool running = jstr(data_.value("event", Json::object()), "state") == "en_cours";
-        const float bh = ui.s(50), by = r.bottom() - pad - bh, gap = ui.s(8);
-        const bool canHelp = help.is_object() && registered && running;
-        const float jw = canHelp ? (w - gap) * 0.5f : w;
+        const float bh = ui.s(50), by = r.bottom() - pad - bh;
+        // §41: my group plays one branch: « Rejoindre » only there (the server refuses any other); a spectator watches.
+        const std::string groupBranch = jstr(my, "group_branch");
+        const bool spectator = my.value("spectator", Json()).is_object();
+        const bool mineHere = spectator || groupBranch.empty() || groupBranch == part_;
         UIContext::ButtonStyle js;
         js.primary = true;
-        js.enabled = registered && running && !busy_;
+        js.enabled = registered && running && !busy_ && mineHere;
         std::string joinLabel = myInstance.empty() ? "Rejoindre cette branche" : "Rejoindre · " + std::to_string(myFree) + (myFree > 1 ? " places" : " place");
         // 2.75: a player whose group was wiped only watches (the server gives a spectator link).
-        if (my.value("spectator", Json()).is_object()) joinLabel = "Regarder (groupe éliminé)";
-        if (ui.button("join", {x, by, jw, bh}, joinLabel, js)) join("");
-        if (canHelp) {
-            UIContext::ButtonStyle hs;
-            hs.enabled = !busy_;
-            const std::string t = "Aider [" + jstr(help, "clan_tag") + "]·" + std::to_string(jget<int>(help, "group", 1));
-            if (ui.button("help", {x + jw + gap, by, w - jw - gap, bh}, t, hs)) join(jstr(help, "id"));
-        }
+        if (spectator) joinLabel = "Regarder (groupe éliminé)";
+        if (mineHere && ui.button("join", {x, by, w, bh}, joinLabel, js)) join("");  // another branch: no button, the note says why
         float bottom = by - ui.s(10);
         // 2.73: the lair: the sheet of its gigaboss (visible whether it was met or not).
         if (jget<bool>(z, "boss", false)) {
@@ -352,13 +345,14 @@ public:
                 bottom = sr.y - ui.s(10);
             }
         }
-        // 2.75: this zone is « à reprendre » and my group finished its own: take it again (a fresh instance of it).
+        // 2.75, §41: this zone is « à reprendre » (a group of my clan was wiped there) and my group waits (its Gigaboss
+        // fell): it replaces that group there, the whole group (a fresh instance of the zone, the branch's state kept).
         for (const auto& o : my.value("retake_offers", Json::array())) {
             if (jget<int>(o, "zone", 0) != selected_) continue;
             UIContext::ButtonStyle rs;
             rs.primary = true;
             rs.enabled = registered && running && !busy_;
-            const std::string label = "Reprendre cette zone (un groupe y a été éliminé)";
+            const std::string label = "Remplacer le groupe éliminé ici (tout votre groupe y va)";
             rs.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 16, w - ui.s(20), 0.7f), 11.5f / ui.s(1.0f));
             const Rect rr{x, bottom - ui.s(44), w, ui.s(44)};
             if (ui.button("retake", rr, label, rs)) retake(selected_);
@@ -369,9 +363,9 @@ public:
         std::string note = !running ? "Le raid n'est pas en cours : les combats se jouent pendant l'événement."
                            : !registered ? "Inscrivez-vous au raid (fiche de l'événement) pour combattre."
                            : !myInstance.empty() && myZone > 0 && branchZoneName(myZone).size() ? "Votre groupe est dans : " + branchZoneName(myZone) + "."
-                           : !elsewhere.empty() && elsewhere != part_ ? "Votre place est sur une autre branche : rejoindre celle-ci vous y place."
-                                                                       : "Le serveur vous place dans un groupe de votre clan qui a de la place ; il entre par " +
-                                                                             branchZoneName(1) + ".";
+                           : !mineHere ? "Votre groupe joue une autre branche : un groupe ne joue que la sienne, et n'en part que pour remplacer un groupe éliminé."
+                           : !elsewhere.empty() && elsewhere != part_ ? "Votre groupe joue une autre branche : un groupe ne joue que la sienne."
+                                                                       : "Vous jouez dans le groupe de votre clan sur cette branche ; il entre par " + branchZoneName(1) + ".";
         if (!status_.empty()) note = status_;
         const auto nl = wrap(ui, note, FontFace::Body, 13, w, 2, true);
         bottom -= static_cast<float>(nl.size()) * ui.s(18);
@@ -501,15 +495,16 @@ public:
                        }));
     }
 
-    /// 2.75: my group finished its zone: I take a wiped zone of the branch again (a fresh instance of that
-    /// zone, the branch's state kept; my group follows me one by one), POST /raids/instances/{id}/retake.
+    /// 2.75, §41: my group waits (its Gigaboss fell): it replaces a wiped group of my clan in a zone of this branch (a
+    /// fresh instance of that zone, the branch's state kept; the whole group goes), POST /raids/instances/{id}/retake
+    /// from my group's instance (in its own branch).
     void retake(int zone) {
-        const std::string mine = jstr(data_.value("my", Json::object()), "instance_id");
+        const std::string mine = jstr(data_.value("my", Json::object()), "group_instance_id");
         if (mine.empty() || busy_) return;
         busy_ = true;
-        status_ = "Reprise de la zone…";
+        status_ = "Remplacement du groupe éliminé…";
         statusError_ = false;
-        g_.online.send("POST", "/api/v1/raids/instances/" + mine + "/retake", Json{{"zone", zone}}, OnlineService::guard(life_, [this](const ApiResult& r) {
+        g_.online.send("POST", "/api/v1/raids/instances/" + mine + "/retake", Json{{"zone", zone}, {"branch", part_}}, OnlineService::guard(life_, [this](const ApiResult& r) {
                            busy_ = false;
                            if (!r.ok) {
                                status_ = r.message;

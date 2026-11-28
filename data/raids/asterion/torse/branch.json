@@ -83,7 +83,7 @@
    "event": "Pulsation du cœur toutes les 45 s (passerelles sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.1
   },
   {
@@ -111,7 +111,7 @@
    "event": "Pulsation du cœur toutes les 50 s (passerelles sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.3
   },
   {
@@ -240,7 +240,7 @@
    "id": "torse_plaque_nord",
    "index": 4,
    "zone": 4,
-   "label": "Briser la plaque nord (un groupe)",
+   "label": "Briser la plaque nord (en même temps que la sud)",
    "optional": false,
    "role": "generator",
    "pair": "plaques_sternum"
@@ -249,7 +249,7 @@
    "id": "torse_plaque_sud",
    "index": 5,
    "zone": 4,
-   "label": "Briser la plaque sud (un autre groupe)",
+   "label": "Briser la plaque sud (en même temps que la nord)",
    "optional": false,
    "role": "generator",
    "pair": "plaques_sternum"
@@ -267,7 +267,7 @@
    "id": "torse_plaque_est",
    "index": 7,
    "zone": 6,
-   "label": "Briser la plaque est (un groupe)",
+   "label": "Briser la plaque est (en même temps que l'ouest)",
    "optional": false,
    "role": "generator",
    "pair": "plaques_cotes"
@@ -276,7 +276,7 @@
    "id": "torse_plaque_ouest",
    "index": 8,
    "zone": 6,
-   "label": "Briser la plaque ouest (un autre groupe)",
+   "label": "Briser la plaque ouest (en même temps que l'est)",
    "optional": false,
    "role": "generator",
    "pair": "plaques_cotes"
