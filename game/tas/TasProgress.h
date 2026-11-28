@@ -24,7 +24,10 @@
 //     "checkpoints": [{"id": "o63", "label": "Seuil des Anciens"}, ...],  // CP1 first
 //     "sequence": 123,               // +1 at every write
 //     "message": "...",              // the last line of the search's log (French, as the tool writes it)
-//     "windows": [ { ... } ]         // the last TasAttemptWindow's (at most kMaxWindows, oldest first)
+//     "windows": [ { ... } ],        // the last TasAttemptWindow's (at most kMaxWindows, oldest first)
+//     "strategies": [{"id": "explore", "timeMs": 120000, "gainMs": 42, "wins": 2}, ...]
+//                                    // the portfolio's arms (docs/TAS.md « Le portefeuille »): the time each
+//                                    // was given, what it gained, how many faster runs it found (absent: none)
 //   }
 //
 // The attempts of the search are never listed one by one: they are counted in WINDOWS of a few
@@ -156,6 +159,34 @@ struct TasCheckpoint {
     bool operator==(const TasCheckpoint&) const = default;
 };
 
+/// A strategy of the search's portfolio (cosmic_tas, docs/TAS.md « Le portefeuille »).
+struct TasStrategy {
+    static constexpr size_t kMax = 12;
+    std::string id;       // beam, explore, timing, refine, or one registered (planner, guides...)
+    int64_t timeMs = 0;   // the time it was given (CPU: wall time x threads)
+    int64_t gainMs = 0;   // what its faster runs gained
+    int wins = 0;         // the faster runs it found
+    bool operator==(const TasStrategy&) const = default;
+};
+/// The French name of a strategy (« exploration », « polissage »...; the id itself when unknown).
+std::string tasStrategyLabel(const std::string& id);
+/// « Trouvé par : exploration 2 · polissage 1 » (empty when none found anything).
+std::string tasFoundByText(const std::vector<TasStrategy>& s);
+/// « Part du temps : faisceau 40 % · exploration 30 % … » (empty without any time).
+std::string tasTimeShareText(const std::vector<TasStrategy>& s);
+/// The splits of a run at the level's checkpoints (CP1 first, as TasProgress::checkpoints numbers
+/// them): the level's clock in ms at each one, 0 where it was not reached. Read from JSON:
+/// nullopt for anything else than such a list (at most kMaxSections, each within 0..timeMs when
+/// timeMs > 0, the times reached never going back).
+std::optional<std::vector<int64_t>> tasSplitsFromJson(const Json& j, int64_t timeMs = 0);
+/// Where two runs differ, segment by segment (docs/TAS.md « Où est le gain »): for each segment
+/// (start → CP1, CP1 → CP2… CPn → exit: n + 1 of them), the new run's time in it minus the old
+/// one's (ms; negative: faster). Empty when they cannot be compared (not the same checkpoints,
+/// one not reached, a time missing).
+std::vector<int64_t> tasSegmentDeltas(const std::vector<int64_t>& oldSplits, int64_t oldMs, const std::vector<int64_t>& newSplits, int64_t newMs);
+/// The segment's name: « Départ → CP1 », « CP2 → CP3 », « CP7 → Arrivée » (k of `checkpoints`).
+std::string tasSegmentName(size_t k, size_t checkpoints);
+
 struct TasProgress {
     static constexpr size_t kMaxWindows = 24;  // the last two minutes
     static constexpr int64_t kWindowMs = 5000;
@@ -176,9 +207,29 @@ struct TasProgress {
     /// The round's window (TasAttemptWindow::focusFirst): 0 the whole level (and older files).
     int focusFirst = 0, focusLast = 0;
     std::vector<TasCheckpoint> checkpoints;  // the level's checkpoints the windows count (CP1 first)
+    /// 2.99: the splits of bestMs (tasSplitsFromJson), where its gain came from ("beam", "guide",
+    /// "splice", "polish"; empty: the seed run, or before 2.99) and whether a candidate
+    /// (candidateMs) is being verified now (cosmic_tas verifies each one at once, on a thread).
+    std::vector<int64_t> bestSplits;
+    std::string bestSource;
+    bool verifying = false;
+    /// The players' runs that guide the search (--guide): whose, their time when they finish the
+    /// category (0: not), their splits — the references of the curve's checkpoints.
+    struct Reference {
+        std::string player;
+        int64_t timeMs = 0;
+        std::vector<int64_t> splits;
+        /// A run of an older version of the level (only its route guides): its times say so, part
+        /// of a gap may come from the level's changes, not from the play.
+        bool oldVersion = false;
+        bool operator==(const Reference&) const = default;
+    };
+    static constexpr size_t kMaxReferences = 8;
+    std::vector<Reference> guides;
     int64_t sequence = 0;
     std::string message;
     std::vector<TasAttemptWindow> windows;  // the last ones, oldest first
+    std::vector<TasStrategy> strategies;    // the portfolio's arms (empty: none)
 
     /// The process is done (stopped or failed): nothing more will be written.
     bool finished() const { return phase == TasPhase::Stopped || phase == TasPhase::Failed; }

@@ -335,13 +335,13 @@ void GrapplePower::movePlayer(Player& p, GameWorld& w, const PlayerInput& in, fl
     w.particles().emit("grapple_trail", p.center(), 0.5f);
 }
 
-void GrapplePower::release(Player& p, GameWorld& /*w*/, bool boost) {
+void GrapplePower::release(Player& p, GameWorld& w, bool boost) {
     Vec2 dir = (anchor_ - p.center()).normalized();
     phase_ = Phase::None;
     sinceRelease_ = 0.0f;
     Vec2 v = boost ? Vec2{dir.x * def_.param("pullSpeed", 430.0f) * 0.5f, -def_.param("releaseBoost", 230.0f)}
                    : p.vel * 0.3f;
-    p.launch(v, true);
+    p.launch(w, v, true);
 }
 
 void GrapplePower::cancel(Player& /*p*/, GameWorld& /*w*/) { phase_ = Phase::None; }

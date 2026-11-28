@@ -134,7 +134,7 @@ bool sameRects(const std::vector<Rect>& a, const std::vector<Rect>& b) {
 }  // namespace
 
 TEST_CASE("held start (19): the level is the same when Nova can move, its intro watched or skipped") {
-    CHECK(kSimulationVersion == 19 && kHeldStartSimulation == 19);
+    CHECK(kSimulationVersion >= 19 && kHeldStartSimulation == 19);
     CHECK(kRankingGeneration == 8);  // the records are kept (the player asked for it)
     // sylvanox_01: Nova appears during its intro (« spawnPlayer »); aethra_01 and confins_01: after it.
     const auto inputs = script(2026, 120 * 20);

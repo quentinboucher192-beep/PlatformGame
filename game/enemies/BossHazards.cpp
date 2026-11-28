@@ -352,7 +352,7 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
             dmg.knockback = 120.0f;
             bool hurt = w.damagePlayer(dmg);
             if (p.alive() && p.vel.y > -200.0f) {
-                p.launch({p.vel.x * 0.5f, -390.0f}, false);
+                p.launch(w, {p.vel.x * 0.5f, -390.0f}, false);
                 if (hurt) w.particles().emit("fire_burst", {cx, surface}, 1.0f);
             }
         });

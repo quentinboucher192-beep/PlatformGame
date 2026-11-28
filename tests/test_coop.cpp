@@ -486,7 +486,7 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
         Team c(g.players, "sylvanox_01", g.version, {}, g.rules);
         CHECK(runScript(c, other) != ra);
     }
-    CHECK(kSimulationVersion == 19);
+    CHECK(kSimulationVersion == 20);
     CHECK(mismatches == 0);
     CHECK(kCoopSimulationVersion == 4);
 }
