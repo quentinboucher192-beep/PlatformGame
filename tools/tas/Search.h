@@ -55,6 +55,7 @@ struct LevelData;
 namespace cosmic::tas {
 
 class Portfolio;
+class Director;
 
 /// One attempt of the search, for the counts of a training (game/tas/TasProgress.h windows).
 struct AttemptNote {
@@ -121,6 +122,12 @@ struct SearchOptions {
     /// the timing polish, the refinement or an arm registered; branch-and-bound in the beam. None:
     /// the search as before. Lives as long as the process (like WindowPlanner).
     Portfolio* portfolio = nullptr;
+    /// The mind of the TAS (tools/tas/Director.h, docs/TAS.md « L'IA du TAS »): with a portfolio, it
+    /// plans the slices after the beam's part of a round — strategies side by side, each on its
+    /// own cores — and says why. None: the bandit alone, one strategy on every core.
+    Director* director = nullptr;
+    /// An early arrival that does not carry to the exit (Slice::onLead): a branch may commit to it.
+    std::function<void(const std::vector<InputFrame>& prefix, size_t through, float lead, const std::string& how)> onLead;
     /// Each faster whole run the search holds (played from the load, before its verification), from
     /// the search's threads: cosmic_tas verifies it at once on a thread of its own (docs/TAS.md
     /// « Vérification au fil de l'eau »). Keep it short: copy and return.

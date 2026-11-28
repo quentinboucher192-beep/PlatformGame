@@ -259,3 +259,20 @@ void Sim::give(std::unique_ptr<ArenaWorld::State> s) {
 }
 
 }  // namespace cosmic::tas
+
+namespace cosmic::tas {
+
+float Sim::clipAt(const std::vector<InputFrame>& run) {
+    arena().restore(origin());
+    for (const InputFrame& f : run) {
+        arena().step(f);
+        const GameWorld& w = world();
+        const Player& p = w.player();
+        if (!p.alive() || p.state() == PlayerState::Hidden) continue;
+        if (w.physics().firstSolid(p.box.expanded(-0.05f), p.moveOptions())) return w.timer().elapsed();
+        if (w.state() == WorldState::Outro || w.state() == WorldState::Completed) break;
+    }
+    return -1.0f;
+}
+
+}  // namespace cosmic::tas

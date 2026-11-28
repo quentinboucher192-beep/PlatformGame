@@ -29,6 +29,14 @@ using namespace cosmic;
 
 namespace {
 
+// A budget in seconds measured on the Linux runner of the CI; its Windows runner simulates about
+// half as fast (the whole suite: 38 min against 19), so the same search gets the same work done.
+#ifdef _WIN32
+constexpr double kMachine = 2.5;
+#else
+constexpr double kMachine = 1.0;
+#endif
+
 /// The run shipped for sylvanox_01 ANY%, verified: the best run the tests start from.
 struct Shipped {
     ContentDatabase content;
@@ -132,7 +140,7 @@ TEST_CASE("tas search: a section searched after a divergence is offered the best
     tas::SearchOptions o;
     o.category = RunCategory::AnyPercent;
     o.threads = 2;
-    o.budgetSeconds = 25.0;
+    o.budgetSeconds = 25.0 * kMachine;
     o.seed = 3;
     o.seedRun = S.best;
     o.refine = false;
@@ -166,7 +174,7 @@ TEST_CASE("tas search: a window round keeps the sections before it, re-joins the
     tas::SearchOptions o;
     o.category = RunCategory::AnyPercent;
     o.threads = 2;
-    o.budgetSeconds = 30.0;
+    o.budgetSeconds = 30.0 * kMachine;
     o.seed = 5;
     o.seedRun = S.best;
     o.windowFirst = o.windowLast = 3;

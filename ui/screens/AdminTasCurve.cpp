@@ -87,7 +87,11 @@ void moveCursor(UIContext& ui, int& cursor, int count) {
 }
 
 /// The word of the attempts that broke the category (a death; a blow too in « Sans dégât »).
-const char* brokenWord(RunCategory c) { return c == RunCategory::NoDamage ? "Morts ou touchés" : "Morts"; }
+}  // namespace
+
+const char* tasadmin::brokenWord(RunCategory c) { return c == RunCategory::NoDamage ? "Morts ou touchés" : "Morts"; }
+
+namespace {
 
 /// The checkpoints a version counts (its own list, or as many as its windows count).
 int checkpointsOf(const TasCurveVersion* v) {
@@ -202,19 +206,30 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
     const float chartW = (in.w - ui.s(20)) * 0.63f;
     const Rect chartCol{in.x, top, chartW, in.bottom() - top};
     const Rect statsR{chartCol.right() + ui.s(20), top, in.right() - chartCol.right() - ui.s(20), in.bottom() - top};
-    R.drawLine({statsR.x - ui.s(10), top}, {statsR.x - ui.s(10), in.bottom()}, kGrid, 1.0f);
     layout_.stats = statsR;
 
+    // 2.101: the TAS's mind (its thoughts, essayeurs, memory) when the training has one: under the
+    // curve, or, in a short column (1280 x 720), in its own tab « IA » after the checkpoints (the
+    // curve keeps its whole height).
+    const TasProgress* mindOf = training && job && job->progress && job->progress->director ? &*job->progress
+                                : (!training && previewProgress_ && previewProgress_->director) ? &*previewProgress_
+                                                                                                 : nullptr;
+    const float tabH = ui.s(28);
+    const float chartTop = top + tabH + ui.s(8);
+    const float chartFull = std::max(0.0f, chartCol.bottom() - chartTop);
+    const bool mindApart = mindOf && chartFull < ui.s(560);
     const int nCp = checkpointsOf(v);
-    cpTab_ = std::clamp(cpTab_, 0, nCp);
-    const int tab = cpTab_;
+    cpTab_ = std::clamp(cpTab_, 0, mindApart ? nCp + 1 : nCp);
+    const bool mindShown = mindApart && cpTab_ == nCp + 1;
+    layout_.mindTab = mindApart ? nCp + 1 : -1;
+    const int tab = mindShown ? 0 : cpTab_;
+    if (!mindShown) R.drawLine({statsR.x - ui.s(10), top}, {statsR.x - ui.s(10), in.bottom()}, kGrid, 1.0f);
     if (reticles_.size() < static_cast<size_t>(nCp) + 1) reticles_.resize(static_cast<size_t>(nCp) + 1);
     charts::ChartView& view = curveView(tab);
     view.minW = 3000.0;  // a few seconds of training on screen at the deepest zoom
     view.minH = 4.0;     // a few milliseconds: 1:26.658 and 1:26.660 well apart
     Reticle& ret = reticles_[static_cast<size_t>(tab)];
 
-    const float tabH = ui.s(28);
     float tabsRight = chartCol.right();
     if (view.zoomed) {
         const std::string rl = "Réinitialiser le zoom";
@@ -229,6 +244,7 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
         // letters (then « … ») when many checkpoints share the row.
         std::vector<std::string> labels = {"TOUT"};
         for (int k = 1; k <= nCp; ++k) labels.push_back("CP" + std::to_string(k));
+        if (mindApart) labels.push_back("IA");
         const Rect rowR{chartCol.x, top, std::max(0.0f, tabsRight - chartCol.x), tabH};
         float want = 0.0f;
         for (const std::string& l : labels) want = std::max(want, ui.text().measure(l, FontFace::Bold, ui.s(14)).x + ui.s(24));
@@ -244,7 +260,7 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
         }
         for (size_t i = 0; i < labels.size(); ++i) {
             const Rect tr{rowR.x + tw * static_cast<float>(i) + ui.s(1), rowR.y, tw - ui.s(2), rowR.h};
-            const bool on = static_cast<int>(i) == tab;
+            const bool on = static_cast<int>(i) == cpTab_;
             const bool hover = ui.acceptsInput() && ui.usingPointer() && tr.contains(input.mousePos());
             if (hover && input.mousePressed(SDL_BUTTON_LEFT)) cpTab_ = static_cast<int>(i);
             R.fillRoundedRect(tr, ui.s(6), on ? Color{28, 64, 84, 240} : hover ? Color{22, 40, 64, 235} : Color{16, 22, 42, 220});
@@ -254,7 +270,15 @@ void AdminTas::drawDetail(const Row& row, const Rect& area) {
             layout_.tabs.push_back(tr);
         }
     }
-    const Rect chart{chartCol.x, top + tabH + ui.s(8), chartCol.w, std::max(0.0f, chartCol.bottom() - (top + tabH + ui.s(8)))};
+    if (mindShown) {
+        // The tab « IA »: the mind on the whole width of the panel.
+        drawMind(*mindOf, {chartCol.x, chartTop, in.right() - chartCol.x, chartFull});
+        ui.popId();
+        return;
+    }
+    const float mindH = mindOf && !mindApart ? std::clamp(chartFull * 0.42f, ui.s(220), ui.s(420)) : 0.0f;
+    const Rect chart{chartCol.x, chartTop, chartCol.w, std::max(0.0f, chartFull - (mindH > 0.0f ? mindH + ui.s(10) : 0.0f))};
+    if (mindH > 0.0f) drawMind(*mindOf, {chartCol.x, chart.bottom() + ui.s(10), chartCol.w, mindH});
 
     std::vector<const TasCurvePoint*> marks;  // every point, by training time
     std::vector<const TasCurveWindow*> wins;
@@ -979,6 +1003,12 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
     const UITheme& th = ui.theme();
     const TasTraining::Job* job = g_.tasTraining.jobFor({row.local.levelId, row.local.category});
     const int tab = cpTab_;
+    if (tab == 0) {
+        // 2.101: « TOUT »: the progress of the training (AdminTasMind.cpp).
+        const TasProgress* live = training && job && job->progress ? &*job->progress : previewProgress_ ? &*previewProgress_ : nullptr;
+        drawProgressPanel(row, v, r, training || (previewProgress_ && !training), round, focusFirst, focusLast, live);
+        return;
+    }
     std::vector<const TasCurveWindow*> all, inRound;
     if (v) {
         for (const TasCurveWindow& w : v->windows) all.push_back(&w);
@@ -1079,159 +1109,12 @@ void AdminTas::drawStats(const Row& row, const TasCurveVersion* v, const Rect& r
                   3, th.textDim);
         if (shownRound > 0 && knownFocus) {
             y += ui.s(4);
-            text(roundText(shownRound, training) + " · " + focusText(fFirst, fLast, true), {r.x, y, r.w, rh}, fs, th.text, FontFace::Bold);
+            // Each part translated alone (a slot holding a model of its own is not resolved), the line kept as it is.
+            text(i18n::keep(i18n::tr(roundText(shownRound, training)) + " · " + i18n::tr(focusText(fFirst, fLast, true))), {r.x, y, r.w, rh}, fs, th.text, FontFace::Bold);
             y += rh;
         }
         return;
     }
-    auto finishedText = [](const TasAttemptWindow& w) { return compactCount(w.finished) + " (" + percentText(w.finished, w.attempts) + ")"; };
-    line("Essais", countText(T.attempts), countText(Rr.attempts));
-    line("Finis", finishedText(T), finishedText(Rr));
-    line("Meilleur fini", timeOr(T.bestMs), timeOr(Rr.bestMs));
-    line("Médian", timeOr(T.medianMs), timeOr(Rr.medianMs));
-    line("Pire", timeOr(T.worstMs), timeOr(Rr.worstMs));
-    {
-        const std::string word = brokenWord(row.local.category);
-        line(word, compactCount(T.brokenTotal()) + " (" + percentText(T.brokenTotal(), T.attempts) + ")",
-             compactCount(Rr.brokenTotal()) + " (" + percentText(Rr.brokenTotal(), Rr.attempts) + ")");
-    }
-    // The attempts counted before the windows existed (or not sent by another computer): said.
-    int64_t explored = row.server.explored;
-    if (training && job) explored = std::max(explored, job->exploredAt(job->progress ? job->progress->explored : 0));
-    if (explored > T.attempts + T.attempts / 100 + 1000) {
-        text("Détail de " + compactCount(T.attempts) + " essais sur " + compactCount(explored) + " (les autres ne sont pas comptés par fenêtre).", {r.x, y, r.w, rh}, 11.5f,
-             th.textDim);
-        y += rh;
-    }
-    // The players' runs that guide it, said (the run stays the machine's best time, never a record).
-    if (v)
-        for (const TasProgress::Reference& ref : v->references) {
-            // One line each: the words translated, the player's name as written (two boxes, measured).
-            const std::string lead = ref.oldVersion ? "Guidé par le tracé (ancienne version du niveau) de" : "Guidé par la course de";
-            const std::string who = ref.player + (!ref.oldVersion && ref.timeMs > 0 ? " (" + formatRunTime(ref.timeMs) + ")" : std::string());
-            const float lw = std::min(r.w * 0.7f, ui.text().measure(lead, FontFace::Body, ui.s(fs)).x + ui.s(2));
-            text(lead, {r.x, y, lw, rh}, fs, th.warm);
-            text(who, {r.x + lw + ui.s(5), y, std::max(0.0f, r.w - lw - ui.s(5)), rh}, fs, th.warm, FontFace::Body, Align::Left, true);
-            y += rh;
-        }
-    // The round: what it searches, and why « Finis » stays low meanwhile.
-    if (shownRound > 0 && knownFocus) {
-        y += ui.s(4);
-        text(roundText(shownRound, training) + " · " + focusText(fFirst, fLast, true), {r.x, y, r.w, rh}, fs, th.text, FontFace::Bold);
-        y += rh;
-        paragraph(fFirst > 0 ? "Finis : seuls les essais qui atteignent la sortie. Pendant la fenêtre, les essais s'arrêtent à la fin de la section cherchée ; "
-                               "ne finissent que les raccords avec la meilleure course et l'affinage."
-                             : "Finis : seuls les essais qui atteignent la sortie ; la recherche avance section par section et ses essais s'arrêtent à la fin "
-                               "de chacune, jusqu'à la dernière et l'affinage.",
-                  3, th.textDim);
-        // Do the rounds go back over the checkpoints already passed? Yes, but near the best run only.
-        paragraph("Les tours reviennent sur chaque section (les fenêtres tournent sur tout le niveau), mais cherchent près de la meilleure course : "
-                  "un autre chemin ou une autre technique (un raccourci, un autre ordre des pouvoirs) n'est trouvé que si un guide l'apporte.",
-                  3, th.textDim);
-    }
-    // The portfolio of strategies (cosmic_tas --portfolio): who found the faster runs, the time of each.
-    if (training && job && job->progress && !job->progress->strategies.empty()) {
-        y += ui.s(4);
-        if (const std::string found = tasFoundByText(job->progress->strategies); !found.empty()) paragraph(found, 2, th.text);
-        paragraph(tasTimeShareText(job->progress->strategies), 2, th.textDim);
-    }
-    y += ui.s(8);
-
-    // Where the others stopped, section by section (a bar: its share of the stops, the dead part in red).
-    const int n = T.sections;
-    if (n <= 0 || y + rh * 3.0f > r.bottom()) return;
-    const float b0 = r.w * 0.22f, b1 = r.w * 0.30f, b2 = r.w * 0.22f;
-    auto scell = [&](int col, float yy) {
-        const float xs[] = {r.x, r.x + b0, r.x + b0 + b1, r.x + b0 + b1 + b2, r.right()};
-        return Rect{xs[col], yy, std::max(0.0f, xs[col + 1] - xs[col] - ui.s(8)), rh};
-    };
-    text("Arrêts par section", scell(0, y), fs, th.textDim, FontFace::Bold);
-    text("Tout", scell(1, y), fs, th.textDim, FontFace::Bold);
-    text(brokenWord(row.local.category), scell(2, y), fs, th.textDim, FontFace::Bold);
-    text("Ce tour", scell(3, y), fs, th.textDim, FontFace::Bold);
-    y += rh + ui.s(2);
-    ui.r().drawLine({r.x, y - ui.s(1)}, {r.right(), y - ui.s(1)}, kGrid, 1.0f);
-    int64_t most = 1;
-    for (int64_t s : T.stopped) most = std::max(most, s);
-    most = std::max(most, T.finished);
-    auto bar = [&](const Rect& c, int64_t value, int64_t dead, Color col) -> Rect {
-        // A bar in the left part of the cell, its count in the rest (measured apart: never over it).
-        const float bw = c.w * 0.42f;
-        const Rect track{c.x, c.y + rh * 0.3f, bw, rh * 0.4f};
-        ui.r().fillRect(track, Color{20, 28, 52, 255});
-        const float w = bw * static_cast<float>(value) / static_cast<float>(most);
-        if (w > 0.0f) ui.r().fillRect({track.x, track.y, std::max(1.0f, w), track.h}, col.withAlpha(190));
-        if (dead > 0 && value > 0) ui.r().fillRect({track.x, track.y, std::max(1.0f, w * static_cast<float>(dead) / static_cast<float>(value)), track.h}, th.danger.withAlpha(210));
-        return Rect{c.x + bw + ui.s(6), c.y, std::max(0.0f, c.w - bw - ui.s(6)), c.h};
-    };
-    auto sectionRow = [&](int k, float yy) {
-        const size_t i = static_cast<size_t>(k);
-        text("Section " + std::to_string(k + 1), scell(0, yy), fs, th.textDim);
-        text(compactCount(T.stopped[i]), bar(scell(1, yy), T.stopped[i], T.broken[i], th.accent), 13, th.text);
-        text(compactCount(T.broken[i]), scell(2, yy), 13, th.text);
-        text(hasRound && i < Rr.stopped.size() ? compactCount(Rr.stopped[i]) : std::string("—"), scell(3, yy), 13, th.text);
-        ++layout_.stopRows;
-    };
-    // The control that unfolds or folds the sections (click, Entrée / A), measured on its line.
-    auto toggle = [&](const std::string& label, float yy) {
-        const float w = std::min(r.w, ui.text().measure(label, FontFace::Bold, ui.s(12)).x + ui.s(24));
-        const Rect b{r.x, yy + ui.s(1), w, rh - ui.s(2)};
-        layout_.stopsToggle = b;
-        layout_.buttons.push_back(b);
-        UIContext::ButtonStyle st;
-        st.small = true;
-        st.fontSize = 12.0f;
-        if (cframe::button(ui, "stops_toggle", b, label, st)) stopsOpen_ = !stopsOpen_;
-    };
-    const int room = std::max(1, static_cast<int>((r.bottom() - y) / rh));
-    layout_.stopsOpen = stopsOpen_;
-    if (stopsOpen_ && n + 1 > room - 1 && room >= 3) {
-        // Unfolded: every section in a scroll region (the wheel, its bar, the focus of its rows with
-        // the arrows or the d-pad), the arrival pinned under it, then « Réduire ».
-        const Rect lr{r.x, y, r.w, rh * static_cast<float>(room - 2)};
-        layout_.stopsList = lr;
-        ui.beginScroll("stops", lr, rh * static_cast<float>(n));
-        textClip_ = lr;
-        float yy = lr.y - ui.scrollOffset();
-        for (int k = 0; k < n; ++k, yy += rh) {
-            ui.hotspot("stops_row" + std::to_string(k), {r.x, yy, r.w - ui.s(14), rh});  // a focus stop: the scroll follows it
-            if (yy + rh < lr.y || yy > lr.bottom()) continue;
-            sectionRow(k, yy);
-        }
-        textClip_ = Rect{};
-        ui.endScroll();
-        y = lr.bottom();
-    } else {
-        // Folded (or all of them fit): the sections with the most stops, « … N autres sections » to unfold.
-        std::vector<int> secs(static_cast<size_t>(n));
-        for (int k = 0; k < n; ++k) secs[static_cast<size_t>(k)] = k;
-        int hidden = 0;
-        if (n + 1 > room) {
-            const int keep = std::max(0, room - 2);  // the exit, and « … autres »
-            std::stable_sort(secs.begin(), secs.end(), [&](int a, int b) { return T.stopped[static_cast<size_t>(a)] > T.stopped[static_cast<size_t>(b)]; });
-            hidden = n - keep;
-            secs.resize(static_cast<size_t>(keep));
-            std::sort(secs.begin(), secs.end());
-        }
-        for (int k : secs) {
-            if (y + rh > r.bottom() + 0.5f) break;
-            sectionRow(k, y);
-            y += rh;
-        }
-        if (hidden > 0 && y + rh <= r.bottom() + 0.5f) {
-            toggle("… " + std::to_string(hidden) + " autres sections", y);
-            y += rh;
-        }
-    }
-    if (y + rh > r.bottom() + 0.5f) return;
-    layout_.stopsArrival = {r.x, y, r.w, rh};
-    if (y + rh > r.bottom() + 0.5f) return;
-    text("Arrivée", scell(0, y), fs, th.textDim);
-    text(compactCount(T.finished), bar(scell(1, y), T.finished, 0, th.success), 13, th.text);
-    text("—", scell(2, y), 13, th.textDim);
-    text(hasRound ? compactCount(Rr.finished) : std::string("—"), scell(3, y), 13, th.text);
-    y += rh;
-    if (stopsOpen_ && !layout_.stopsList.empty() && y + rh <= r.bottom() + 0.5f) toggle("Réduire", y);
 }
 
 }  // namespace cosmic

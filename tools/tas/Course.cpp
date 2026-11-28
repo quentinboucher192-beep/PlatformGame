@@ -242,14 +242,18 @@ Progress Course::measure(GameWorld& w, const Bound& b, int fromWaypoint) const {
             if (std::isfinite(d)) p.potential = std::min(p.potential, wp.cumulative - d);
         }
         float nearest = kInf;
-        for (const Enemy* en : zone->fightingEnemies(w)) nearest = std::min(nearest, (en->box.center() - player.box.center()).length());
+        for (const Enemy* en : zone->fightingEnemies(w)) {
+            nearest = std::min(nearest, (en->box.center() - player.box.center()).length());
+            // The wounds count only here: an arena's enemies must fall for its doors to open.
+            if (!en->def().isBoss && en->alive()) p.wounds += 1.0f - en->hpRatio();
+        }
         seek = std::min(seek, nearest);
     }
     p.enemiesLeft = left;
 
     // What the world did on the way.
     for (LevelEntity* e : b.kept)
-        if (!e->keepState(w).is_null()) ++p.milestones;
+        if (e->type() != "enemy" && !e->keepState(w).is_null()) ++p.milestones;  // a monster killed is no step on the way
     for (const Collider& c : w.physics().colliders())
         if ((c.tags & ColliderTag::Gate) && !c.enabled && (c.tags & ColliderTag::Breakable || !(c.tags & (ColliderTag::Phase | ColliderTag::ShieldPass))))
             ++p.milestones;
@@ -258,17 +262,17 @@ Progress Course::measure(GameWorld& w, const Bound& b, int fromWaypoint) const {
         for (char ch : pw->id()) ph = (ph ^ static_cast<uint8_t>(ch)) * 1099511628211ull;
         p.powerSet = mix(p.powerSet, static_cast<int64_t>(ph));
     }
+    // A monster outside an arena is worth nothing in itself (nor its kill): striking it costs time
+    // more often than not, and the run's time alone says whether it was worth it (the owner: « si
+    // tuer un monstre le fait ralentir il ne doit pas le tuer »).
     for (const auto& e : w.enemies()) {
-        if (!e->def().isBoss) {
-            if (e->alive() && !e->dormant()) p.wounds += 1.0f - e->hpRatio();
-            continue;
-        }
+        if (!e->def().isBoss) continue;
         if (!e->alive()) p.bosses += static_cast<float>(e->def().phases.size()) + 1.0f;
         else if (!e->dormant()) p.bosses += static_cast<float>(e->phaseIndex()) + (1.0f - e->hpRatio());
     }
 
     p.score = p.potential + 250.0f * static_cast<float>(p.milestones) + 120.0f * static_cast<float>(p.powers) + 400.0f * p.bosses + 100.0f * p.wounds +
-              20.0f * static_cast<float>(p.kills) + 30.0f * static_cast<float>(p.health);
+              30.0f * static_cast<float>(p.health);
     p.score += 250.0f * static_cast<float>(started) - 300.0f * static_cast<float>(left);
     if (p.fighting && std::isfinite(seek)) p.score += 0.5f * std::max(0.0f, 400.0f - seek);
     if (category_ == RunCategory::HundredPercent) p.score += 150.0f * static_cast<float>(p.collectibles);

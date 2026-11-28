@@ -25,6 +25,8 @@
 #include "tools/tas/Bound.h"
 #include "tools/tas/Course.h"
 #include "tools/tas/Planner.h"
+#include "tools/tas/Director.h"
+#include "tools/tas/Trajectory.h"
 #include "tools/tas/Portfolio.h"
 
 namespace cosmic::tas {
@@ -1710,7 +1712,17 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             };
             sl.log = log;
             sl.offer = [&](const std::vector<InputFrame>& r, float c, const std::string& how) { offer(r, c, false, 0, 0, how, arm); };  // (the arm: its source)
+            sl.onLead = opt.onLead;
+            if (opt.director) {
+                sl.think = [&](const Thought& t) { opt.director->think(t); };
+                const auto counted = sl.count;
+                sl.count = [&, counted](int64_t n) {
+                    counted(n);
+                    opt.director->counted(0, threads, n);
+                };
+            }
             P.runSlice(a, sl);
+            if (opt.director && P.id(a) == Portfolio::kTrajectory && P.trajectory().exhausted()) opt.director->trajectoriesExhausted(bestClock);
         }
         arm = Portfolio::kBeam;
         const double secs = std::chrono::duration<double>(Clock::now() - t0).count();
@@ -2078,9 +2090,74 @@ SearchOutcome search(const ContentDatabase& content, const LevelData& level, con
             if (currentClock + 1e-6f < bestClock) offer(current, currentClock, false, 0, 0, "Affinage", "polish");
         };
         while (!sh.stopped() && Clock::now() < deadline) {
+            refineUntil = std::min(deadline, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 1000.0)));
+            if (opt.director) {
+                // The director's plan: one strategy on every core, or several side by side, each on
+                // its own cores (its own simulations), each one's runs offered under its own name.
+                const Director::Plan plan = opt.director->decide(bestClock, armFirst, armLast);
+                if (plan.parts.empty()) break;
+                if (plan.exclusive()) {
+                    armSlice(plan.parts[0].arm, refineUntil, refineSlice);
+                    continue;
+                }
+                Portfolio& P = *opt.portfolio;
+                const float before = bestClock;
+                const auto t0 = Clock::now();
+                std::vector<float> partBest(plan.parts.size(), before);
+                std::mutex partMutex;
+                std::vector<std::thread> pool;
+                int offset = 0;
+                for (size_t k = 0; k < plan.parts.size(); ++k) {
+                    const Director::Part part = plan.parts[k];
+                    const std::string id = P.id(part.arm);
+                    pool.emplace_back([&, k, part, id, offset] {
+                        Slice sl;
+                        sl.best = best;
+                        sl.bestClock = before;
+                        sl.keep = kept;
+                        sl.firstSection = armFirst;
+                        sl.lastSection = armLast;
+                        sl.until = refineUntil;
+                        sl.threads = part.threads;
+                        sl.seed = opt.seed * 131u + static_cast<uint64_t>(slices + 1 + static_cast<int>(k)) * 7919u;
+                        sl.pruner = sh.pruner.active() ? &sh.pruner : nullptr;
+                        sl.stopped = [&] { return sh.stopped(); };
+                        sl.count = [&, part, offset](int64_t n) {
+                            sh.explored.fetch_add(n, std::memory_order_relaxed);
+                            if (opt.exploredTotal) opt.exploredTotal->fetch_add(n, std::memory_order_relaxed);
+                            opt.director->counted(offset, part.threads, n);
+                        };
+                        sl.log = log;
+                        sl.offer = [&, k, id](const std::vector<InputFrame>& r, float c, const std::string& how) {
+                            {
+                                std::lock_guard<std::mutex> l(partMutex);
+                                partBest[k] = std::min(partBest[k], c);
+                            }
+                            offer(r, c, false, 0, 0, how, id);
+                        };
+                        sl.onLead = opt.onLead;
+                        sl.think = [&](const Thought& t) { opt.director->think(t); };
+                        P.runSlice(part.arm, sl, offset);
+                    });
+                    offset += part.threads;
+                }
+                for (auto& t : pool) t.join();
+                slices += static_cast<int>(plan.parts.size());
+                const double secs = std::chrono::duration<double>(Clock::now() - t0).count();
+                for (size_t k = 0; k < plan.parts.size(); ++k) {
+                    opt.director->done(plan.parts[k], before, partBest[k], secs);
+                    if (P.id(plan.parts[k].arm) == Portfolio::kTrajectory && P.trajectory().exhausted()) opt.director->trajectoriesExhausted(bestClock);
+                }
+                char line[240];
+                std::string names;
+                for (const Director::Part& p : plan.parts) names += (names.empty() ? "" : " + ") + strategyLabel(P.id(p.arm)) + " (" + std::to_string(p.threads) + ")";
+                std::snprintf(line, sizeof line, "Tranche côte à côte %s (%.0f s) : meilleure course %.3f s%s", names.c_str(), secs, static_cast<double>(bestClock),
+                              bestClock + 1e-6f < before ? " (améliorée)" : "");
+                log(line);
+                continue;
+            }
             const int a = opt.portfolio->pick(false);
             if (a < 0) break;
-            refineUntil = std::min(deadline, Clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.portfolio->sliceSeconds * 1000.0)));
             armSlice(a, refineUntil, refineSlice);
         }
         if (bestClock + 1e-6f < currentClock) current = best, currentClock = bestClock;

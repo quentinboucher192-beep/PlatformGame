@@ -53,16 +53,23 @@ int TasTrainingSettings::defaultParallel(int threadsPerJob, int cores) {
     return std::clamp(std::max(1, cores) / std::max(1, threadsPerJob), 1, kMaxParallel);
 }
 
+int TasTrainingSettings::defaultThreads(int cores) { return std::clamp(cores - 1, 1, kMaxThreads); }
+
 Json TasTrainingSettings::toJson() const {
-    return {{"format", "cosmic.tas.training"}, {"threadsPerJob", threadsPerJob}, {"parallel", parallel}, {"budgetMinutes", budgetMinutes}, {"guidePb", guidePb}};
+    return {{"format", "cosmic.tas.training"}, {"threadsPerJob", threadsPerJob}, {"parallel", 1},  {"budgetMinutes", budgetMinutes},
+            {"guidePb", guidePb},          {"director", director},           {"memory", memory}, {"single", true}};
 }
 
 TasTrainingSettings TasTrainingSettings::fromJson(const Json& j, int cores) {
     TasTrainingSettings s;
-    s.threadsPerJob = std::clamp(jget<int>(j, "threadsPerJob", 2), 1, kMaxThreads);
-    s.parallel = std::clamp(jget<int>(j, "parallel", defaultParallel(s.threadsPerJob, cores)), 1, kMaxParallel);
-    s.budgetMinutes = std::clamp(jget<int>(j, "budgetMinutes", 30), 0, 24 * 60);
+    // Settings of before 2.101 (several trainings at once): the cores all go to the one training.
+    const bool single = jget<bool>(j, "single", false);
+    s.threadsPerJob = single ? std::clamp(jget<int>(j, "threadsPerJob", defaultThreads(cores)), 1, kMaxThreads) : defaultThreads(cores);
+    s.parallel = 1;
+    s.budgetMinutes = single ? std::clamp(jget<int>(j, "budgetMinutes", 0), 0, 24 * 60) : 0;
     s.guidePb = jget<bool>(j, "guidePb", true);
+    s.director = jget<bool>(j, "director", true);
+    s.memory = jget<bool>(j, "memory", true);
     return s;
 }
 
@@ -169,10 +176,18 @@ void TasTraining::say(const std::string& m, bool error) {
 
 void TasTraining::train(const TasPair& p) {
     if (jobFor(p)) return;
-    unqueue(p);
+    // One pair at a time: the training under way (another pair) stops, the queue is emptied.
+    queue_.clear();
+    for (auto& j : jobs_)
+        if (!(j->pair == p) && (j->state == JobState::Acquiring || j->state == JobState::Running)) {
+            j->budgetReached = false;
+            requestStop(*j);
+        }
     queue_.push_front(p);
     startNext();
 }
+
+fs::path TasTraining::memoryFile() { return Paths::userDir() / "tas" / "memory.json"; }
 
 int TasTraining::enqueue(const std::vector<TasPair>& pairs) {
     int added = 0;
@@ -206,7 +221,7 @@ void TasTraining::stopAll() {
 
 void TasTraining::startNext() {
     if (!online_.usable() || !online_.loggedIn()) return;
-    while (running() < settings_.parallel && !queue_.empty()) {
+    while (running() < 1 && !queue_.empty()) {
         const TasPair p = queue_.front();
         queue_.pop_front();
         if (jobFor(p)) continue;
@@ -316,6 +331,15 @@ void TasTraining::launch(Job& j) {
     if (!online_.config().serverUrl.empty()) {
         args.push_back("--server");
         args.push_back(online_.config().serverUrl);
+    }
+    // The strategies side by side (docs/TAS.md « Le portefeuille »), the TAS's mind, its memory.
+    args.push_back("--portfolio");
+    if (settings_.director) args.push_back("--director");
+    if (settings_.memory) {
+        args.push_back("--memory");
+        args.push_back(Paths::toUtf8(memoryFile()));
+    } else {
+        args.push_back("--no-memory");
     }
     // The run so far after each section, kept for the next training of the pair: a level whose
     // first run takes longer than a session goes on from where the last one got to (only a run of

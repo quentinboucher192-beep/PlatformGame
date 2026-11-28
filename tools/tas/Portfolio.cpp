@@ -10,6 +10,7 @@
 #include "tools/tas/Explore.h"
 #include "tools/tas/Sim.h"
 #include "tools/tas/Timing.h"
+#include "tools/tas/Trajectory.h"
 
 namespace cosmic::tas {
 
@@ -122,13 +123,17 @@ Portfolio::Portfolio(const ContentDatabase& content, const LevelData& level, Run
     course_ = std::make_unique<Course>(level, content, category);
     explore_ = std::make_unique<GoExplore>();
     timing_ = std::make_unique<TimingPolish>();
-    for (const char* id : {kBeam, kExplore, kTiming, kRefine}) {
+    trajectory_ = std::make_unique<TrajectoryOptimizer>();
+    for (const char* id : {kBeam, kExplore, kTiming, kRefine, kTrajectory}) {
         bandit_.add(id);
         extra_.emplace_back();
     }
     // The exploration keeps a fifth of the time whatever the others gain (the routes beyond those
     // known — a player's included — are what it is for, and its gains come rarely).
     bandit_.setFloor(bandit_.find(kExplore), 0.2);
+    // The trajectories (Trajectory.h) too: every jump of the best run, every loss of speed, tried
+    // in every variation a player has there; their gains come by places, a few at a time.
+    bandit_.setFloor(bandit_.find(kTrajectory), 0.15);
     (void)threads;
     began_ = nowMs();
 }
@@ -137,6 +142,7 @@ Portfolio::~Portfolio() = default;
 
 GoExplore& Portfolio::explore() { return *explore_; }
 TimingPolish& Portfolio::timing() { return *timing_; }
+TrajectoryOptimizer& Portfolio::trajectory() { return *trajectory_; }
 
 int Portfolio::addArm(const std::string& id, std::function<void(const Slice&)> run) {
     const int k = bandit_.add(id);
@@ -145,6 +151,12 @@ int Portfolio::addArm(const std::string& id, std::function<void(const Slice&)> r
 }
 
 void Portfolio::only(const std::vector<std::string>& ids) { only_ = ids; }
+
+bool Portfolio::allowed(int arm) const {
+    if (arm < 0 || static_cast<size_t>(arm) >= bandit_.arms().size()) return false;
+    const std::string& a = bandit_.arms()[static_cast<size_t>(arm)].id;
+    return only_.empty() || std::find(only_.begin(), only_.end(), a) != only_.end();
+}
 
 int Portfolio::pick(bool beamPart) {
     std::lock_guard<std::mutex> l(m_);
@@ -156,21 +168,34 @@ int Portfolio::pick(bool beamPart) {
     return bandit_.pick();
 }
 
-std::vector<Sim*> Portfolio::sims(int n) {
-    while (static_cast<int>(sims_.size()) < n) sims_.push_back(std::make_unique<Sim>(content_, level_, *course_, category_));
+std::vector<Sim*> Portfolio::sims(int n, int offset) {
+    std::lock_guard<std::mutex> l(simsMutex_);
+    while (static_cast<int>(sims_.size()) < offset + n) sims_.push_back(std::make_unique<Sim>(content_, level_, *course_, category_));
     std::vector<Sim*> out;
-    for (int i = 0; i < n; ++i) out.push_back(sims_[static_cast<size_t>(i)].get());
+    for (int i = 0; i < n; ++i) out.push_back(sims_[static_cast<size_t>(offset + i)].get());
     return out;
 }
 
-bool Portfolio::runSlice(int arm, const Slice& slice) {
+std::vector<Sim*> Portfolio::exploreSims(int n) {
+    std::lock_guard<std::mutex> l(simsMutex_);
+    while (static_cast<int>(exploreSims_.size()) < n) exploreSims_.push_back(std::make_unique<Sim>(content_, level_, *course_, category_));
+    std::vector<Sim*> out;
+    for (int i = 0; i < n; ++i) out.push_back(exploreSims_[static_cast<size_t>(i)].get());
+    return out;
+}
+
+bool Portfolio::runSlice(int arm, const Slice& slice, int simOffset) {
     const std::string& id = bandit_.arms()[static_cast<size_t>(arm)].id;
     if (id == kExplore) {
-        explore_->run(sims(slice.threads), slice);
+        explore_->run(exploreSims(slice.threads), slice);
         return true;
     }
     if (id == kTiming) {
-        timing_->run(sims(slice.threads), slice);
+        timing_->run(sims(slice.threads, simOffset), slice);
+        return true;
+    }
+    if (id == kTrajectory) {
+        trajectory_->run(sims(slice.threads, simOffset), slice);
         return true;
     }
     if (static_cast<size_t>(arm) < extra_.size() && extra_[static_cast<size_t>(arm)]) {

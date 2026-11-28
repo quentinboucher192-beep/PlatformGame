@@ -187,6 +187,43 @@ std::vector<int64_t> tasSegmentDeltas(const std::vector<int64_t>& oldSplits, int
 /// The segment's name: « Départ → CP1 », « CP2 → CP3 », « CP7 → Arrivée » (k of `checkpoints`).
 std::string tasSegmentName(size_t k, size_t checkpoints);
 
+/// 2.101 (docs/TAS.md « L'IA du TAS »): a thought of the TAS's mind — what it observed,
+/// remembered, decided, gained. A code and its numbers: the game words it (tasThoughtText).
+struct TasThought {
+    static constexpr size_t kMax = 60;   // the last ones in the progress file
+    static constexpr size_t kNumbers = 8;
+    int64_t atMs = 0;   // the session's elapsed time
+    std::string kind;   // observe, memory, decide, gain, verify
+    std::string code;
+    std::vector<double> n;
+    std::string s;      // a word: strategies (« trajectory:2,explore:1 »), powers, a level
+    bool operator==(const TasThought&) const = default;
+};
+/// What an essayeur (a core) does now.
+struct TasWorker {
+    static constexpr size_t kMax = 64;
+    std::string arm;            // the strategy (tasStrategyLabel)
+    int first = 0, last = -1;   // the sections it searches (0-based; last < 0: to the exit)
+    int64_t attempts = 0;
+    bool operator==(const TasWorker&) const = default;
+};
+/// A configuration the memory solved (tools/tas/Memory.h), as the screen shows it.
+struct TasMemoryEntry {
+    static constexpr size_t kMax = 8;
+    int rise = 0, riseAt = 0, gap = 0, speed = 0;  // px, px, px, px/s
+    std::string powers;
+    int leadFrames = 0, uses = 0;
+    int64_t gainMs = 0;
+    std::string level;
+    bool operator==(const TasMemoryEntry&) const = default;
+};
+/// The thought in the player's language (French here, the dictionary for English).
+std::string tasThoughtText(const TasThought& t);
+/// « exploration · sections 4 à 5 » (an essayeur's line).
+std::string tasWorkerText(const TasWorker& w);
+/// « Obstacle de 96 px à 32 px · élan 150 px/s · dash » (a configuration of the memory).
+std::string tasMemoryText(const TasMemoryEntry& e);
+
 struct TasProgress {
     static constexpr size_t kMaxWindows = 24;  // the last two minutes
     static constexpr int64_t kWindowMs = 5000;
@@ -230,6 +267,12 @@ struct TasProgress {
     std::string message;
     std::vector<TasAttemptWindow> windows;  // the last ones, oldest first
     std::vector<TasStrategy> strategies;    // the portfolio's arms (empty: none)
+    /// 2.101: the TAS's mind (--director): its thoughts (oldest first), the essayeurs, the memory.
+    bool director = false;
+    std::vector<TasThought> thoughts;
+    std::vector<TasWorker> workers;
+    int64_t memorySize = 0;
+    std::vector<TasMemoryEntry> memoryTop;
 
     /// The process is done (stopped or failed): nothing more will be written.
     bool finished() const { return phase == TasPhase::Stopped || phase == TasPhase::Failed; }

@@ -152,6 +152,50 @@ TEST_CASE("slide: under a low ceiling, a run of before plays with its rules (sim
     CHECK(highest < kCeilingTop);  // above the ceiling: the bug a replay of before keeps
 }
 
+namespace {
+
+// Nova slides under the low ceiling, then uses a power (the dash, slot 1): before simulation 21 the
+// power stood her up with no room check, her head inside the block, and she ran through it.
+float powerUnderCeiling(int simVersion, bool& under) {
+    CeilingWorld cw(simVersion);
+    Player& p = cw.p();
+    const PowerDefinition* def = cw.content.power("dash");
+    CHECK(def != nullptr);
+    if (def) p.grantPower(*def);
+    p.teleportTo({470.0f, 800.0f});
+    p.vel.x = p.config().maxRunSpeed;
+    cw.step(runRight(true, true));
+    for (int i = 0; i < 120 && p.box.x < 520.0f; ++i) cw.step(runRight(false, false));
+    under = p.state() == PlayerState::Slide && p.box.x >= 520.0f && p.box.right() <= 800.0f;
+    PlayerInput dash = runRight(false, false);
+    const int key = static_cast<int>(p.power("dash") ? p.power("dash")->key() : Action::Dash);
+    dash.held[key] = dash.pressed[key] = true;
+    cw.step(dash);
+    float inside = 0.0f;  // the time spent with her box inside a solid
+    for (int i = 0; i < 120; ++i) {
+        cw.step(runRight(false, false));
+        if (cw.w->physics().overlapsSolid(p.box.expanded(-0.05f), p.moveOptions())) inside += 1.0f / 120.0f;
+    }
+    return inside;
+}
+
+}  // namespace
+
+TEST_CASE("slide: a power used under a low ceiling no longer stands Nova up inside it (simulation 21)") {
+    bool under = false;
+    const float inside = powerUnderCeiling(kSimulationVersion, under);
+    CHECK(under);
+    CHECK(inside == 0.0f);
+}
+
+TEST_CASE("slide: a power under a low ceiling, a run of before plays with its rules (simulation 20 stood her up inside it)") {
+    bool under = false;
+    const float inside = powerUnderCeiling(kPowerStandUpSimulation - 1, under);
+    CHECK(under);
+    CHECK(inside > 0.0f);
+}
+
 TEST_CASE("slide: the simulation version follows the rule") {
+    CHECK(kSimulationVersion >= kPowerStandUpSimulation);
     CHECK(kSimulationVersion >= kSlideInWallsSimulation);
 }
