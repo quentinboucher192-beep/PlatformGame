@@ -268,12 +268,12 @@ TEST_CASE("tas portfolio: Go-Explore gets past a wall the beam's distance says t
     add("bord", "solid", {0, 0, 32, 800});
     add("depart", "player_start", {160, 778, 10, 22});
     add("sortie", "exit", {1500, 736, 40, 64}, {{"locked", false}});
-    add("mur", "solid", {900, 520, 16, 152});
-    add("rebord", "solid", {900, 500, 60, 20});
+    add("mur", "solid", {900, 640, 16, 32});
+    add("rebord", "solid", {900, 620, 60, 20});  // 180 px above the floor: no jump from it gets over
     add("porte", "door", {900, 672, 16, 128}, {{"open", false}});
-    // The last step (to the ledge) as close as the others: the slide under the closed door, which
-    // the archive found first before simulation 20, no longer goes through it.
-    const float steps[][2] = {{600, 750}, {680, 700}, {760, 650}, {680, 600}, {760, 550}, {830, 525}};
+    // Three steps of 50 px (a jump: 58 px), the ledge 30 px above the last one. (Before simulation 20
+    // the archive found first a slide under the closed door, which no longer goes through it.)
+    const float steps[][2] = {{600, 750}, {680, 700}, {760, 650}};
     for (size_t k = 0; k < std::size(steps); ++k) add("marche" + std::to_string(k), "solid", {steps[k][0], steps[k][1], 60, 16});
     LevelEvent ev;
     ev.id = "ev1";
@@ -320,7 +320,7 @@ TEST_CASE("tas portfolio: Go-Explore gets past a wall the beam's distance says t
         if (r.feet[i - 1].x < 916.0f && r.feet[i].x >= 916.0f) past = i;
     CHECK(past < r.feet.size());
     if (past < r.feet.size())
-        std::printf("    le mur passé à %.3f s (la porte s'ouvre à 12 s), pieds à y = %.0f (le rebord : 500, le sol : 800)\n", static_cast<double>(r.clockAt[past]),
+        std::printf("    le mur passé à %.3f s (la porte s'ouvre à 12 s), pieds à y = %.0f (le rebord : 620, le sol : 800)\n", static_cast<double>(r.clockAt[past]),
                     static_cast<double>(r.feet[past].y));
     CHECK(past < r.feet.size() && r.clockAt[past] < 11.5f);
     CHECK(r.finishes() && std::abs(r.clock - T.clock) < 1e-4f);
