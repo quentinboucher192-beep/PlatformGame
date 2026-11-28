@@ -801,7 +801,9 @@ TEST_CASE("raid GOAT bench (2.84): every Gigaboss and the Cœur over several sta
         double wonSeconds = 0.0;
         std::string line;
         for (int k = 0; k < seeds; ++k) {
-            const Fight f = fightAt(s, part, raid::BotSkill::Expert, 900, 8, static_cast<uint32_t>(seed0 + k));
+            // 2.98: COSMIC_GOAT_PLAYERS a smaller group (2 to 8: raid groups are 2 to 8 players), 8 by default.
+            const int players = std::getenv("COSMIC_GOAT_PLAYERS") ? std::clamp(std::atoi(std::getenv("COSMIC_GOAT_PLAYERS")), 2, 8) : 8;
+            const Fight f = fightAt(s, part, raid::BotSkill::Expert, 900, players, static_cast<uint32_t>(seed0 + k));
             won += f.won ? 1 : 0;
             wonSeconds += f.won ? f.seconds : 0.0;
             char buf[96];
