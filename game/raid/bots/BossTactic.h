@@ -82,6 +82,7 @@ struct BossView {
         bool dashOut = false;        // 2.89: out of a blow too wide to walk out of in time, dashing (Pyroclast's meteor fist)
         float bodyBothSides = 0.0f;  // 2.89: > 0: its body read on both sides of its box (it turns), this much wider (Pyroclast)
         bool bodyInNav = false;      // 2.89: its body among what the navigation's moves keep out of (it floats over the ledges)
+        bool holdersFire = false;    // 2.98: a player on its place strikes the creatures near it from there (Voidworm's parasites)
     } plan;
 };
 

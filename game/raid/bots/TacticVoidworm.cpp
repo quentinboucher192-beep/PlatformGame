@@ -23,6 +23,9 @@ namespace cosmic::raid::bots {
 
 namespace {
 
+// 2.98: a closed hook is let go while it stays closed longer than this (s): the time to run to another (150 px/s), climb, hold it.
+constexpr float kLetGo = 16.0f;
+
 class VoidwormTactic final : public BossTactic {
 public:
     const char* name() const override { return "Voidworm"; }
@@ -40,6 +43,7 @@ public:
         v.plan.bodyInNav = true;  // 2.89: its body among what the navigation's jumps keep out of (its ledges climb past it)
         v.plan.dashOut = true;  // 2.90: out of its maw, its spikes, its marks dashing when too far for a walk (the dash guards 0,31 s)
         v.plan.noLure = true;  // 2.89: it never moves: nobody keeps close to it on purpose (its lure died there, its revivers after)
+        v.plan.holdersFire = true;  // 2.98: its parasites come out near its hooks (their bites, their orbs): its holders shoot them
         if (gb.rules()) {
             const Json ac = gb.rules()->extra.value("acid", Json::object());
             if (gb.phase() >= jget<int>(ac, "from", 3)) {
@@ -69,12 +73,38 @@ public:
                 v.dangers.push_back(d);
             }
         }
-        for (int s = 0; s < w.teamSize(); ++s)
+        int free = 0;  // 2.98: the players in play out of its stomach
+        for (int s = 0; s < w.teamSize(); ++s) {
             if (rt->spared(s)) v.held.push_back(s);
+            else if (w.member(s).presence == GameWorld::Presence::Playing) ++free;
+        }
+        // 2.98: its hooks need not be held at once — each one closed stays closed `reopen` s (longer for one or two players in
+        // play): fewer free players than hooks (a small group, the others down or swallowed), a hook closed with time left
+        // is let go and its player closes the next one (two players stood on two hooks for ever, the third never closed).
+        if (gb.stage() == Gigaboss::Stage::Carapace && free < static_cast<int>(gb.vents().size()))
+            for (Station& st : v.stations)
+                for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
+                    if (st.closed && st.plate.x == gb.vents()[static_cast<size_t>(k)].area.x && st.plate.y == gb.vents()[static_cast<size_t>(k)].area.y &&
+                        gb.reopenIn(k) > kLetGo)
+                        st.now = false;
         // 2.89: its stomach, a closed pocket under the arena: a player digested there stays down (nobody reaches its soul).
         if (gb.rules())
-            if (const Json st = gb.rules()->extra.value("swallow", Json::object()).value("stomach", Json()); st.is_array() && st.size() == 4)
-                v.noRevive.push_back({st[0].get<float>(), st[1].get<float>(), st[2].get<float>(), st[3].get<float>()});
+            if (const Json st = gb.rules()->extra.value("swallow", Json::object()).value("stomach", Json()); st.is_array() && st.size() == 4) {
+                const Rect stomach{st[0].get<float>(), st[1].get<float>(), st[2].get<float>(), st[3].get<float>()};
+                v.noRevive.push_back(stomach);
+                // 2.98: its acid floods the stomach too (under the floor, under its surface): who is held there takes its
+                // tide under its shield (nowhere to climb, no way out but the pocket burst).
+                for (const auto& fl : w.hazards().floods())
+                    if (fl.left < stomach.right() && fl.right > stomach.x && fl.age < fl.rise + fl.hold + fl.fall)
+                        for (int s : v.held) {
+                            Danger d;
+                            d.kind = Danger::Kind::Area;
+                            d.area = stomach.expanded(8.0f);
+                            d.seat = s;
+                            d.last = static_cast<int>((fl.rise + fl.hold + fl.fall - fl.age) * static_cast<float>(kSimHz));
+                            v.dangers.push_back(d);
+                        }
+            }
         // The pocket of its stomach: burst it to free the swallowed (a rescue).
         std::vector<uint32_t> mech;
         rt->targets(mech);

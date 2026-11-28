@@ -23789,6 +23789,12 @@
    ]
   },
   {
+   "fr": "défend sa place",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Défense (garde frontale)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"

@@ -2552,6 +2552,30 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             }
         }
     }
+    // 2.98 (fight plan, Plan::holdersFire): on its place, the creatures that come for it struck from there, the wave aimed, never a
+    // step off it (Voidworm's parasites bit its hook holders, who only raised their shield: in a small group nobody guarded them).
+    if (fight_ && view_.plan.holdersFire && !fired && !fleeing && !nailed && b.task == Task::Mechanism && b.mechanism.w > 0.0f &&
+        b.mechanism.expanded(12.0f).intersects(me.box) && sh && keyBit(sh) >= 0 && sh->ready(me) && !(b.prevHeld & (1u << keyBit(sh))) &&
+        me.energy - 10.0f >= (shield ? 22.0f : 0.0f)) {
+        int aim = -1;
+        float best = 240.0f * 240.0f;
+        for (const bots::Target& t : view_.targets) {
+            const Enemy* e = t.priority < 10 && t.uid != bossUid_ ? enemyOf(w, t.uid) : nullptr;
+            if (!e || (e->center() - me.center()).lengthSq() >= best) continue;
+            if (const int a = shotFrom(w, me.center(), strikeBox(*e, w), me.grounded()); a >= 0) {
+                best = (e->center() - me.center()).lengthSq();
+                aim = a;
+            }
+        }
+        if (aim >= 0 && noise(seat + 8 * static_cast<int>(seed_), tick_ + 29) < lv.precision + 0.1f) {
+            held |= 1u << keyBit(sh);
+            f.moveX = static_cast<int8_t>(kDirX[aim] * 127);
+            f.moveY = static_cast<int8_t>(kDirY[aim] * 127);
+            dir = 0;
+            fired = true;
+            if (react.empty()) react = "défend sa place";
+        }
+    }
     // 2.84 (fight plan): getting out of a blow, it still fires when a wave reaches its target from where it is (a step of
     // its run turned into a shot, as a player does) — more of its time spent striking.
     if (fight_ && dodging && !fired && !fleeing && !nailed && foe && worthStriking && !holdFire && sh && keyBit(sh) >= 0 && view_.plan.fireOnTheRun) {
