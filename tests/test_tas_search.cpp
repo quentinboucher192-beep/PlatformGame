@@ -128,7 +128,7 @@ TEST_CASE("tas search: a section searched after a divergence is offered the best
     Shipped S;
     if (!S.ok) return;
     const auto ends = tas::sectionEndsOf(S.content, *S.level, RunCategory::AnyPercent, S.best);
-    if (ends.size() < 3) return;
+    if (ends.size() < 5) return;
     tas::SearchOptions o;
     o.category = RunCategory::AnyPercent;
     o.threads = 2;
@@ -136,11 +136,12 @@ TEST_CASE("tas search: a section searched after a divergence is offered the best
     o.seed = 3;
     o.seedRun = S.best;
     o.refine = false;
-    // The best run's frames alone: they reach section 3's end in about 73 generations, just within
-    // its share of 25 s; the planner's work (its own test: test_tas_planner.cpp) costs more than that.
+    // The best run's frames alone, within the share of 25 s of their section; the planner's work (its
+    // own test: test_tas_planner.cpp) costs more than that.
     o.planner = false;
-    // A run that has left the best run in section 3.
-    o.startRun.assign(S.best.begin(), S.best.begin() + static_cast<std::ptrdiff_t>(ends[1]));
+    // A run that has left the best run in section 5 (in the run of 2.100, a few frames late in
+    // section 3 or 4 meet its moving parts out of phase: its frames no longer arrive there).
+    o.startRun.assign(S.best.begin(), S.best.begin() + static_cast<std::ptrdiff_t>(ends[3]));
     for (int i = 0; i < 3; ++i) {
         InputFrame f = o.startRun.back();
         f.pressed = f.released = 0;
@@ -261,8 +262,9 @@ TEST_CASE("tas guides: a guide faster early and a best run faster late are splic
     // The best run (the machine's): slower early (a pause in section 4, where the run still
     // finishes); the guide (a player's run): slower late (a pause in section 5, or 7) — the shape of
     // a player's run against the machine's (sections 1 to 3 and the boss do not forgive a pause).
-    // (Sections 1, 2 and the boss do not forgive a pause: their moving parts; sections 3 and 4 do.)
-    auto [tasRun, tasMs] = slowed(S, S.best, ends[2], ends[2] + 600);
+    // (In the run of 2.100, sections 1 to 3 and the start of section 4 do not forgive a pause: their
+    // moving parts; the rest of section 4 and the later sections do.)
+    auto [tasRun, tasMs] = slowed(S, S.best, ends[2], ends[3]);
     auto [guide, guideMs] = slowed(S, S.best, ends[3], ends[4]);
     if (guideMs < 0) std::tie(guide, guideMs) = slowed(S, S.best, ends[5], ends[6]);
     std::printf("  course de la machine ralentie tôt : %lld ms ; guide ralenti tard : %lld ms ; livrée %lld ms\n", static_cast<long long>(tasMs),
@@ -303,7 +305,7 @@ TEST_CASE("tas guides: a splice slower than the best run is never kept") {
     const auto ends = tas::sectionEndsOf(S.content, *S.level, RunCategory::AnyPercent, S.best);
     if (ends.size() < 7) return;
     // The guide: the best run with a pause after CP3 — slower from there on, never faster.
-    const auto [guide, guideMs] = slowed(S, S.best, ends[2], ends[2] + 600);
+    const auto [guide, guideMs] = slowed(S, S.best, ends[2], ends[3]);
     CHECK(guideMs > S.bestMs);
     if (guideMs <= 0) return;
     tas::SearchOptions o;
@@ -347,8 +349,9 @@ TEST_CASE("tas guides: a run of an older version of the level guides by its rout
     CHECK(route.size() > 1000 && splits.size() == 6);
     std::error_code ec;
     fs::remove(file, ec);
-    // The machine's run slower from section 4 on (a pause): the route is ahead there, it is followed.
-    const auto [slow, slowMs] = slowed(S, S.best, ends[2], ends[2] + 600);
+    // The machine's run slower from section 5 on (a pause): the route is ahead there, it is followed.
+    // (In the run of 2.100, section 4 forgives a few frames of pause only.)
+    const auto [slow, slowMs] = slowed(S, S.best, ends[3], ends[4]);
     CHECK(slowMs > S.bestMs);
     if (slowMs <= 0) return;
     tas::SearchOptions o;
@@ -358,7 +361,7 @@ TEST_CASE("tas guides: a run of an older version of the level guides by its rout
     o.seed = 13;
     o.seedRun = slow;
     o.routeHints = route;
-    o.windowFirst = o.windowLast = 4;
+    o.windowFirst = o.windowLast = 5;
     o.refine = false;
     const tas::SearchOutcome out = tas::search(S.content, *S.level, o);
     std::printf("  tracé : %lld états gardés parce qu'ils le suivent ; %.3f s (départ %.3f s)\n", static_cast<long long>(out.routeKept), static_cast<double>(out.clock),
