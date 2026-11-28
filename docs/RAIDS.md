@@ -25,7 +25,8 @@
 # titan 13 : décomptes, plateformes, Gigaboss à leur mesure et difficulté réelle (2.84.1, §37)
 # titan 15 : Titanus allégé, un peu (§38) ;
 # le chat des raids, « Groupe » et « Raid » (2.95, §39) ;
-# raid simulé : groupes en attente, remplacements et un seul Cœur pour tous (§40)
+# raid simulé : groupes en attente, remplacements et un seul Cœur pour tous (§40) ;
+# sept groupes, un par branche, une paire faite par un même groupe, défaite à 60 min (titan 16, §41)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -106,7 +107,8 @@ Une instance = un groupe de 8 d'un clan (les groupes de la phase 1) sur la branc
   sa présence** (`GameWorld::carryOf` / `restoreMember`) et apparaît au point de la zone pour
   l'endroit d'où il vient (un joueur à terre revient debout avec la moitié de ses cœurs). Un
   passage où l'on se trouve à l'arrivée ne ramène personne : il faut y entrer.
-* **Paires** (les soufflets) : une instance n'en fait qu'un ; l'autre doit venir d'un autre groupe.
+* **Paires** (les soufflets) : une instance n'en fait qu'un ; l'autre doit venir d'un autre groupe. *Titan 16 (§41) : une
+  paire se fait par le même groupe, partagé en deux, les deux moitiés à 3 s près.*
 
 ### Message `RAID_STATE` (18, relais → jeu)
 
@@ -136,7 +138,8 @@ au moins 1) a envoyé **la même valeur** (`zone:pas:empreinte`). Avant cela :
 Les rapports minoritaires (un menteur, un jeu désynchronisé) sont **refusés et journalisés**
 (`raid_report_rejections`). Un objectif accepté entre dans `raid_branch_objectives` une seule fois
 (clé primaire par objectif : deux instances, ou deux acceptations simultanées, le comptent une fois),
-sauf le second soufflet d'une même instance (journalisé). Un rapport de zone accepté place le
+sauf le second soufflet d'une même instance (journalisé). *Titan 16 (§41) : les deux moitiés d'une paire comptent
+ensemble, acceptées pour la même instance à 360 pas près.* Un rapport de zone accepté place le
 groupe sur la carte (`raid_instances.zone`).
 
 ### Routes
@@ -192,7 +195,8 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
   en mémoire, comme la coopération ; 2.74 : et dans le stockage de son objet durable tant que dure la
   partie, pour la retrouver après un redémarrage, §15).
 * Les soufflets demandent deux groupes, sans la contrainte « à 3 s près » de la maquette : deux
-  instances ne partagent pas d'horloge commune assez précise.
+  instances ne partagent pas d'horloge commune assez précise. *Titan 16 (§41) : un même groupe les fait, partagé en
+  deux, à 3 s près (une seule instance, une seule horloge).*
 * Le chat de groupe (« GROUPE · Lyra : … » de la maquette) n'est pas dans cette phase : les
   alertes viennent du jeu et du serveur seulement.
 
@@ -289,7 +293,8 @@ catalogue de la branche de l'instance, sa joignabilité avec les liens, l'object
 `raid_placements` (une place par joueur et événement : instance, branche, par qui, pourquoi) et
 `raid_placement_log` (chaque changement). **8 joueurs au plus par instance** : une seule instruction
 conditionnelle place un joueur (deux placements simultanés ne font jamais un neuvième) ; une instance
-s'ouvre seulement quand toutes celles du clan sur la branche sont pleines.
+s'ouvre seulement quand toutes celles du clan sur la branche sont pleines. *Titan 16 (§41) : remplacé : toujours sept
+groupes par clan, un par branche, de 2 à 8 joueurs ; ni autre branche, ni autre groupe, ni nouvelle instance.*
 
 | Route | Rôle |
 |---|---|
@@ -3688,12 +3693,16 @@ vient remplacer seulement si le groupe est éliminé. »
 
 ### Les règles entre les groupes (`game/raid/RaidSimulation`)
 
+*Titan 16 : le [§41](#41-sept-groupes-un-par-branche--une-paire-faite-par-un-même-groupe--défaite-à-60-min-titan-16)
+remplace ces règles : toujours sept groupes (14 à 56 joueurs), une paire faite par le même groupe à 3 s près, le
+remplacement pour seul secours, la défaite à 60 min. Le 8e groupe et les deux cas sans aide ci-dessous n'existent plus.*
+
 | Règle | Avant (2.94.1) | Maintenant |
 |---|---|---|
 | Un groupe dont le Gigaboss est tombé | après 5 s sans rien à faire, il partait vers la branche « où il manquait le plus de groupes » : toutes, puisque chaque branche a une zone à deux groupes (la zone 4) ; c'est ce qui vidait le Crâne, l'Abdomen et la Jambe droite de la capture | il **reste dans sa branche, « en attente »** (carte du titan : « Groupe 1 en attente », « Groupes 3, 7 (7 en attente) » ; carte du groupe : « Skullmaw tombé · en attente » ; panneau des groupes : « EN ATTENTE ») ; jamais pour aider un groupe lent ou affaibli |
 | Un groupe éliminé | un « Renfort N » de joueurs simulés nouveaux reprenait la zone (8 au plus) | sa place attend ; le groupe **en attente depuis le plus longtemps** (puis le plus petit numéro) quitte sa branche et **le remplace** : il reprend **la zone où il est tombé** (celle de la plupart de ses joueurs), avec **l'état validé de la branche** (tout ce que les groupes y ont fait et qui est accepté : passages, générateurs, embuscades), comme la reprise du serveur (`raidWipe.ts`, `start_zone` ; ce que le groupe éliminé n'avait pas validé ne compte pas). Personne n'attend : la zone reste à reprendre. Aucun joueur ne vient plus de nulle part |
-| Le 8e groupe (plus de groupes que de branches) | « k mod 7 » : il doublait le Crâne, qui n'en a pas besoin | il **double le Torse** dès le départ : le verrou de sa Cage du cœur veut ses 4 plaques, qui sont deux paires, et une instance ne fait jamais les deux objectifs d'une paire (§6 : « Deux groupes : 2 × 2 plaques ») ; du 9e au 14e, les autres branches dans l'ordre du titan (14 groupes : deux par branche). Pas de réserve au départ : le premier groupe qui finit devient la réserve (en attente) |
-| Deux cas sans aide (pas un groupe lent) | — | un groupe en attente prend aussi une branche **qu'aucun groupe ne joue** (moins de 7 groupes) et devient le **deuxième groupe d'une branche que son seul groupe ne mène jamais à son Gigaboss** (le Torse à 7 groupes ou moins) : calculé depuis le catalogue (`needsTwoGroups`, `reachesAlone` : ce que la branche a validé plus tout ce que ce groupe peut encore y faire seul, l'antre est-il atteignable ?) |
+| Le 8e groupe (plus de groupes que de branches) — *supprimé au titan 16 (§41) : toujours sept groupes* | « k mod 7 » : il doublait le Crâne, qui n'en a pas besoin | il **double le Torse** dès le départ : le verrou de sa Cage du cœur veut ses 4 plaques, qui sont deux paires, et une instance ne fait jamais les deux objectifs d'une paire (§6 : « Deux groupes : 2 × 2 plaques ») ; du 9e au 14e, les autres branches dans l'ordre du titan (14 groupes : deux par branche). Pas de réserve au départ : le premier groupe qui finit devient la réserve (en attente) |
+| Deux cas sans aide (pas un groupe lent) — *supprimés au titan 16 (§41) : un groupe en attente ne part que pour remplacer* | — | un groupe en attente prend aussi une branche **qu'aucun groupe ne joue** (moins de 7 groupes) et devient le **deuxième groupe d'une branche que son seul groupe ne mène jamais à son Gigaboss** (le Torse à 7 groupes ou moins) : calculé depuis le catalogue (`needsTwoGroups`, `reachesAlone` : ce que la branche a validé plus tout ce que ce groupe peut encore y faire seul, l'antre est-il atteignable ?) |
 | Les sept Gigaboss tombés | tous les groupes en jeu allaient au Cœur | de même, **chacun dans son instance**, plusieurs à la fois ; un groupe éliminé au Cœur n'est pas remplacé (personne n'attend) et sa part reste comptée |
 
 Les événements du monde le disent : « EN ATTENTE · Groupe 1 reste dans la branche CRÂNE (Skullmaw tombé) : il n'en part que
@@ -3721,7 +3730,8 @@ validée des autres est déjà ôtée, et « Résultats du raid » la vie valid�
 ### Pourquoi des groupes n'arrivaient pas au boss (mesuré)
 
 **Le banc** (`tests/test_raid_sim_rules.cpp`, « raid simulation bench », sans affichage) : `COSMIC_RAID_SIM_BENCH=1`
-(8 groupes de 5 joueurs Confirmés depuis les vestiaires, comme le menu ; `COSMIC_RAID_SIM_GROUPS`, `_BOTS`, `_SKILL`,
+(8 groupes de 5 joueurs Confirmés depuis les vestiaires, comme le menu ; *titan 16 : sept groupes, `COSMIC_RAID_SIM_PLAYERS`
+au lieu de `_GROUPS` et `_BOTS`, §41* ; `COSMIC_RAID_SIM_GROUPS`, `_BOTS`, `_SKILL`,
 `_MINUTES`, `_INVINCIBLE` pour les joueurs simulés invincibles, `_DETAIL` : chaque plaque et chaque joueur, où il est et
 ce qu'il pense) ; il écrit chaque événement du monde, où est chaque groupe toutes les `_EVERY` secondes, puis, par groupe,
 son chemin de zone en zone et son plus long séjour dans une zone. Le banc d'une zone (`COSMIC_RAID_ZONE_BENCH=1`,
@@ -3803,6 +3813,137 @@ premier en attente devient le deuxième du Torse et personne d'autre ne bouge ; 
 attend, aucun groupe de nulle part ; avec un groupe en attente : il remplace l'éliminé dans sa zone, avec l'état validé ; le
 Cœur à trois instances : la somme des parts, la même vie et la même phase partout), `tests/test_raid_mechanisms.cpp` (la ligne
 des groupes d'une bulle : « Groupe 1 en attente », « Groupes 2, 8 (8 en attente) », « · Vous »).
+
+## 41. Sept groupes, un par branche ; une paire faite par un même groupe ; défaite à 60 min (titan 16)
+
+*Décidé par le propriétaire*, pour le vrai raid en ligne comme pour le raid simulé. Ces règles remplacent celles du §6
+(« Répartition des joueurs ») et la partie « entre les groupes » du §40 (le 8e groupe qui doublait le Torse, les 9e à 14e,
+l'exception `needsTwoGroups` / `reachesAlone`).
+
+### Les règles
+
+| Règle | Maintenant |
+|---|---|
+| Les groupes | **Toujours exactement sept groupes au départ**, un par branche du titan : le groupe *k* joue la branche *k* (1 Crâne, 2 Bras gauche, 3 Bras droit, 4 Torse, 5 Abdomen, 6 Jambe gauche, 7 Jambe droite). Jamais deux groupes d'un clan dans une même branche ; plus d'instance ouverte « là où il y a de la place », plus d'aide à un groupe lent |
+| Les inscriptions | **14 inscrits au moins** pour qu'un clan commence (2 par groupe : les fiches des Gigaboss sont réglées pour 2 à 8, `RaidSheets` `kMinPlayers = 2`) ; **56 en jeu au plus** (7 × 8). Au-delà, une **liste d'attente** dans l'ordre des inscriptions : son premier prend la place de qui se désiste avant le début. Les groupes sont aussi égaux que possible (leurs tailles diffèrent de 1 au plus), formés dans l'ordre des inscriptions ; le chef de raid mène le groupe 1 |
+| Le seul secours : le remplacement | Un groupe dont le Gigaboss est tombé **attend dans sa branche**. Il n'en part que pour **remplacer un groupe éliminé** de son clan : il reprend sa zone, avec l'état validé de la branche (`raidWipe.ts`, `start_zone`). Personne n'attend : la zone reste « à reprendre » |
+| Les paires (« zones à deux groupes ») | La zone 4 de chaque branche et les 2 × 2 plaques du Torse (le verrou de sa Cage du cœur) se font par **le même groupe**, qui se partage et fait les deux moitiés **en même temps, à 3 s près** (la fenêtre de la maquette, §5). Une moitié seule ne compte pas et se referme au bout de 3 s. La règle « une instance ne fait jamais les deux objectifs d'une paire » disparaît partout : serveur, jeu, joueurs simulés, contributions. Sans elle, le Torse ne s'ouvrait jamais avec un groupe par branche |
+| Le Cœur | Il s'ouvre quand **les sept Gigaboss sont tombés** ; chaque groupe encore en jeu le combat, chacun dans son instance, une seule vie pour tous (`raidHeart.ts`, `HeartShared`, §40) |
+| La défaite | Le raid standard dure **60 minutes**. Le clan **perd** si le Cœur n'est pas tombé à la fin des 60 min (des Gigaboss encore debout ou le Cœur lui-même) : « **Défaite : temps écoulé** » ; et **aussitôt** quand tous ses groupes sont éliminés : « **Défaite : tous les groupes éliminés** ». « **Victoire : Asterion est tombé** » sinon |
+
+La durée : un événement finit à `starts_at + max` de son format (`RAID_FORMATS`, `timesOf`) ; le format standard vaut
+désormais **60 à 60 min** (avant : 45 à 60, la fin était déjà à 60 min) ; `data/raids/asterion.json` dit « 60 min ».
+
+### Le serveur
+
+* **Les sept groupes** (`raids.ts` `groupsOf`, `rosterSplit`, `groupSizeOf` ; `raidMap.ts` `ensureGroups`) : formés **une
+  fois**, à la première entrée, vue ou décision de répartition d'un membre du clan pendant le raid : les 56 premiers inscrits
+  (ordre des inscriptions), sept instances (`group_no` *k*, branche *k*) et une place par joueur, en deux instructions qui
+  ne doublent rien si deux joueurs arrivent ensemble (`INSERT OR IGNORE` sur le groupe et la branche de l'instance, une place
+  déjà là est gardée). Moins de 14 inscrits : `409 RAID_TOO_FEW` (« il en faut au moins 14 pour commencer »). Un inscrit
+  arrivé après (session de rattrapage) va dans le plus petit groupe qui a de la place ; au-delà des 56 :
+  `403 RAID_WAITLIST` avec son rang.
+* **Rejoindre** (`/join`, `/branches/{partie}/join`, `/instance`) : toujours l'instance de **son groupe** (sa branche ; un
+  remplaçant, son instance de relève ; les sept tombés, sa propre instance du Cœur). Une autre branche : `409 RAID_OTHER_BRANCH`
+  (« Votre groupe joue la branche … ») ; l'instance d'un autre groupe : `409 RAID_OTHER_GROUP`. **La WebSocket du relais** ne
+  donne une place qu'à un joueur placé dans cette instance ou qui y joue déjà ; tout autre inscrit ne fait que regarder.
+  Rien ne vient du jeu : le joueur est celui de la session, son groupe celui de la base.
+* **La répartition** (`GET /placements`) : les sept groupes (branche, placés, en attente, éliminé), la liste d'attente,
+  `rules` (7 groupes de 2 à 8, 14 et 56). `POST /placements {player_id, instance_id | branch}` déplace un membre vers un
+  autre des sept groupes ; **une seule instruction** vérifie qu'il reste 2 joueurs au moins dans son groupe et 8 au plus dans
+  l'autre (`409 GROUP_TOO_SMALL`, `409 INSTANCE_FULL`). `POST /placements/rebalance` égalise les sept groupes (tailles à 1
+  près ; ceux qui ne jouent pas bougent d'abord ; `branch` n'est plus utile).
+* **Le remplacement** (`POST /raids/instances/{id}/retake {zone, branch?}`) : seulement depuis l'instance d'un groupe **en
+  attente** (le Gigaboss de sa branche validé, le Cœur pas encore ouvert : sinon `409 RAID_NOT_WAITING`), pour une zone
+  à reprendre d'un groupe **de son clan**, dans une branche où le clan n'a plus de groupe en jeu (`409 RAID_BRANCH_TAKEN`).
+  Tout le groupe part : ses places suivent dans l'instance de relève (faite une fois par instance éliminée). La carte d'une
+  branche dit `my.group_waiting`, `my.group_instance_id` et `retake_offers`.
+* **Les paires** (`raidZones.ts`, `PAIR_WINDOW_TICKS` = 360 pas) : une moitié acceptée par le consensus n'entre dans l'état
+  de la branche qu'avec l'autre, acceptée pour **la même instance** à 360 pas au plus de la sienne (les deux comptées
+  ensemble, par cette instance) ; plus loin : refusée et journalisée (« les deux objectifs d'une paire se font ensemble,
+  par le même groupe, à 3 s près ») ; une moitié dont l'autre est déjà validée pour la branche compte seule.
+* **L'issue** (`raidMap.ts` `outcomeOf`) : `outcome {id, text}` dans la carte du titan et dans « Résultats du raid »
+  (`victoire`, `defaite_temps`, `defaite_groupes`, `en_cours`) ; « tous les groupes éliminés » quand aucun des sept groupes
+  du clan n'a plus d'instance en jeu. La carte du titan donne aussi `my.group` (numéro, branche, en attente, éliminé) ;
+  `needs` (« renforts demandés ») reste vide.
+* **Arrivées en retard** (`requireEntry`) : tout le monde ayant une place dès le début, « déjà en jeu » veut dire être
+  entré dans une instance.
+* **Le test relayé** (`raidTests.ts`) : `config {players: 14 à 56, full_groups}` (sept groupes ; les places offertes aux
+  invités : celles du plus petit groupe).
+* Aucune migration : tout tient dans `raid_instances` et `raid_placements` (0142, 0144).
+
+**Limite** : un clan compte 50 membres au plus (`MAX_CLAN_MEMBERS`) et un événement 50 inscriptions par clan au plus
+(`clan_capacity`, contrainte `CHECK` de `raid_events`) : la liste d'attente est calculée et vérifiée par les tests, mais ne
+se remplit pas tant que ces deux limites restent sous 56.
+
+### Le jeu
+
+* **`raid::RaidRun`** : une moitié de paire touchée seule est « armée » `kPairWindow` pas (3 s) ; l'autre touchée pendant ce
+  temps les accomplit toutes les deux (chacune rapportée au pas où elle a été touchée, la contribution à qui l'a touchée) ;
+  sinon elle se referme (le récepteur s'éteint : action `reset`, aussi dans ce que la zone garde) et une alerte dit « Trop
+  tard : … se referme. Les deux ensemble, à 3 s près. ». L'état armé entre dans l'empreinte. Les libellés, panneaux et
+  descriptions des zones le disent (« Détruire le soufflet ouest (en même temps que l'est) », « Deux plaques à briser
+  ensemble : le groupe se partage… »), écrits par `tools/levelgen` ; `groups_required` vaut 1 partout.
+* **Les joueurs simulés** (`RaidBots`) : sur une paire, le groupe se partage : un tireur sur chaque moitié d'abord, puis les
+  autres ; chacun tire quand l'autre moitié est prête (un joueur à sa place) ou déjà armée — au-delà de 15 s d'attente, il
+  tire quand même.
+* **Le raid simulé** (`RaidSimulation`) : `SimSetup::players` (14 à 56) en **sept groupes** (`groupSize` : à 1 près), le
+  groupe *k* dans la branche *k* ; un groupe en attente ne part que pour remplacer (plus de branche « que personne ne joue »
+  ni de deuxième groupe) ; `minutes` (60) : à la fin, Cœur debout, « DÉFAITE · Temps écoulé » ; tous éliminés : « DÉFAITE ·
+  Tous les groupes sont éliminés » ; le raid perdu ne joue plus aucun pas (`outcome()`, `endedAt()`).
+* **Les écrans** : ADMINISTRATION › Raids › « Simuler un raid complet » : « Joueurs du raid (vous compris) : 14 à 56 » et
+  la ligne « 7 groupes de 5 joueurs, un par branche · le vôtre : vous + 4 joueurs simulés » (le cycle « Groupes 1 à 14 » et
+  « Joueurs par groupe » disparaissent) ; la fiche d'un événement : chaque groupe avec sa branche, « N / 14 inscrits »,
+  la **liste d'attente** ; la répartition du clan : les sept groupes (placés, en attente, éliminé), « Déplacer vers le
+  groupe de : » (les boutons qui feraient tomber un groupe sous 2 ou au-dessus de 8 sont éteints), « Équilibrer les sept
+  groupes » ; la carte d'une branche : plus de « Aider », « Rejoindre » sur la branche de son groupe seulement,
+  « Remplacer le groupe éliminé ici (tout votre groupe y va) » ; la carte du titan : « Rejoindre mon groupe · … », l'issue
+  dans sa pastille (« Défaite : temps écoulé » en rouge) ; « Résultats du raid » : l'issue en tête ; le panneau du raid
+  simulé : l'issue ou « 12 min sur 60 ». Chaque texte est mesuré (`fit`, `wrap`) et traduit.
+* `--raid-sim <joueurs>[:<vitesse>[:<onglet>]]` (captures).
+
+### Mesure : sept groupes jusqu'à chaque Gigaboss
+
+Le banc (`COSMIC_RAID_SIM_BENCH=1 COSMIC_RAID_SIM_INVINCIBLE=1`, 35 joueurs : sept groupes de 5, Confirmés, joueurs simulés
+invincibles, depuis les vestiaires ; 355 s de calcul) : **chaque groupe atteint son Gigaboss et le bat**, le Cœur tombe à
+**34 min 33**, dans les 60 min. Chaque paire est faite par son propre groupe, partagé en deux, entre 1 min 15 et 2 min 15
+(les deux plaques nord et sud du Torse à 1 min 15, est et ouest à 2 min 15 : le verrou de la Cage du cœur s'ouvre avec un
+seul groupe) ; aucun groupe n'a quitté sa branche avant le Cœur.
+
+| Groupe (branche) | Antre atteint | Gigaboss tombé |
+|---|---|---|
+| 1 (Crâne) | 11 min 46 | Skullmaw à 14 min 35 |
+| 2 (Bras gauche) | 12 min 48 | Dreadfang à 19 min 45 |
+| 3 (Bras droit) | 10 min 16 | Pyroclast à 15 min 43 |
+| 4 (Torse) | 12 min 27 | Heartbreaker à 14 min 36 |
+| 5 (Abdomen) | 14 min 02 | Voidworm à 18 min 48 |
+| 6 (Jambe gauche) | 12 min 40 | Graviton à 20 min 27 |
+| 7 (Jambe droite) | 13 min 50 | Titanus à 24 min 19 |
+| Le Cœur | ouvert à 24 min 19 (les sept groupes, chacun dans son instance) | tombé à 34 min 33 |
+
+Les joueurs simulés étant invincibles, aucun groupe n'est éliminé (0 mort) ; le banc compte 1 300 « sauvetages » du test
+(un joueur simulé remis sur sa tâche quand il reste bloqué, §28). Avant (§40, huit groupes, le Torse doublé), le Cœur
+tombait à 33 min 41.
+
+### Versions
+
+`TITAN_REVISION` passe à **16** (`titan.json`, `raidTitan.json`, `raidBranches.json` et les zones 4 (et 6 du Torse)
+régénérés, empreintes des zones) : une instance ne réunit que des jeux aux mêmes règles (le `GO` porte la révision), un
+jeu d'avant est refusé (« mettez le jeu à jour »). `kSimulationVersion`, `kCoopSimulationVersion` et `kRankingGeneration`
+ne changent pas : la règle des paires vit dans `RaidRun`, et l'action `reset` du récepteur n'est demandée que par elle
+(aucun niveau ne l'utilise). Le serveur se déploie avec le jeu ; aucune migration.
+
+### Tests
+
+* Serveur : `raidMap.test.ts` (13 inscrits refusés, 20 → 3,3,3,3,3,3,2 ; 56 en jeu, la liste d'attente et son premier qui
+  prend la place ; une autre branche, un autre groupe, l'aide : refusés ; le chef déplace entre 2 et 8 et égalise ; la
+  défaite à 60 min, celle de tous les groupes éliminés, la victoire), `raidZones.test.ts` (une paire par deux groupes ne
+  compte pas, 4 s d'écart refusées, 2,5 s acceptées), `raidWipe.test.ts` (seul un groupe en attente remplace, tout le
+  groupe, jamais dans une branche où le clan a un groupe), `raidHeart.test.ts` (scellé avant les sept), `raids.test.ts`
+  (`groupsOf` pour 10, 14, 20, 34, 56, 60). Les autres tests forment les sept groupes avec `test/raidGroups.ts`.
+* Jeu : `tests/test_raid_sim_rules.cpp` (14, 20 et 56 joueurs : sept groupes, tailles, jamais deux dans une branche ; une
+  paire à 3 s près, la moitié seule qui se referme ; deux et quatre joueurs simulés font les deux soufflets ensemble ; le
+  remplacement ; les deux défaites ; le Cœur à sept instances), `tests/test_raid_test_relay.cpp` (la configuration `players`).
 
 ### Graviton (2.98) : joueurs simulés
 

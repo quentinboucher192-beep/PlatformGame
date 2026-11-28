@@ -45,8 +45,7 @@ Json RelayedTestConfig::toJson() const {
     Json c = {{"skill", std::clamp(skill, 0, 2)}, {"invincible", invincible}, {"bots_invincible", botsInvincible},
               {"difficulty", std::clamp(difficulty, kDifficultyMin, kDifficultyMax)}};
     if (fullRaid) {
-        c["groups"] = std::clamp(groups, 1, 14);
-        c["bots"] = std::clamp(bots, 1, kMaxInstancePlayers - 1);
+        c["players"] = std::clamp(raidPlayers, SimSetup::kMinPlayers, SimSetup::kMaxPlayers);  // §41
         c["full_groups"] = fullGroups;
     } else {
         c["branch"] = branch;
@@ -75,11 +74,11 @@ std::optional<RelayedTestConfig> RelayedTestConfig::fromJson(const std::string& 
     if (!difficulty) return std::nullopt;
     c.difficulty = *difficulty;
     if (c.fullRaid) {
-        const auto groups = intIn(j, "groups", 1, 14), bots = intIn(j, "bots", 1, kMaxInstancePlayers - 1);
+        // §41 (titan 16): the raid's players over seven groups (before: groups and bots per group, refused now).
+        const auto players = intIn(j, "players", SimSetup::kMinPlayers, SimSetup::kMaxPlayers);
         const auto full = boolOf(j, "full_groups", false);
-        if (!groups || !bots || !full) return std::nullopt;
-        c.groups = *groups;
-        c.bots = *bots;
+        if (!players || !full) return std::nullopt;
+        c.raidPlayers = *players;
         c.fullGroups = *full;
         return c;
     }
@@ -124,8 +123,7 @@ std::unique_ptr<TestSession> buildZoneTest(const WorldServices& services, const 
 
 std::unique_ptr<RaidSimulation> buildRaidSimulation(const WorldServices& services, const RelayedTestConfig& c, int background) {
     SimSetup s;
-    s.groups = c.groups;
-    s.bots = c.bots;
+    s.players = c.raidPlayers;    // §41
     s.fullGroups = c.fullGroups;  // 2.77.3
     s.invincible = c.invincible;
     s.botsInvincible = c.botsInvincible;

@@ -1,4 +1,7 @@
 {
+  "2.102.0": [
+    "Raids : toujours sept groupes, un par branche (14 à 56 joueurs, liste d'attente au-delà) ; les paires se font par un même groupe à 3 s près ; un groupe ne quitte sa branche que pour remplacer un groupe éliminé ; défaite au bout de 60 min ou quand tous les groupes sont éliminés."
+  ],
   "2.101.0": [
     "Correctif : en lançant un pouvoir pendant une glissade ou une escalade sous un plafond bas, Nova se relevait dans le plafond et le traversait. Les replays d'avant se rejouent avec leurs règles et les records sont gardés.",
     "TAS : une IA intégrée au jeu, sur l'ordinateur de l'administrateur. Elle repère les passages où la course perd de la vitesse et y essaie toutes les trajectoires (moment du saut, saut tenu plus ou moins longtemps, double saut, pouvoirs), répartit les cœurs entre ses stratégies et dit pourquoi, en pensées.",

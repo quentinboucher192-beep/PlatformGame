@@ -162,7 +162,7 @@ private:
     int testRelics_ = 0;
     // 2.77: « Une zone » or « Simuler un raid complet » (docs/RAIDS.md §21); the level of the simulated
     // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
-    int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
+    int testMode_ = 0, testSkill_ = 1, simPlayers_ = 21, simSpeed_ = 0;  // §41: simPlayers_ + 14 players (35: 5 per group)
     int testDifficulty_ = 2;  // titan 13: « Difficulté » of the test (index: 1 to 5 / 5)
     /// Titan 13: the « Difficulté » row of a test (1 to 5) and what it changes under it; returns the y under them.
     float difficultyRow(const Rect& row);

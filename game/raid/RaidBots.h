@@ -124,6 +124,10 @@ public:
         int noSpotSince = 0;
         int noSpotUntil = 0;
         int dashGuards = 0;   // 2.90: dashes pressed as a blow lands (their guard covering it), for the measures
+        /// §41 (titan 16): the half of a pair it shoots (its objective's index, -1 none): the group splits, one on each
+        /// half, and fires when the other half is ready too (or already armed), both within 3 s.
+        int pairHalf = -1;
+        int pairWait = 0;  // §41: steps it waited at its place for the other half
         bool fleeBody = false;  // 2.90: the boss's body on it: the navigation's way out asked for
         bots::Thought thought;
         std::string intent;   // its task's intention (the plan's), shown unless it reacts to something
@@ -226,6 +230,7 @@ private:
     int64_t skyLockedAt_ = -1;  // 2.90: the step the shadow of the boss's leap locked (BossView::skyLocked), -1 none
     int64_t skyHangAt_ = -1;    // 2.90: the step it went out of sight over the vault (BossView::skyHang), -1 none
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach
+    uint32_t pairReady_ = 0;  // §41: the halves of pairs with a player at their firing place now (bit = objective index)
     std::string plan_;
     // 2.79
     std::unique_ptr<bots::BossTactic> tactic_;

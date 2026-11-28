@@ -1,15 +1,15 @@
-// « Simuler un raid complet » (raid::RaidSimulation, docs/RAIDS.md §22 and §40): the rules between the groups.
+// « Simuler un raid complet » (raid::RaidSimulation, docs/RAIDS.md §22, §40 and §41): the rules between the groups.
 //
+// * §41 (titan 16): ALWAYS seven groups, group k in branch k, never two in a branch; the raid's 14 to 56 players spread
+//   over them (2 to 8 each, as even as possible).
 // * A group whose branch's Gigaboss fell STAYS in its branch, « en attente »; it never goes to help a group that
-//   is only slow or weakened.
-// * A waiting group goes to another branch ONLY to replace a group wiped there (it takes the zone back where that
-//   group fell, the branch's validated state kept), or to take a branch no group plays (fewer groups than branches),
-//   or to be the second group a branch cannot reach its Gigaboss without (the Torse: its 4 plates are two pairs, and
-//   one group never does both of a pair).
-// * More groups than branches: the 8th doubles the Torse from the start (its two-group lock), the next ones the other
-//   branches in the titan's order.
+//   is only slow or weakened. It goes to another branch ONLY to replace a group wiped there (it takes the zone back
+//   where that group fell, the branch's validated state kept). Nobody waiting: the zone waits.
+// * A pair of objectives (each branch's zone 4, the Torse's plates) is done by ONE group split in two, both halves
+//   within 3 s (raid::RaidRun); the simulated players split for it.
 // * The seven Gigaboss fallen: every group still in play goes to the Cœur, each in its own instance, and the Cœur has
 //   ONE health for all of them (each instance's part summed, never a bar per instance).
+// * The raid lasts 60 minutes: the Cœur standing then, it is lost; every group wiped: lost at once.
 //
 // And the benches (measures, not checks): the full raid (COSMIC_RAID_SIM_BENCH), where each group is and what blocks it,
 // with numbers; one zone of a branch (COSMIC_RAID_ZONE_BENCH), its plates and each player.
@@ -67,20 +67,20 @@ std::string clock(uint32_t tick) {
 
 }  // namespace
 
-TEST_CASE("raid simulation bench (§40): the full raid from the armories, where each group is and what blocks it (COSMIC_RAID_SIM_BENCH)") {
-    // A measure, not a check (an hour of play): only with COSMIC_RAID_SIM_BENCH set. COSMIC_RAID_SIM_GROUPS (8),
-    // COSMIC_RAID_SIM_BOTS (4: the menu's « Joueurs par groupe : 5 »), COSMIC_RAID_SIM_SKILL (1: Confirmé),
-    // COSMIC_RAID_SIM_MINUTES (90), COSMIC_RAID_SIM_INVINCIBLE (the simulated players invincible), COSMIC_RAID_SIM_EVERY
-    // (seconds between two lines of each group, 120).
+TEST_CASE("raid simulation bench (§41): the full raid from the armories, where each group is and what blocks it (COSMIC_RAID_SIM_BENCH)") {
+    // A measure, not a check (an hour of play): only with COSMIC_RAID_SIM_BENCH set. §41: always seven groups;
+    // COSMIC_RAID_SIM_PLAYERS (35: 5 per group), COSMIC_RAID_SIM_SKILL (1: Confirmé), COSMIC_RAID_SIM_MINUTES (90: the
+    // measure goes on past the raid's 60 min), COSMIC_RAID_SIM_INVINCIBLE (the simulated players invincible),
+    // COSMIC_RAID_SIM_EVERY (seconds between two lines of each group, 120).
     if (!std::getenv("COSMIC_RAID_SIM_BENCH")) {
         std::printf("  (mesure : COSMIC_RAID_SIM_BENCH=1)\n");
         return;
     }
     Svc s;
     raid::SimSetup setup;
-    setup.groups = envInt("COSMIC_RAID_SIM_GROUPS", 8);
-    setup.bots = envInt("COSMIC_RAID_SIM_BOTS", 4);
-    setup.fullGroups = true;  // the menu's « Joueurs par groupe »
+    setup.players = envInt("COSMIC_RAID_SIM_PLAYERS", 35);
+    setup.fullGroups = true;  // the menu's: every place played
+    setup.minutes = 0;        // the measure goes on past the raid's 60 min (said at the end)
     setup.skill = static_cast<raid::BotSkill>(std::clamp(envInt("COSMIC_RAID_SIM_SKILL", 1), 0, 2));
     setup.botsInvincible = std::getenv("COSMIC_RAID_SIM_INVINCIBLE") != nullptr;
     setup.rescues = std::getenv("COSMIC_RAID_SIM_NORESCUE") == nullptr;
@@ -162,9 +162,10 @@ TEST_CASE("raid simulation bench (§40): the full raid from the armories, where 
         }
     }
     const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
-    std::printf("  == %s en %s de jeu · %d / 7 Gigaboss · Cœur %d %% ôtés · %zu groupes · %d morts · %d sauvetages · %.0f s de calcul\n",
-                sim.heartFallen() ? "Cœur tombé" : "PAS FINI", clock(sim.tick()).c_str(), sim.gigabossesDown(), sim.heartTaken() / 100, sim.groups().size(),
-                sim.botDeaths(), sim.rescues(), ms / 1000.0);
+    std::printf("  == %s en %s de jeu (%s) · %d / 7 Gigaboss · Cœur %d %% ôtés · %zu groupes · %d morts · %d sauvetages · %.0f s de calcul\n",
+                sim.heartFallen() ? "Cœur tombé" : "PAS FINI", clock(sim.tick()).c_str(),
+                sim.heartFallen() && sim.tick() <= 3600u * kSimHz ? "victoire dans les 60 min" : "défaite à 60 min : temps écoulé", sim.gigabossesDown(),
+                sim.heartTaken() / 100, sim.groups().size(), sim.botDeaths(), sim.rescues(), ms / 1000.0);
     for (size_t i = 0; i < sim.groups().size(); ++i) {
         const auto& g = *sim.groups()[i];
         Track& t = tracks[i];
@@ -268,72 +269,169 @@ void wipeGroup(raid::RaidSimulation& sim, int g) {
 
 }  // namespace
 
-TEST_CASE("raid simulation (§40): the 8th group doubles the Torse (two groups to reach Heartbreaker); a group whose Gigaboss fell waits in its branch, never pulled away to help") {
+namespace {
+
+/// No branch ever has two groups in play (§41: one group per branch; the heart apart, every group in its own instance).
+bool oneGroupPerBranch(const raid::RaidSimulation& sim) {
+    std::vector<int> per(sim.branches().size(), 0);
+    for (const auto& g : sim.groups())
+        if (!g->wiped && g->branch != sim.heartIndex()) ++per[static_cast<size_t>(g->branch)];
+    for (int n : per)
+        if (n > 1) return false;
+    return true;
+}
+
+}  // namespace
+
+TEST_CASE("raid simulation (§41): always seven groups, group k in branch k, 2 to 8 each as even as possible (14 and 56 players); never two in a branch") {
     Svc s;
-    raid::SimSetup setup;
-    setup.groups = 8;
-    setup.bots = 2;
-    setup.given = {"crane"};  // Skullmaw given as fallen: the Crâne's group has nothing left to do from the start
-    raid::RaidSimulation sim(s.ws(), setup);
-    CHECK(sim.begin());
-    sim.watch(0);
-    const int crane = branchOf(sim, "crane"), torse = branchOf(sim, "torse");
-    CHECK(crane >= 0 && torse >= 0);
-    if (crane < 0 || torse < 0) return;
-    // Only the Torse: its lock wants its 4 plates, two pairs, and an instance never does both objectives of a pair.
-    for (int b = 0; b < 7; ++b) CHECK(sim.needsTwoGroups(b) == (b == torse));
-    for (int k = 0; k < 7; ++k) CHECK(sim.group(k).branch == k);
-    CHECK(sim.group(7).branch == torse);
-    // More groups: the Torse first, then the others in the titan's order (14: two in each branch).
-    CHECK(sim.startBranch(7) == torse);
-    CHECK(sim.startBranch(8) == 0);
-    std::vector<int> per(7, 0);
-    for (int k = 0; k < 14; ++k) ++per[static_cast<size_t>(sim.startBranch(k))];
-    for (int n : per) CHECK(n == 2);
-    // 30 s: the Crâne's group waits there (« en attente »); every other branch is slower and has a zone for two groups
-    // (before §40 it went to help the Bras gauche after 5 s): nobody moves.
-    for (int t = 0; t < 30 * kSimHz; ++t) sim.step(InputFrame{});
-    CHECK(sim.group(0).waiting);
-    CHECK(sim.group(0).branch == crane);
-    CHECK(sim.group(0).moves == 0);
-    for (int k = 1; k < 8; ++k) {
-        CHECK(!sim.group(k).waiting);
-        CHECK(sim.group(k).moves == 0);
+    for (const int players : {14, 20, 56}) {
+        raid::SimSetup setup;
+        setup.players = players;
+        setup.fullGroups = true;
+        raid::RaidSimulation sim(s.ws(), setup);
+        CHECK(sim.begin());
+        sim.watch(0);
+        CHECK(sim.groups().size() == 7u);
+        int total = 0, lo = 99, hi = 0;
+        for (int k = 0; k < 7; ++k) {
+            const auto& g = sim.group(k);
+            CHECK(g.branch == k);
+            CHECK(g.seats == g.session->players());
+            total += g.seats;
+            lo = std::min(lo, g.seats);
+            hi = std::max(hi, g.seats);
+        }
+        CHECK(total == players);
+        CHECK(hi - lo <= 1);
+        CHECK(lo >= 2);
+        CHECK(hi <= 8);
+        // Some seconds of play (every group out of its armory): still seven, one per branch, nobody moved.
+        for (int t = 0; t < 20 * kSimHz; ++t) {
+            sim.step(InputFrame{});
+            if (t % kSimHz == 0) CHECK(oneGroupPerBranch(sim));
+        }
+        CHECK(sim.groups().size() == 7u);
+        for (int k = 0; k < 7; ++k) CHECK(sim.group(k).moves == 0);
+        std::printf("  %d joueurs : 7 groupes de %d à %d\n", players, lo, hi);
     }
-    CHECK(sim.groups().size() == 8u);
-    bool told = false;
-    for (const auto& e : sim.feed()) told = told || e.text.find("EN ATTENTE · Groupe 1 reste dans la branche") == 0;
-    CHECK(told);
+    // Out of bounds: 14 to 56.
+    raid::SimSetup few;
+    few.players = 3;
+    raid::RaidSimulation small(s.ws(), few);
+    CHECK(small.setup().players == 14);
+    raid::SimSetup many;
+    many.players = 99;
+    raid::RaidSimulation big(s.ws(), many);
+    CHECK(big.setup().players == 56);
 }
 
-TEST_CASE("raid simulation (§40): seven groups — the Torse's lone group can never open its lock: the first waiting group becomes its second, nobody else moves") {
+TEST_CASE("raid run (§41): a pair is done by ONE group, both halves within 3 s; a half alone closes again; the other half validated: it completes alone") {
     Svc s;
-    raid::SimSetup setup;
-    setup.groups = 7;
-    setup.bots = 2;
-    setup.given = {"crane"};
-    raid::RaidSimulation sim(s.ws(), setup);
-    CHECK(sim.begin());
-    sim.watch(0);
-    const int torse = branchOf(sim, "torse");
-    for (int t = 0; t < 2 * kSimHz; ++t) sim.step(InputFrame{});
-    CHECK(sim.group(0).branch == torse);  // the Crâne's waiting group: the Torse's second group
-    CHECK(!sim.group(0).waiting);
-    CHECK(sim.group(0).moves == 1);
-    for (int t = 0; t < 10 * kSimHz; ++t) sim.step(InputFrame{});
-    for (int k = 1; k < 7; ++k) CHECK(sim.group(k).moves == 0);  // the others are only slow: never helped
-    bool told = false;
-    for (const auto& e : sim.feed()) told = told || e.text == "Groupe 1 quitte sa branche pour la branche TORSE : un groupe seul n'en atteint jamais le Gigaboss";
-    CHECK(told);
+    const raid::Branch* b = raid::Branch::builtin("bras_droit");
+    CHECK(b != nullptr);
+    if (!b) return;
+    const int west = b->objectiveIndex("forge_soufflet_ouest"), east = b->objectiveIndex("forge_soufflet_est");
+    CHECK(west >= 0 && east >= 0);
+    uint32_t before = 0;  // every objective before the Coude-forge (zone 4), as done by the group
+    for (const raid::ObjectiveInfo& o : b->objectives)
+        if (!o.optional && o.zone < 4 && o.role != "gigaboss") before |= 1u << o.index;
+    auto hit = [&](raid::TestSession& t, const char* id) {
+        GameWorld* w = t.run().worldOf(4);
+        CHECK(w != nullptr);
+        if (!w) return;
+        std::string source;
+        for (const raid::ZoneObjective& zo : t.run().rulesOf(4)->objectives)
+            if (zo.index == (std::string(id) == "west" ? west : east)) source = zo.source;
+        LevelEntity* e = w->entity(source);
+        CHECK(e != nullptr);
+        if (e) e->onPowerHit(*w, "wave", e->box);
+    };
+    auto session = [&] {
+        raid::RaidRun::Test test;
+        test.on = true;
+        test.invincible = true;
+        test.players = 1;  // only the administrator's seat, idle (no simulated player who would hit a half itself)
+        auto t = std::make_unique<raid::TestSession>(s.ws(), *b, test);
+        t->setAdminSeated(true);  // in play, no key (its autopilot only after 15 s: the test lasts 6)
+        t->setBranchState(before);
+        CHECK(t->begin(4));
+        return t;
+    };
+    {
+        // One half alone: armed for 3 s, nothing counted; then it closes again (its receptor off: hit again, it arms again).
+        auto t = session();
+        for (int k = 0; k < 10; ++k) t->step(InputFrame{});
+        hit(*t, "west");
+        t->step(InputFrame{});
+        CHECK(((t->run().pairArmed() >> west) & 1u) != 0);
+        CHECK((t->run().localDone() & ((1u << west) | (1u << east))) == 0u);
+        CHECK(t->run().pairStepsLeft(west) > 0);
+        for (int k = 0; k < 3 * kSimHz + 2; ++k) t->step(InputFrame{});
+        CHECK(t->run().pairArmed() == 0u);
+        CHECK((t->run().localDone() & (1u << west)) == 0u);
+        bool late = false;
+        for (const raid::Alert& a : t->run().alerts()) late = late || a.text.find("Trop tard") != std::string::npos;
+        CHECK(late);
+        // Both now, 2,5 s apart: both done, by this group.
+        hit(*t, "west");
+        t->step(InputFrame{});
+        CHECK(((t->run().pairArmed() >> west) & 1u) != 0);  // the receptor was off again: it armed again
+        for (int k = 0; k < 300; ++k) t->step(InputFrame{});
+        hit(*t, "east");
+        t->step(InputFrame{});
+        CHECK((t->run().localDone() & (1u << west)) != 0u);
+        CHECK((t->run().localDone() & (1u << east)) != 0u);
+        CHECK(t->run().pairArmed() == 0u);
+    }
+    {
+        // The other half validated for the branch already (a raid of before): this one completes alone.
+        auto t = session();
+        t->setBranchState(before | (1u << west));
+        for (int k = 0; k < 10; ++k) t->step(InputFrame{});
+        hit(*t, "east");
+        t->step(InputFrame{});
+        CHECK((t->run().localDone() & (1u << east)) != 0u);
+    }
 }
 
-TEST_CASE("raid simulation (§40): a waiting group leaves its branch only to replace a wiped group, where it fell; nobody waiting: the zone waits, no group from nowhere") {
+TEST_CASE("raid bots (§41): the group splits on a pair — both bellows of the Coude-forge at the same time, by two simulated players") {
+    Svc s;
+    const raid::Branch* b = raid::Branch::builtin("bras_droit");
+    CHECK(b != nullptr);
+    if (!b) return;
+    const int west = b->objectiveIndex("forge_soufflet_ouest"), east = b->objectiveIndex("forge_soufflet_est");
+    uint32_t state = 0;
+    for (const raid::ObjectiveInfo& o : b->objectives)
+        if (!o.optional && o.zone < 4 && o.role != "gigaboss") state |= 1u << o.index;
+    for (const int players : {2, 4}) {
+        raid::RaidRun::Test test;
+        test.on = true;
+        test.invincible = true;
+        test.players = players;
+        raid::TestSession t(s.ws(), *b, test);
+        t.setAdminSeated(false);
+        t.setFreeSeatPlayed(true);
+        t.setBotsInvincible(true);
+        t.setSkill(raid::BotSkill::Skilled);
+        t.setBranchState(state);
+        CHECK(t.begin(4));
+        uint32_t doneAt = 0;
+        for (uint32_t k = 0; k < 240u * kSimHz && !doneAt; ++k) {
+            t.step(InputFrame{});
+            if ((t.run().localDone() >> west & 1u) && (t.run().localDone() >> east & 1u)) doneAt = t.run().tick();
+        }
+        std::printf("  %d joueurs simulés : les deux soufflets ensemble en %.1f s\n", players, doneAt / static_cast<double>(kSimHz));
+        CHECK(doneAt > 0);
+    }
+}
+
+TEST_CASE("raid simulation (§41): a group whose Gigaboss fell waits in its branch; it leaves only to replace a wiped group, where it fell; nobody waiting: the zone waits") {
     Svc s;
     {
         // Nobody waits: the wiped group's zone stays to take, no new players appear, nobody moves.
         raid::SimSetup setup;
-        setup.groups = 3;
-        setup.bots = 2;
+        setup.players = 14;
         setup.invincible = false;
         raid::RaidSimulation sim(s.ws(), setup);
         CHECK(sim.begin());
@@ -343,29 +441,38 @@ TEST_CASE("raid simulation (§40): a waiting group leaves its branch only to rep
         for (int t = 0; t < 3 * kSimHz; ++t) sim.step(InputFrame{});
         CHECK(sim.group(1).wiped);
         CHECK(sim.vacancies().size() == 1u);
-        CHECK(sim.groups().size() == 3u);
-        CHECK(sim.group(0).moves == 0 && sim.group(2).moves == 0);
+        CHECK(sim.groups().size() == 7u);
+        for (int k = 0; k < 7; ++k) CHECK(sim.group(k).moves == 0);
+        CHECK(sim.outcome() == raid::RaidSimulation::Outcome::Running);
     }
     raid::SimSetup setup;
-    setup.groups = 8;
-    setup.bots = 2;
+    setup.players = 21;
     setup.invincible = false;
-    setup.given = {"crane"};
+    setup.given = {"crane"};  // Skullmaw given as fallen: the Crâne's group has nothing left to do from the start
     raid::RaidSimulation sim(s.ws(), setup);
     CHECK(sim.begin());
     sim.watch(0);
-    const int brasDroit = branchOf(sim, "bras_droit");
+    const int crane = branchOf(sim, "crane"), brasDroit = branchOf(sim, "bras_droit");
     CHECK(sim.group(2).branch == brasDroit);
-    // The Bras droit's group out of its armory, in its first zone.
+    // 30 s: the Crâne's group waits there (« en attente »), every other branch is slower: nobody moves (never a help).
+    for (int t = 0; t < 30 * kSimHz; ++t) {
+        sim.step(InputFrame{});
+        if (t % kSimHz == 0) CHECK(oneGroupPerBranch(sim));
+    }
+    CHECK(sim.group(0).waiting);
+    CHECK(sim.group(0).branch == crane);
+    for (int k = 0; k < 7; ++k) CHECK(sim.group(k).moves == 0);
+    bool told = false;
+    for (const auto& e : sim.feed()) told = told || e.text.find("EN ATTENTE · Groupe 1 reste dans la branche") == 0;
+    CHECK(told);
+    // The Bras droit's group out of its armory, in its first zone, then wiped.
     int t = 0;
     for (; t < 90 * kSimHz; ++t) {
         sim.step(InputFrame{});
         const int z = sim.group(2).session->run().zone();
-        if (z >= 1 && z != raid::kLairArmory && t > 2 * kSimHz) break;
+        if (z >= 1 && z != raid::kLairArmory) break;
     }
     CHECK(t < 90 * kSimHz);
-    CHECK(sim.group(0).waiting);
-    CHECK(sim.group(0).moves == 0);
     wipeGroup(sim, 2);
     int wipedZone = -1;
     for (int k = 0; k < 5 * kSimHz && wipedZone < 0; ++k) {
@@ -382,20 +489,68 @@ TEST_CASE("raid simulation (§40): a waiting group leaves its branch only to rep
     CHECK(g.moves == 1);
     CHECK(g.session->run().zone() == wipedZone);
     CHECK(g.session->branchState() == sim.mask(brasDroit));
+    CHECK(g.seats == 3);  // it keeps its size
     CHECK(sim.vacancies().empty());
-    CHECK(sim.groups().size() == 8u);  // no group from nowhere
-    for (int k = 1; k < 8; ++k)
+    CHECK(sim.groups().size() == 7u);  // no group from nowhere
+    CHECK(oneGroupPerBranch(sim));
+    for (int k = 1; k < 7; ++k)
         if (k != 2) CHECK(sim.group(k).moves == 0);
-    bool told = false;
+    told = false;
     for (const auto& e : sim.feed()) told = told || e.text.find("REMPLACEMENT · Groupe 1 quitte sa branche pour remplacer Groupe 3") == 0;
     CHECK(told);
 }
 
-TEST_CASE("raid simulation (§40): the seven fallen, every group alive goes to the Cœur, each in its own instance; ONE health: every instance's part summed, given to the others") {
+TEST_CASE("raid simulation (§41): defeat — « temps écoulé » at the end of its minutes with the Cœur standing, « tous les groupes éliminés » at once") {
+    Svc s;
+    {
+        raid::SimSetup setup;
+        setup.players = 14;
+        setup.minutes = 1;  // the standard raid lasts 60; one minute here
+        raid::RaidSimulation sim(s.ws(), setup);
+        CHECK(sim.begin());
+        CHECK(sim.deadline() == 60u * kSimHz);
+        sim.watch(0);
+        for (int t = 0; t < 61 * kSimHz; ++t) sim.step(InputFrame{});
+        CHECK(sim.outcome() == raid::RaidSimulation::Outcome::DefeatTime);
+        CHECK(sim.endedAt() == 60u * kSimHz);
+        const uint32_t frozen = sim.group(0).session->run().tick();
+        sim.step(InputFrame{});
+        CHECK(sim.group(0).session->run().tick() == frozen);  // the raid is over: no group steps any more
+        bool told = false;
+        for (const auto& e : sim.feed()) told = told || e.text.find("DÉFAITE · Temps écoulé") == 0;
+        CHECK(told);
+        // The standard raid: 60 minutes.
+        raid::SimSetup standard;
+        CHECK(standard.minutes == 60);
+    }
+    {
+        raid::SimSetup setup;
+        setup.players = 14;
+        setup.invincible = false;
+        raid::RaidSimulation sim(s.ws(), setup);
+        CHECK(sim.begin());
+        sim.watch(0);
+        for (int t = 0; t < kSimHz; ++t) sim.step(InputFrame{});
+        for (int k = 0; k < 6; ++k) wipeGroup(sim, k);
+        for (int t = 0; t < kSimHz; ++t) sim.step(InputFrame{});
+        CHECK(sim.outcome() == raid::RaidSimulation::Outcome::Running);  // one group still plays
+        // The last one (a blow may not land while its player is between two states: again until it falls).
+        for (int tries = 0; tries < 20 && !sim.group(6).wiped; ++tries) {
+            wipeGroup(sim, 6);
+            for (int t = 0; t < kSimHz / 4; ++t) sim.step(InputFrame{});
+        }
+        CHECK(sim.group(6).wiped);
+        CHECK(sim.outcome() == raid::RaidSimulation::Outcome::DefeatWiped);
+        bool told = false;
+        for (const auto& e : sim.feed()) told = told || e.text.find("DÉFAITE · Tous les groupes sont éliminés") == 0;
+        CHECK(told);
+    }
+}
+
+TEST_CASE("raid simulation (§41): the seven fallen, every group alive goes to the Cœur, each in its own instance; ONE health: every instance's part summed, given to the others") {
     Svc s;
     raid::SimSetup setup;
-    setup.groups = 3;
-    setup.bots = 3;
+    setup.players = 21;  // seven groups of 3
     setup.lairs = true;  // the heart's arena
     setup.botsInvincible = true;
     setup.given = {"crane", "bras_gauche", "bras_droit", "torse", "abdomen", "jambe_gauche", "jambe_droite"};
@@ -405,7 +560,7 @@ TEST_CASE("raid simulation (§40): the seven fallen, every group alive goes to t
     sim.step(InputFrame{});
     CHECK(sim.heartOpen());
     CHECK(sim.gigabossesDown() == 7);
-    for (int g = 0; g < 3; ++g) {
+    for (int g = 0; g < 7; ++g) {
         CHECK(sim.group(g).branch == sim.heartIndex());
         CHECK(!sim.group(g).waiting);
     }
@@ -414,11 +569,16 @@ TEST_CASE("raid simulation (§40): the seven fallen, every group alive goes to t
         const raid::RaidRun& r = sim.group(g).session->run();
         return r.heartRoutine() != nullptr && r.lairGigaboss().engaged();
     };
+    auto all = [&] {
+        for (int g = 0; g < 7; ++g)
+            if (!engaged(g)) return false;
+        return true;
+    };
     int t = 0;
-    for (; t < 120 * kSimHz && !(engaged(0) && engaged(1) && engaged(2)); ++t) sim.step(InputFrame{});
+    for (; t < 120 * kSimHz && !all(); ++t) sim.step(InputFrame{});
     CHECK(t < 120 * kSimHz);
-    if (!(engaged(0) && engaged(1) && engaged(2))) return;
-    // Two instances strike hard (12 % and 15 % of its health): the shared phase passes 75 % for everyone.
+    if (!all()) return;
+    // Two instances strike hard (12 % and 15 % of its health): the shared phase passes 25 % for everyone.
     auto strike = [&](int g, float share) {
         raid::RaidRun& r = sim.group(g).session->run();
         GameWorld& w = r.world();
@@ -430,19 +590,18 @@ TEST_CASE("raid simulation (§40): the seven fallen, every group alive goes to t
     strike(1, 0.15f);
     for (int k = 0; k < 3; ++k) sim.step(InputFrame{});
     int sum = 0;
-    for (int g = 0; g < 3; ++g) sum += sim.group(g).session->run().heartRoutine()->own();
-    std::printf("  le Cœur à trois instances : ôté %d (parts %d + %d + %d), phase partagée %d\n", sim.heartTaken(), sim.group(0).session->run().heartRoutine()->own(),
-                sim.group(1).session->run().heartRoutine()->own(), sim.group(2).session->run().heartRoutine()->own(), sim.heartPhase());
+    for (int g = 0; g < 7; ++g) sum += sim.group(g).session->run().heartRoutine()->own();
+    std::printf("  le Cœur à sept instances : ôté %d (somme des parts %d), phase partagée %d\n", sim.heartTaken(), sum, sim.heartPhase());
     CHECK(sim.heartTaken() == std::min(raid::kHeartUnits, sum));  // one health: the parts summed
     CHECK(sim.heartTaken() >= 2700);
     CHECK(sim.heartPhase() == 2);
-    for (int g = 0; g < 3; ++g) {
+    for (int g = 0; g < 7; ++g) {
         const raid::AsterionHeartRoutine& hr = *sim.group(g).session->run().heartRoutine();
         // What each instance shows is that same health (its part and the others'), within a step of blows.
         CHECK(std::abs(hr.remaining() - (raid::kHeartUnits - sim.heartTaken())) <= 60);
         CHECK(std::abs(hr.others() - (sim.heartTaken() - hr.own())) <= 60);
     }
-    // The instance that struck nothing has its heart at the shared phase too (never above it).
+    // An instance that struck nothing has its heart at the shared phase too (never above it).
     const raid::RaidRun& third = sim.group(2).session->run();
     const Enemy* b = third.lairGigaboss().boss(third.world());
     CHECK(b != nullptr);

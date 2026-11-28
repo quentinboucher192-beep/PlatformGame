@@ -869,6 +869,24 @@
    ]
   },
   {
+   "fr": "7 groupes de 2 à 8 joueurs",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "7 groupes de {0} joueurs, un par branche · le vôtre : vous + {1} joueur simulé",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "7 groupes de {0} joueurs, un par branche · le vôtre : vous + {1} joueurs simulés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "7 HISTOIRES ANIMÉES",
    "where": [
     "data/trailer/trailer.json"
@@ -995,7 +1013,7 @@
    ]
   },
   {
-   "fr": "[{0}] · 8 joueurs au plus par groupe",
+   "fr": "[{0}] · 7 groupes de 2 à 8 joueurs, un par branche",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
    ]
@@ -1984,6 +2002,12 @@
    ]
   },
   {
+   "fr": "active ensemble {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "active {0}",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -2607,12 +2631,6 @@
    "fr": "aide : {0}",
    "where": [
     "game/raid/RaidBots.cpp"
-   ]
-  },
-  {
-   "fr": "Aider [{0}]·{1}",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -4328,7 +4346,7 @@
    ]
   },
   {
-   "fr": "Arrivée en retard fermée {0} min après le début : seuls les joueurs déjà placés reviennent en jeu.",
+   "fr": "Arrivée en retard fermée {0} min après le début : seuls les joueurs déjà entrés en jeu reviennent.",
    "where": [
     "server/src/raidWorld.ts"
    ]
@@ -5427,6 +5445,12 @@
    ]
   },
   {
+   "fr": "attend l'autre moitié de la paire",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Attend la plateforme mobile",
    "where": [
     "game/raid/nav/Intent.cpp"
@@ -6278,6 +6302,12 @@
    ]
   },
   {
+   "fr": "Aucun groupe de votre clan ne joue là : il y a sept groupes, un par branche.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "Aucun groupe ici pour l'instant.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -6293,12 +6323,6 @@
    "fr": "Aucun groupe n'y est entré pour l'instant : rien de compté.",
    "where": [
     "ui/online/ContribTable.cpp"
-   ]
-  },
-  {
-   "fr": "Aucun groupe pour l'instant : le premier joueur qui rejoint une branche en ouvre un.",
-   "where": [
-    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -8927,8 +8951,7 @@
   {
    "fr": "Beaucoup de joueurs arrivent en même temps : réessayez.",
    "where": [
-    "server/src/raidMap.ts",
-    "server/src/raidWipe.ts"
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -9255,13 +9278,13 @@
    ]
   },
   {
-   "fr": "Bloquer le piston bas (un autre groupe)",
+   "fr": "Bloquer le piston bas (en même temps que le haut)",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
-   "fr": "Bloquer le piston haut (un groupe)",
+   "fr": "Bloquer le piston haut (en même temps que le bas)",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
    ]
@@ -9870,6 +9893,12 @@
    ]
   },
   {
+   "fr": "branche ou instance attendue",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "branche vide",
    "where": [
     "game/raid/RaidBranch.cpp"
@@ -10059,49 +10088,49 @@
    ]
   },
   {
-   "fr": "Briser la lame basse (un autre groupe)",
+   "fr": "Briser la lame basse (en même temps que la haute)",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
-   "fr": "Briser la lame haute (un groupe)",
+   "fr": "Briser la lame haute (en même temps que la basse)",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
-   "fr": "Briser la plaque est (un groupe)",
+   "fr": "Briser la plaque est (en même temps que l'ouest)",
    "where": [
     "data/raids/asterion/torse/branch.json"
    ]
   },
   {
-   "fr": "Briser la plaque nord (un groupe)",
+   "fr": "Briser la plaque nord (en même temps que la sud)",
    "where": [
     "data/raids/asterion/torse/branch.json"
    ]
   },
   {
-   "fr": "Briser la plaque ouest (un autre groupe)",
+   "fr": "Briser la plaque ouest (en même temps que l'est)",
    "where": [
     "data/raids/asterion/torse/branch.json"
    ]
   },
   {
-   "fr": "Briser la plaque sud (un autre groupe)",
+   "fr": "Briser la plaque sud (en même temps que la nord)",
    "where": [
     "data/raids/asterion/torse/branch.json"
    ]
   },
   {
-   "fr": "Briser la rotule extérieure (un autre groupe)",
+   "fr": "Briser la rotule extérieure (en même temps que l'intérieure)",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
   {
-   "fr": "Briser la rotule intérieure (un groupe)",
+   "fr": "Briser la rotule intérieure (en même temps que l'extérieure)",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
    ]
@@ -11795,15 +11824,13 @@
   {
    "fr": "Ce groupe a déjà 8 joueurs.",
    "where": [
-    "server/src/raidMap.ts",
-    "server/src/raidZones.ts"
+    "server/src/raidMap.ts"
    ]
   },
   {
    "fr": "Ce groupe a été éliminé : sa zone attend un groupe qui la reprenne.",
    "where": [
-    "server/src/raidMap.ts",
-    "server/src/raidZones.ts"
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -11823,8 +11850,7 @@
    "fr": "Ce groupe n'est plus en jeu.",
    "where": [
     "server/src/raidMap.ts",
-    "server/src/raidWipe.ts",
-    "server/src/raidZones.ts"
+    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -11875,6 +11901,12 @@
    "fr": "Ce joueur est déjà membre du projet.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Ce joueur est sur la liste d'attente du clan : il n'a pas de groupe.",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -12941,7 +12973,8 @@
   {
    "fr": "Cette branche du titan n'existe pas.",
    "where": [
-    "server/src/raidMap.ts"
+    "server/src/raidMap.ts",
+    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -13014,18 +13047,6 @@
    "fr": "Cette image ne se lit pas.",
    "where": [
     "ui/widgets/AssetPreview.cpp"
-   ]
-  },
-  {
-   "fr": "Cette instance a déjà 8 joueurs.",
-   "where": [
-    "server/src/raidMap.ts"
-   ]
-  },
-  {
-   "fr": "Cette instance n'existe pas sur cette branche.",
-   "where": [
-    "server/src/raidMap.ts"
    ]
   },
   {
@@ -13476,6 +13497,12 @@
    "fr": "Chaque graphique a son info-bulle à la souris, un curseur au clavier et à la manette (← →) et une vue « Tableau ». Paramètres › Jeu : « Enregistrer mes statistiques » (activé par défaut) ; « Réinitialiser les statistiques » dans l'écran.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Chaque groupe joue sa propre instance : on ne rejoint ni n'aide un autre groupe (il ne vient que remplacer un groupe éliminé).",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -14476,12 +14503,6 @@
    "fr": "Choisissez un événement pour voir ses inscriptions.",
    "where": [
     "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Choisissez une branche sur le titan, ou laissez le serveur vous placer là où le clan a besoin de vous.",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -18250,7 +18271,7 @@
    ]
   },
   {
-   "fr": "Coude-forge : deux soufflets, deux groupes. Chaque groupe en détruit un (un pouvoir de tir).",
+   "fr": "Coude-forge : deux soufflets à détruire ensemble, à 3 s près : le groupe se partage (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/bras_droit/zone_4.json"
    ]
@@ -19951,7 +19972,8 @@
     "game/online/RaidRecap.cpp",
     "game/raid/bots/TacticHeart.cpp",
     "server/src/raidRewards.ts",
-    "ui/screens/RaidRecapScene.cpp"
+    "ui/screens/RaidRecapScene.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -21888,7 +21910,7 @@
    ]
   },
   {
-   "fr": "Deux lames, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+   "fr": "Deux lames à briser ensemble : le groupe se partage, une lame chacun, à 3 s près (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/bras_gauche/zone_4.json"
    ]
@@ -21906,7 +21928,7 @@
    ]
   },
   {
-   "fr": "Deux nerfs, deux groupes : chaque groupe en tranche un (un pouvoir de tir).",
+   "fr": "Deux nerfs à trancher ensemble : le groupe se partage, un nerf chacun, à 3 s près (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/crane/zone_4.json"
    ]
@@ -21924,13 +21946,13 @@
    ]
   },
   {
-   "fr": "Deux pistons, deux groupes : chaque groupe en bloque un (un pouvoir de tir).",
+   "fr": "Deux pistons à bloquer ensemble : le groupe se partage, un piston chacun, à 3 s près (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/jambe_droite/zone_4.json"
    ]
   },
   {
-   "fr": "Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+   "fr": "Deux plaques à briser ensemble : le groupe se partage, une plaque chacun, à 3 s près (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/torse/zone_4.json",
     "data/raids/asterion/torse/zone_6.json"
@@ -21949,13 +21971,13 @@
    ]
   },
   {
-   "fr": "Deux rotules, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+   "fr": "Deux rotules à briser ensemble : le groupe se partage, une rotule chacun, à 3 s près (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_4.json"
    ]
   },
   {
-   "fr": "Deux valves, deux groupes : chaque groupe en ferme une (un pouvoir de tir).",
+   "fr": "Deux valves à fermer ensemble : le groupe se partage, une valve chacun, à 3 s près (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/abdomen/zone_4.json"
    ]
@@ -23917,6 +23939,38 @@
    ]
   },
   {
+   "fr": "Défaite : temps écoulé",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Défaite : tous les groupes éliminés",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "DÉFAITE · Temps écoulé : {0} min, le Cœur d'Asterion debout : le raid est perdu",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "DÉFAITE · Temps écoulé : {0} min, {1} / 7 Gigaboss tombés : le raid est perdu",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "DÉFAITE · Tous les groupes sont éliminés : le raid est perdu",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "Défaites",
    "where": [
     "ui/screens/BossStatsScene.cpp",
@@ -24902,7 +24956,7 @@
    ]
   },
   {
-   "fr": "Déplacer {0} vers :",
+   "fr": "Déplacer {0} vers le groupe de :",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
    ]
@@ -25028,13 +25082,13 @@
    ]
   },
   {
-   "fr": "Détruire le soufflet est (un autre groupe)",
+   "fr": "Détruire le soufflet est (en même temps que l'ouest)",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
-   "fr": "Détruire le soufflet ouest (un groupe)",
+   "fr": "Détruire le soufflet ouest (en même temps que l'est)",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
    ]
@@ -25642,6 +25696,7 @@
     "game/online/AdminView.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidRosterScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -25844,6 +25899,7 @@
    "fr": "En cours",
    "where": [
     "game/online/Raids.cpp",
+    "server/src/raidMap.ts",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -28907,13 +28963,13 @@
    ]
   },
   {
-   "fr": "Fermer la valve basse (un autre groupe)",
+   "fr": "Fermer la valve basse (en même temps que la haute)",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
-   "fr": "Fermer la valve haute (un groupe)",
+   "fr": "Fermer la valve haute (en même temps que la basse)",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
    ]
@@ -29855,12 +29911,6 @@
    "fr": "finissent",
    "where": [
     "ui/screens/AdminTasMind.cpp"
-   ]
-  },
-  {
-   "fr": "Finissez d'abord la zone de votre groupe : seuls les groupes qui ont fini la leur reprennent une zone.",
-   "where": [
-    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -32550,12 +32600,6 @@
    ]
   },
   {
-   "fr": "Groupe {0} · chef {1}",
-   "where": [
-    "ui/screens/RaidEventScene.cpp"
-   ]
-  },
-  {
    "fr": "Groupe {0} · zone terminée à {1} min {2} s du raid · validé par le serveur",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
@@ -32564,7 +32608,8 @@
   {
    "fr": "Groupe {0} · {1}",
    "where": [
-    "ui/online/ContribTable.cpp"
+    "ui/online/ContribTable.cpp",
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -32683,6 +32728,12 @@
    ]
   },
   {
+   "fr": "GROUPE · Trop tard : {0} se referme. Les deux ensemble, à 3 s près.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Un joueur est cloué au sol : brisez la griffe pour le libérer !",
    "where": [
     "game/raid/DreadfangRoutine.cpp"
@@ -32699,6 +32750,12 @@
    "where": [
     "game/raid/RaidRun.cpp",
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · {0} : l'autre moitié dans les 3 s !",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -32797,21 +32854,8 @@
   {
    "fr": "Groupes",
    "where": [
-    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
-   ]
-  },
-  {
-   "fr": "Groupes de 8 dans l'ordre des inscriptions : le chef de raid mène le groupe 1, le premier inscrit de chaque autre groupe mène le sien. Pendant le raid, chaque groupe joue dans sa propre instance (8 joueurs au plus).",
-   "where": [
-    "ui/screens/RaidEventScene.cpp"
-   ]
-  },
-  {
-   "fr": "groupes de 8 joueurs",
-   "where": [
-    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -36688,6 +36732,12 @@
    ]
   },
   {
+   "fr": "Joueurs du raid (vous compris)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "JOUEURS INSCRITS",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
@@ -36720,12 +36770,6 @@
   },
   {
    "fr": "Joueurs par clan (1 à 50)",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Joueurs par groupe (vous compris)",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -37601,7 +37645,7 @@
    ]
   },
   {
-   "fr": "L'intestin du titan, long et mouvant. Deux valves : deux groupes, une chacun. L'acide y reflue souvent.",
+   "fr": "L'intestin du titan, long et mouvant. Deux valves à fermer ensemble, à 3 s près : le groupe se partage. L'acide y reflue souvent.",
    "where": [
     "data/raids/asterion/abdomen/zone_4.json"
    ]
@@ -40339,7 +40383,7 @@
    ]
   },
   {
-   "fr": "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames : il faut deux groupes, un par lame. Les griffes balaient le sol.",
+   "fr": "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames à briser ensemble, à 3 s près : le groupe se partage. Les griffes balaient le sol.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_4.json"
    ]
@@ -40486,6 +40530,12 @@
    "fr": "le Cœur d'Asterion est encore scellé",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion est ouvert : plus aucune zone à reprendre.",
+   "where": [
+    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -41021,13 +41071,13 @@
    ]
   },
   {
-   "fr": "Le genou du titan, tenu par deux rotules. Deux groupes, une rotule chacun ; des puits de gravité y écrasent tout.",
+   "fr": "Le genou du titan, tenu par deux rotules à briser ensemble, à 3 s près : le groupe se partage ; des puits de gravité y écrasent tout.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_4.json"
    ]
   },
   {
-   "fr": "Le genou-forge, actionné par deux pistons. Deux groupes, un piston chacun ; l'onde sismique y revient souvent.",
+   "fr": "Le genou-forge, actionné par deux pistons à bloquer ensemble, à 3 s près : le groupe se partage ; l'onde sismique y revient souvent.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_4.json"
    ]
@@ -41196,12 +41246,6 @@
    "fr": "Le groupe joue déjà : rattrapage de la partie ({0} %)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Le groupe qui reprend cette zone a déjà 8 joueurs.",
-   "where": [
-    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -42602,12 +42646,6 @@
    ]
   },
   {
-   "fr": "Le serveur vous place dans un groupe de votre clan qui a de la place ; il entre par {0}.",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
    "fr": "Le serveur vérifie cette condition dans l'écriture même (un joueur qui vient de jouer l'emporte, et la fiche se rafraîchit) et n'accepte aucune partie envoyée sur l'ancienne version d'un défi changé : le jeu reçoit la nouvelle version dès qu'il ouvre ou rafraîchit les défis, et dit « ce défi a changé » au lieu d'un faux succès.",
    "where": [
     "data/news/changelog.json"
@@ -42737,7 +42775,7 @@
    ]
   },
   {
-   "fr": "Le sternum, cuirassé de deux plaques. Deux groupes, une plaque chacun ; le cœur pulse sous le métal et des barrières le défendent.",
+   "fr": "Le sternum, cuirassé de deux plaques à briser ensemble, à 3 s près : le groupe se partage ; le cœur pulse sous le métal et des barrières le défendent.",
    "where": [
     "data/raids/asterion/torse/zone_4.json"
    ]
@@ -43625,7 +43663,7 @@
    ]
   },
   {
-   "fr": "Les côtes basses, cuirassées de deux plaques. Deux groupes, une plaque chacun ; des parasites rampent entre les os.",
+   "fr": "Les côtes basses, cuirassées de deux plaques à briser ensemble, à 3 s près : le groupe se partage ; des parasites rampent entre les os.",
    "where": [
     "data/raids/asterion/torse/zone_6.json"
    ]
@@ -43700,6 +43738,12 @@
    "fr": "Les deux mots de passe sont différents.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "les deux objectifs d'une paire se font ensemble, par le même groupe, à 3 s près",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -43959,6 +44003,12 @@
    ]
   },
   {
+   "fr": "Les groupes se forment au début du raid : la répartition se fait pendant l'événement.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "Les groupes sont déjà équilibrés.",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
@@ -44168,7 +44218,7 @@
    ]
   },
   {
-   "fr": "Les nerfs optiques relient les yeux au cerveau. Deux nerfs, deux groupes ; l'onde psychique y revient sans cesse.",
+   "fr": "Les nerfs optiques relient les yeux au cerveau. Deux nerfs à trancher ensemble, à 3 s près : le groupe se partage ; l'onde psychique y revient sans cesse.",
    "where": [
     "data/raids/asterion/crane/zone_4.json"
    ]
@@ -44559,6 +44609,18 @@
    ]
   },
   {
+   "fr": "Les sept groupes de votre clan sont complets (8 joueurs chacun).",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Les sept groupes se forment au début du raid, un par branche du titan.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "Les sept parties",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -44742,7 +44804,7 @@
    ]
   },
   {
-   "fr": "Les {0} branches et toutes leurs zones (vestiaire compris), puis {1} avec tous les groupes : {2} groupes de {3} joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) ou regardez-le.",
+   "fr": "Les {0} branches et toutes leurs zones (vestiaire compris), puis {1} avec tous les groupes : {2} joueurs en 7 groupes, un par branche, 60 min pour vaincre. Événements mondiaux, carte du titan, zones terminées, contributions, groupes en attente, remplacements et défaite comme dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) ou regardez-le.",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -45394,6 +45456,18 @@
    "where": [
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "liste d'attente · rang {0}",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "LISTE D'ATTENTE · {0}",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -48501,25 +48575,13 @@
    ]
   },
   {
-   "fr": "MONDE · Le raid commence : {0} groupe de {1} joueurs (le vôtre : vous et {2} joueurs simulés ; test local)",
+   "fr": "MONDE · Le raid commence : 7 groupes de {0} places, un par branche, joués par des joueurs simulés (test local)",
    "where": [
     "game/raid/RaidSimulation.cpp"
    ]
   },
   {
-   "fr": "MONDE · Le raid commence : {0} groupe de {1} joueurs simulés (test local)",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
-   ]
-  },
-  {
-   "fr": "MONDE · Le raid commence : {0} groupes de {1} joueurs (le vôtre : vous et {2} joueurs simulés ; test local)",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
-   ]
-  },
-  {
-   "fr": "MONDE · Le raid commence : {0} groupes de {1} joueurs simulés (test local)",
+   "fr": "MONDE · Le raid commence : {0} joueurs en 7 groupes de {1}, un par branche (le vôtre : vous et des joueurs simulés ; test local)",
    "where": [
     "game/raid/RaidSimulation.cpp"
    ]
@@ -48538,6 +48600,12 @@
   },
   {
    "fr": "MONDE · {0} est tombé — {1} détruit ({2} / 7 Gigaboss)",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "MONDE · {0} min pour abattre le Cœur d'Asterion : passé ce temps, le raid est perdu",
    "where": [
     "game/raid/RaidSimulation.cpp"
    ]
@@ -61403,13 +61471,7 @@
    ]
   },
   {
-   "fr": "Raid complet simulé : {0} groupe de {1} places · vous jouez dans le Groupe {2} à la place d'un joueur simulé.",
-   "where": [
-    "ui/screens/RaidTestInviteScene.cpp"
-   ]
-  },
-  {
-   "fr": "Raid complet simulé : {0} groupes de {1} places · vous jouez dans le Groupe {2} à la place d'un joueur simulé.",
+   "fr": "Raid complet simulé : {0} joueurs en 7 groupes · vous jouez dans le Groupe {1} à la place d'un joueur simulé.",
    "where": [
     "ui/screens/RaidTestInviteScene.cpp"
    ]
@@ -61713,6 +61775,12 @@
   },
   {
    "fr": "Raids : sur la carte du titan (Contributions), la partie où vous êtes porte « Vous ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : toujours sept groupes, un par branche (14 à 56 joueurs, liste d'attente au-delà) ; les paires se font par un même groupe à 3 s près ; un groupe ne quitte sa branche que pour remplacer un groupe éliminé ; défaite au bout de 60 min ou quand tous les groupes sont éliminés.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -63363,7 +63431,8 @@
   {
    "fr": "Regarder (groupe éliminé)",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -63493,13 +63562,13 @@
    ]
   },
   {
-   "fr": "Rejoindre là où le clan a besoin de moi",
+   "fr": "Rejoindre mon groupe",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
-   "fr": "Rejoindre ma place · {0}",
+   "fr": "Rejoindre mon groupe · {0}",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
    ]
@@ -63802,6 +63871,12 @@
    ]
   },
   {
+   "fr": "Remplacement du groupe éliminé…",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Remplacement en cours…",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -63847,6 +63922,12 @@
    "fr": "Remplacer : les données du compte cible sont remplacées",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Remplacer le groupe éliminé ici (tout votre groupe y va)",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -64512,12 +64593,6 @@
    ]
   },
   {
-   "fr": "Reprendre cette zone (un groupe y a été éliminé)",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
    "fr": "Reprendre l'épaule : vaincre la garde de l'arène",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
@@ -64557,12 +64632,6 @@
    "fr": "Reprendre le diaphragme : vaincre sa garde",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
-   ]
-  },
-  {
-   "fr": "Reprise de la zone…",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -69229,6 +69298,18 @@
    ]
   },
   {
+   "fr": "Sept groupes, un par branche du titan (le groupe 1 au Crâne, le 2 au Bras gauche… le 7 à la Jambe droite), de 2 à 8 joueurs, aussi égaux que possible, dans l'ordre des inscriptions : le chef de raid mène le groupe 1. Au moins 14 inscrits pour commencer, 56 en jeu au plus : les suivants attendent, et le premier d'entre eux prend la place de qui se désiste avant le début. Un groupe ne joue que sa branche ; il n'en part que pour remplacer un groupe éliminé.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sept groupes, un par branche du titan : « Rejoindre mon groupe » vous mène dans le vôtre.",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Sept zones : se déplacer, sauter (plus haut en maintenant, double saut), rebondir sur les champignons et attraper les éclats en l'air, attaquer des petites bêtes endormies qui ne ripostent pas, prendre la Ruée (le Dash) sur une tablette et traverser un ruisseau sur des bulles porteuses, repartir d'une lanterne, puis affronter Mycélia la Câline : le boss le plus facile du jeu selon la note de difficulté des boss, ralenti, aux attaques longuement annoncées. Aucune chute n'est mortelle : Bip ramène Nova sur la terre ferme.",
    "where": [
     "data/news/changelog.json"
@@ -69931,6 +70012,12 @@
    ]
   },
   {
+   "fr": "Seul un groupe en attente (le Gigaboss de sa branche est tombé) remplace un groupe éliminé : finissez d'abord votre branche.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
    "fr": "Seul un événement mondial publié, non annulé, a des sessions de rattrapage.",
    "where": [
     "server/src/raidWorld.ts"
@@ -69968,7 +70055,7 @@
    ]
   },
   {
-   "fr": "Seuls le chef, les officiers et le chef de raid du clan déplacent les joueurs ; chacun choisit sa branche sur la carte du titan.",
+   "fr": "Seuls le chef, les officiers et le chef de raid du clan déplacent les joueurs d'un groupe à l'autre ; chaque groupe joue sa branche.",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
    ]
@@ -77325,13 +77412,13 @@
    ]
   },
   {
-   "fr": "Trancher le nerf droit (un autre groupe)",
+   "fr": "Trancher le nerf droit (en même temps que le gauche)",
    "where": [
     "data/raids/asterion/crane/branch.json"
    ]
   },
   {
-   "fr": "Trancher le nerf gauche (un groupe)",
+   "fr": "Trancher le nerf gauche (en même temps que le droit)",
    "where": [
     "data/raids/asterion/crane/branch.json"
    ]
@@ -77751,6 +77838,12 @@
    "fr": "Trop loin pour l'Onde ! Maintenez Attaque pour charger, relâchez pour toucher le récepteur.",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Trop tard : {0} se referme. Les deux ensemble, à 3 s près.",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -78401,15 +78494,9 @@
    ]
   },
   {
-   "fr": "Un autre groupe doit accomplir celui-ci : votre groupe a déjà fait l'autre.",
+   "fr": "Un autre groupe de votre clan reprend déjà cette zone.",
    "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
-   "fr": "un autre groupe doit accomplir l'autre objectif de la paire",
-   "where": [
-    "server/src/raidZones.ts"
+    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -78837,6 +78924,18 @@
    "fr": "Un groupe compte au plus {0} membres.",
    "where": [
     "server/src/social.ts"
+   ]
+  },
+  {
+   "fr": "Un groupe de votre clan joue déjà cette branche : jamais deux groupes dans une branche.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
+   "fr": "Un groupe garde au moins {0} joueurs : celui de ce joueur n'en a pas assez pour qu'il parte.",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -79410,7 +79509,7 @@
    ]
   },
   {
-   "fr": "Une articulation de basalte où le titan fond le métal des mondes avalés. Deux soufflets attisent la forge : il faut deux groupes, un par soufflet. La coulée de magma revient sans cesse.",
+   "fr": "Une articulation de basalte où le titan fond le métal des mondes avalés. Deux soufflets attisent la forge : détruisez-les ensemble, à 3 s près, le groupe partagé en deux. La coulée de magma revient sans cesse.",
    "where": [
     "data/raids/asterion/bras_droit/zone_4.json"
    ]
@@ -82138,7 +82237,15 @@
    "fr": "victoire",
    "where": [
     "game/achievements/AchievementSuggestions.cpp",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Victoire : Asterion est tombé",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -83104,12 +83211,6 @@
    ]
   },
   {
-   "fr": "Votre clan a déjà toutes ses instances pleines sur cette branche.",
-   "where": [
-    "server/src/raidMap.ts"
-   ]
-  },
-  {
    "fr": "Votre clan a déjà {0} inscrits : c'est complet.",
    "where": [
     "server/src/raids.ts"
@@ -83137,6 +83238,18 @@
    "fr": "Votre clan est créé : vous en êtes le chef.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan n'a que {0} inscrit(s) : il en faut au moins 14 pour former les sept groupes.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre clan n'a que {0} inscrit(s) : il en faut au moins {1} pour commencer (sept groupes de 2 à 8 joueurs, un par branche du titan).",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -83286,15 +83399,15 @@
    ]
   },
   {
-   "fr": "Votre groupe : vous + {0} joueur simulé · autres groupes : {1} joueurs simulés",
+   "fr": "Votre groupe : {0} · {1}. Sept groupes, un par branche, de 2 à 8 joueurs.",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
-   "fr": "Votre groupe : vous + {0} joueurs simulés · autres groupes : {1} joueurs simulés",
+   "fr": "Votre groupe a été éliminé : vous ne pouvez plus que regarder les autres groupes.",
    "where": [
-    "ui/screens/AdminRaids.cpp"
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -83304,9 +83417,45 @@
    ]
   },
   {
+   "fr": "Votre groupe a été éliminé : vous regardez les autres groupes.",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre groupe attend dans sa branche (son Gigaboss est tombé) : il n'en part que pour remplacer un groupe éliminé.",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre groupe est dans : {0}.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre groupe joue la branche {0} : chaque groupe joue la sienne, jamais une autre.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Votre groupe joue une autre branche : un groupe ne joue que la sienne, et n'en part que pour remplacer un groupe éliminé.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre groupe joue une autre branche : un groupe ne joue que la sienne.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre groupe ne joue plus dans cette instance.",
+   "where": [
+    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -83446,18 +83595,6 @@
    "fr": "Votre PB",
    "where": [
     "game/tas/TasTraining.cpp"
-   ]
-  },
-  {
-   "fr": "Votre place : {0} · {1}. Chaque groupe compte 8 joueurs au plus.",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
-   "fr": "Votre place est sur une autre branche : rejoindre celle-ci vous y place.",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -83706,6 +83843,12 @@
    "fr": "vous jouez",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous jouez dans le groupe de votre clan sur cette branche ; il entre par {0}.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -84235,6 +84378,12 @@
    ]
   },
   {
+   "fr": "Vous êtes sur la liste d'attente de votre clan (rang {0}) : seuls les {1} premiers inscrits jouent, sept groupes de huit au plus.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "Vous êtes {0} de ce projet : vous voyez les modifications des éditeurs au fur et à mesure.",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -84699,6 +84848,12 @@
    "fr": "Zone 5 — Le Cœur. L'Astrarque attend.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "zone : {0}",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -85534,7 +85689,7 @@
    ]
   },
   {
-   "fr": "{0} / 8 placés · {1} en jeu · zone : {2}",
+   "fr": "{0} / 8 placés · {1} en jeu",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
    ]
@@ -85577,6 +85732,12 @@
   },
   {
    "fr": "{0} / {1} inscrits",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} inscrits : il en faut au moins 14 pour que votre clan commence (sept groupes de 2 à 8 joueurs).",
    "where": [
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -85820,6 +85981,12 @@
    "fr": "{0} : joueurs ensemble sur la plaque",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : l'autre moitié maintenant, à 3 s près !",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -86072,6 +86239,12 @@
    "fr": "{0} : zone {1} « {2} » inatteignable même tout accompli",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : {1} / {2} inscrits",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -87002,18 +87175,6 @@
    "fr": "{0} devant B",
    "where": [
     "ui/screens/ReplayGapView.cpp"
-   ]
-  },
-  {
-   "fr": "{0} double la branche {1}",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
-   ]
-  },
-  {
-   "fr": "{0} double la branche {1} : un groupe seul n'en atteint jamais le Gigaboss",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -88114,6 +88275,12 @@
    ]
   },
   {
+   "fr": "{0} min sur {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} min {1}",
    "where": [
     "ui/screens/AdminTas.cpp"
@@ -88547,6 +88714,13 @@
    ]
   },
   {
+   "fr": "{0} ou {1}",
+   "where": [
+    "game/raid/RaidSimulation.cpp",
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} participe au raid commun {1} : inscrivez-vous",
    "where": [
     "server/src/notifications.ts"
@@ -88689,18 +88863,6 @@
    "fr": "{0} px/s · × {1} en poursuite",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
-   ]
-  },
-  {
-   "fr": "{0} quitte sa branche pour la branche {1} : un groupe seul n'en atteint jamais le Gigaboss",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
-   ]
-  },
-  {
-   "fr": "{0} quitte sa branche pour la branche {1}, qu'aucun groupe ne joue",
-   "where": [
-    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -89526,6 +89688,12 @@
    ]
   },
   {
+   "fr": "{0} · classement final",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · classement indisponible",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -89583,6 +89751,24 @@
    "fr": "{0} · exact",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Gigaboss tombés : {1} / 7 · Cœur : fermé · Reliques : {2} / 7 · coût d'un pas du raid : {3},{4} ms",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Gigaboss tombés : {1} / 7 · Cœur : ouvert, {2} % ôtés · Reliques : {3} / 7 · coût d'un pas du raid : {4},{5} ms",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Gigaboss tombés : {1} / 7 · Cœur : tombé · Reliques : {2} / 7 · coût d'un pas du raid : {3},{4} ms",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -89944,6 +90130,12 @@
    "fr": "{0} · {1} : {2} groupe sur {3}, un renfort est attendu",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} min",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -92624,6 +92816,12 @@
    ]
   },
   {
+   "fr": "éliminé : ses joueurs regardent",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "éliminé ici",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -92830,13 +93028,7 @@
    ]
   },
   {
-   "fr": "Équilibrer les groupes : {0}",
-   "where": [
-    "ui/screens/RaidRosterScene.cpp"
-   ]
-  },
-  {
-   "fr": "Équilibrer une branche (choisissez un joueur placé)",
+   "fr": "Équilibrer les sept groupes",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
    ]

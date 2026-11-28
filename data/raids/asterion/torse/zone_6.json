@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_to_6",
  "name": "Asterion · Torse · Côtes basses",
- "description": "Les côtes basses, cuirassées de deux plaques. Deux groupes, une plaque chacun ; des parasites rampent entre les os.",
+ "description": "Les côtes basses, cuirassées de deux plaques à briser ensemble, à 3 s près : le groupe se partage ; des parasites rampent entre les os.",
  "planet": "noyau",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -558,7 +558,7 @@
     24.0
    ],
    "props": {
-    "text": "Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+    "text": "Deux plaques à briser ensemble : le groupe se partage, une plaque chacun, à 3 s près (un pouvoir de tir).",
     "auto": true
    }
   },

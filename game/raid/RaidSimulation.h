@@ -5,16 +5,18 @@
 // branch's armory first), then the Cœur d'Asterion with every group — with the rules of a real raid and
 // what the server would do between the instances, here in the same program, step by step:
 //
-// * groups: N instances (raid::TestSession), each of `bots` simulated players plus one free place (seat
-//   0) the administrator may take; group k (k < 7) starts in branch k; the groups after the seventh double
-//   first the branches one group alone can never take to their gigaboss (the Torse: its 4 plates are two
-//   pairs, and an instance never does both objectives of a pair), then the others in the titan's order;
-// * §40 (the clan's rules): a group whose branch's gigaboss fell STAYS there, « en attente »; it never goes
-//   to help a group that is only slow or weakened. A waiting group leaves its branch only (1) to REPLACE a
-//   group wiped elsewhere: it takes the zone back where that group fell (the zone of most of its players),
-//   with the branch's validated state (as the server's retake, raidWipe.ts: start_zone), or (2) to take a
-//   branch no group plays (fewer groups than branches), or (3) to be the second group a branch cannot reach
-//   its gigaboss without while it has only one;
+// * groups (§41, titan 16): ALWAYS seven instances (raid::TestSession), group k in branch k, never two in a
+//   branch; the raid's 14 to 56 players spread over them as evenly as possible (2 to 8 each, seat 0 the free
+//   place the administrator may take);
+// * §41 (the clan's rules): a group whose branch's gigaboss fell STAYS there, « en attente »; it never goes to
+//   help a group that is only slow or weakened. A waiting group leaves its branch only to REPLACE a group wiped
+//   elsewhere: it takes the zone back where that group fell (the zone of most of its players), with the branch's
+//   validated state (as the server's retake, raidWipe.ts: start_zone). Nobody waiting: the zone stays to take.
+//   A pair of objectives (each branch's zone 4, the Torse's plates) is done by the group itself, split in two
+//   (RaidRun: both halves within 3 s);
+// * the end: the heart's fall is the victory; the raid lasts `minutes` (60, the standard raid): at its end with the
+//   heart standing, or at once when every group is wiped, it is lost (« Défaite : temps écoulé », « Défaite : tous
+//   les groupes éliminés »);
 // * the branch's state: what each group did, accepted at once for every group of the branch (as the
 //   server after the consensus), and the titan's links (an objective of one branch acting on another)
 //   computed from it like server/src/raidMap.ts statesOf;
@@ -44,10 +46,11 @@
 namespace cosmic::raid {
 
 struct SimSetup {
-    int groups = 7;                      // 1 to 14
-    int bots = 4;                        // per group, the administrator not counted (1 to 7)
-    /// 2.77.3 (« Joueurs par groupe : N »): the administrator's seat of a group they are not in is played by a
-    /// simulated player too: every group has bots + 1 players (theirs: them + bots). Off: that seat stays free.
+    /// §41 (titan 16): the raid's players (14 to 56, the administrator's place counted), spread over ALWAYS seven groups
+    /// (one per branch, 2 to 8 each, as even as possible).
+    int players = 35;
+    /// 2.77.3 (« Joueurs par groupe »): the administrator's seat of a group they are not in is played by a
+    /// simulated player too. Off: that seat stays free.
     bool fullGroups = false;
     bool invincible = true;              // the administrator's seat
     bool botsInvincible = false;         // the simulated players too (a test only)
@@ -65,6 +68,15 @@ struct SimSetup {
     /// 2.79: the test's two rescues (a simulated player put on its mechanism or further on its path); off for the
     /// measures (docs/RAIDS.md §28: only their inputs).
     bool rescues = true;
+    /// §41: how long the raid lasts (the standard raid: 60 min): the heart still standing then, the raid is lost. 0: no end
+    /// (the measures that go on).
+    int minutes = 60;
+
+    static constexpr int kGroups = 7;
+    static constexpr int kMinPlayers = 14;
+    static constexpr int kMaxPlayers = 56;
+    /// §41: the players of group k (0-based): as even as possible (sizes differ by one at most).
+    static int groupSize(int players, int k) { return players / kGroups + (k < players % kGroups ? 1 : 0); }
 };
 
 class RaidSimulation {
@@ -80,6 +92,7 @@ public:
         bool waiting = false;
         uint32_t waitingSince = 0;  // the raid's step it began to wait at
         int relieves = 0;         // §40: the id of the wiped group it replaced (0: none)
+        int seats = 1;            // §41: its places (2 to 8: the administrator's free place and the simulated players)
         int moves = 0;            // branches it went to after the first
         int heartBase = -1;       // tests started at a later phase: its part of the heart's health at that start (no damage)
         uint32_t formed = 0;      // the raid's step it was formed at
@@ -145,11 +158,14 @@ public:
         uint32_t tick = 0;
     };
     const std::vector<Vacancy>& vacancies() const { return vacancies_; }
-    /// §40: one group alone can never take this branch to its gigaboss (a pair of objectives stands on its way:
-    /// the Torse's plates); the groups after the seventh double it first.
-    bool needsTwoGroups(int branch) const;
-    /// The branch where group k (0-based) starts.
-    int startBranch(int k) const;
+    /// The branch where group k (0-based) starts (§41: branch k).
+    int startBranch(int k) const { return k; }
+    /// §41: how the raid ends (the heart's fall, the time over, every group wiped), and the step it did.
+    enum class Outcome : uint8_t { Running, Victory, DefeatTime, DefeatWiped };
+    Outcome outcome() const { return outcome_; }
+    uint32_t endedAt() const { return endedAt_; }
+    /// The step the raid ends at with the heart standing (0: none).
+    uint32_t deadline() const { return setup_.minutes > 0 ? static_cast<uint32_t>(setup_.minutes) * 60u * static_cast<uint32_t>(kSimHz) : 0u; }
     PartState partState(int branch) const;
     const std::vector<WorldEvent>& feed() const { return feed_; }
 
@@ -173,18 +189,14 @@ public:
     uint64_t hash() const;
 
 private:
-    Group& form(int branch, int zone, const std::string& name, uint32_t extraMask);
+    Group& form(int branch, int zone, const std::string& name, uint32_t extraMask, int seats);
     void aggregate();
     void moveGroup(Group& g, int branch, int zone);
-    /// §40: the waiting groups sent where the rules allow (a wiped group replaced, a branch nobody plays, the
-    /// second group of a two-group branch).
+    /// §41: the waiting groups sent where the rules allow: to replace a wiped group, nothing else.
     void dispatch();
     Group* longestWaiting();
     int startZone(int branch) const;
     int groupsIn(int branch) const;  // not wiped
-    /// §40: the lair of `branch` reachable with what it validated and what a group (its objectives `mine`) can still do
-    /// there alone.
-    bool reachesAlone(int branch, uint32_t mine) const;
     int realPart(Group& g, int own) const;
     void event(std::string text, WorldEvent::Kind kind);
 
@@ -199,7 +211,8 @@ private:
     std::vector<uint8_t> visited_;
     std::map<std::pair<int, int>, std::string> retake_;  // (branch, zone) → the group wiped there
     std::vector<Vacancy> vacancies_;       // §40
-    std::vector<uint8_t> needsTwo_;        // §40: per branch
+    Outcome outcome_ = Outcome::Running;  // §41
+    uint32_t endedAt_ = 0;
     bool heartOpen_ = false, heartFallen_ = false;
     int heartTaken_ = 0;
     int viewed_ = 0;

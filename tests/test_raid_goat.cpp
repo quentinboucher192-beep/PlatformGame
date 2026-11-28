@@ -741,8 +741,7 @@ TEST_CASE("raid GOAT (2.79): the thoughts' bubbles — measured, never over one 
 TEST_CASE("raid GOAT (2.79): « Simuler un raid complet » without any invincibility — 7 groups of 7 simulated players (Expert) to the Cœur's fall, from the lairs") {
     Svc s;
     raid::SimSetup setup;
-    setup.groups = 7;
-    setup.bots = 7;
+    setup.players = 56;  // §41: seven groups of 8 (a free place and 7 simulated players each)
     setup.lairs = true;  // reduced: each branch at its lair (the objectives before it done), the real fights from their first phase
     setup.startPhase = 1;
     setup.invincible = false;

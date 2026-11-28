@@ -324,7 +324,8 @@ describe("2.80: the relay of a test", () => {
         const a = await admin("TestAdmin");
         const p = await registerPlayer("Joueuse");
         await online(p);
-        const test = await createTest(a, "raid", { skill: 1, invincible: false, bots_invincible: false, groups: 3, bots: 2, full_groups: true });
+        // §41: 21 players over the seven groups of a real raid (3 each).
+        const test = await createTest(a, "raid", { skill: 1, invincible: false, bots_invincible: false, players: 21, full_groups: true });
         const ga = await adminStarts(a, test);
         await until(() => ga.tables().length === 1);
         expect(ga.tables()[0]!.seats[0]).toEqual([0, 0, 0]);

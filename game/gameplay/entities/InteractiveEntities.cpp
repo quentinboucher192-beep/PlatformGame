@@ -281,6 +281,16 @@ void ReceptorEntity::fixedUpdate(GameWorld& w, float dt) {
     }
 }
 
+bool ReceptorEntity::handleAction(GameWorld& /*w*/, const std::string& action, const Json& /*params*/) {
+    if (action != "reset") return false;
+    if (on_) {
+        on_ = false;
+        timer_ = 0.0f;
+        sprite_.anim.play("off", true);
+    }
+    return true;
+}
+
 Json ReceptorEntity::keepState(GameWorld&) const {
     return on_ && obj_.prop<float>("duration", 0.0f) <= 0.0f ? Json{{"on", true}} : Json(nullptr);
 }

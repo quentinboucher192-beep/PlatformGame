@@ -13,6 +13,7 @@ import { HEART_OBJECTIVE, checkHeartFall, grantHeart, grantHeartTop, heartPackFo
 import { GIGABOSS_BADGES, RAID_ACHIEVEMENTS, RAID_REWARDS } from "../src/raidRewards";
 import { aggregate, checkMap } from "../src/raidWorld";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -55,6 +56,7 @@ async function worldEvent(clans: { id: string; players: TestPlayer[] }[]): Promi
                 .bind(id, p.id, c.id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
                 .run();
     }
+    for (const c of clans) await raidGroups(id, c.id, { crane: c.players }); // §41: the clan's seven groups (14 registered at least)
     return id;
 }
 
@@ -191,7 +193,7 @@ describe("raids phase 6: the Cœur d'Asterion", () => {
         const journal = await env.DB.prepare("SELECT COUNT(*) AS n FROM raid_world_journal WHERE event_id = ?1 AND code = 'heart_fallen'").bind(ev).first<{ n: number }>();
         expect(journal!.n).toBe(1);
         const told = await env.DB.prepare("SELECT COUNT(*) AS n FROM notifications WHERE group_key = ?1").bind(`raid:heart_fallen:${ev}`).first<{ n: number }>();
-        expect(told!.n).toBe(4);
+        expect(told!.n).toBe(28); // §41: every registered player of both clans (14 each)
         // Every relay now gives the fall (phase 5) and the relics; the world's outcome needs it.
         const pack = await heartPackFor(env.DB, ev, x.inst);
         expect((pack >>> 16) & 0xff).toBe(5);
