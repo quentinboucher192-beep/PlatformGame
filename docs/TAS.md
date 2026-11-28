@@ -635,7 +635,7 @@ change pas, et le gagnant d'une section (classé par la fin mesurée) ne préfé
 | Option | Rôle |
 |---|---|
 | `--realign <replay>` | les premières sections du replay gardées (jusqu'à chacune de ses sections, ou `--realign-through <n>`), la suite réalignée sur la meilleure course (`--seed-replay`), le replay lui-même et chaque `--realign-source <replay>` ; une course plus rapide est vérifiée et écrite ; `--realign-out <fichier>` : la plus rapide trouvée, plus rapide ou non ; sans `--until-stopped`, rien d'autre |
-| `--phase` | au début de chaque tour dont les sources ont changé, chaque avance d'une source sur une autre à la fin d'une section (0,1 s au moins, les plus grandes d'abord) réalignée sur toutes ; après chaque tour, ses arrivées en avance |
+| `--phase` | au début de chaque tour dont les sources ont changé, chaque préfixe d'une source qui, suivi des meilleurs segments des autres, pourrait battre la plus rapide (0,1 s au moins ; les plus prometteurs d'abord), réaligné sur toutes, une avance par fil (`--threads`) ; après chaque tour, ses arrivées en avance |
 | `--phase-source <replay>` | (plusieurs) une course de ce niveau relue **à chaque tour** (le meilleur fichier d'un autre entraînement) : une source du réalignement et un guide du tour ; implique `--phase` |
 | `--phase-budget <minutes>` | le temps d'un réalignement (3) |
 | `--phase-wait <s>`, `--phase-keep <n>` | l'attente la plus longue (8 s) ; les arrivées gardées par section (3) |
