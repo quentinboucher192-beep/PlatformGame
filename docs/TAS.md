@@ -605,7 +605,7 @@ change pas, et le gagnant d'une section (classé par la fin mesurée) ne préfé
   que cette source ; puis un **ensemble de Pareto** : les arrivées les plus tôt (un cœur perdu compte
   0,25 s), et une plus tardive seulement si elle garde plus d'énergie ou de santé que toutes celles
   déjà gardées (6 au plus). Mesuré : la section 4 de « fresh » derrière le CP3 de « main » arrive
-  1,5 s plus tôt, mais avec moins d'énergie, et le boss ne se fait plus : sans ces deux règles, la
+  1,5 s plus tôt, mais le boss de « main » ne se refait plus derrière elle : sans la suite pure, la
   seule suite qui finissait était perdue.
 * **Pareto par phase** : une arrivée plus tôt qui attend atteint, debout, toutes les phases plus
   tardives du monde périodique ; les attentes jusqu'à l'avance couvrent donc les arrivées plus
@@ -622,10 +622,13 @@ change pas, et le gagnant d'une section (classé par la fin mesurée) ne préfé
   course est en avance d'au moins 0,25 s sur la meilleure course (ou un guide) au début d'une section,
   les images de cette source pour la section sont aussi offertes au faisceau **après l'attente qui
   les mène le plus loin sur leur chemin** (`Worker::phaseWait` : k de 0 à l'avance + 0,5 s, 8 s au
-  plus, toutes les 4 images ; la première qui arrive, sinon celle qui va le plus loin, 1 s au moins) :
+  plus, toutes les 4 images ; deux pistes : la plus courte attente qui arrive, si elle garde au moins
+  0,25 s d'avance, et celle qui va le plus loin pour le temps attendu — images sur le chemin moins
+  images d'attente, une seconde au moins — : passé une porte, jusqu'au prochain élément hors de phase) :
   une piste comme les autres (place gardée dans le faisceau, qui en part) ; son arrivée est classée,
   raccordée et vérifiée comme toutes (source `phase`). Le journal le dit (« phase : la course en
-  avance de 6,20 s sur un guide ; ses images de la section 3 après 0,133 s d'attente »).
+  avance de 6,20 s sur un guide ; ses images de la section 3 : […] le plus loin sur son chemin après
+  0,133 s d'attente »).
 * **Les arrivées en avance gardées** (`SearchOutcome::early`) : à la fin de chaque section, les
   arrivées au moins 0,25 s avant la meilleure course qui ne se raccordent pas (les deux plus tôt par
   section, aussi saines ou plus) ; un entraînement avec `--phase` les réaligne après le tour.
@@ -670,8 +673,8 @@ le préfixe seulement), depuis **sa propre meilleure course** :
   commence par réaligner le préfixe sur toutes les sources (sa meilleure course, la meilleure course,
   les guides, les `--phase-source`), puis cherche sa fenêtre ; sans course encore, il cherche depuis
   la fin du préfixe ;
-* **le retour** : une course de la branche plus rapide que la meilleure course (dès le départ aussi) **est** la meilleure
-  course (vérifiée et écrite comme d'habitude) ; dans les tours de la meilleure course, la meilleure
+* **le retour** : une course de la branche plus rapide que la meilleure course (dès le départ aussi)
+  **est** la meilleure course (vérifiée et écrite comme d'habitude) ; dans les tours de la meilleure course, la meilleure
   course de la branche est un guide (ses sections offertes, réalignées, raccordées, assemblées) et
   une source du réalignement de phase.
 
@@ -682,8 +685,8 @@ faisceau sur le boss arrive au CP6 en **69,025 s** (6,46 s de combat ; « fresh 
 piste de phase de la section 7 de « main » (0,167 s d'attente : l'ascenseur o364, période 6,12 s)
 finit : **1:12.367**, vérifiée par la lecture normale des replays et écrite (branche et meilleure
 course), 1,2 min après le départ — plus rapide que les deux entraînements de la nuit (1:12.958 et
-1:18.767), là où ni le réalignement seul (le combat ne se rejoue pas) ni « fresh » seul (ses fenêtres
-sur le boss partent de sa propre course lente) n'y arrivaient.
+1:18.767), là où ni le réalignement seul (le combat ne se rejoue pas) ni « fresh » seul (sans la course
+de « main » pour guide) n'y arrivaient.
 Puis une branche engagée sur les 2 premières sections de cette course (CP2 à 23,925 s ; tours de
 8 min, sections 3 à 7) : 1:12.283 au troisième tour (sa fenêtre 6 à 7 : une meilleure sortie), puis
 1:12.267 par l'affinage ; ses arrivées en avance aux CP3 (0,25 s), CP5 (0,73 s) et CP6 (0,52 s)
