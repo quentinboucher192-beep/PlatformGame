@@ -5,10 +5,12 @@
 // blows (its fist, its quakes, its meteors, its tide of magma, its eruptions) are read as they come.
 
 #include <algorithm>
+#include <cmath>
 
 #include "game/enemies/Enemy.h"
 #include "game/enemies/EnemyDefinition.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/powers/Power.h"
 #include "game/raid/Gigaboss.h"
 #include "game/raid/RaidRun.h"
 #include "game/raid/bots/BossTactic.h"
@@ -29,6 +31,17 @@ float tideHeight(const Enemy& b) {
     return h;
 }
 
+/// 2.98: whether `p`'s shield is up when a blow lands `in` steps from now (raised then, or still up from before).
+bool shieldFor(const Player& p, int in) {
+    for (const auto& pw : p.powers()) {
+        if (pw->id() != "shield") continue;
+        const float at = static_cast<float>(in) / static_cast<float>(kSimHz);
+        if (p.shieldActive()) return pw->def().duration - (pw->def().cooldown - pw->cooldownRemaining()) > at + 0.3f;
+        return pw->cooldownRemaining() <= std::max(0.0f, at - 0.15f) && p.energy >= pw->activationCost(p) + 1.0f;
+    }
+    return false;
+}
+
 class PyroclastTactic final : public BossTactic {
 public:
     const char* name() const override { return "Pyroclast"; }
@@ -45,6 +58,27 @@ public:
         const Gigaboss& gb = run.gigaboss();
         const Enemy* b = gb.boss(w);
         if (!b) return;
+        // 2.98 (fight plan): its vents' players stood under every fist and jet on their vent (its shield), even when it was
+        // not back yet (5 s): a fist every 5 s and a jet every 6 s, one of two went through (the first cause of their deaths,
+        // its jet throwing them off their tower). A blow on a player on a vent that its shield will not stop is left (a step
+        // along its ledge, back once it has struck: a closed vent loses nothing, an open one a little of its hold).
+        if (gb.stage() == Gigaboss::Stage::Carapace) {
+            const size_t fists = gb.fists().size();
+            for (int k = 0; k < w.teamSize() && k < 8; ++k) {
+                if (w.member(k).presence != GameWorld::Presence::Playing) continue;
+                const Player& p = w.playerAt(k);
+                bool onVent = false;
+                for (const auto& vt : gb.vents()) onVent = onVent || vt.area.expanded(12.0f).intersects(p.box);
+                if (!onVent) continue;
+                for (size_t d = 0; d < v.dangers.size(); ++d) {
+                    Danger& g = v.dangers[d];
+                    if (g.kind != Danger::Kind::Area || g.attack || g.body || g.shot || g.unblockable || !g.area.intersects(p.box.expanded(5.0f))) continue;
+                    bool jet = false;
+                    for (const auto& vt : gb.vents()) jet = jet || std::fabs(g.area.bottom() - vt.area.bottom()) < 0.5f;
+                    if ((d < fists || jet) && !shieldFor(p, g.in)) g.unblockable = true;
+                }
+            }
+        }
         // 2.98 (fight plan): its tide of magma (its last phase: 150 px over the whole arena's floor for 6 s, every 10 s or so)
         // caught the group on the floor — they climbed as it rose, crowded at the edges of the few ledges above it, were thrown
         // back up into it and fell back again (most of the deaths of the measures). From that phase on, everyone fires from
