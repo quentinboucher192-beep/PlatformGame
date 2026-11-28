@@ -3804,6 +3804,51 @@ attend, aucun groupe de nulle part ; avec un groupe en attente : il remplace l'�
 Cœur à trois instances : la somme des parts, la même vie et la même phase partout), `tests/test_raid_mechanisms.cpp` (la ligne
 des groupes d'une bulle : « Groupe 1 en attente », « Groupes 2, 8 (8 en attente) », « · Vous »).
 
+### Pyroclast (2.98) : joueurs simulés
+
+Le but donné : 8 joueurs simulés Experts battent Pyroclast (Bras droit), sans invincibilité ni sauvetage, difficulté 3 / 5,
+4 départs sur 5 en 15 min. **Il n'est pas atteint.** Le banc (`COSMIC_GOAT_BENCH=1 COSMIC_GOAT_PARTS=bras_droit`, départs 1 à
+10) et ses sondes (`COSMIC_GOAT_DEATHS`, `_HIST`, `_TRACE`, `_HIT`, `_SEAT`) montrent que les dégâts suffisent (la phase 1
+tombe en 120 à 180 s, une carapace éclatée lui ôte 20 à 30 %) : **ce sont les morts** qui éliminent le groupe, en phase 2
+(les joueurs des évents, à 35 à 47 % de sa vie) ou en phase 3 (à moins de 25 %).
+
+* **Sa marée de magma** (phase 3 : 150 px au-dessus de tout le sol pendant 6,5 s) était la première cause de morts de cette
+  phase : le groupe se battait au sol, montait quand elle s'élevait, se pressait au bord des quelques corniches au-dessus
+  d'elle, y était rejeté. Maintenant, dès la phase où il l'a, tout le groupe tire d'au-dessus de sa hauteur (`Plan::elevate`,
+  comme contre l'acide de Voidworm), sa marée est lue dès qu'il l'arme (0,9 s plus tôt) et une âme sous sa hauteur n'est
+  relevée que dans les 5 s qui suivent sa descente (`Plan::reviveWindow`).
+* **L'antichambre** : dès la phase 2, le basalte sous ses tours cède au magma ; un joueur à court de cœurs traversait la
+  fosse pour l'orbe de vie de l'antichambre et y tombait. Hors de l'arène n'est plus un endroit où aller.
+* **Moins de joueurs libres que d'évents** (un groupe de 2 ou 4, ou 8 avec des âmes à terre) : un évent fermé ne garde plus
+  son joueur (il reste fermé 15 s, 20 s à deux) ; avant, chacun restait sur le sien, le dernier ne se fermait jamais.
+
+| 8 joueurs, départs 1 à 5 | vaincus | vie restante (moyenne) | temps de chaque départ |
+|---|---|---|---|
+| avant | 1 / 5 | 18 % (40 · 16 · 12 · 20 · 0 %) | 391 / 359 / 523 / 495 / **541** s |
+| après | 1 / 5 | 14 % (36 · 0 · 10 · 11 · 14 %) | 392 / **409** / 431 / 533 / 490 s |
+
+Sur les départs 1 à 10 : avant **1 / 10**, 25 % de vie restante en moyenne ; après **2 / 10** (départs 2 et 8, en 409 et
+380 s), 16 % ; six départs finissent en phase 3 entre 9 et 23 %, deux en phase 2 (36 et 46 %). Les groupes plus petits (départs 1 à 5) : à 4 joueurs 0 / 5
+avant (52 % de vie restante) comme après (48 %), éliminés en phase 2 ; à 2 joueurs 0 / 5 (66 % avant, 64 % après) : leur phase 1
+tombe en 110 s (sa vie est faite pour eux), mais deux joueurs ne ferment ses trois évents qu'une fois sur cinq départs et
+meurent sur eux.
+
+Essayés et retirés (départs 1 à 5 ou 1 à 10, sans gain ou pire) : la sortie des coups par la navigation (`Plan::escape` : 1 / 5,
+trois groupes éliminés en phase 2), un évent fermé laissé libre pour tous les groupes (`Plan::freeOnClosed` : 0 / 5), chaque
+évent à son joueur pour toute la phase (`Plan::fixedHolders` : 0 / 5), le jet d'un évent quitté le long de sa corniche puis
+l'évent repris (0 / 5 : plus de groupes bloqués en phase 2), un coup sur un joueur d'évent quitté seulement quand son bouclier
+ne l'arrêtera pas (2 / 10, comme sans), la marée de magma retirée de ce qu'évitent les mouvements de la navigation (0 / 10 : ils y sautaient en esquivant).
+
+**Ce qui bloque encore**, mesuré : les poings de magma (25 coups par combat, les joueurs des évents restent dessous sous leur
+bouclier, qui ne revient qu'en 5 s) et les jets des évents (11 par combat) ; les fissures de sa Secousse ; dans sa marée, un
+joueur sur une corniche sous sa hauteur ne trouve aucun mouvement pour en sortir — la navigation refuse tout saut qui traverse
+sa surface (la marée est un coup à éviter pour elle) et il y reste jusqu'à tomber. Aucun de ses coups n'est injuste : chacun
+est annoncé (poings 1,4 s, jets 1,2 s, marée 0,9 s + 1 s de montée) et se quitte ou se prend sous le bouclier.
+
+Rien ne change dans la simulation ni dans les règles (`kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`,
+`TITAN_REVISION` restent) : seuls les joueurs simulés de Pyroclast (`game/raid/bots/TacticPyroclast.cpp`) ; les autres
+Gigaboss jouent départ par départ comme avant. Le banc prend `COSMIC_GOAT_PLAYERS` (2 à 8) pour un groupe plus petit.
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)
