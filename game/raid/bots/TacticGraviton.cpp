@@ -8,6 +8,12 @@
 // * its field (phases 2 and 3): its generators held ALL AT THE SAME TIME, one player on each (the high ones on
 //   their islands, by the platforms), held 2,5 s: it collapses, its gravity cores bare (× 2) for 12 s;
 // * otherwise its body, from afar (it floats; it hurts on contact).
+//
+// 2.98 (docs/RAIDS.md §36, « Graviton (2.98) : joueurs simulés »): 84 % of the deaths fell within 350 px of its centre.
+// It floats low in the middle of its arena, between its generators, and moves toward its target during its Couronne de
+// débris (2,8 s): the souls lie under it, and the revivers who went there died on contact with its body, one after the
+// other — the group was wiped in its phase 2 (315 to 481 s). So a soul near its body (its box widened by 220 px) waits
+// for it to move away (BossView::noRevive), and a soul by its body is approached only with the shield ready.
 
 #include <algorithm>
 #include <cmath>
@@ -25,12 +31,17 @@ namespace cosmic::raid::bots {
 
 namespace {
 
+/// 2.98: how far around its box a soul waits for it to move away (its crown reaches 340 px from its centre; it drifts toward
+/// whoever comes close).
+constexpr float kNoReviveMargin = 220.0f;
+
 class GravitonTactic final : public BossTactic {
 public:
     const char* name() const override { return "Graviton"; }
     void read(const RaidRun& run, BossView& v) const override {
-        v.plan.escape = true;     // 2.90: its blows left by the navigation alone, with their time (docs/RAIDS.md §36)
-        v.plan.bodyInNav = true;  // 2.90: its body among what the navigation keeps out of (measured with the escape)
+        v.plan.escape = true;          // 2.90: its blows left by the navigation alone, with their time (docs/RAIDS.md §36)
+        v.plan.bodyInNav = true;       // 2.90: its body among what the navigation keeps out of (measured with the escape)
+        v.plan.reviveShielded = true;  // 2.98: a soul by its body approached only with the shield ready
         readCommon(run, v, false);
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
@@ -97,6 +108,9 @@ public:
             v.targets.push_back(t);
         }
         readAdds(w, *b, v);
+        // 2.98: the souls under it wait (its crown drags its body onto whoever kneels there: the revivers died one after the
+        // other). Nobody's task while it floats over them; revived once it has moved off.
+        v.noRevive.push_back(b->box.expanded(kNoReviveMargin));
     }
 };
 

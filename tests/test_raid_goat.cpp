@@ -327,6 +327,22 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                     ++aggro[std::to_string(static_cast<int>(gb.stage())) + " · " + raid::bots::roleName(session.bots().thought(k).role)];
             }
         }
+        if (std::getenv("COSMIC_GOAT_GENS") && steps % 30 == 0 && gb.routine()) {
+            // 2.98 (tuning runs, docs/RAIDS.md §36): Graviton's generators every quarter second — held (H), lit (o), off (-) —,
+            // its sectors announced (warn) or turned over (FLIP) and its wells (W), with the players in play.
+            const GameWorld& w = session.run().world();
+            std::vector<raid::BossMark> mk;
+            gb.routine()->marks(w, gb, mk);
+            std::string g;
+            for (const auto& m : mk) {
+                if (m.kind == raid::BossMark::Kind::Plate) g += m.clip == "gen_held" ? "H" : m.clip == "gen_on" ? "o" : "-";
+                if (m.kind == raid::BossMark::Kind::Zone && !m.label.empty()) g += m.strong ? " FLIP" : " warn";
+                if (m.kind == raid::BossMark::Kind::Target) g += " W";
+            }
+            int inPlay = 0;
+            for (int k = 0; k < w.teamSize(); ++k) inPlay += w.member(k).presence == GameWorld::Presence::Playing ? 1 : 0;
+            std::printf("      %6.1f s gens étape %d en jeu %d : %s\n", steps / 120.0, static_cast<int>(gb.stage()), inPlay, g.c_str());
+        }
         if (std::getenv("COSMIC_GOAT_FOES") && steps % 120 == 0) {
             // 2.87 (tuning runs): every second, the enemies of the fight (its mechanism's, its creatures) and their health.
             const GameWorld& w = session.run().world();
@@ -801,7 +817,9 @@ TEST_CASE("raid GOAT bench (2.84): every Gigaboss and the Cœur over several sta
         double wonSeconds = 0.0;
         std::string line;
         for (int k = 0; k < seeds; ++k) {
-            const Fight f = fightAt(s, part, raid::BotSkill::Expert, 900, 8, static_cast<uint32_t>(seed0 + k));
+            // 2.98: COSMIC_GOAT_PLAYERS another group's size (2 to 8; raid groups are 2 to 8 players), 8 by default.
+            const int players = std::getenv("COSMIC_GOAT_PLAYERS") ? std::clamp(std::atoi(std::getenv("COSMIC_GOAT_PLAYERS")), 2, 8) : 8;
+            const Fight f = fightAt(s, part, raid::BotSkill::Expert, 900, players, static_cast<uint32_t>(seed0 + k));
             won += f.won ? 1 : 0;
             wonSeconds += f.won ? f.seconds : 0.0;
             char buf[96];

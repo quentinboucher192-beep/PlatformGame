@@ -3804,6 +3804,65 @@ attend, aucun groupe de nulle part ; avec un groupe en attente : il remplace l'�
 Cœur à trois instances : la somme des parts, la même vie et la même phase partout), `tests/test_raid_mechanisms.cpp` (la ligne
 des groupes d'une bulle : « Groupe 1 en attente », « Groupes 2, 8 (8 en attente) », « · Vous »).
 
+### Graviton (2.98) : joueurs simulés
+
+*Demandé* : que huit joueurs simulés Experts battent Graviton (Jambe gauche) sans invincibilité ni sauvetage, à la
+difficulté 3 / 5, 4 départs sur 5 en 15 min, et dire ce que deviennent des groupes plus petits (les groupes d'un raid vont
+de 2 à 8). **Ce but n'est pas atteint** : Graviton ne tombe encore à aucun départ. Seuls les joueurs simulés changent
+(`game/raid/bots/TacticGraviton.cpp`) ; ni le boss, ni les règles du raid, ni les niveaux.
+
+**Ce qui élimine le groupe** (sondes `COSMIC_GOAT_DEATHS`, `_TRACE`, `_HIT=Couronne`, `_HIST`, et `COSMIC_GOAT_GENS`,
+nouvelle : ses générateurs tenus, ses secteurs et ses puits chaque quart de seconde). Sa phase 1 (de 100 à 66 %, 190 s)
+coûte zéro à deux morts ; tout se joue en phase 2, où le groupe s'éteint entre 315 et 481 s :
+
+* **84 % des morts tombent à moins de 350 px de son centre** (68 sur 81, départs 1 à 5) : Graviton flotte bas au milieu
+  de l'arène, entre ses générateurs. Des coups reçus, 43 % sont **le contact de son corps** (« contact · Couronne de
+  débris », « contact · Puits gravitationnel » : le contact est compté sous le nom de l'attaque en cours ; pendant sa
+  Couronne, il avance 2,8 s vers sa cible à 40 px/s), 18 % la voûte, 16 % la Chute de débris ;
+* **la cascade des réanimations** : les âmes tombent sous lui ; ses réanimateurs y vont, il avance sur celui qui
+  s'agenouille (le plus proche, donc sa cible) et le tue à son tour — 23 morts sur 81 en réanimant ou en attendant de le
+  faire, 17 en « s'écarte du corps de Graviton », c'est-à-dire déjà dedans ;
+* **ses générateurs** (blindé, phases 2 et 3 : trois sur quatre tenus 2,5 s ensemble) ne sont tenus ensemble que **5 % du
+  temps**, alors que la moitié du temps (51 %) aucun secteur retourné ni puits ne les gêne : il manque des joueurs (4,2 en
+  jeu en moyenne, les autres à terre), leurs porteurs saignent (ses puits s'ouvrent sous eux toutes les 7,7 s, ses marques
+  de débris, et un coureur ne quitte jamais sa plaque pour un orbe de vie) et ceux des îles hautes meurent dans la voûte
+  quand leur secteur se retourne.
+
+**Gardé** : une âme près de son corps (sa boîte élargie de 220 px : sa Couronne atteint 340 px de son centre) attend qu'il
+s'en éloigne (`BossView::noRevive`, relu à chaque plan) ; une âme contre son corps n'est approchée que bouclier prêt
+(`Plan::reviveShielded`). Mesuré sur la 2.101 (difficulté 3 / 5, sans invincibilité, Expert ; la vie qui lui reste à la fin
+de chaque départ, puis sa durée — tous éliminés, aucun debout au bout des 15 min) :
+
+| Groupe | Avant | Après |
+|---|---|---|
+| 8 joueurs (départs 1 à 5) | 0 / 5 V ; 42 · 51 · 49 · 58 · 56 % (**51 %**) ; 411 · 336 · 406 · 315 · 481 s (390 s) ; 2,49 morts/min | 0 / 5 V ; 24 · 39 · 55 · 54 · 48 % (**44 %**, le départ 1 en phase 3) ; 605 · 703 · 440 · 450 · 606 s (561 s) ; 1,80 morts/min |
+| 4 joueurs (départs 1 à 3) | 0 / 3 V ; 60 · 61 · 63 % (61 %) ; 266 · 421 · 405 s | 0 / 3 V ; 53 · 51 · 43 % (49 %) ; 407 · 431 · 353 s |
+| 2 joueurs (départs 1 à 3) | 0 / 3 V ; 60 · 64 · 66 % (63 %) ; 231 · 198 · 218 s | 0 / 3 V ; 55 · 59 · 66 % (60 %) ; 238 · 227 · 269 s |
+
+À huit, les coups de son corps passent de 43 à 25 % des coups reçus (13,2 à 10,6 coups par minute) ; la voûte devient la
+première cause (26 %) : le combat dure plus longtemps en phase 2, où ses porteurs des îles hautes y montent. À deux, il n'y a
+ni réanimateur ni appât : le porteur d'un générateur meurt au contact de son puits en phase 2, puis le second, vers 4 min.
+
+**Essayés et retirés** (sur la 2.98, départs 1 à 3 ou 1 à 5, la vie qui lui reste en moyenne ; avant : 51 %) : ses porteurs
+restés sur leurs générateurs pendant qu'il est effondré, pour le refaire tomber 2,5 s après (54 % : il retombe plus souvent,
+mais trois ou quatre joueurs seulement frappent ses cœurs, 2 à 4 % par effondrement) ; les mêmes, abrités sous la dalle de
+leur secteur quand il se retourne (53 %) ; deux porteurs par générateur (59 %) ; sans appât (57 %, 52 % avec ses frappeurs
+à 240 px de son corps) ; ses frappeurs loin de lui pendant qu'il est blindé (`hideArmoured` : 55 %) ; son corps lu là où il
+sera dans 0,6 s (47 %, pareil) ; les âmes à 130 px seulement (47 %) ; le bouclier seul pour réanimer (52 %) ; la version
+gardée avec les porteurs abrités sous une dalle (49 %). Sans appât ni réanimation près de lui, deux départs sur trois
+restent debout 900 s, mais sa phase 2 cale : personne ne tient trois générateurs ensemble.
+
+**Ce qui bloque encore** : sa phase 2 — ses porteurs, trop peu nombreux, sous ses puits, ses débris et sa voûte, et les âmes
+qui attendent sous lui. Aucune de ses attaques n'est apparue inévitable : sa Couronne laisse des trous et se quitte à
+340 px de son centre, ses puits se quittent au pas, ses secteurs s'annoncent 2 s avant ; c'est la survie près de lui et la
+tenue de ses générateurs qui manquent aux joueurs simulés. Pistes (règles des joueurs simulés communes à tous les
+Gigaboss, hors de ce travail) : un porteur qui va prendre un orbe de vie quand il lui en manque, un appât qui l'éloigne des
+âmes, ses générateurs repris par ceux qui en sont le plus près après un retournement.
+
+*Versions* : aucune règle du jeu ne change (les joueurs simulés n'existent que dans les tests) — `kSimulationVersion`,
+`kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes restent ; aucun texte nouveau. Le banc
+prend `COSMIC_GOAT_PLAYERS` (2 à 8 joueurs) et la sonde `COSMIC_GOAT_GENS` (`tests/test_raid_goat.cpp`).
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)
