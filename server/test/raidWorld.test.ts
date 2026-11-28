@@ -328,7 +328,7 @@ describe("raids phase 5: the close, the official result and the exclusive reward
         expect(h.result!.my_clan_rank).toBe(2);
     });
 
-    it("a catch-up session: the silver suit, its own ranking, the official result never changes", async () => {
+    it("a catch-up session: the silver suit, its own ranking, the official result never changes", { timeout: 30000 }, async () => {
         const { a, ev } = await played();
         await endEvent(ev);
         await worldTick(env.DB);

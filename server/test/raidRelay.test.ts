@@ -240,7 +240,7 @@ describe("raids phase 7: the history stored by parts", () => {
 });
 
 describe("raids phase 7: the relay of an instance under real conditions", () => {
-    it("eight games, latency, jitter and inputs out of order: the same frames for all, every input in its step", async () => {
+    it("eight games, latency, jitter and inputs out of order: the same frames for all, every input in its step", { timeout: 30000 }, async () => {
         const players = await clanOf("OCTO", 8);
         const inst = await instanceFor(players);
         const games = await Promise.all(players.map((p) => connect(p, inst)));

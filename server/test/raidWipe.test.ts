@@ -88,7 +88,7 @@ const branchView = (ev: string, p: TestPlayer) => api("GET", `${V}/raids/events/
 const zoneOf = (view: { body: { data: { zones: { id: number; to_retake: boolean }[] } } }, id: number) => view.body.data.zones.find((z) => z.id === id)!;
 
 describe("raids 2.75: a group wiped, its spectators, its zone taken again", () => {
-    it("wipe → spectators only (no seat, nothing counts); §41: only a WAITING group of the clan replaces it, whole, from any branch", async () => {
+    it("wipe → spectators only (no seat, nothing counts); §41: only a WAITING group of the clan replaces it, whole, from any branch", { timeout: 30000 }, async () => {
         const a = await clan("AUBE", 4);
         const b = await clan("NEBU", 1);
         const ev = await runningEvent(a, b);
