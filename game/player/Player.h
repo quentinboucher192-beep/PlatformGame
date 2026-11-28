@@ -62,6 +62,10 @@ constexpr float kDashGuardSeconds = 0.05f;
 /// the slide's box is kept until there is (it went through the ceiling, upwards). A replay
 /// recorded before plays with the rules of its time.
 constexpr int kSlideInWallsSimulation = 20;
+/// Simulation 21: a power used during a slide (or a climb) stands Nova up only where there is room
+/// for it, like a dash, a bounce or a blow since simulation 20. Before, under a low ceiling, her
+/// standing box started inside the block and she ran through it (the TAS's mind found it).
+constexpr int kPowerStandUpSimulation = 21;
 constexpr float kDashBlowGuardSeconds = 0.15f;
 
 /// The player character: state machine, precise platforming physics, melee combat,

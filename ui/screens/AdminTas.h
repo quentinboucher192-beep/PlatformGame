@@ -33,6 +33,7 @@
 #include "engine/core/Paths.h"
 #include "engine/rendering/Text.h"
 #include "game/online/OnlineTypes.h"
+#include "game/tas/TasProgress.h"
 #include "ui/widgets/ChartView.h"
 #include "ui/widgets/Charts.h"
 
@@ -128,6 +129,8 @@ std::string focusText(int first, int last, bool tail);
 /// « Tour 3 », « Tour 3 (en cours) »; with `session` > 0 (several sessions: a round's number starts
 /// again with each one), « S2 · Tour 3 ».
 std::string roundText(int round, bool live, int session = 0);
+/// « Morts » (« Morts ou touchés » in No damage): what broke the category.
+const char* brokenWord(RunCategory c);
 
 }  // namespace tasadmin
 
@@ -164,6 +167,12 @@ struct AdminTasLayout {
     charts::ChartView view;
     Rect minimap, zoomReset;
     int xTicks = 0, yTicks = 0;
+    // 2.101: the progress (the ruler's labels, the segments' rows) and the TAS's mind (its panel,
+    // the thoughts, essayeurs and memory entries drawn).
+    int rulerMarks = 0, segmentRows = 0;
+    int mindTab = -1;  // the tab « IA » (a short column: the mind apart), else -1
+    Rect mind;
+    int thoughtsDrawn = 0, workersDrawn = 0, memoryDrawn = 0;
 };
 
 class AdminTas {
@@ -173,6 +182,8 @@ public:
 
     /// The tab is shown: the pairs read on a worker thread, the server's list asked for.
     void enter(bool force = false);
+    /// The tests: the progress file of a training shown as if the selected pair were training.
+    void setPreviewProgress(std::optional<TasProgress> p) { previewProgress_ = std::move(p); }
     void draw(const Rect& inner);
     const AdminTasLayout& lastLayout() const { return layout_; }
 
@@ -207,6 +218,11 @@ private:
     void loadCurve();
     void drawDetail(const tasadmin::Row& row, const Rect& area);
     void drawStats(const tasadmin::Row& row, const TasCurveVersion* v, const Rect& r, bool training, int round, int focusFirst, int focusLast);
+    /// 2.101: « TOUT »: the progress (AdminTasMind.cpp); `live`: the training's progress file (none: not training).
+    void drawProgressPanel(const tasadmin::Row& row, const TasCurveVersion* v, const Rect& r, bool training, int round, int focusFirst, int focusLast,
+                           const TasProgress* live);
+    /// 2.101: the TAS's mind under the curve: its thoughts, its essayeurs, its memory.
+    void drawMind(const TasProgress& p, const Rect& r);
     void publish(const tasadmin::Row& r, std::function<void(bool)> done);
     void publishNext();
     std::vector<const tasadmin::Local*> shown() const;
@@ -267,6 +283,7 @@ private:
     float curveT_ = -100.0f;
     bool inList_ = false;  // drawing the rows (their scroll region cuts what is out of it)
     Rect textClip_;        // a scroll region of the curve's panel being drawn: what it cuts is not placed
+    std::optional<TasProgress> previewProgress_;  // setPreviewProgress (the tests: a training's file without a training)
     bool stopsOpen_ = false;  // « Arrêts par section »: every section unfolded (scrolled), or the busiest ones
 
     AdminTasLayout layout_;

@@ -157,7 +157,8 @@ void Player::handlePowers(GameWorld& w, const PlayerInput& in, float dt) {
         }
         if (!p->canActivate(*this, w)) continue;
         if (state_ == PlayerState::Climb || state_ == PlayerState::Slide) {
-            setHitbox(cfg_.size);
+            if (w.simulationVersion() >= kPowerStandUpSimulation) standUpFromSlide(w);
+            else setHitbox(cfg_.size);
             state_ = PlayerState::Fall;
         }
         p->activate(*this, w);

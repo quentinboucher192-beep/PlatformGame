@@ -69,11 +69,14 @@
 #include "game/tas/TasVerify.h"
 #include "tools/tas/Branch.h"
 #include "tools/tas/Course.h"
+#include "tools/tas/Director.h"
+#include "tools/tas/Memory.h"
 #include "tools/tas/Output.h"
 #include "tools/tas/Phase.h"
 #include "tools/tas/Portfolio.h"
 #include "tools/tas/Search.h"
 #include "tools/tas/Sim.h"
+#include "tools/tas/Trajectory.h"
 
 using namespace cosmic;
 
@@ -175,11 +178,28 @@ struct Training {
         p.section = std::clamp(section, 0, p.sections);
     }
 
+    /// Called at each write (under m): the essayeurs and the memory of the TAS's mind.
+    std::function<void(TasProgress&)> refresh;
+    /// A thought of the TAS's mind, kept in the file (the last TasThought::kMax).
+    void thought(const tas::Thought& t) {
+        std::lock_guard<std::mutex> l(m);
+        TasThought x;
+        x.atMs = elapsed();
+        x.kind = t.kind;
+        x.code = t.code;
+        x.n = t.n;
+        if (x.n.size() > TasThought::kNumbers) x.n.resize(TasThought::kNumbers);
+        x.s = t.s;
+        p.thoughts.push_back(std::move(x));
+        if (p.thoughts.size() > TasThought::kMax) p.thoughts.erase(p.thoughts.begin());
+    }
+
     void write() {
         if (progressFile.empty()) return;
         TasProgress copy;
         {
             std::lock_guard<std::mutex> l(m);
+            if (refresh) refresh(p);
             p.elapsedMs = elapsed();
             p.explored = explored.load();
             const int64_t c = candidateMs.load();
@@ -405,6 +425,66 @@ int main(int argc, char** argv) {
         portfolio->only(arms);
         opt.portfolio = portfolio.get();
     }
+    // The TAS's mind (docs/TAS.md « L'IA du TAS »): --director (with the portfolio) plans the
+    // slices on the cores and says why; --memory <file> (by default <user dir>/tas/memory.json,
+    // --no-memory: none) keeps the configurations already solved, for every level.
+    std::shared_ptr<tas::TrajectoryMemory> memory;
+    std::shared_ptr<tas::Director> director;
+    if (portfolio) {
+        portfolio->trajectory().options().level = levelId;
+        if (!flag("--no-memory")) {
+            const std::string mf = value("--memory", "");
+            memory = std::make_shared<tas::TrajectoryMemory>(mf.empty() ? Paths::userDir() / "tas" / "memory.json" : Paths::fromUtf8(mf));
+            memory->load();
+            portfolio->trajectory().options().memory = memory.get();
+        }
+        if (flag("--director")) {
+            director = std::make_shared<tas::Director>(*portfolio, opt.threads);
+            opt.director = director.get();
+            director->sink = [&training](const tas::Thought& t) { training.thought(t); };
+            training.edit([](TasProgress& p) { p.director = true; });
+            training.refresh = [director, memory](TasProgress& p) {
+                p.workers.clear();
+                for (const tas::WorkerState& w : director->workers()) p.workers.push_back(TasWorker{w.arm, w.first, w.last, w.attempts});
+                if (memory) {
+                    p.memorySize = static_cast<int64_t>(memory->size());
+                    p.memoryTop.clear();
+                    for (const tas::Remembered& r : memory->top(TasMemoryEntry::kMax)) {
+                        TasMemoryEntry e;
+                        e.rise = r.config.rise;
+                        e.riseAt = r.config.riseAt;
+                        e.gap = r.config.gap;
+                        e.speed = r.config.speed;
+                        e.powers = r.config.powers;
+                        e.leadFrames = r.leadFrames;
+                        e.uses = r.uses;
+                        e.gainMs = r.gainMs;
+                        e.level = r.level;
+                        p.memoryTop.push_back(std::move(e));
+                    }
+                }
+            };
+            char line[160];
+            std::snprintf(line, sizeof line, "IA du TAS : le directeur sur %d cœur(s), mémoire %s (%zu configuration(s))", opt.threads, memory ? "oui" : "non",
+                          memory ? memory->size() : size_t(0));
+            say(line);
+        }
+    }
+    // An early arrival of the trajectories that does not carry to the exit (Slice::onLead): the
+    // director commits a branch to it at the next round (the largest lead; the branch's own
+    // trajectories then find the next ones again from it, the memory helping).
+    struct PendingLead {
+        std::vector<InputFrame> prefix;
+        size_t through = 0;
+        float lead = 0.0f;
+    };
+    std::mutex leadMutex;
+    std::optional<PendingLead> pendingLead;
+    opt.onLead = [&](const std::vector<InputFrame>& prefix, size_t through, float lead, const std::string&) {
+        std::lock_guard<std::mutex> l(leadMutex);
+        if (!pendingLead || lead > pendingLead->lead + 1.0e-4f || (std::abs(lead - pendingLead->lead) <= 1.0e-4f && through > pendingLead->through))
+            pendingLead = PendingLead{prefix, through, lead};
+    };
     // The splits of a run at each checkpoint (the log: where a faster run gains).
     auto splitsLine = [&](const std::vector<InputFrame>& run) {
         tas::Course course(*level, content, category);
@@ -698,11 +778,25 @@ int main(int argc, char** argv) {
             return done();
         }
         if (bestMs > 0 && v.record.timeMs >= bestMs) return done();
+        {
+            // Never through a wall: a run where Nova is inside a solid (a physics bug) is not written.
+            tas::Course ccourse(*level, content, category);
+            tas::Sim csim(content, *level, ccourse, category);
+            if (const float at = csim.clipAt(job.run); at >= 0.0f) {
+                char why[200];
+                std::snprintf(why, sizeof why, "Course refusée : Nova passe à travers un solide à %.3f s (%s). Rien n'est écrit.", static_cast<double>(at),
+                              formatRunTime(v.record.timeMs).c_str());
+                say(why);
+                if (director) director->think(tas::Thought{"verify", "clip", {static_cast<double>(at), static_cast<double>(v.record.timeMs) / 1000.0}, job.source});
+                return done();
+            }
+        }
         char line[300];
         std::snprintf(line, sizeof line, "Vérifiée par la lecture normale des replays : %s (%lld ms), morts %d, dégâts %d, collectibles %d/%d, %lld essais simulés.",
                       formatRunTime(v.record.timeMs).c_str(), static_cast<long long>(v.record.timeMs), v.record.deaths, v.record.damageTaken,
                       v.record.collectibles, v.record.totalCollectibles, static_cast<long long>(v.record.explored));
         say(line);
+        if (director) director->think(tas::Thought{"verify", "verified", {static_cast<double>(v.record.timeMs) / 1000.0}, job.source});
         best = job.run;
         bestMs = v.record.timeMs;
         bestAtomic = bestMs;
@@ -879,6 +973,61 @@ int main(int argc, char** argv) {
             return finish(TasPhase::Stopped, ps.run.found ? "Réalignement : " + formatRunTime(clockMs(ps.run.clock)) : std::string("Réalignement : aucune course"), 0);
         }
     }
+    // --trajectories (docs/TAS.md « Les trajectoires »): the trajectory optimizer alone on the best
+    // run, for --budget minutes (--traj-from / --traj-to <s>: only the places whose clock is within);
+    // every place it searched is reported, a faster run verified and written like any other.
+    if (flag("--trajectories")) {
+        if (best.empty()) return finish(TasPhase::Failed, "Les trajectoires demandent une course de départ (--seed-replay)", 2);
+        tas::Course tcourse(*level, content, category);
+        std::vector<std::unique_ptr<tas::Sim>> own;
+        std::vector<tas::Sim*> sims;
+        for (int i = 0; i < std::max(1, opt.threads); ++i) {
+            own.push_back(std::make_unique<tas::Sim>(content, *level, tcourse, category));
+            sims.push_back(own.back().get());
+        }
+        tas::TrajectoryOptimizer traj;
+        traj.options().fromClock = static_cast<float>(std::atof(value("--traj-from", "0").c_str()));
+        traj.options().toClock = static_cast<float>(std::atof(value("--traj-to", "1e9").c_str()));
+        tas::Slice sl;
+        sl.best = best;
+        sl.bestClock = sims[0]->study(best).clock;
+        sl.until = std::chrono::steady_clock::now() + std::chrono::milliseconds(static_cast<int64_t>(opt.budgetSeconds * 1000.0));
+        sl.threads = static_cast<int>(sims.size());
+        sl.seed = baseSeed;
+        sl.stopped = [&] { return training.stop.load(); };
+        sl.count = [&](int64_t n) { training.explored += n; };
+        sl.log = [&](const std::string& line) { say(line); };
+        sl.offer = [&](const std::vector<InputFrame>& run, float clock, const std::string&) { verifier.submit(run, clockMs(clock), "trajectory"); };
+        // --traj-out <file>: the early arrival kept the furthest (a branch can commit to it: --branch <file> --branch-through <n>).
+        std::vector<InputFrame> leadRun;
+        size_t leadThrough = 0;
+        float leadSec = 0.0f;
+        sl.onLead = [&](const std::vector<InputFrame>& prefix, size_t through, float lead, const std::string&) {
+            if (through > leadThrough || (through == leadThrough && lead > leadSec)) leadRun = prefix, leadThrough = through, leadSec = lead;
+        };
+        const tas::TrajectoryStats st = traj.run(sims, sl);
+        if (const std::string out = value("--traj-out", ""); !out.empty() && !leadRun.empty()) {
+            writeInputs(out, leadRun);
+            char line[300];
+            std::snprintf(line, sizeof line, "Avance gardée jusqu'à la fin de la section %zu (%.3f s) écrite dans %s : --branch %s --branch-through %zu", leadThrough,
+                          static_cast<double>(leadSec), out.c_str(), out.c_str(), leadThrough);
+            say(line);
+        }
+        for (const tas::TrajectorySpot& sp : traj.spots()) {
+            char line[600];
+            std::snprintf(line, sizeof line, "Endroit %.3f s (x %.0f) : %lld variations, %s%s", static_cast<double>(sp.clock), static_cast<double>(sp.feet.x),
+                          static_cast<long long>(sp.tried), sp.best.describe().c_str(),
+                          sp.joined ? (" ; " + std::to_string(sp.lead) + " images d'avance").c_str() : " ; pas d'avance");
+            say(line);
+        }
+        if (!untilStopped) {
+            verifier.stop();
+            if (writeFailed) return finish(TasPhase::Failed, "Écriture impossible dans " + Paths::toUtf8(file.parent_path()), 1);
+            char line[160];
+            std::snprintf(line, sizeof line, "Trajectoires : %d endroit(s), %d course(s) plus rapide(s)", st.spots, st.gains);
+            return finish(TasPhase::Stopped, line, 0);
+        }
+    }
     // --phase (or --phase-source): a phase splice at the start of every round whose sources changed,
     // at most --phase-budget minutes (3).
     const bool phaseRounds = flag("--phase") || !phaseFiles.empty();
@@ -931,8 +1080,10 @@ int main(int argc, char** argv) {
                       branch.bestMs() > 0 ? formatRunTime(branch.bestMs()).c_str() : "aucune encore");
         say(line);
     }
-    const bool branching = branch.active();
-    const fs::path branchFile = branching ? tasFilePath(levelId, category, branchRoot) : fs::path();
+    bool branching = branch.active();
+    fs::path branchFile = branching ? tasFilePath(levelId, category, branchRoot) : fs::path();
+    // The director's branches go next to the trainings' runs (never in data/tas).
+    if (branchRoot.empty() && !value("--out", "").empty()) branchRoot = root / "branch";
     auto onBranch = [&](const std::vector<InputFrame>& run) { return branch.owns(run); };  // (the prefix never changes)
     // A branch run verified and, when faster than the branch's best, written in its own file (and
     // given to the best run when faster than it too).
@@ -941,6 +1092,16 @@ int main(int argc, char** argv) {
         if (!v.ok) {
             say("Branche : course refusée à la vérification : " + v.why + ". Rien n'est écrit.");
             return;
+        }
+        {
+            tas::Course ccourse(*level, content, category);
+            tas::Sim csim(content, *level, ccourse, category);
+            if (const float at = csim.clipAt(job.run); at >= 0.0f) {
+                char why[160];
+                std::snprintf(why, sizeof why, "Branche : course refusée, Nova passe à travers un solide à %.3f s. Rien n'est écrit.", static_cast<double>(at));
+                say(why);
+                return;
+            }
         }
         {
             std::lock_guard<std::mutex> l(branchMutex);
@@ -989,6 +1150,29 @@ int main(int argc, char** argv) {
             opt.seed = baseSeed + static_cast<uint64_t>(round - 1) * 7919u;
         }
         drainAll();  // the last round's runs verified: the round starts from the best one
+        // The director's branch: an early arrival of the trajectories, committed to once.
+        if (director && !branching && !branchRoot.empty()) {
+            std::optional<PendingLead> lead;
+            {
+                std::lock_guard<std::mutex> l(leadMutex);
+                lead.swap(pendingLead);
+            }
+            const size_t sections = tas::Course(*level, content, category).sectionEnds().size();
+            if (lead && lead->through > 0 && lead->through < sections) {
+                std::lock_guard<std::mutex> l(branchMutex);
+                branch = tas::BranchPlan(lead->prefix, lead->through, static_cast<int>(sections), 0.5);
+                branching = branch.active();
+                if (branching) {
+                    branchFile = tasFilePath(levelId, category, branchRoot);
+                    branchVerifier.start();
+                    director->think(tas::Thought{"decide", "branch", {static_cast<double>(lead->through), static_cast<double>(lead->lead)}, {}});
+                    char line[200];
+                    std::snprintf(line, sizeof line, "Branche de l'IA : les sections 1 à %zu gardées (%.3f s d'avance), le reste entraîné", lead->through,
+                                  static_cast<double>(lead->lead));
+                    say(line);
+                }
+            }
+        }
         const bool branchRound = branch.roundIsBranch(round);
         lastBranch = branchRound;
         opt.onRun = branchRound ? std::function<void(const std::vector<InputFrame>&, float, const std::string&)>(branchOnRun) : mainOnRun;

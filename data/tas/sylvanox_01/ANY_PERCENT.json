@@ -1369,7 +1369,7 @@
   ]
  ],
  "routeIntervalMs": 250,
- "simVersion": 20,
+ "simVersion": 21,
  "splits": [
   {
    "checkpoint": "o63",

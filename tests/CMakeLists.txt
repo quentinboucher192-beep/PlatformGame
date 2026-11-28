@@ -11,7 +11,9 @@ target_sources(cosmic_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools/tas/Search.cpp ${C
 # The portfolio of strategies (test_tas_portfolio.cpp: Go-Explore, timing polish, the bandit, branch-and-bound).
 target_sources(cosmic_tests PRIVATE ${CMAKE_SOURCE_DIR}/tools/tas/Sim.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Bound.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Explore.cpp
                                     ${CMAKE_SOURCE_DIR}/tools/tas/Timing.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Portfolio.cpp
-                                    ${CMAKE_SOURCE_DIR}/tools/tas/Phase.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Branch.cpp)
+                                    ${CMAKE_SOURCE_DIR}/tools/tas/Phase.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Branch.cpp
+                                    ${CMAKE_SOURCE_DIR}/tools/tas/Trajectory.cpp ${CMAKE_SOURCE_DIR}/tools/tas/Memory.cpp
+                                    ${CMAKE_SOURCE_DIR}/tools/tas/Director.cpp)
 # Arena heaps (savestates of the machine's search, docs/TAS.md): the tests redirect operator new too.
 target_link_libraries(cosmic_tests PRIVATE cosmic_game cosmic_heap_hooks)
 if(WIN32)

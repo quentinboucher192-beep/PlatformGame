@@ -47,7 +47,7 @@ struct Progress {
     int milestones = 0;       // passages opened, arenas cleared, enemies beaten, gates broken...
     int powers = 0;
     uint64_t powerSet = 0;    // which powers, in which slots (the answers to an offer differ)
-    float wounds = 0.0f;      // the health taken from the enemies awake (not the bosses)
+    float wounds = 0.0f;      // the health taken from the enemies of the arenas fighting (not the bosses)
     float bosses = 0.0f;      // bosses' phases and wounds
     int kills = 0;
     int health = 0;

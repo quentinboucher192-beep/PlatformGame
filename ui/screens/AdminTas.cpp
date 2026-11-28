@@ -611,7 +611,7 @@ void AdminTas::drawToolbar(float& y) {
         const std::string pName = planet_ >= 0 && planet_ < static_cast<int>(pl.size()) ? pl[static_cast<size_t>(planet_)].second : std::string("Toutes");
         const std::string pLabel = "Planète : " + pName;
         if (button("planet", place(bw(pLabel)), pLabel, !pl.empty(), planet_ >= 0)) planet_ = planet_ + 1 >= static_cast<int>(pl.size()) ? -1 : planet_ + 1;
-        const std::string act = "En cours et en file (" + std::to_string(g_.tasTraining.running() + static_cast<int>(g_.tasTraining.queue().size())) + ")";
+        const std::string act = "En cours (" + std::to_string(g_.tasTraining.running() + static_cast<int>(g_.tasTraining.queue().size())) + ")";
         if (button("active", place(bw(act)), act, true, activeOnly_)) activeOnly_ = !activeOnly_;
     }
     newLine();
@@ -630,15 +630,11 @@ void AdminTas::drawToolbar(float& y) {
         if (unpublished(r) && (r.server.holder.empty() || r.server.mine)) ++publishable;
     }
     {
-        const std::string trainAll = "Tout entraîner (" + std::to_string(trainable.size()) + ")";
-        if (button("train_all", place(bw(trainAll)), trainAll, toolFound_ && online && !trainable.empty(), true)) {
-            const int n = g_.tasTraining.enqueue(trainable);
-            say_(std::to_string(n) + " paire(s) ajoutée(s) à la file d'entraînement.", false);
-        }
-        const std::string stopAll = "Tout arrêter";
+        // 2.101: one level and one category train at a time, on every core allotted (« Entraîner »
+        // on a row starts it and stops the one under way).
+        (void)trainable;
+        const std::string stopAll = "Arrêter l'entraînement";
         if (button("stop_all", place(bw(stopAll)), stopAll, g_.tasTraining.running() > 0 || !g_.tasTraining.queue().empty(), false, true)) g_.tasTraining.stopAll();
-        const std::string clear = "Vider la file";
-        if (button("clear_queue", place(bw(clear)), clear, !g_.tasTraining.queue().empty())) g_.tasTraining.clearQueue();
         const std::string pubAll = "Publier toutes les améliorations (" + std::to_string(publishable) + ")";
         if (button("publish_all", place(bw(pubAll)), pubAll, online && publishable > 0 && !publishing_, true)) {
             publishQueue_.clear();
@@ -670,13 +666,24 @@ void AdminTas::drawToolbar(float& y) {
             changed = true;
         }
     };
-    stepper("parallel", "Entraînements en parallèle", std::to_string(st.parallel), "16", st.parallel, 1, TasTrainingSettings::kMaxParallel);
-    stepper("threads", "Threads par entraînement", std::to_string(st.threadsPerJob), "16", st.threadsPerJob, 1, TasTrainingSettings::kMaxThreads);
+    const int maxCores = std::clamp(TasTraining::cores(), 1, TasTrainingSettings::kMaxThreads);
+    st.threadsPerJob = std::clamp(st.threadsPerJob, 1, maxCores);
+    stepper("threads", "Cœurs alloués", std::to_string(st.threadsPerJob), "16", st.threadsPerJob, 1, maxCores);
     int budgetIndex = 0;
     for (size_t i = 0; i < std::size(kBudgets); ++i)
         if (kBudgets[i] == st.budgetMinutes) budgetIndex = static_cast<int>(i);
-    stepper("budget", "Budget par paire", budgetText(st.budgetMinutes), "Sans limite", budgetIndex, 0, static_cast<int>(std::size(kBudgets)) - 1);
+    stepper("budget", "Durée", budgetText(st.budgetMinutes), "Sans limite", budgetIndex, 0, static_cast<int>(std::size(kBudgets)) - 1);
     st.budgetMinutes = kBudgets[static_cast<size_t>(std::clamp(budgetIndex, 0, static_cast<int>(std::size(kBudgets)) - 1))];
+    // The TAS's mind and its memory (docs/TAS.md « L'IA du TAS »): on / off.
+    auto toggle = [&](const std::string& id, const std::string& yes, const std::string& no, bool& v) {
+        const float w = std::max(ui.text().measure(yes, FontFace::Bold, ui.s(15)).x, ui.text().measure(no, FontFace::Bold, ui.s(15)).x) + ui.s(30);
+        if (button(id, place(w), v ? yes : no, true, v)) {
+            v = !v;
+            changed = true;
+        }
+    };
+    toggle("director", "IA du TAS : oui", "IA du TAS : non", st.director);
+    toggle("memory", "Mémoire : oui", "Mémoire : non", st.memory);
     {
         // The player's PB of this computer guides each training (docs/TAS.md « Les guides »): on / off.
         const std::string label = st.guidePb ? "Guide : votre PB (oui)" : "Guide : votre PB (non)";
@@ -689,8 +696,7 @@ void AdminTas::drawToolbar(float& y) {
     }
     if (changed) g_.tasTraining.saveSettings();
     {
-        const std::string info = std::to_string(TasTraining::cores()) + " cœurs · " + std::to_string(g_.tasTraining.running()) + " en cours · " +
-                                 std::to_string(g_.tasTraining.queue().size()) + " en file";
+        const std::string info = std::to_string(TasTraining::cores()) + " cœurs sur cet ordinateur · un niveau et une catégorie à la fois";
         const Rect r = place(ui.text().measure(info, FontFace::Body, ui.s(15)).x + ui.s(4));
         text(info, r, 15, ui.theme().textDim);
     }
