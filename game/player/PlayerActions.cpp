@@ -231,7 +231,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
                 w.rumble(0.3f, 0.5f, 90);
                 // A strike aimed downwards in the air bounces off the enemies it hits (pogo), as
                 // always (2.71: with the aim the attack started with).
-                if (aim.y > 0.5f && !grounded_) launch({vel.x, -cfg_.jumpVelocity() * 0.75f}, true);
+                if (aim.y > 0.5f && !grounded_) launch(w, {vel.x, -cfg_.jumpVelocity() * 0.75f}, true);
             }
             w.powerHit("melee", hit);
         }
@@ -311,7 +311,7 @@ bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
     w.playSound("sounds/player_hurt.wav", center(), 1.0f);
     invulnTimer_ = cfg_.invulnerability;
     if (state_ == PlayerState::Dash) endDash();
-    if (state_ == PlayerState::Slide || state_ == PlayerState::Climb) setHitbox(cfg_.size);
+    if (state_ == PlayerState::Slide || state_ == PlayerState::Climb) standUpFromSlide(w);
     state_ = PlayerState::Hurt;
     hurtTimer_ = 0.32f;
     float dir = center().x >= dmg.source.x ? 1.0f : -1.0f;

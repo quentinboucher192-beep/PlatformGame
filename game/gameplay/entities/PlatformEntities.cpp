@@ -777,7 +777,7 @@ void BouncePadEntity::onPlayerStay(GameWorld& w, float dt) {
     if (cooldown_ > 0.0f || p.vel.y < -10.0f) return;
     if (p.box.bottom() > box.y + 10.0f) return;
     float power = obj_.prop<float>("power", 430.0f);
-    p.launch({p.vel.x, -power}, true);
+    p.launch(w, {p.vel.x, -power}, true);
     cooldown_ = 0.2f;
     sprite_.anim.play("bounce", true);
     w.playSound("sounds/bounce.wav", box.center(), 0.9f, w.fxRng().range(0.95f, 1.05f));

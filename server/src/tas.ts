@@ -131,6 +131,9 @@ interface CurvePointRow {
     found_by: string | null;
     found_by_username: string | null;
     found_at: string;
+    /** 2.99 (migration 0240): the run's splits at the checkpoints (JSON), where the gain came from. */
+    splits?: string;
+    source?: string;
 }
 
 interface CurveWindowRow {
@@ -222,7 +225,24 @@ const byJson = (id: string | null, username: string | null) => (id || username ?
 
 /** A best point of the curve. */
 function curvePointJson(p: CurvePointRow) {
-    return { kind: p.kind, time_ms: p.time_ms, training_ms: p.training_ms, explored: p.explored, at: p.found_at, session: p.session, by: byJson(p.found_by, p.found_by_username) };
+    let splits: number[] = [];
+    try {
+        const s = JSON.parse(p.splits ?? "[]");
+        if (Array.isArray(s)) splits = s;
+    } catch {
+        splits = [];
+    }
+    return {
+        kind: p.kind,
+        time_ms: p.time_ms,
+        training_ms: p.training_ms,
+        explored: p.explored,
+        at: p.found_at,
+        session: p.session,
+        by: byJson(p.found_by, p.found_by_username),
+        ...(splits.length ? { splits } : {}),
+        ...(p.source ? { source: p.source } : {}),
+    };
 }
 
 /** A run published, as a mark of the curve of its version. */
@@ -492,7 +512,14 @@ interface CurvePointIn {
     time_ms: number;
     age_ms: number;
     explored: number;
+    splits?: number[];
+    source?: string;
 }
+
+/** The checkpoints of a level a point's splits cover at most (TasAttemptWindow::kMaxSections). */
+export const MAX_CURVE_SPLITS = 32;
+/** Where a gain came from (cosmic_tas: TasProgress::bestSource), a short lowercase word. */
+const SOURCE_RE = /^[a-z]{1,16}$/;
 
 interface CurveWindowIn {
     age_ms: number;
@@ -531,11 +558,26 @@ function curvePointsIn(v: Validator, raw: unknown): CurvePointIn[] {
     const out: CurvePointIn[] = [];
     raw.forEach((p, i) => {
         const f = `curve[${i}]`;
-        if (!isObject(p) || Object.keys(p).some((k) => !["kind", "time_ms", "age_ms", "explored"].includes(k))) return v.fail(f, "point invalide");
+        if (!isObject(p) || Object.keys(p).some((k) => !["kind", "time_ms", "age_ms", "explored", "splits", "source"].includes(k))) return v.fail(f, "point invalide");
         if (p.kind !== "start" && p.kind !== "improvement") return v.fail(`${f}.kind`, "start ou improvement attendu");
         if (!isInt(p.time_ms, 1, MAX_TAS_TIME_MS)) return v.fail(`${f}.time_ms`, `entier entre 1 et ${MAX_TAS_TIME_MS} attendu`);
         if (!isInt(p.age_ms, 0, MAX_AGE_MS)) return v.fail(`${f}.age_ms`, `entier entre 0 et ${MAX_AGE_MS} attendu`);
         if (!isInt(p.explored, 0, Number.MAX_SAFE_INTEGER)) return v.fail(`${f}.explored`, "entier positif attendu");
+        // 2.99: the splits at the checkpoints (0: not reached), within the run's time, never going back.
+        if (p.splits !== undefined) {
+            const sp = p.splits;
+            let last = 0;
+            const ok =
+                Array.isArray(sp) &&
+                sp.length <= MAX_CURVE_SPLITS &&
+                sp.every((x) => {
+                    if (!isInt(x, 0, p.time_ms as number) || (x > 0 && x < last)) return false;
+                    if (x > 0) last = x;
+                    return true;
+                });
+            if (!ok) return v.fail(`${f}.splits`, `liste de ${MAX_CURVE_SPLITS} temps au plus, croissants, dans le temps du point`);
+        }
+        if (p.source !== undefined && (typeof p.source !== "string" || !SOURCE_RE.test(p.source))) return v.fail(`${f}.source`, "mot court en minuscules attendu");
         out.push(p as unknown as CurvePointIn);
     });
     return out;
@@ -766,15 +808,17 @@ async function storeCurve(
             found_by: k.by.id,
             found_by_username: k.by.username,
             found_at: atOf(x),
+            splits: JSON.stringify(p.splits ?? []),
+            source: p.source ?? "",
         };
         if (n >= MAX_CURVE_POINTS && seq > 0) {
             // The cap: the last point gives way (the curve keeps its start and its best).
             row.seq = seq;
             stmts.push(
                 ctx.env.DB.prepare(
-                    `UPDATE tas_curve_points SET kind = ?6, time_ms = ?7, training_ms = ?8, explored = ?9, session = ?10, found_by = ?11, found_by_username = ?12, found_at = ?13
+                    `UPDATE tas_curve_points SET kind = ?6, time_ms = ?7, training_ms = ?8, explored = ?9, session = ?10, found_by = ?11, found_by_username = ?12, found_at = ?13, splits = ?14, source = ?15
                      WHERE ${where} AND seq = ?5 AND time_ms > ?7`,
-                ).bind(...key, seq, row.kind, row.time_ms, row.training_ms, row.explored, row.session, row.found_by, row.found_by_username, row.found_at),
+                ).bind(...key, seq, row.kind, row.time_ms, row.training_ms, row.explored, row.session, row.found_by, row.found_by_username, row.found_at, row.splits, row.source),
             );
         } else {
             row.seq = ++seq;
@@ -782,11 +826,11 @@ async function storeCurve(
             // Strictly below every stored point of the version, checked again in the statement.
             stmts.push(
                 ctx.env.DB.prepare(
-                    `INSERT INTO tas_curve_points (level_id, category, level_hash, sim_version, seq, kind, time_ms, training_ms, explored, session, found_by, found_by_username, found_at)
-                     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13
+                    `INSERT INTO tas_curve_points (level_id, category, level_hash, sim_version, seq, kind, time_ms, training_ms, explored, session, found_by, found_by_username, found_at, splits, source)
+                     SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15
                      WHERE NOT EXISTS (SELECT 1 FROM tas_curve_points WHERE ${where} AND time_ms <= ?7)
                      ON CONFLICT DO NOTHING`,
-                ).bind(...key, row.seq, row.kind, row.time_ms, row.training_ms, row.explored, row.session, row.found_by, row.found_by_username, row.found_at),
+                ).bind(...key, row.seq, row.kind, row.time_ms, row.training_ms, row.explored, row.session, row.found_by, row.found_by_username, row.found_at, row.splits, row.source),
             );
         }
         added.push(curvePointJson(row));
@@ -984,6 +1028,21 @@ export function checkRecord(text: string, levelId: string, category: Category): 
         splits.forEach((s, i) => {
             if (!isObject(s) || typeof s.checkpoint !== "string" || s.checkpoint.length > 64 || !isInt(s.timeMs, 0, MAX_TAS_TIME_MS))
                 problems.push(`splits[${i}] invalide`);
+        });
+    // 2.99: the players' runs that guided the search (docs/TAS.md « Les guides »).
+    const guided = d.guidedBy ?? [];
+    if (!Array.isArray(guided) || guided.length > 8) problems.push("guidedBy : liste de 8 guides au plus");
+    else
+        guided.forEach((g, i) => {
+            if (
+                !isObject(g) ||
+                typeof g.player !== "string" ||
+                g.player.length > 64 ||
+                !isInt(g.timeMs, 0, MAX_TAS_TIME_MS) ||
+                typeof g.replayId !== "string" ||
+                g.replayId.length > 128
+            )
+                problems.push(`guidedBy[${i}] invalide`);
         });
     const route = d.route ?? [];
     if (!Array.isArray(route) || route.length > MAX_TAS_TIME_MS / 250 + 16) problems.push("route trop longue");

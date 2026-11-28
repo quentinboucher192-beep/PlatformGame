@@ -752,9 +752,12 @@ private:
             st.small = true;
             st.fontSize = fz(ui, 13);
             st.enabled = r.tas > 0;
+            // The alternate rows' band under the button, never over it (it greyed the button of
+            // rows 1, 3, 5…: each segment's « ▶ TAS » looks as enabled as it is).
+            const bool inView = !(row.bottom() < list.y || row.y > list.bottom());
+            if (inView && i % 2 == 0) ui.r().fillRoundedRect(row, ui.s(6), Color{18, 26, 50, 140});
             const bool go = ui.button("seg" + std::to_string(i), wb, watchText, st);
-            if (row.bottom() < list.y || row.y > list.bottom()) continue;
-            if (i % 2 == 0) ui.r().fillRoundedRect(row, ui.s(6), Color{18, 26, 50, 140});
+            if (!inView) continue;
             const float cy = row.center().y;
             const Rect vis{list.x, list.y, list.w, list.h};
             auto cell = [&](const std::string& s, float x, Align al, FontFace f, Color c, const std::string& id) {

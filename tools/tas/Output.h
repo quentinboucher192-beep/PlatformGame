@@ -16,6 +16,7 @@
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "game/tas/TasFile.h"
+#include "tools/tas/Search.h"
 
 namespace cosmic {
 class ContentDatabase;
@@ -37,6 +38,23 @@ std::string toolVersion();
 
 Verified recordAndVerify(const ContentDatabase& content, const LevelData& level, const LevelFingerprint& fp, RunCategory category,
                          const std::vector<InputFrame>& inputs, int64_t explored);
+
+/// Why `r` cannot GUIDE a search of this level (--guide, docs/TAS.md « Les guides »), in French;
+/// empty when it can: an exact replay of a run alone of this level, of this very version (its
+/// level hash) and simulation (kSimulationVersion), recorded with the keys per slot.
+std::string guideRefusal(const ReplayData& r, const std::string& levelId, const std::string& levelHash);
+/// A guide's file read and checked (guideRefusal): its inputs and its replay's id.
+bool readGuideReplay(const std::string& path, const std::string& levelId, const std::string& levelHash, std::vector<InputFrame>& out, std::string& replayId,
+                     std::string& why);
+
+/// The ROUTE of a player's run of this level from an older version of it (its inputs no longer
+/// play the same: only where Nova went, docs/TAS.md « Le tracé d'une ancienne version »): its
+/// recorded positions (the replay's frames, sampled at its rate) and its checkpoint times (its
+/// splits, ms, in the order it reached them). False (and why) for a replay of another level or
+/// without positions.
+bool readRouteReplay(const std::string& path, const std::string& levelId, std::vector<RouteHint>& route, std::vector<int64_t>& splits, std::string& why);
+/// The same from a replay already read.
+std::vector<RouteHint> routeOf(const ReplayData& r);
 
 /// The inputs of a replay file (an exact replay of this level), for --seed-replay.
 bool readSeedReplay(const std::string& path, const std::string& levelId, std::vector<InputFrame>& out, std::string& why);

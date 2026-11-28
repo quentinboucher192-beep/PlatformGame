@@ -60,6 +60,18 @@ struct TasSplit {
     int64_t timeMs = 0;      // the level's clock when it was reached
 };
 
+/// A run that GUIDED the search (docs/TAS.md « Les guides »): a player's run given to cosmic_tas
+/// (--guide), said on the run's sheet and curve. The run stays the machine's: never a record.
+struct TasGuide {
+    std::string player;    // its player's pseudonym (« votre PB » runs: this computer's player)
+    int64_t timeMs = 0;    // its time when it finishes the category (verified by cosmic_tas), else 0
+    std::string replayId;  // its replay (the attempt's id)
+    /// A run of an older version of the level: only its route guided the search (never its inputs).
+    bool routeOnly = false;
+    bool operator==(const TasGuide&) const = default;
+    static constexpr size_t kMax = 8;
+};
+
 struct TasRecord {
     std::string levelId;
     int levelVersion = 1;
@@ -78,6 +90,7 @@ struct TasRecord {
     int collectibles = 0;
     int totalCollectibles = 0;
     std::string replay;  // file name of the replay, in the folder of the JSON
+    std::vector<TasGuide> guidedBy;  // the players' runs that guided the search (empty: none)
     /// Not in the JSON: the folder of the files the record was read from by tasFor() (data/tas,
     /// or the runs downloaded from Cosmic Online and verified on this computer, TasOnline.h).
     /// tasReplayPath() and loadTasReplay() find its replay there; empty: the `root` they are given.
