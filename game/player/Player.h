@@ -57,8 +57,10 @@ constexpr float kDashGuardSeconds = 0.05f;
 /// Before, Nova flush against a wall or a closed door who slid found herself a little inside it,
 /// and the collisions only stop a wall ahead of the box: she went through it, whatever its
 /// thickness (a closed door of an arena, the boss alive). Now the wider box is moved off the wall
-/// it would overlap; without room for it, no slide. A replay recorded before plays with the rules
-/// of its time.
+/// it would overlap; without room for it, no slide. Likewise out of a slide under a low ceiling
+/// (a dash, a bounce or a blow): the standing box is taken only where there is room for it, else
+/// the slide's box is kept until there is (it went through the ceiling, upwards). A replay
+/// recorded before plays with the rules of its time.
 constexpr int kSlideInWallsSimulation = 20;
 constexpr float kDashBlowGuardSeconds = 0.15f;
 
@@ -153,7 +155,7 @@ public:
     const std::set<std::string>& powersUsed() const { return powersUsed_; }
 
     // Used by powers
-    void beginDash(Vec2 dir, float speed, float duration);
+    void beginDash(const GameWorld& w, Vec2 dir, float speed, float duration);
     void endDash();
     bool dashing() const { return state_ == PlayerState::Dash; }
     Vec2 dashDirection() const { return dashDir_; }
@@ -187,7 +189,7 @@ public:
     void setBlowGuard(float seconds) { blowGuardTimer_ = std::max(blowGuardTimer_, seconds); }
     bool blowGuarded() const { return blowGuardTimer_ > 0.0f; }
     void setPhased(float seconds) { phasedTimer_ = seconds; }
-    void launch(Vec2 velocity, bool resetJumps);
+    void launch(const GameWorld& w, Vec2 velocity, bool resetJumps);
     MoveOptions moveOptions() const;
     Vec2 aimDirection() const { return aim_; }
     /// 2.71: the attack under way (attacking()) and its direction (display, tests).
@@ -258,6 +260,9 @@ private:
     /// kSlideInWallsSimulation: the hitbox just made wider than `before` moved off the solids it
     /// overlaps (by what it grew); false: no room for it (the box is left as it is).
     bool fitWiderHitbox(const GameWorld& w, const Rect& before);
+    /// Out of a slide (or a climb) into another state: the standing hitbox; kSlideInWallsSimulation:
+    /// only where there is room for it, else the low box is kept and stands up as soon as there is.
+    void standUpFromSlide(const GameWorld& w);
     int wallDirection(const GameWorld& w) const;
     void chooseAnimation();
     void onAnimEvent(GameWorld& w, const std::string& e);

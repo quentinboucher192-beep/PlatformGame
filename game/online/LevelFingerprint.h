@@ -94,8 +94,9 @@ constexpr int kSimulationVersion = 20;  // 6: energy 150, time slow, magnet, air
                                        //    digests). The rankings are kept, as the player asked.
                                        // 20: the slide's wider hitbox never starts inside a wall
                                        //    (kSlideInWallsSimulation): sliding flush against a wall
-                                       //    or a closed door no longer goes through it. A replay of
-                                       //    before plays with its rules (same digests).
+                                       //    or a closed door no longer goes through it, nor a low
+                                       //    ceiling standing up out of a slide (dash, bounce, blow).
+                                       //    A replay of before plays with its rules (same digests).
 /// 2.62: version of the rules of cooperation (docs/COOP.md): a team of 2 or 3 players in one
 /// world. It changes nothing for a solo run (kSimulationVersion and its digests are the same);
 /// a team's attempts carry it, and any change of the team rules (solid players, revivals,

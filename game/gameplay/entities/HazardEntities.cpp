@@ -176,7 +176,7 @@ void DamageZoneEntity::onPlayerStay(GameWorld& w, float dt) {
     Player& pl = w.player();
     if (obj_.prop<bool>("bounce", false) && pl.alive() && pl.vel.y > -200.0f) {
         // 2.33: it throws Nova back up (plasma: hurt, never stuck in it).
-        pl.launch({pl.vel.x * 0.5f, -390.0f}, false);
+        pl.launch(w, {pl.vel.x * 0.5f, -390.0f}, false);
     }
     tick_ -= dt;
     if (tick_ > 0.0f) return;
