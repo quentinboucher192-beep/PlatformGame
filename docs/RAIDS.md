@@ -3812,8 +3812,10 @@ compte maintenant 2 à 8 joueurs). Seuls les joueurs simulés changent : ni sa r
 aucune version.
 
 **La mesure** : le banc du §36 (`COSMIC_GOAT_BENCH=1 COSMIC_GOAT_PARTS=abdomen COSMIC_GOAT_SEEDS=5`) ; nouveau,
-`COSMIC_GOAT_PLAYERS` : la taille du groupe (8 par défaut). Départs 1 à 5 (V : vaincu, E : groupe éliminé, D : debout au
-bout des 15 min ; entre parenthèses, la vie qui lui reste) :
+`COSMIC_GOAT_PLAYERS` : la taille du groupe (8 par défaut). Mesuré sur la 2.98 (simulation 19) ; repris après la fusion
+de la 2.101 (simulation 21 : glissades sous les plafonds bas) : à huit, les départs 1 à 5 donnent exactement les mêmes
+combats. Départs 1 à 5 (V : vaincu, E : groupe éliminé, D : debout au bout des 15 min ; entre parenthèses, la vie qui
+lui reste) :
 
 | Groupe | avant : vaincus | avant : vie restante | avant : temps | après : vaincus | après : vie restante | après : temps |
 |---|---|---|---|---|---|---|
