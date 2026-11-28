@@ -684,6 +684,10 @@ finit : **1:12.367**, vérifiée par la lecture normale des replays et écrite (
 course), 1,2 min après le départ — plus rapide que les deux entraînements de la nuit (1:12.958 et
 1:18.767), là où ni le réalignement seul (le combat ne se rejoue pas) ni « fresh » seul (ses fenêtres
 sur le boss partent de sa propre course lente) n'y arrivaient.
+Puis une branche engagée sur les 2 premières sections de cette course (CP2 à 23,925 s ; tours de
+8 min, sections 3 à 7) : 1:12.283 au troisième tour (sa fenêtre 6 à 7 : une meilleure sortie), puis
+1:12.267 par l'affinage ; ses arrivées en avance aux CP3 (0,25 s), CP5 (0,73 s) et CP6 (0,52 s)
+réalignées finissent en 1:12.358 : l'avance est absorbée par les plateformes et l'ascenseur.
 
 ### Vérification au fil de l'eau (2.99)
 
