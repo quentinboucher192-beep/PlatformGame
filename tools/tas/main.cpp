@@ -773,7 +773,12 @@ int main(int argc, char** argv) {
     // `runs` realigned: the leads given (none: every lead among them), until `budget` seconds.
     auto realignRuns = [&](const std::vector<PhaseSrc>& runs, std::vector<tas::PhaseLead> leads, double budget) {
         tas::Course course(*level, content, category);
-        tas::Sim sim(content, *level, course, category);
+        // One Sim per thread of the search (the leads are realigned in parallel).
+        std::vector<std::unique_ptr<tas::Sim>> own;
+        for (int t = 0; t < std::max(1, opt.threads); ++t) own.push_back(std::make_unique<tas::Sim>(content, *level, course, category));
+        std::vector<tas::Sim*> sims;
+        for (auto& s : own) sims.push_back(s.get());
+        tas::Sim& sim = *own.front();
         std::vector<tas::RunStudy> studies;
         for (const PhaseSrc& r : runs) studies.push_back(sim.study(r.run));
         std::vector<const tas::RunStudy*> sources;
@@ -791,7 +796,7 @@ int main(int argc, char** argv) {
         const auto t0 = std::chrono::steady_clock::now();
         const auto until = t0 + std::chrono::milliseconds(static_cast<int64_t>(budget * 1000.0));
         auto over = [&] { return training.stop.load() || std::chrono::steady_clock::now() >= until; };
-        const tas::PhaseSplice ps = tas::phaseSplice(sim, sources, elements, leads, po, over, [&](const tas::PhaseLead& l, const tas::PhaseRun& r) {
+        const tas::PhaseSplice ps = tas::phaseSplice(sims, sources, elements, leads, po, over, [&](const tas::PhaseLead& l, const tas::PhaseRun& r) {
             training.explored += r.tried;
             char line[300];
             std::snprintf(line, sizeof line, "Réalignement après la section %zu (%s, %.3f s au chrono, %.3f s d'avance) : %s, %lld essais", l.through,

@@ -244,6 +244,34 @@ TEST_CASE("tas branch: the prefix kept, the windows after it, the branch's own b
     CHECK(!tas::BranchPlan(prefix, 7, 7, 0.5).active() && !tas::BranchPlan({}, 2, 7, 0.5).active());
 }
 
+TEST_CASE("tas phase: the splice finds the leads worth realigning, the same on one thread or two") {
+    ContentDatabase content;
+    content.reload();
+    const LevelData L = elevatorLevel();
+    tas::Course course(L, content, RunCategory::AnyPercent);
+    tas::Sim a(content, L, course, RunCategory::AnyPercent), b(content, L, course, RunCategory::AnyPercent);
+    tas::RunStudy best;
+    for (int w = 720; w < 720 + 700 && !best.finishes(); w += 2) {
+        tas::RunStudy g = a.study(idleThenRight(w, w + 1800));
+        if (g.finishes() && g.ends.size() == 2) best = std::move(g);
+    }
+    CHECK(best.finishes());
+    if (!best.finishes()) return;
+    best.frames.resize(best.exitAt);
+    // A run early at the checkpoint that does not finish: its prefix plus the best run's last section
+    // could beat the best run (the sum of the best segments), so it is a lead; the best run's own is not.
+    tas::RunStudy early = a.study(idleThenRight(0, 1800));
+    const std::vector<const tas::RunStudy*> sources = {&best, &early};
+    const std::vector<tas::PhaseLead> leads = tas::phaseLeads(sources, course.sectionEnds().size(), 0.1f);
+    CHECK(leads.size() == 1 && leads[0].source == 1 && leads[0].through == 1 && leads[0].lead > 5.9f);
+    if (leads.empty()) return;
+    const auto elements = tas::periodicElements(L);
+    const tas::PhaseSplice one = tas::phaseSplice(a, sources, elements, leads, tas::PhaseOptions{}, {});
+    const tas::PhaseSplice two = tas::phaseSplice(std::vector<tas::Sim*>{&a, &b}, sources, elements, leads, tas::PhaseOptions{}, {});
+    CHECK(one.run.found && two.run.found && one.run.run == two.run.run && one.run.clock == two.run.clock);
+    CHECK(one.run.found && one.run.clock < best.clock - 3.0f && one.leads == 1);
+}
+
 TEST_CASE("tas phase: a run's power keys follow its powers into a world that carries them in other slots") {
     const tas::SlotLayout from = {"dash", "wave", "impulse", "", "", "", "", ""};
     const tas::SlotLayout to = {"dash", "wave", "shield", "impulse", "", "", "", ""};

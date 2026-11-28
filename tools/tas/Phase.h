@@ -121,6 +121,13 @@ struct PhaseSplice {
 PhaseSplice phaseSplice(Sim& sim, const std::vector<const RunStudy*>& sources, const std::vector<PeriodicElement>& elements, const std::vector<PhaseLead>& leads,
                         const PhaseOptions& opt, const std::function<bool()>& over,
                         const std::function<void(const PhaseLead&, const PhaseRun&)>& each = {});
+/// The same on several threads, one Sim each (a Sim's savestates belong to its own arena): the
+/// leads are taken in order by whichever thread is free; `each` is called from those threads.
+/// The same leads give the same runs (each realignment is deterministic); which is kept when two
+/// finish at the same time does not depend on the threads (the earlier lead in the list).
+PhaseSplice phaseSplice(const std::vector<Sim*>& sims, const std::vector<const RunStudy*>& sources, const std::vector<PeriodicElement>& elements,
+                        const std::vector<PhaseLead>& leads, const PhaseOptions& opt, const std::function<bool()>& over,
+                        const std::function<void(const PhaseLead&, const PhaseRun&)>& each = {});
 
 /// The frames of `run` up to the end of its last section reached (the course's), and how many
 /// sections that is: where a realignment can start from.

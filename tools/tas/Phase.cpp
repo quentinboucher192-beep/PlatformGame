@@ -1,9 +1,12 @@
 #include "tools/tas/Phase.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstdio>
 #include <memory>
+#include <mutex>
+#include <thread>
 
 #include "game/gameplay/GameWorld.h"
 #include "game/levels/LevelData.h"
@@ -486,22 +489,52 @@ std::vector<PhaseLead> phaseLeads(const std::vector<const RunStudy*>& sources, s
 
 PhaseSplice phaseSplice(Sim& sim, const std::vector<const RunStudy*>& sources, const std::vector<PeriodicElement>& elements, const std::vector<PhaseLead>& leads,
                         const PhaseOptions& opt, const std::function<bool()>& over, const std::function<void(const PhaseLead&, const PhaseRun&)>& each) {
+    return phaseSplice(std::vector<Sim*>{&sim}, sources, elements, leads, opt, over, each);
+}
+
+PhaseSplice phaseSplice(const std::vector<Sim*>& sims, const std::vector<const RunStudy*>& sources, const std::vector<PeriodicElement>& elements,
+                        const std::vector<PhaseLead>& leads, const PhaseOptions& opt, const std::function<bool()>& over,
+                        const std::function<void(const PhaseLead&, const PhaseRun&)>& each) {
     PhaseSplice out;
-    for (const PhaseLead& l : leads) {
-        if (over && over()) break;
-        const RunStudy& a = *sources[l.source];
-        if (l.through == 0 || l.through > a.ends.size()) continue;
-        const std::vector<InputFrame> prefix(a.frames.begin(), a.frames.begin() + static_cast<std::ptrdiff_t>(std::min(a.frames.size(), a.ends[l.through - 1])));
-        PhaseRun r = realign(sim, sources, elements, prefix, l.through, opt, over, static_cast<int>(l.source));
+    if (sims.empty()) return out;
+    std::vector<PhaseRun> runs(leads.size());
+    std::vector<uint8_t> done(leads.size(), 0);
+    std::atomic<size_t> next{0};
+    std::mutex m;
+    auto work = [&](Sim& sim) {
+        for (size_t k = next++; k < leads.size(); k = next++) {
+            if (over && over()) break;
+            const PhaseLead& l = leads[k];
+            const RunStudy& a = *sources[l.source];
+            if (l.through == 0 || l.through > a.ends.size()) continue;
+            const std::vector<InputFrame> prefix(a.frames.begin(), a.frames.begin() + static_cast<std::ptrdiff_t>(std::min(a.frames.size(), a.ends[l.through - 1])));
+            runs[k] = realign(sim, sources, elements, prefix, l.through, opt, over, static_cast<int>(l.source));
+            done[k] = 1;
+            if (each) {
+                std::lock_guard<std::mutex> lock(m);
+                each(l, runs[k]);
+            }
+        }
+    };
+    if (sims.size() == 1) {
+        work(*sims.front());
+    } else {
+        std::vector<std::thread> pool;
+        for (Sim* s : sims) pool.emplace_back([&work, s] { work(*s); });
+        for (auto& t : pool) t.join();
+    }
+    // In the leads' order (whatever thread realigned each one).
+    for (size_t k = 0; k < leads.size(); ++k) {
+        if (!done[k]) continue;
+        PhaseRun& r = runs[k];
         ++out.leads;
         out.tried += r.tried;
-        if (each) each(l, r);
         if (r.partialSections > out.furthest.partialSections ||
             (r.partialSections == out.furthest.partialSections && r.partialSections > 0 && r.partialClock < out.furthest.partialClock))
             out.furthest = r;
         if (r.found && (!out.run.found || r.clock < out.run.clock)) {
             out.run = std::move(r);
-            out.from = l;
+            out.from = leads[k];
         }
     }
     return out;
