@@ -140,8 +140,13 @@ mouvements de Nova et du terrain sert au **planificateur** (ci-dessous).
 
 **La progression d'un état** : la distance le long des repères déjà passés moins la distance des
 pieds de Nova au suivant, plus ce que le monde a fait en route, lu de façon générique : portes et
-leviers ouverts, récepteurs allumés, arènes vidées, ennemis battus (`LevelEntity::keepState`),
-barrières de pouvoir brisées, pouvoirs portés, phases et blessures des boss, cœurs restants. Une
+leviers ouverts, récepteurs allumés, arènes vidées (`LevelEntity::keepState`), barrières de
+pouvoir brisées, pouvoirs portés, phases et blessures des boss, cœurs restants. **Un monstre hors
+d'une arène ne compte pas** (2.101) : ni ses blessures, ni sa mort ; le frapper coûte du temps le
+plus souvent, et seul le temps de la course dit si c'était utile (« si tuer un monstre le fait
+ralentir il ne doit pas le tuer »). Les ennemis d'une arène en combat comptent (ses portes restent
+fermées jusqu'à la fin de ses vagues). Les doubles sauts font partie des coups essayés (le saut
+relâché puis repris en l'air, dans la recherche comme dans le planificateur). Une
 arène (une zone de combat dont les portes se ferment jusqu'à la fin de ses vagues) compte ses
 ennemis restants de la même façon avant et après son début : y entrer ne coûte rien, la commencer
 est un pas en avant ; pendant son combat, la progression est mesurée depuis son centre et aller
