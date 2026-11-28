@@ -327,6 +327,22 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                     ++aggro[std::to_string(static_cast<int>(gb.stage())) + " · " + raid::bots::roleName(session.bots().thought(k).role)];
             }
         }
+        if (std::getenv("COSMIC_GOAT_GENS") && steps % 30 == 0 && gb.routine()) {
+            // 2.98 (tuning runs, docs/RAIDS.md §36): Graviton's generators every quarter second — held (H), lit (o), off (-) —,
+            // its sectors announced (warn) or turned over (FLIP) and its wells (W), with the players in play.
+            const GameWorld& w = session.run().world();
+            std::vector<raid::BossMark> mk;
+            gb.routine()->marks(w, gb, mk);
+            std::string g;
+            for (const auto& m : mk) {
+                if (m.kind == raid::BossMark::Kind::Plate) g += m.clip == "gen_held" ? "H" : m.clip == "gen_on" ? "o" : "-";
+                if (m.kind == raid::BossMark::Kind::Zone && !m.label.empty()) g += m.strong ? " FLIP" : " warn";
+                if (m.kind == raid::BossMark::Kind::Target) g += " W";
+            }
+            int inPlay = 0;
+            for (int k = 0; k < w.teamSize(); ++k) inPlay += w.member(k).presence == GameWorld::Presence::Playing ? 1 : 0;
+            std::printf("      %6.1f s gens étape %d en jeu %d : %s\n", steps / 120.0, static_cast<int>(gb.stage()), inPlay, g.c_str());
+        }
         if (std::getenv("COSMIC_GOAT_FOES") && steps % 120 == 0) {
             // 2.87 (tuning runs): every second, the enemies of the fight (its mechanism's, its creatures) and their health.
             const GameWorld& w = session.run().world();
