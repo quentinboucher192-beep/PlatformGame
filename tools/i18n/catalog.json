@@ -36787,6 +36787,12 @@
    ]
   },
   {
+   "fr": "Joueurs simulés : contre le Cœur d'Asterion, ils le ramènent vers le milieu de son arène et n'attendent plus sous des orbes de vie hors de portée (2 départs sur 5 gagnés au lieu de 1).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Joueurs simulés : le saut par-dessus une onde tenu jusqu'en haut, la voûte de Graviton quittée à temps ; Heartbreaker tombe dans 18 départs sur 32 (avant 14), Dreadfang tombe pour la première fois (2 sur 32) et perd 57 % de sa vie (avant 53 %).",
    "where": [
     "data/news/changelog.json"
@@ -36818,6 +36824,12 @@
   },
   {
    "fr": "Joueurs simulés : une nouvelle façon d'esquiver contre Titanus, Graviton et Dreadfang (un endroit sûr au moment de l'impact, ruée couverte par la garde du dash, bouclier seulement sans issue) ; Dreadfang tombe dans 16 départs sur 32 (avant 2), Titanus perd 52 % de sa vie (avant 35 %), Graviton 45 % (avant 37 %).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Joueurs simulés contre Graviton : les âmes tombées sous son corps attendent qu'il s'éloigne, et une âme contre lui n'est approchée que bouclier prêt (moins de morts, combats plus longs ; Graviton reste debout).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -61732,6 +61744,12 @@
    ]
   },
   {
+   "fr": "Raids : les joueurs simulés contre Pyroclast tirent au-dessus de sa marée de magma, évitent la fosse de l'antichambre et ferment ses évents à tour de rôle quand ils sont peu nombreux.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : les règles d'une partie changent (zones par joueur, embuscades avant l'antre, vestiaire de l'antre), donc une instance ne réunit que des joueurs en 2.78.0 ou plus récent : mettez le jeu à jour pour rejoindre votre groupe.",
    "where": [
     "data/news/changelog.json"
@@ -61949,6 +61967,12 @@
   },
   {
    "fr": "Raids, fiche récapitulative : chaque raid terminé du clan, gagné ou non, garde sa fiche dans CLANS › RAIDS (l'historique des raids, la fiche de l'événement et les résultats l'ouvrent). En tête, sur le décor de la chute d'Asterion : « Asterion est tombé » ou « Raid terminé », la date, la durée, le clan, ses joueurs, ses groupes et ses renforts, son rang mondial et la note des joueurs ; puis sept chiffres clés : parties du titan, Cœur, zones terminées, reliques, morts, réanimations, groupes éliminés et repris.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids, joueurs simulés : contre Voidworm, un crochet fermé est lâché pour fermer le suivant (à deux joueurs aussi), ses porteurs défendent leur place contre les parasites et un avalé prend l'acide sous son bouclier — 10 victoires sur 10 à huit, 9 sur 10 à quatre, 6 sur 10 à deux.",
    "where": [
     "data/news/changelog.json"
    ]

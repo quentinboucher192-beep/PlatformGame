@@ -1,4 +1,10 @@
 {
+  "2.103.0": [
+    "Joueurs simulés : contre le Cœur d'Asterion, ils le ramènent vers le milieu de son arène et n'attendent plus sous des orbes de vie hors de portée (2 départs sur 5 gagnés au lieu de 1).",
+    "Raids, joueurs simulés : contre Voidworm, un crochet fermé est lâché pour fermer le suivant (à deux joueurs aussi), ses porteurs défendent leur place contre les parasites et un avalé prend l'acide sous son bouclier — 10 victoires sur 10 à huit, 9 sur 10 à quatre, 6 sur 10 à deux.",
+    "Raids : les joueurs simulés contre Pyroclast tirent au-dessus de sa marée de magma, évitent la fosse de l'antichambre et ferment ses évents à tour de rôle quand ils sont peu nombreux.",
+    "Joueurs simulés contre Graviton : les âmes tombées sous son corps attendent qu'il s'éloigne, et une âme contre lui n'est approchée que bouclier prêt (moins de morts, combats plus longs ; Graviton reste debout)."
+  ],
   "2.102.0": [
     "Raids : toujours sept groupes, un par branche (14 à 56 joueurs, liste d'attente au-delà) ; les paires se font par un même groupe à 3 s près ; un groupe ne quitte sa branche que pour remplacer un groupe éliminé ; défaite au bout de 60 min ou quand tous les groupes sont éliminés."
   ],
