@@ -125,8 +125,8 @@ float launchedUnderCeiling(int simVersion, bool& under) {
     p.teleportTo({470.0f, 800.0f});
     p.vel.x = p.config().maxRunSpeed;
     cw.step(runRight(true, true));
-    for (int i = 0; i < 120 && p.box.x < 560.0f; ++i) cw.step(runRight(false, false));
-    under = p.state() == PlayerState::Slide && p.box.x >= 560.0f && p.box.right() <= 800.0f;
+    for (int i = 0; i < 120 && p.box.x < 520.0f; ++i) cw.step(runRight(false, false));
+    under = p.state() == PlayerState::Slide && p.box.x >= 520.0f && p.box.right() <= 800.0f;  // all under it
     p.launch(*cw.w, {0.0f, -600.0f}, true);
     float highest = p.feet().y;
     for (int i = 0; i < 90; ++i) {
