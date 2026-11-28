@@ -228,6 +228,7 @@ std::string tasSourceLabel(const std::string& source) {
     if (source == "timing") return "le polissage des timings";
     if (source == "phase") return "le réalignement de phase (attendre que le niveau revienne en phase)";
     if (source == "branch") return "la branche (une avance gardée, la suite entraînée)";
+    if (source == "trajectory") return "les trajectoires (chaque passage essayé avec tous ses sauts et pouvoirs)";
     return source;
 }
 
