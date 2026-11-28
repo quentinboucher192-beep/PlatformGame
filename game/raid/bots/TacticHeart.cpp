@@ -43,6 +43,14 @@ public:
         const auto* rt = dynamic_cast<const AsterionHeartRoutine*>(gb.routine());
         if (!b || !rt) return;
         const Json& x = gb.rules()->extra;
+        // 2.98 (fight plan): its crown drags it toward its nearest player, and the group (come in from the west) struck it from
+        // its west side: it drifted onto its west balcony's artery and stayed there, its player under its beams and its crown
+        // (the third phase stuck for minutes). Its strikers now stand on its side toward the middle of its arena: it is drawn
+        // back there, a thousand pixels from both balconies.
+        if (const Json span = x.value("span", Json::array()); span.is_array() && span.size() == 2 && span[0].is_number() && span[1].is_number())
+            v.plan.pullX = (span[0].get<float>() + span[1].get<float>()) * 0.5f;
+        // Its arena's health orbs hang over its ledges: only those a single jump takes (one waited under for good otherwise).
+        v.plan.orbsInReach = true;
         const float lanceWarn = jget<float>(x.value("lances", Json::object()), "warn", 1.3f);
         const float rainWarn = jget<float>(x.value("rain", Json::object()), "warn", 1.2f);
         const Json sw = x.value("sweeps", Json::object()), ch = x.value("charges", Json::object());
