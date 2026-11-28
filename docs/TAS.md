@@ -367,16 +367,23 @@ sa vitesse (par 50 px/s, montée ou chute), au sol ou non, sauts en l'air et Das
 pour chacune **le chemin le plus rapide connu** (ses entrées depuis le chargement, en arbre partagé,
 et son état sauvegardé tant que la mémoire le permet : 140 par fil, les plus anciens oubliés et
 rejoués depuis leur ancêtre le plus proche). On tire une cellule selon sa **promesse** (son avance
-sur la meilleure course à progression égale, peu choisie, améliorée récemment), on y **revient** par
-son état sauvegardé, on **explore** quelques coups au hasard (et ceux d'un planificateur, si un
-crochet `proposals` en fournit), et chaque état **nouveau ou atteint plus tôt** devient ou améliore
-une cellule. Rien n'est jeté pour être « loin du prochain repère » : c'est ce qui laisse vivre
+sur la meilleure course à progression égale, peu choisie, améliorée récemment) et selon son
+**endroit** (la case de la grille, le repère, les jalons — pas la vitesse ni les sauts) : le poids
+d'un endroit est partagé entre ses cellules, si bien qu'un endroit atteint par une seule cellule (le
+premier pas d'un détour) est tiré aussi souvent que le sol le long de la meilleure course, connu à
+toutes les vitesses. On y **revient** par son état sauvegardé, on **explore** quelques coups au
+hasard (un saut tenu à la fin d'un coup l'est parfois encore au suivant : un saut complet, 58 px,
+tient la touche plus longtemps qu'un coup ne dure) et ceux d'un planificateur, si un crochet
+`proposals` en fournit ; chaque état **nouveau ou atteint plus tôt** devient ou améliore une
+cellule. Rien n'est jeté pour être « loin du prochain repère » : c'est ce qui laisse vivre
 d'autres routes. Une fin de section atteinte **plus tôt** que la meilleure course est jouée
 jusqu'à la sortie avec la suite de la meilleure course (raccord réaligné) ; plus rapide, elle est
 rejouée depuis le chargement puis offerte. L'exploration va **une section au-delà de la fenêtre** :
 une arrivée plus tôt qui ne se raccorde pas tout de suite peut y trouver son propre chemin. L'archive vit tant que le processus vit (tour après tour,
-une par fil : un état sauvegardé n'appartient qu'à son arène), bornée à 6 000 cellules par fil ; la
-course de chaque tour y entre comme une suite de cellules « ancres » (toutes les 0,5 s). Des
+une par fil : un état sauvegardé n'appartient qu'à son arène), bornée à 6 000 cellules par fil (quand
+elle est réduite, la cellule la plus tôt de chaque endroit passe avant les autres : la carte des
+endroits atteints reste entière) ; la course de chaque tour y entre comme une suite de cellules
+« ancres » (toutes les 0,5 s). Des
 **indices de route**, facultatifs (`GoExplore::routeHints` : des positions avec leur temps, prises
 par exemple de la trajectoire d'un fantôme), favorisent les cellules proches de ce chemin (×1,5, et
 jusqu'à ×3,5 quand elles y sont aussi tôt que l'indice ou plus tôt : ses temps aux points de
@@ -473,10 +480,20 @@ Ce que cela dit, honnêtement :
   décalages n'y changent rien (98 sur 130 au segment 1) ou cassent la suite (32) : le temps y est
   fixé plus loin. Il retrouve une image perdue quand elle compte (test).
 * **Sur le petit niveau du test** (un mur, une porte au pied qui s'ouvre à 12 s, le champ de
-  distance disant « par la porte »), l'exploration passe en 11,8 s au lieu de 16,1 s : **en
-  glissade, Nova passe la porte FERMÉE** (pieds au sol, ~230 px/s, à 5,8 s). C'est peut-être un
-  défaut du jeu (une porte fermée devrait bloquer une glissade) : à vérifier avant d'en faire une
-  technique.
+  distance disant « par la porte », trois marches de 50 px menant au rebord au-dessus du mur) :
+  avant la simulation 20, l'exploration passait en 11,8 s parce qu'une glissade traversait la porte
+  FERMÉE (défaut corrigé). Ensuite, elle ne trouvait plus que la porte : **15,900 s en 150 s**
+  (240 000 visites). Les cellules des marches et du rebord étaient bien atteintes, mais presque
+  jamais tirées, puis **jetées à la réduction de l'archive** : la montée coûte du temps à progression
+  égale (avance de -0,2 à -0,8 s), et des milliers de cellules du sol (mêmes endroits, autres
+  vitesses, autres sauts) passaient avant elles ; de plus, un coup au hasard ne tenait jamais le
+  saut plus de 24 images (48,6 px, moins qu'une marche : il fallait le double saut à chaque
+  marche). Avec le poids par endroit, la carte des endroits gardée et le saut tenu d'un coup à
+  l'autre : **12,167 s en 2 822 visites (1,4 s)**, le mur passé à 6,54 s par le rebord. Sur
+  8 graines, trouvé chaque fois, entre 2 800 et 8 200 visites (sans le saut tenu : entre 1 000 et
+  16 600 ; et alors, en 60 s, le poids par endroit seul échoue sur une graine sur quatre, la carte
+  gardée seule sur deux). Sur `sylvanox_01` (sections 1-2, 90 s, un fil), ni avant ni après aucun
+  gain : 4 039 visites au lieu de 3 007, 23 910 cellules nouvelles au lieu de 14 925.
 ### Les guides (2.99)
 
 Une recherche qui reste près de sa meilleure course ne trouve pas un autre chemin ni une autre

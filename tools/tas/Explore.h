@@ -11,13 +11,19 @@
 //   waypoint, what the world did (milestones). It keeps the fastest way known to reach it: its
 //   inputs from the load (a tree shared by the cells) and, while the memory allows, its savestate.
 // * The choice of a cell, weighted by its promise: ahead of the best run at the same progress
-//   (its clock against the best run's when it got that far), rarely chosen, recently improved.
+//   (its clock against the best run's when it got that far), rarely chosen, recently improved;
+//   and by PLACE (Nova's square of the grid, the waypoint, what the world did — not her speed or
+//   jumps): a place's weight is shared among its cells, so a place reached by one cell (a
+//   detour's first step, behind the best run at equal progress) is chosen as often as the
+//   ground along the best run, known at many speeds.
 // * Going back: its savestate (or its nearest ancestor's and the frames after it); exploring:
-//   a few random moves of a player (and moves offered from elsewhere: `proposals`, the planner).
+//   a few random moves of a player (a jump held at the end of a move is sometimes kept held: a
+//   full jump lasts longer than a move), and moves offered from elsewhere (`proposals`, the planner).
 // * A section's end reached EARLIER than the best run: the rest of the best run played on from
 //   there (re-joined, realigned); a faster finish, played again from the load, is a faster run.
 // * The archive lives as long as the process (round after round), one per thread (savestates
-//   belong to their arena), bounded: `maxCells` cells and `maxStates` savestates per thread.
+//   belong to their arena), bounded: `maxCells` cells and `maxStates` savestates per thread; when
+//   it is trimmed, the earliest cell of each place is kept first (the map of the places reached).
 // * Branch-and-bound (Bound.h): a state that cannot reach the section's end before the best
 //   run's split is not kept.
 // * Route hints (optional, `routeHints`): places with times from elsewhere (a player's ghost, the

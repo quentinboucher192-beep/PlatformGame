@@ -71,10 +71,16 @@ struct GoExplore::Archive {
         float lead = 0.0f;         // ahead of the best run at the same progress (s)
         bool anchor = false;       // a state of the best run
         float hint = 1.0f;         // the route hints' favour (1: none near)
+        int place = 0;             // its place (placeKeys, placeCells)
     };
     std::vector<Node> nodes;
     std::vector<Cell> cells;
     std::unordered_map<uint64_t, int> index;
+    // The places reached (a cell's place: where Nova is and what the world did, without her speed
+    // and the rest of her state) and how many cells each holds.
+    std::unordered_map<uint64_t, int> placeIndex;
+    std::vector<uint64_t> placeKeys;
+    std::vector<int> placeCells;
     size_t snaps = 0;
     uint64_t tick = 0;
     int64_t visits = 0;
@@ -137,6 +143,14 @@ struct GoExplore::Archive {
             for (const InputFrame& f : nodes[static_cast<size_t>(*it)].frames) sim.arena().step(f);
         if (!chain.empty()) keepState(sim, n, maxStates);
     }
+    int placeOf(uint64_t key) {
+        auto [it, fresh] = placeIndex.try_emplace(key, static_cast<int>(placeKeys.size()));
+        if (fresh) {
+            placeKeys.push_back(key);
+            placeCells.push_back(0);
+        }
+        return it->second;
+    }
     int addNode(int parent, std::vector<InputFrame> frames) {
         Node nd;
         nd.parent = parent;
@@ -149,8 +163,23 @@ struct GoExplore::Archive {
         if (cells.size() <= maxCells) return;
         std::vector<int> order(cells.size());
         for (size_t i = 0; i < order.size(); ++i) order[i] = static_cast<int>(i);
-        auto worth = [&](const Cell& c) { return (c.anchor ? 1.0e6f : 0.0f) + 3.0f * c.lead - 0.05f * static_cast<float>(c.chosen) + 0.0001f * c.potential; };
-        std::stable_sort(order.begin(), order.end(), [&](int a, int b) { return worth(cells[static_cast<size_t>(a)]) > worth(cells[static_cast<size_t>(b)]); });
+        // The earliest cell of each place first: the map of the places reached stays whole. A
+        // detour's first steps are behind the best run at equal progress (a climb costs time): they
+        // went before they were ever explored, for the many cells (speeds, jumps) of known places.
+        std::vector<int> first(placeKeys.size(), -1);
+        for (size_t i = 0; i < cells.size(); ++i) {
+            int& f = first[static_cast<size_t>(cells[i].place)];
+            if (f < 0 || cells[i].clock < cells[static_cast<size_t>(f)].clock) f = static_cast<int>(i);
+        }
+        std::vector<char> front(cells.size(), 0);
+        for (int f : first)
+            if (f >= 0) front[static_cast<size_t>(f)] = 1;
+        auto worth = [&](int i) {
+            const Cell& c = cells[static_cast<size_t>(i)];
+            return (c.anchor ? 1.0e6f : 0.0f) + (front[static_cast<size_t>(i)] ? 1.0e3f : 0.0f) + 3.0f * c.lead - 0.05f * static_cast<float>(c.chosen) +
+                   0.0001f * c.potential;
+        };
+        std::stable_sort(order.begin(), order.end(), [&](int a, int b) { return worth(a) > worth(b); });
         const size_t keepN = maxCells * 4 / 5;
         std::vector<char> keepCell(cells.size(), 0);
         for (size_t i = 0; i < keepN && i < order.size(); ++i) keepCell[static_cast<size_t>(order[i])] = 1;
@@ -163,6 +192,23 @@ struct GoExplore::Archive {
             }
         cells = std::move(kept);
         index = std::move(idx);
+        // The places still held, renumbered.
+        std::unordered_map<uint64_t, int> pidx;
+        std::vector<uint64_t> pkeys;
+        std::vector<int> pcells;
+        for (Cell& c : cells) {
+            const uint64_t key = placeKeys[static_cast<size_t>(c.place)];
+            auto [it, fresh] = pidx.try_emplace(key, static_cast<int>(pkeys.size()));
+            if (fresh) {
+                pkeys.push_back(key);
+                pcells.push_back(0);
+            }
+            c.place = it->second;
+            ++pcells[static_cast<size_t>(c.place)];
+        }
+        placeIndex = std::move(pidx);
+        placeKeys = std::move(pkeys);
+        placeCells = std::move(pcells);
         // The nodes still needed (the cells' ways), renumbered.
         std::vector<char> need(nodes.size(), 0);
         for (const Cell& c : cells)
@@ -249,6 +295,19 @@ ExploreStats GoExplore::run(const std::vector<Sim*>& sims, const Slice& slice) {
         double rejoinSeconds = 0.0;
         int firstS = 0, lastS = nSections - 1;
         size_t windowEnd = 0;
+        // A cell's place: Nova's square of the grid, the waypoint and what the world did (not her
+        // speed, her jumps, her energy...).
+        auto placeKey = [&](const Progress& p) {
+            const Player& pl = sim.world().player();
+            uint64_t h = 0x91aceull;
+            h = mixKey(h, static_cast<int64_t>(std::floor(pl.feet().x / o.cellPx)));
+            h = mixKey(h, static_cast<int64_t>(std::floor(pl.feet().y / o.cellPx)));
+            h = mixKey(h, p.waypoint);
+            h = mixKey(h, p.milestones);
+            h = mixKey(h, static_cast<int64_t>(p.powerSet));
+            h = mixKey(h, p.enemiesLeft);
+            return h;
+        };
         // The best run now: studied, its states along the window added as anchors, the cells' leads.
         auto refresh = [&] {
             uint64_t v = version.load();
@@ -292,6 +351,8 @@ ExploreStats GoExplore::run(const std::vector<Sim*>& sims, const Slice& slice) {
                     c.potential = p.potential;
                     c.waypoint = p.waypoint;
                     c.anchor = true;
+                    c.place = A.placeOf(placeKey(p));
+                    ++A.placeCells[static_cast<size_t>(c.place)];
                     A.index[key] = static_cast<int>(A.cells.size());
                     A.cells.push_back(c);
                     if (i >= windowEnd) break;
@@ -342,7 +403,10 @@ ExploreStats GoExplore::run(const std::vector<Sim*>& sims, const Slice& slice) {
             const float d = rng.unit();
             mv.dir = d < 0.55f ? 1 : (d < 0.85f ? -1 : 0);
             if (rng.chance(0.6f)) {
-                mv.jumpAt = static_cast<uint8_t>(j0 + (rng.chance(0.35f) ? rng.rangeInt(0, mv.len / 2) : 0));
+                // A full jump holds the key longer than a move lasts (58 px: 0.23 s at least, to the
+                // apex 0.38 s): the jump held at the end of the move before is sometimes kept held.
+                if (j0 && rng.chance(0.5f)) mv.jumpAt = 0;
+                else mv.jumpAt = static_cast<uint8_t>(j0 + (rng.chance(0.35f) ? rng.rangeInt(0, mv.len / 2) : 0));
                 mv.jumpHold = static_cast<uint8_t>(rng.chance(0.4f) ? mv.len : rng.rangeInt(1, mv.len));
                 if (rng.chance(0.35f)) {
                     const int at = mv.jumpAt + mv.jumpHold + 1 + rng.rangeInt(0, 8);
@@ -376,6 +440,10 @@ ExploreStats GoExplore::run(const std::vector<Sim*>& sims, const Slice& slice) {
                 double x = std::exp(lead / 0.35) / std::sqrt(1.0 + c.chosen);
                 if (A.visits - c.improved < 64) x *= 2.0;
                 if (c.anchor) x *= 0.6;
+                // Places, not states: a place's weight is shared among its cells, so that a place
+                // reached by one cell (a detour's first step) is chosen as often as one known at many
+                // speeds and jumps (the ground along the best run).
+                x /= static_cast<double>(std::max(1, A.placeCells[static_cast<size_t>(c.place)]));
                 // The route hints only seed the first exploration: their favour fades (halved every
                 // kHintHalfLife visits), novelty and promise stay what chooses.
                 x *= 1.0 + (static_cast<double>(c.hint) - 1.0) * hintFade;
@@ -523,6 +591,8 @@ ExploreStats GoExplore::run(const std::vector<Sim*>& sims, const Slice& slice) {
                     c.lead = (f < A.g.clockAt.size() ? A.g.clockAt[f] : A.bestClock) - p.clock;
                     c.hint = hintFavour(sim.world().player().feet(), p.clock);
                     if (fresh) {
+                        c.place = A.placeOf(placeKey(p));
+                        ++A.placeCells[static_cast<size_t>(c.place)];
                         A.index[key] = static_cast<int>(A.cells.size());
                         A.cells.push_back(c);
                         ++mine.cellsNew;
