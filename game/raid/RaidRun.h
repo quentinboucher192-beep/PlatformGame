@@ -6,9 +6,12 @@
 // rules of the raid run around them, step by step:
 //
 // * objectives: the zone's events (an arena cleared, a guardian killed, a generator hit, a
-//   relic taken) mark them done for the instance; the two objectives of a pair (the bellows of
-//   the Coude-forge) are done by two distinct groups: once one is done by this instance, the
-//   other refuses it;
+//   relic taken) mark them done for the instance; §41 (titan 16): the two objectives of a pair (the
+//   bellows of the Coude-forge, each branch's zone 4, the Torse's plates) are done by ONE group split
+//   in two, at the same time: a half hit alone is « armed » for kPairWindow steps (3 s); its other half
+//   hit meanwhile completes both (each reported at the step it was hit), else the half closes again
+//   (its receptor off) and both are to do again. A half whose other one the branch already validated
+//   completes alone;
 // * passages: 2.78, a player in play who walks into an open passage changes zone ALONE: the others
 //   stay where they are, and the group may be spread over several zones of the branch. They keep
 //   their hearts, energy, powers and presence, and appear at the zone's place for where they come
@@ -123,6 +126,9 @@ public:
     /// Loads the start zone (the branch's state known at step 0); `zone` another one (tests, a group
     /// taking a wiped zone again); 2.75: kArmory, the branch's armory first (its start zone without one).
     static constexpr int kArmory = -1;
+    /// §41 (titan 16): the two halves of a pair are done together, 3 s apart at most (server/src/raidZones.ts
+    /// PAIR_WINDOW_TICKS, the same number of steps).
+    static constexpr uint32_t kPairWindow = 3u * static_cast<uint32_t>(kSimHz);
     bool begin(uint32_t branchMask, int zone = 0);
     /// One step: the frames of the step (one per seat) and the branch's state at this step; 2.72 (phase
     /// 6): in the heart's zones, the shared state of the Cœur d'Asterion given with it (RAID_STATE).
@@ -158,6 +164,10 @@ public:
     /// What the instance knows done: the branch's state and its own completions.
     uint32_t mask() const { return branchMask_ | local_; }
     uint32_t localDone() const { return local_; }
+    /// §41: the halves of pairs hit alone and still waiting for their other half (bit = objective index), and the steps
+    /// left before one closes again (0: not armed).
+    uint32_t pairArmed() const { return armed_; }
+    uint32_t pairStepsLeft(int index) const;
     /// 2.75: the branch's state as the server validated it (RAID_STATE at this step).
     uint32_t validated() const { return branchMask_; }
     /// 2.75: the zones finished while a player of the instance was in them (oldest first), the one
@@ -320,6 +330,10 @@ private:
     uint8_t seatsInPlay(const ZoneWorld& z) const;
     CoopView coopOf(const ZoneWorld& z, size_t index) const;
     void completed(ZoneWorld& z, const std::string& source, const std::string& trigger, int who);
+    /// An objective of the branch done by this instance (its alert, its contribution, its report at `tick`).
+    void accomplish(ZoneWorld& z, const ObjectiveInfo& info, const std::string& trigger, int who, uint32_t tick);
+    /// §41: the halves of pairs armed for longer than kPairWindow close again (their objects off).
+    void expirePairs();
     void reportResult(int zone);
     /// 2.75: the zones finished since the last step (once each): alert, and for those a player of the
     /// instance is in, their table and their report.
@@ -339,6 +353,11 @@ private:
     int serials_ = 0;
     uint32_t tick_ = 0;
     uint32_t branchMask_ = 0, local_ = 0;
+    // §41: the halves of pairs armed (bit = objective index): the step each was hit at, by whom, in which zone.
+    uint32_t armed_ = 0;
+    uint32_t armedTick_[32] = {};
+    int8_t armedWho_[32] = {};
+    int16_t armedZone_[32] = {};
     bool quiet_ = false;
     int follow_ = -1;
     Contributions contrib_;      // 2.68

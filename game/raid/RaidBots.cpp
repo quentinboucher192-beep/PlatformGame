@@ -359,10 +359,10 @@ int TestBots::chooseExit(const RaidRun& run, int* toZone) {
             todo.push_back(o);
         }
     }
-    // What this group can still do in a zone: an objective not done whose pair it did not do itself.
+    // What this group can still do in a zone: an objective not done (§41: both halves of a pair too).
     auto useful = [&](int z, bool optional) {
         for (const ObjectiveInfo& o : br.objectives)
-            if (o.zone == z && o.optional == optional && !Branch::done(mask, o.index) && br.pairDone(o, run.localDone()).empty()) return true;
+            if (o.zone == z && o.optional == optional && !Branch::done(mask, o.index)) return true;
         return false;
     };
     int best = -1;
@@ -817,6 +817,14 @@ void TestBots::think(RaidRun& run, InputFrame* frames, int count, uint32_t seats
         const Vec2 d = e->center() - w.playerAt(s).center();
         if (std::fabs(d.x) > e->box.w * 0.5f + 22.0f || std::fabs(d.y) > e->box.h * 0.5f + 18.0f) syncReady_ = false;
     }
+    // §41 (titan 16): the halves of a pair with a player at its firing place (the end of its way, on the ground): its
+    // other half fires when this one can too (both within 3 s), or once it is armed.
+    pairReady_ = 0;
+    for (int s = 0; s < n; ++s) {
+        const Bot& b = bots_[static_cast<size_t>(s)];
+        if (!((seats >> s) & 1u) || b.pairHalf < 0 || b.pairHalf >= 32 || b.act != Shoot || !playing(w, s)) continue;
+        if (b.goalNode >= 0 && !b.path.empty() && b.at + 1 >= b.path.size() && w.playerAt(s).grounded()) pairReady_ |= 1u << b.pairHalf;
+    }
     for (int s = 0; s < n; ++s)
         if ((seats >> s) & 1u) {
             frames[s] = drive(run, s, bots_[static_cast<size_t>(s)]);
@@ -931,6 +939,7 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             b.mechanism = {};
             b.mechanismClosed = false;
             b.revivee = 0;
+            b.pairHalf = -1;  // §41
             b.preAim = {};
             b.thought.order = false;
             if (wasTarget == 0) b.spot = -1;
@@ -1429,13 +1438,15 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         std::string thing, label;
         int quota;
         Rect area;
+        int index = -1;     // §41: its objective (a half of a pair)
+        bool pair = false;  // §41: a half of a pair (done with the other one at the same time, by this group)
     };
     std::vector<Job> light, heavy;
     const Branch& br = run.branch();
     for (const ZoneObjective& zo : run.rules().objectives) {
         if (zo.index < 0 || zo.index >= static_cast<int>(br.objectives.size())) continue;
         const ObjectiveInfo& info = br.objectives[static_cast<size_t>(zo.index)];
-        if (Branch::done(run.mask(), info.index) || !br.pairDone(info, run.localDone()).empty()) continue;
+        if (Branch::done(run.mask(), info.index)) continue;
         LevelEntity* e = w.entity(zo.source);
         if (!e || e->removed) continue;
         const std::string label = info.label;  // whole (its translation); shortened for the plan's line
@@ -1449,42 +1460,61 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             if (!en || !en->alive()) continue;
             heavy.push_back({Strike, en->box.bottomCenter(), en->uid(), e->id(), label, 8, en->box});
         } else if (zo.trigger == "activate") {
-            if (dynamic_cast<ReceptorEntity*>(e)) light.push_back({Shoot, e->box.center(), 0, e->id(), label, 2, e->box});
-            else light.push_back({Interact, e->box.bottomCenter(), 0, e->id(), label, 1, e->box});
+            if (dynamic_cast<ReceptorEntity*>(e)) light.push_back({Shoot, e->box.center(), 0, e->id(), label, 2, e->box, info.index, !info.pair.empty()});
+            else light.push_back({Interact, e->box.bottomCenter(), 0, e->id(), label, 1, e->box, info.index, !info.pair.empty()});
         } else if (zo.trigger == "collected") {
             light.push_back({Enter, e->box.bottomCenter(), 0, e->id(), label, 1, e->box});
         }
     }
     const bool jobs = !light.empty() || !heavy.empty();
-    for (const Job& j : light) {
-        int sent = 0;
-        for (int q = 0; q < j.quota; ++q) {
-            // A generator needs a shot (the wave or the boomerang): only those who carry one; the runner first.
-            auto canDo = [&](int seat) { return j.act != Shoot || shooter(w.playerAt(seat)) != nullptr; };
-            int s = nearestFree(j.at, [&](int seat) { return canDo(seat) && bots_[static_cast<size_t>(seat)].role == Role::Runner; });
-            if (s < 0) s = nearestFree(j.at, canDo);
-            if (s < 0 || (freeCount() <= 1 && !heavy.empty() && sent > 0)) break;
-            give(s, Task::Objective, j.at, j.act, 0, j.thing);
-            Bot& b = bots_[static_cast<size_t>(s)];
-            if (j.act == Shoot && nav) {
-                // Where the wave reaches it: its height, from 30 to 220 px, nothing between.
-                const Vec2 c = j.area.center();
-                const float half = j.area.h * 0.5f + 5.0f;
-                b.goalNode = nav->nearest(c, 230.0f, [&](const NavGraph::Node& nd) {
-                    const float dy = (nd.feet.y - 11.0f) - c.y;
-                    const float dx = std::fabs(nd.feet.x - c.x);
-                    return nd.mover < 0 && std::fabs(dy) <= half && dx >= 30.0f && dx <= 220.0f &&
-                           w.physics().lineOfSight({nd.feet.x, nd.feet.y - 11.0f}, c);
-                });
-                if (b.goalNode < 0) b.goalNode = standNode(j.area.expanded(24.0f));
-                think(b, "active " + j.label);
-            } else {
-                b.goalNode = standNode(j.area.expanded(4.0f));
-                think(b, (j.act == Interact ? "actionne " : "va chercher ") + j.label);
-            }
-            ++sent;
+    // The nearest free player who can do a job (a generator needs a shot, the wave or the boomerang: only those who
+    // carry one), the runner first; and what it is told to do there.
+    auto pick = [&](const Job& j) {
+        auto canDo = [&](int seat) { return j.act != Shoot || shooter(w.playerAt(seat)) != nullptr; };
+        int s = nearestFree(j.at, [&](int seat) { return canDo(seat) && bots_[static_cast<size_t>(seat)].role == Role::Runner; });
+        if (s < 0) s = nearestFree(j.at, canDo);
+        return s;
+    };
+    auto send = [&](const Job& j, int s) {
+        give(s, Task::Objective, j.at, j.act, 0, j.thing);
+        Bot& b = bots_[static_cast<size_t>(s)];
+        b.pairHalf = j.pair ? j.index : -1;
+        if (j.act == Shoot && nav) {
+            // Where the wave reaches it: its height, from 30 to 220 px, nothing between.
+            const Vec2 c = j.area.center();
+            const float half = j.area.h * 0.5f + 5.0f;
+            b.goalNode = nav->nearest(c, 230.0f, [&](const NavGraph::Node& nd) {
+                const float dy = (nd.feet.y - 11.0f) - c.y;
+                const float dx = std::fabs(nd.feet.x - c.x);
+                return nd.mover < 0 && std::fabs(dy) <= half && dx >= 30.0f && dx <= 220.0f &&
+                       w.physics().lineOfSight({nd.feet.x, nd.feet.y - 11.0f}, c);
+            });
+            if (b.goalNode < 0) b.goalNode = standNode(j.area.expanded(24.0f));
+            think(b, (j.pair ? "active ensemble " : "active ") + j.label);
+        } else {
+            b.goalNode = standNode(j.area.expanded(4.0f));
+            think(b, (j.act == Interact ? "actionne " : "va chercher ") + j.label);
         }
-        if (sent > 0) said.push_back(shortLabel(j.label) + " : " + std::to_string(sent));
+    };
+    // §41 (titan 16): the halves of a pair first, one player on each (the group splits: both at the same time, à 3 s
+    // près), then every job up to its quota.
+    std::vector<int> sentOf(light.size(), 0);
+    for (size_t i = 0; i < light.size(); ++i) {
+        if (!light[i].pair) continue;
+        const int s = pick(light[i]);
+        if (s < 0) break;
+        send(light[i], s);
+        ++sentOf[i];
+    }
+    for (size_t i = 0; i < light.size(); ++i) {
+        const Job& j = light[i];
+        for (int q = sentOf[i]; q < j.quota; ++q) {
+            const int s = pick(j);
+            if (s < 0 || (freeCount() <= 1 && !heavy.empty() && sentOf[i] > 0)) break;
+            send(j, s);
+            ++sentOf[i];
+        }
+        if (sentOf[i] > 0) said.push_back(shortLabel(j.label) + " : " + std::to_string(sentOf[i]));
     }
     for (size_t k = 0; !heavy.empty() && freeCount() > 0; ++k) {
         const Job& j = heavy[k % heavy.size()];
@@ -2591,11 +2621,27 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     if (b.act == Shoot && !fleeing && !dodging) {
         // A generator: from its place, facing it, the wave (or the boomerang).
         LevelEntity* e = w.entity(b.thing);
+        // §41 (titan 16): a half of a pair waits for its other half (a player at its place, or that half armed): both are
+        // hit within 3 s. Past 15 s of waiting it fires anyway (the other one may never come; its half closes again).
+        bool together = true;
+        if (b.pairHalf >= 0 && b.pairHalf < static_cast<int>(run.branch().objectives.size())) {
+            const ObjectiveInfo& half = run.branch().objectives[static_cast<size_t>(b.pairHalf)];
+            for (const ObjectiveInfo& x : run.branch().objectives)
+                if (x.index != half.index && x.pair == half.pair && x.index >= 0 && x.index < 32 && !Branch::done(run.mask(), x.index) &&
+                    !((run.pairArmed() >> x.index) & 1u) && !((pairReady_ >> x.index) & 1u))
+                    together = false;
+        }
         if (e && sh && keyBit(sh) >= 0 && nav && b.goalNode >= 0 && b.path.size() >= 1 && b.at + 1 >= b.path.size() && me.grounded()) {
             const float dx = e->box.center().x - me.center().x;
             dir = 0;
-            if ((dx >= 0.0f) != (me.facing >= 0.0f)) dir = dx > 0.0f ? 1 : -1;
-            else if (sh->ready(me) && !(b.prevHeld & (1u << keyBit(sh))) && noise(seat + 8 * static_cast<int>(seed_), tick_ + 13) < lv.precision + 0.1f) held |= 1u << keyBit(sh);
+            if (!together && ++b.pairWait < 15 * kSimHz) {
+                think(b, "attend l'autre moitié de la paire");
+                if ((dx >= 0.0f) != (me.facing >= 0.0f)) dir = dx > 0.0f ? 1 : -1;
+            } else if ((dx >= 0.0f) != (me.facing >= 0.0f)) dir = dx > 0.0f ? 1 : -1;
+            else if (sh->ready(me) && !(b.prevHeld & (1u << keyBit(sh))) && noise(seat + 8 * static_cast<int>(seed_), tick_ + 13) < lv.precision + 0.1f) {
+                held |= 1u << keyBit(sh);
+                b.pairWait = 0;
+            }
         }
     }
     // 2.84: an orb hanging in the air (over a floor, a platform): under it, a jump (or a double jump) to take it.

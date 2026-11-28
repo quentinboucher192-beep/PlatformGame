@@ -414,8 +414,7 @@ std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
 /// whole clan raid played locally by simulated players (raid::RaidSimulation), the administrator free to
 /// take a place in any group or to watch one; nothing is ever sent (no network, no report, no reward).
 struct RaidSimSetup {
-    int groups = 7;        // 1 to 14
-    int bots = 4;          // simulated players per group, the administrator not counted (1 to 7)
+    int players = 35;      // §41 (titan 16): the raid's players (14 to 56, the administrator's place counted) over seven groups
     bool fullGroups = false;  // 2.77.3: « Joueurs par groupe »: the administrator's seat of the other groups played too
     int skill = 1;         // 0 Débutant, 1 Confirmé, 2 Expert
     int difficulty = 3;    // titan 13: « Difficulté » (1 to 5)

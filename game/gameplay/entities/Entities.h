@@ -509,6 +509,9 @@ public:
     void update(GameWorld& w, float dt) override;
     void render(RenderContext& ctx) override;
     bool onPowerHit(GameWorld& w, const std::string& power, const Rect& area) override;
+    /// §41 (titan 16): « reset » switches it off again (a raid pair's half hit alone and not followed by the other
+    /// within 3 s: game/raid/RaidRun); nothing in a level ever asks it.
+    bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     Json keepState(GameWorld& w) const override;
     void restoreKept(GameWorld& w, const Json& state) override;
 

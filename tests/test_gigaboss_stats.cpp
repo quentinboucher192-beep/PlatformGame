@@ -346,16 +346,15 @@ TEST_CASE("2.77.3 layout: the statistics and the heart's three columns measured,
     app.shutdown();
 }
 
-TEST_CASE("2.77.3 « Simuler un raid complet », « Joueurs par groupe : 7 »: yours has you and 6 simulated players, every other group 7") {
+TEST_CASE("2.77.3 « Simuler un raid complet », §41 « 49 joueurs »: seven groups of 7: yours has you and 6 simulated players, every other group 7") {
     Svc s;
     raid::SimSetup setup;
-    setup.groups = 3;
-    setup.bots = 6;  // N − 1
+    setup.players = 49;  // §41: seven groups of 7
     setup.fullGroups = true;
     setup.skill = raid::BotSkill::Expert;
     raid::RaidSimulation sim(s.ws(), setup);
     CHECK(sim.begin());
-    CHECK(sim.groups().size() == 3);
+    CHECK(sim.groups().size() == 7);
     CHECK(sim.seated() && sim.viewed() == 0);
     auto count = [&](int g, bool admin, int bots) {
         const raid::TestSession& t = *sim.group(g).session;

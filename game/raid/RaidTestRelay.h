@@ -49,9 +49,8 @@ struct RelayedTestConfig {
     int startPhase = 1;
     uint32_t parts = 0x7Fu;
     int relics = 0;
-    // The whole raid (RaidSimSetup).
-    int groups = 7;
-    int bots = 4;
+    // The whole raid (RaidSimSetup). §41 (titan 16): its players (14 to 56) spread over seven groups.
+    int raidPlayers = 35;
     bool fullGroups = false;  // 2.77.3: « Joueurs par groupe »: the administrator's place played where they are not
     // Both.
     int skill = 1;
@@ -66,7 +65,7 @@ struct RelayedTestConfig {
     static std::optional<RelayedTestConfig> fromJson(const std::string& mode, const Json& config);
     /// The seats of a group (the administrator's place included) and the simulated players an invited
     /// player can replace in one group.
-    int seatsPerGroup() const { return fullRaid ? bots + 1 : players; }
+    int seatsPerGroup() const { return fullRaid ? raidPlayers / 7 : players; }  // §41: the smallest group's places
 };
 
 /// The test of one zone as every computer builds it from the same settings (the heart's parts given as

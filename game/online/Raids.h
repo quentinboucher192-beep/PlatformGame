@@ -22,6 +22,14 @@ namespace cosmic {
 namespace raids {
 
 constexpr int kGroupSize = 8;
+/// §41 (titan 16, docs/RAIDS.md): always seven groups at the start, one per branch of the titan (group k plays branch k);
+/// 14 registered at least for a clan to start (2 per group), 56 in play at most (8 per group), the others on a waiting list.
+constexpr int kRaidGroups = 7;
+constexpr int kMinGroup = 2;
+constexpr int kMinClanPlayers = kRaidGroups * kMinGroup;
+constexpr int kMaxInPlay = kRaidGroups * kGroupSize;
+/// §41: the standard raid lasts 60 minutes.
+constexpr int kStandardMinutes = 60;
 constexpr int kMaxInstructions = 600;
 constexpr int kMaxRewardsText = 300;
 /// A world event starts at least 15 minutes ahead (server: MIN_AHEAD_MS).
@@ -115,7 +123,7 @@ EventResult parseEventResult(const Json& j);
 struct Event {
     std::string id, kind = "world", raid = "asterion", name = "Asterion", displayName = "ASTERION", displayTitle = "LE DÉVOREUR DE MONDES";
     std::string format = "standard";
-    int formatMin = 45, formatMax = 60;
+    int formatMin = 60, formatMax = 60;  // §41: the standard raid lasts 60 min
     int64_t startsAt = 0, lockAt = 0, endsAt = 0;
     int lockMinutes = 30;
     bool registrationOpen = true;
@@ -125,6 +133,7 @@ struct Event {
     int clans = 0, players = 0;
     bool clanRegistered = false;
     int clanPlayers = 0, clanGroups = 0;
+    int clanInPlay = 0, clanWaiting = 0;  // §41: in play (56 at most), on the waiting list
     std::string clanLeader;
     bool registered = false;
     // 2.69 (phase 5): suspended by the administrators (nothing counts until the resumption), the late
@@ -145,7 +154,7 @@ State stateAt(const Event& e, int64_t now);
 std::string stateLabel(State s);
 /// « Raid court », « Raid standard », « Raid légendaire ».
 std::string formatLabel(const std::string& format);
-/// « Raid standard · 45 à 60 min ».
+/// « Raid standard · 60 min », « Raid court · 25 à 30 min ».
 std::string formatLine(const Event& e);
 /// « Asterion · raid court ».
 std::string eventName(const Event& e);
@@ -189,16 +198,34 @@ TabLayout tabLayout(const Json& overview, bool loggedIn);
 /// The clan's raids of the list (GET /raids « clan_events »), the hero's event left out.
 std::vector<Event> clanRaidList(const Json& overview, const std::string& heroId);
 
-/// A group of 8 of the sheet.
+/// A group of the sheet (§41: seven, one per branch, 2 to 8 players).
 struct Member {
     std::string id, username;
 };
 struct Group {
     int number = 0;
+    std::string branch, branchName;  // §41: its branch of the titan (part, name)
     Member leader;
     std::vector<Member> members;
 };
 std::vector<Group> parseGroups(const Json& groups);
+/// §41: the waiting list (beyond the 56 in play), in the order of registration.
+struct Waiting {
+    std::string id, username;
+    int rank = 0;
+};
+std::vector<Waiting> parseWaitlist(const Json& list);
+
+/// §41 (titan 16): how the raid ends for my clan (GET /titan, /results « outcome »): « victoire », « defaite_temps »
+/// (the 60 min over with the Cœur standing), « defaite_groupes » (every group eliminated), « en_cours ».
+struct Outcome {
+    std::string id = "en_cours";
+    bool defeat() const { return id == "defaite_temps" || id == "defaite_groupes"; }
+    bool victory() const { return id == "victoire"; }
+};
+Outcome parseOutcome(const Json& j);
+/// « Victoire : Asterion est tombé », « Défaite : temps écoulé », « Défaite : tous les groupes éliminés », « En cours ».
+std::string outcomeText(const std::string& id);
 
 /// The reminders chosen (GET /raids « prefs »): minutes before the start.
 std::vector<int> reminderPrefs(const Json& prefs);
@@ -272,6 +299,7 @@ struct Results {
     int heartHealth = -1;
     int heartPhase = 0;
     bool heartFallen = false;
+    Outcome outcome;  // §41: how the raid ends for my clan
 };
 Results parseResults(const Json& j);
 

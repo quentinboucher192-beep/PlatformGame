@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_to_4",
  "name": "Asterion · Torse · Sternum",
- "description": "Le sternum, cuirassé de deux plaques. Deux groupes, une plaque chacun ; le cœur pulse sous le métal et des barrières le défendent.",
+ "description": "Le sternum, cuirassé de deux plaques à briser ensemble, à 3 s près : le groupe se partage ; le cœur pulse sous le métal et des barrières le défendent.",
  "planet": "noyau",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -586,7 +586,7 @@
     24.0
    ],
    "props": {
-    "text": "Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+    "text": "Deux plaques à briser ensemble : le groupe se partage, une plaque chacun, à 3 s près (un pouvoir de tir).",
     "auto": true
    }
   },

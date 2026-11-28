@@ -75,6 +75,7 @@
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/Hud.h"
 #include "game/online/Clans.h"
+#include "game/online/Raids.h"
 #include "game/powers/PowerKeys.h"
 #include "game/raid/RaidCatalog.h"
 #include "game/raid/RaidChat.h"
@@ -177,8 +178,7 @@ public:
         testSetup_.difficulty = c.difficulty;  // titan 13
         simSetup_.difficulty = c.difficulty;
         testSetup_.invincible = false;  // the administrator's, not this player's
-        simSetup_.groups = c.groups;
-        simSetup_.bots = c.bots;
+        simSetup_.players = c.raidPlayers;    // §41: over seven groups
         simSetup_.fullGroups = c.fullGroups;  // 2.77.3
         simSetup_.skill = c.skill;
         simSetup_.invincible = c.invincible;
@@ -1315,7 +1315,7 @@ public:
         if (sim_) {
             // 2.77: the free place of every group is the administrator's; the others its simulated players.
             if (seat == 0) return simSetup_.fullGroups ? raid::TestSession::botName(0) : std::string("Place libre (vous)");  // 2.77.3
-            return seat <= simSetup_.bots ? raid::TestSession::botName(seat) : "Place libre";
+            return seat < sim_->group(shownGroup()).seats ? raid::TestSession::botName(seat) : "Place libre";  // §41: 2 to 8 places
         }
         // 2.72: a test's simulated players (the seats beyond them are free).
         if (session_) return seat < session_->players() ? raid::TestSession::botName(seat) : "Place libre";
@@ -1414,8 +1414,7 @@ public:
         if (!(relay_.on && !relay_.admin)) {
             raid::RelayedTestConfig c;
             c.fullRaid = true;
-            c.groups = simSetup_.groups;
-            c.bots = simSetup_.bots;
+            c.raidPlayers = simSetup_.players;    // §41: over seven groups
             c.fullGroups = simSetup_.fullGroups;  // 2.77.3: « Joueurs par groupe »
             c.skill = simSetup_.skill;
             c.difficulty = simSetup_.difficulty;  // titan 13
@@ -1581,6 +1580,8 @@ public:
         const raid::RaidSimulation::Group& g = sim_->group(shownGroup());
         std::string t = (relay_.on ? std::string("TEST EN LIGNE — rien n'est compté · ") : std::string("TEST LOCAL — rien n'est envoyé · ")) + g.name + " · " +
                         g.session->run().branch().name;
+        // §41: the raid decided (a defeat stops it), said right after where this player is.
+        if (sim_->outcome() != raid::RaidSimulation::Outcome::Running) t += " · " + simOutcome();
         if (g.wiped) t += " · groupe éliminé (spectateurs)";
         else if (shownSeated()) t += local_ == 0 && g.session->autopilot() ? " · vous : pilote automatique (AFK)" : " · vous jouez";
         else t += " · vous regardez";
@@ -1672,14 +1673,30 @@ public:
         return r.branch().name + " · " + (r.zone() == 0 ? std::string("Vestiaire") : z ? z->name : std::string("?"));
     }
 
+    /// §41 (titan 16): how the simulated raid ended (« Victoire : Asterion est tombé », « Défaite : temps écoulé », « Défaite : tous
+    /// les groupes éliminés »), else its time (« 12 min sur 60 »).
+    std::string simOutcome() const {
+        using O = raid::RaidSimulation::Outcome;
+        switch (sim_->outcome()) {
+            case O::Victory: return raids::outcomeText("victoire");
+            case O::DefeatTime: return raids::outcomeText("defaite_temps");
+            case O::DefeatWiped: return raids::outcomeText("defaite_groupes");
+            default: break;
+        }
+        if (sim_->deadline() == 0) return {};
+        return std::to_string(sim_->tick() / (60u * static_cast<uint32_t>(kSimHz))) + " min sur " + std::to_string(sim_->setup().minutes);
+    }
+
     void drawSimGroups(const Rect& body) {
         UIContext& ui = g_.ui;
-        const std::string head = "Gigaboss tombés : " + std::to_string(sim_->gigabossesDown()) + " / 7 · Cœur : " +
+        const std::string outcome = simOutcome();
+        const std::string head = (outcome.empty() ? std::string() : outcome + " · ") + "Gigaboss tombés : " + std::to_string(sim_->gigabossesDown()) + " / 7 · Cœur : " +
                                  (sim_->heartFallen() ? std::string("tombé") : sim_->heartOpen() ? "ouvert, " + std::to_string(sim_->heartTaken() / 100) + " % ôtés" : std::string("fermé")) +
                                  " · Reliques : " + std::to_string(sim_->relics()) + " / 7 · coût d'un pas du raid : " +
                                  std::to_string(static_cast<int>(sim_->avgStepMs() * 100.0 + 0.5) / 100) + "," +
                                  std::to_string(static_cast<int>(sim_->avgStepMs() * 100.0 + 0.5) % 100 / 10) + " ms";
-        fit(ui, head, {body.x, body.y + ui.s(10)}, 14, body.w, kText, FontFace::Bold);
+        const bool lost = sim_->outcome() == raid::RaidSimulation::Outcome::DefeatTime || sim_->outcome() == raid::RaidSimulation::Outcome::DefeatWiped;
+        fit(ui, head, {body.x, body.y + ui.s(10)}, 14, body.w, lost ? Color{255, 120, 120, 255} : kText, FontFace::Bold);
         const Rect list{body.x, body.y + ui.s(30), body.w, body.h - ui.s(30)};
         const float rowH = ui.s(72), gap = ui.s(8);
         const auto& groups = sim_->groups();
@@ -1808,6 +1825,8 @@ public:
         m.partKey = keyNames(Action::MenuTabPrev) + " / " + keyNames(Action::MenuTabNext);
         m.extraKeys = keyNames(Action::RaidMap) + " : onglet suivant du panneau";
         m.legend = "Test local : chiffres comptés par la simulation de chaque groupe, rien n'est envoyé au serveur.";
+        // §41: the raid decided, on the titan's map too.
+        if (sim_->outcome() != raid::RaidSimulation::Outcome::Running) m.legend = simOutcome() + ". " + m.legend;
         m.tooltipNote = "Compté par la simulation (test local).";
         const auto& groups = sim_->groups();
         const auto& branches = sim_->branches();

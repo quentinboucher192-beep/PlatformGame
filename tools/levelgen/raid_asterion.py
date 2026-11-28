@@ -6,7 +6,7 @@ raid_bras_droit.py (it is only read here, never written).
 
 Each branch: eight sub-zones, each a real level (data/raids/asterion/<branch>/zone_N.json, with
 its metadata.raid as in raid_bras_droit.py), and its catalog (branch.json): two paths from the
-entry, a secret zone, a shortcut opened by a lever, a zone that needs two groups (a pair of
+entry, a secret zone, a shortcut opened by a lever, a zone with a pair of objectives that one group does at once, split in two (a pair of
 objectives), a lock that waits for objectives of several zones (« generators »: the eyes of the
 skull, the frost hearts, the four plates of the torso…), an arena that opens the gigaboss' lair,
 whose door stays sealed (« <Gigaboss> — prochaine version »). Each branch has its own world
@@ -48,7 +48,7 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 15  # 15: Titanus lightened a little (« allège un peu », docs/RAIDS.md §38: hpScale 0.40 → 0.34, its crushing heel, shockwaves and boulders 1 s further apart, 18 s on its knee instead of 15; data only, the engine unchanged); 14 (2.90): after a dash the blows miss the player a little longer (simulation 18): an instance only gathers games of the same rules; 13: more footholds in the seven lairs and the Heart's arena (levelkit.Level.footholds: every storey's wide gaps filled, new storeys where the rise was too high; never by a mechanism, a lift's way or the boss's room), the Gigaboss and the Heart nerfed (hpScale, longer windows: about 10 min for a good group of 8 at 3 / 5), Voidworm's crown over its body, the event's difficulty (1 to 5) real (its health and damage, in the relay's level hash); 12: the galleries of the expeditions are ambushes too (their packs, an objective each), a gate after each one (a wall up to the top, its doors opened by the ambushes before it: metadata.raid.gates), the Poignet-verrou's towers end in a gate (their east door no longer the arena's, a wall over it); 11 (2.81.2): every co-op mechanism waits for the ambushes before it too (each one after an ambush in the expeditions), the goods lift started by its plate only, the walls of the locks, of the lift and over the doors of the plates up to the top of the level (no wall jumps over them); 10 (2.80): a passage that closes behind the group (an arena's doors) waits for every player of the zone (rules of cooperation 4); 9 (the ambush gates): every zone with an ambush (the entry's guard, the abdomen's nest) keeps its way on shut until it is beaten, the way back open, a branch's state seen in the zones already loaded; 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
+TITAN_REVISION = 16  # 16 (§41 of docs/RAIDS.md): a pair of objectives is done by ONE group split in two, both halves within 3 s (game/raid/RaidRun, raidZones.ts), never by two groups; its labels, signs and zones say it, no zone needs two groups any more; 15: Titanus lightened a little (« allège un peu », docs/RAIDS.md §38: hpScale 0.40 → 0.34, its crushing heel, shockwaves and boulders 1 s further apart, 18 s on its knee instead of 15; data only, the engine unchanged); 14 (2.90): after a dash the blows miss the player a little longer (simulation 18): an instance only gathers games of the same rules; 13: more footholds in the seven lairs and the Heart's arena (levelkit.Level.footholds: every storey's wide gaps filled, new storeys where the rise was too high; never by a mechanism, a lift's way or the boss's room), the Gigaboss and the Heart nerfed (hpScale, longer windows: about 10 min for a good group of 8 at 3 / 5), Voidworm's crown over its body, the event's difficulty (1 to 5) real (its health and damage, in the relay's level hash); 12: the galleries of the expeditions are ambushes too (their packs, an objective each), a gate after each one (a wall up to the top, its doors opened by the ambushes before it: metadata.raid.gates), the Poignet-verrou's towers end in a gate (their east door no longer the arena's, a wall over it); 11 (2.81.2): every co-op mechanism waits for the ambushes before it too (each one after an ambush in the expeditions), the goods lift started by its plate only, the walls of the locks, of the lift and over the doors of the plates up to the top of the level (no wall jumps over them); 10 (2.80): a passage that closes behind the group (an arena's doors) waits for every player of the zone (rules of cooperation 4); 9 (the ambush gates): every zone with an ambush (the entry's guard, the abdomen's nest) keeps its way on shut until it is beaten, the way back open, a branch's state seen in the zones already loaded; 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
@@ -160,7 +160,7 @@ class Spec:
                 event = "%s toutes les 75 s dans les galeries basses (étages sûrs)" % self.theme["hazard"][0]
             zones.append({"id": n, "name": name, "sub": sub, "x": x, "y": y, "level": "zone_%d.json" % n, "inside": inside,
                           "event": event, "secret": n == 5, "boss": n == 8,
-                          "groups_required": 2 if any(o[1] == n and o[6] for o in self.objectives) else 1,
+                          "groups_required": 1,  # §41 (titan 16): a pair is one group's (split in two), never two groups'
                           "minutes": minutes.get(n, 0)})
         objectives = [{"id": oid, "index": i, "zone": zone, "label": label, "optional": opt, "role": role, "pair": pair}
                       for i, (oid, zone, label, _, opt, role, pair) in enumerate(self.objectives)]
@@ -203,8 +203,8 @@ CRANE = Spec(
     [("crane_machoire", 1, "Briser la garde de la mâchoire : vaincre l'arène", "Break the jaw's guard: clear the arena", False, "", ""),
      ("crane_oeil_gauche", 2, "Crever l'œil gauche (un pouvoir de tir)", "Put out the left eye (a shooting power)", False, "generator", ""),
      ("crane_oeil_droit", 3, "Crever l'œil droit (un pouvoir de tir)", "Put out the right eye (a shooting power)", False, "generator", ""),
-     ("crane_nerf_gauche", 4, "Trancher le nerf gauche (un groupe)", "Sever the left nerve (one group)", False, "", "nerfs"),
-     ("crane_nerf_droit", 4, "Trancher le nerf droit (un autre groupe)", "Sever the right nerve (another group)", False, "", "nerfs"),
+     ("crane_nerf_gauche", 4, "Trancher le nerf gauche (en même temps que le droit)", "Sever the left nerve (together with the right one)", False, "", "nerfs"),
+     ("crane_nerf_droit", 4, "Trancher le nerf droit (en même temps que le gauche)", "Sever the right nerve (together with the left one)", False, "", "nerfs"),
      ("crane_ossuaire", 5, "Facultatif : emporter la relique de l'ossuaire", "Optional: take the ossuary's relic", True, "", ""),
      ("crane_tempe", 6, "Abattre le golem de la tempe", "Bring down the temple's golem", False, "", ""),
      ("crane_levier", 6, "Facultatif : ouvrir le passage vers les nerfs (levier)", "Optional: open the way to the nerves (lever)", True,
@@ -245,8 +245,8 @@ BRAS_GAUCHE = Spec(
      ("bg_golem", 2, "Abattre le golem de glace du biceps", "Bring down the biceps' ice golem", False, "", ""),
      ("bg_coeur_ouest", 3, "Briser le cœur de givre ouest (un pouvoir de tir)", "Break the west frost heart (a shooting power)", False,
       "generator", ""),
-     ("bg_lame_haute", 4, "Briser la lame haute (un groupe)", "Break the high blade (one group)", False, "", "lames"),
-     ("bg_lame_basse", 4, "Briser la lame basse (un autre groupe)", "Break the low blade (another group)", False, "", "lames"),
+     ("bg_lame_haute", 4, "Briser la lame haute (en même temps que la basse)", "Break the high blade (together with the low one)", False, "", "lames"),
+     ("bg_lame_basse", 4, "Briser la lame basse (en même temps que la haute)", "Break the low blade (together with the high one)", False, "", "lames"),
      ("bg_relique", 5, "Facultatif : emporter la relique de la crevasse", "Optional: take the crevasse's relic", True, "", ""),
      ("bg_coeur_est", 6, "Briser le cœur de givre est (un pouvoir de tir)", "Break the east frost heart (a shooting power)", False,
       "generator", ""),
@@ -288,12 +288,12 @@ TORSE = Spec(
      ("torse_poumon", 3, "Crever le poumon gauche (un pouvoir de tir)", "Burst the left lung (a shooting power)", False, "", ""),
      ("torse_levier", 3, "Facultatif : ouvrir le raccourci vers le Sternum (levier)", "Optional: open the shortcut to the Sternum (lever)",
       True, "shortcut", ""),
-     ("torse_plaque_nord", 4, "Briser la plaque nord (un groupe)", "Break the north plate (one group)", False, "generator", "plaques_sternum"),
-     ("torse_plaque_sud", 4, "Briser la plaque sud (un autre groupe)", "Break the south plate (another group)", False, "generator",
+     ("torse_plaque_nord", 4, "Briser la plaque nord (en même temps que la sud)", "Break the north plate (together with the south one)", False, "generator", "plaques_sternum"),
+     ("torse_plaque_sud", 4, "Briser la plaque sud (en même temps que la nord)", "Break the south plate (together with the north one)", False, "generator",
       "plaques_sternum"),
      ("torse_reliquaire", 5, "Facultatif : emporter la relique du reliquaire", "Optional: take the reliquary's relic", True, "", ""),
-     ("torse_plaque_est", 6, "Briser la plaque est (un groupe)", "Break the east plate (one group)", False, "generator", "plaques_cotes"),
-     ("torse_plaque_ouest", 6, "Briser la plaque ouest (un autre groupe)", "Break the west plate (another group)", False, "generator",
+     ("torse_plaque_est", 6, "Briser la plaque est (en même temps que l'ouest)", "Break the east plate (together with the west one)", False, "generator", "plaques_cotes"),
+     ("torse_plaque_ouest", 6, "Briser la plaque ouest (en même temps que l'est)", "Break the west plate (together with the east one)", False, "generator",
       "plaques_cotes"),
      ("torse_cage", 7, "Ouvrir la cage du cœur : vaincre sa garde", "Open the heart cage: defeat its guard", False, "", ""),
      # 2.69 (phase 4B): the gigaboss of the branch; accepted once, it destroys the torso.
@@ -325,8 +325,8 @@ ABDOMEN = Spec(
     [("abd_diaphragme", 1, "Reprendre le diaphragme : vaincre sa garde", "Retake the diaphragm: defeat its guard", False, "", ""),
      ("abd_glande_nord", 2, "Crever la glande nord (un pouvoir de tir)", "Burst the north gland (a shooting power)", False, "generator", ""),
      ("abd_nid", 3, "Détruire le nid des parasites : vaincre ses gardes", "Destroy the parasite nest: defeat its guards", False, "", ""),
-     ("abd_valve_haute", 4, "Fermer la valve haute (un groupe)", "Close the high valve (one group)", False, "", "valves"),
-     ("abd_valve_basse", 4, "Fermer la valve basse (un autre groupe)", "Close the low valve (another group)", False, "", "valves"),
+     ("abd_valve_haute", 4, "Fermer la valve haute (en même temps que la basse)", "Close the high valve (together with the low one)", False, "", "valves"),
+     ("abd_valve_basse", 4, "Fermer la valve basse (en même temps que la haute)", "Close the low valve (together with the high one)", False, "", "valves"),
      ("abd_relique", 5, "Facultatif : emporter la relique de la poche", "Optional: take the pouch's relic", True, "", ""),
      ("abd_glande_sud", 6, "Crever la glande sud (un pouvoir de tir)", "Burst the south gland (a shooting power)", False, "generator", ""),
      ("abd_levier", 6, "Facultatif : ouvrir le raccourci vers l'Intestin (levier)", "Optional: open the shortcut to the Intestine (lever)",
@@ -364,8 +364,8 @@ JAMBE_GAUCHE = Spec(
      ("jg_generateur_ouest", 2, "Couper le générateur de gravité ouest (un pouvoir de tir)",
       "Cut the west gravity generator (a shooting power)", False, "generator", ""),
      ("jg_gardien", 3, "Abattre l'éclat de roche du muscle suspendu", "Bring down the hanging muscle's rock shard", False, "", ""),
-     ("jg_rotule_interieure", 4, "Briser la rotule intérieure (un groupe)", "Break the inner kneecap (one group)", False, "", "rotules"),
-     ("jg_rotule_exterieure", 4, "Briser la rotule extérieure (un autre groupe)", "Break the outer kneecap (another group)", False, "",
+     ("jg_rotule_interieure", 4, "Briser la rotule intérieure (en même temps que l'extérieure)", "Break the inner kneecap (together with the outer one)", False, "", "rotules"),
+     ("jg_rotule_exterieure", 4, "Briser la rotule extérieure (en même temps que l'intérieure)", "Break the outer kneecap (together with the inner one)", False, "",
       "rotules"),
      ("jg_relique", 5, "Facultatif : emporter la relique du sanctuaire", "Optional: take the sanctuary's relic", True, "", ""),
      ("jg_generateur_est", 6, "Couper le générateur de gravité est (un pouvoir de tir)",
@@ -406,8 +406,8 @@ JAMBE_DROITE = Spec(
      ("jd_golem", 2, "Abattre le golem de la cuisse-piston", "Bring down the piston thigh's golem", False, "", ""),
      ("jd_reacteur_ouest", 3, "Couper le réacteur ouest (un pouvoir de tir)", "Cut the west reactor (a shooting power)", False,
       "generator", ""),
-     ("jd_piston_haut", 4, "Bloquer le piston haut (un groupe)", "Jam the high piston (one group)", False, "", "pistons"),
-     ("jd_piston_bas", 4, "Bloquer le piston bas (un autre groupe)", "Jam the low piston (another group)", False, "", "pistons"),
+     ("jd_piston_haut", 4, "Bloquer le piston haut (en même temps que le bas)", "Jam the high piston (together with the low one)", False, "", "pistons"),
+     ("jd_piston_bas", 4, "Bloquer le piston bas (en même temps que le haut)", "Jam the low piston (together with the high one)", False, "", "pistons"),
      ("jd_relique", 5, "Facultatif : emporter la relique de la forge", "Optional: take the forge's relic", True, "", ""),
      ("jd_reacteur_est", 6, "Couper le réacteur est (un pouvoir de tir)", "Cut the east reactor (a shooting power)", False, "generator", ""),
      ("jd_levier", 6, "Facultatif : ouvrir le raccourci vers le Genou-forge (levier)",
@@ -1326,12 +1326,12 @@ def crane():
     z.lights(0, z.x, 26)
     z.save()
 
-    z = Zone(s, 4, "Les nerfs optiques relient les yeux au cerveau. Deux nerfs, deux groupes ; l'onde psychique y revient sans cesse.",
-             "The optic nerves link the eyes to the brain. Two nerves, two groups; the psychic wave keeps coming back.")
+    z = Zone(s, 4, "Les nerfs optiques relient les yeux au cerveau. Deux nerfs à trancher ensemble, à 3 s près : le groupe se partage ; l'onde psychique y revient sans cesse.",
+             "The optic nerves link the eyes to the brain. Two nerves to sever together, within 3 s: the group splits; the psychic wave keeps coming back.")
     z.west(low=3, high=2)
     x0 = z.flood(72, period=80.0, first=40.0, every=16)
-    z.L.sign(x0 + 3, z.y, tr("Deux nerfs, deux groupes : chaque groupe en tranche un (un pouvoir de tir).",
-                             "Two nerves, two groups: each group severs one (a shooting power)."))
+    z.L.sign(x0 + 3, z.y, tr("Deux nerfs à trancher ensemble : le groupe se partage, un nerf chacun, à 3 s près (un pouvoir de tir).",
+                             "Two nerves to sever together: the group splits, one nerve each, within 3 s (a shooting power)."))
     z.receptor("crane_nerf_gauche", x0 + 18)
     z.receptor("crane_nerf_droit", x0 + 54)
     z.enemy("flyer", x0 + 30, z.y - 9, name="renfort_1")
@@ -1420,12 +1420,12 @@ def bras_gauche():
     z.east(low=4, high=6)
     z.save()
 
-    z = Zone(s, 4, "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames : il faut deux groupes, un par lame. Les griffes balaient le sol.",
-             "The elbow of blades, where Dreadfang sharpens its claws. Two blades: two groups are needed, one per blade. The claws sweep the floor.")
+    z = Zone(s, 4, "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames à briser ensemble, à 3 s près : le groupe se partage. Les griffes balaient le sol.",
+             "The elbow of blades, where Dreadfang sharpens its claws. Two blades to break together, within 3 s: the group splits. The claws sweep the floor.")
     z.west(low=3, high=2)
     x0 = z.flood(70, period=75.0, first=40.0, every=16)
-    z.L.sign(x0 + 3, z.y, tr("Deux lames, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
-                             "Two blades, two groups: each group breaks one (a shooting power)."))
+    z.L.sign(x0 + 3, z.y, tr("Deux lames à briser ensemble : le groupe se partage, une lame chacun, à 3 s près (un pouvoir de tir).",
+                             "Two blades to break together: the group splits, one blade each, within 3 s (a shooting power)."))
     z.slab(x0 + 40, z.y - 11, x0 + 52, z.y - 9)
     z.receptor("bg_lame_haute", x0 + 46, y=z.y - 11)
     z.receptor("bg_lame_basse", x0 + 24)
@@ -1518,13 +1518,13 @@ def torse():
     z.lights(0, z.x, 26)
     z.save()
 
-    z = Zone(s, 4, "Le sternum, cuirassé de deux plaques. Deux groupes, une plaque chacun ; le cœur pulse sous le métal et des barrières le défendent.",
-             "The sternum, armoured with two plates. Two groups, one plate each; the heart pulses under the metal and barriers defend it.")
+    z = Zone(s, 4, "Le sternum, cuirassé de deux plaques à briser ensemble, à 3 s près : le groupe se partage ; le cœur pulse sous le métal et des barrières le défendent.",
+             "The sternum, armoured with two plates to break together, within 3 s: the group splits; the heart pulses under the metal and barriers defend it.")
     z.west(low=2, high=3)
     x0 = z.flood(72, period=45.0, first=25.0, duration=4.0, every=16)
     z.lasers([x0 + 12, x0 + 60], ["barriere_2", "barriere_3"], top_gap=10)
-    z.L.sign(x0 + 3, z.y, tr("Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
-                             "Two plates, two groups: each group breaks one (a shooting power)."))
+    z.L.sign(x0 + 3, z.y, tr("Deux plaques à briser ensemble : le groupe se partage, une plaque chacun, à 3 s près (un pouvoir de tir).",
+                             "Two plates to break together: the group splits, one plate each, within 3 s (a shooting power)."))
     z.slab(x0 + 30, z.y - 11, x0 + 42, z.y - 9)
     z.receptor("torse_plaque_nord", x0 + 36, y=z.y - 11)
     z.receptor("torse_plaque_sud", x0 + 48)
@@ -1538,16 +1538,16 @@ def torse():
            "Un reliquaire caché entre les côtes, tout près du cœur. Une relique y brille.",
            "A reliquary hidden between the ribs, right by the heart. A relic shines there.")
 
-    z = Zone(s, 6, "Les côtes basses, cuirassées de deux plaques. Deux groupes, une plaque chacun ; des parasites rampent entre les os.",
-             "The lower ribs, armoured with two plates. Two groups, one plate each; parasites crawl between the bones.")
+    z = Zone(s, 6, "Les côtes basses, cuirassées de deux plaques à briser ensemble, à 3 s près : le groupe se partage ; des parasites rampent entre les os.",
+             "The lower ribs, armoured with two plates to break together, within 3 s: the group splits; parasites crawl between the bones.")
     z.west(low=3)
     z.flat(10)
     z.cross(30)
     x0 = z.flood(60, period=50.0, first=30.0, duration=4.0, every=15)
     z.receptor("torse_plaque_ouest", x0 + 14)
     z.receptor("torse_plaque_est", x0 + 46)
-    z.L.sign(x0 + 3, z.y, tr("Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
-                             "Two plates, two groups: each group breaks one (a shooting power)."))
+    z.L.sign(x0 + 3, z.y, tr("Deux plaques à briser ensemble : le groupe se partage, une plaque chacun, à 3 s près (un pouvoir de tir).",
+                             "Two plates to break together: the group splits, one plate each, within 3 s (a shooting power)."))
     z.enemy("small", x0 + 24, name="parasite_3")
     z.enemy("flyer2", x0 + 36, z.y - 8, name="parasite_4")
     z.enemy("mid", x0 + 52, flip=True)
@@ -1604,13 +1604,13 @@ def abdomen():
     z.scatter(0, z.x, 0.3)
     z.save()
 
-    z = Zone(s, 4, "L'intestin du titan, long et mouvant. Deux valves : deux groupes, une chacun. L'acide y reflue souvent.",
-             "The titan's intestine, long and shifting. Two valves: two groups, one each. Acid flows back often.")
+    z = Zone(s, 4, "L'intestin du titan, long et mouvant. Deux valves à fermer ensemble, à 3 s près : le groupe se partage. L'acide y reflue souvent.",
+             "The titan's intestine, long and shifting. Two valves to close together, within 3 s: the group splits. Acid flows back often.")
     z.west(low=3, high=2)
     z.cross(26)
     x0 = z.flood(66, period=50.0, first=25.0, every=16)
-    z.L.sign(x0 + 3, z.y, tr("Deux valves, deux groupes : chaque groupe en ferme une (un pouvoir de tir).",
-                             "Two valves, two groups: each group closes one (a shooting power)."))
+    z.L.sign(x0 + 3, z.y, tr("Deux valves à fermer ensemble : le groupe se partage, une valve chacun, à 3 s près (un pouvoir de tir).",
+                             "Two valves to close together: the group splits, one valve each, within 3 s (a shooting power)."))
     z.slab(x0 + 36, z.y - 11, x0 + 48, z.y - 9)
     z.receptor("abd_valve_haute", x0 + 42, y=z.y - 11)
     z.receptor("abd_valve_basse", x0 + 20)
@@ -1698,12 +1698,12 @@ def jambe_gauche():
     z.scatter(0, z.x, 0.25)
     z.save()
 
-    z = Zone(s, 4, "Le genou du titan, tenu par deux rotules. Deux groupes, une rotule chacun ; des puits de gravité y écrasent tout.",
-             "The titan's knee, held by two kneecaps. Two groups, one kneecap each; gravity wells crush everything there.")
+    z = Zone(s, 4, "Le genou du titan, tenu par deux rotules à briser ensemble, à 3 s près : le groupe se partage ; des puits de gravité y écrasent tout.",
+             "The titan's knee, held by two kneecaps to break together, within 3 s: the group splits; gravity wells crush everything there.")
     z.west(low=3, high=2)
     x0 = z.flood(70, period=60.0, first=30.0, every=16)
-    z.L.sign(x0 + 3, z.y, tr("Deux rotules, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
-                             "Two kneecaps, two groups: each group breaks one (a shooting power)."))
+    z.L.sign(x0 + 3, z.y, tr("Deux rotules à briser ensemble : le groupe se partage, une rotule chacun, à 3 s près (un pouvoir de tir).",
+                             "Two kneecaps to break together: the group splits, one kneecap each, within 3 s (a shooting power)."))
     z.slab(x0 + 44, z.y - 11, x0 + 56, z.y - 9)
     z.receptor("jg_rotule_exterieure", x0 + 50, y=z.y - 11)
     z.receptor("jg_rotule_interieure", x0 + 22)
@@ -1787,12 +1787,12 @@ def jambe_droite():
     z.east(low=6, high=4)
     z.save()
 
-    z = Zone(s, 4, "Le genou-forge, actionné par deux pistons. Deux groupes, un piston chacun ; l'onde sismique y revient souvent.",
-             "The forge knee, driven by two pistons. Two groups, one piston each; the seismic wave comes back often.")
+    z = Zone(s, 4, "Le genou-forge, actionné par deux pistons à bloquer ensemble, à 3 s près : le groupe se partage ; l'onde sismique y revient souvent.",
+             "The forge knee, driven by two pistons to jam together, within 3 s: the group splits; the seismic wave comes back often.")
     z.west(low=3, high=2)
     x0 = z.flood(72, period=75.0, first=40.0, every=16)
-    z.L.sign(x0 + 3, z.y, tr("Deux pistons, deux groupes : chaque groupe en bloque un (un pouvoir de tir).",
-                             "Two pistons, two groups: each group jams one (a shooting power)."))
+    z.L.sign(x0 + 3, z.y, tr("Deux pistons à bloquer ensemble : le groupe se partage, un piston chacun, à 3 s près (un pouvoir de tir).",
+                             "Two pistons to jam together: the group splits, one piston each, within 3 s (a shooting power)."))
     z.slab(x0 + 40, z.y - 11, x0 + 52, z.y - 9)
     z.receptor("jd_piston_haut", x0 + 46, y=z.y - 11)
     z.receptor("jd_piston_bas", x0 + 22)

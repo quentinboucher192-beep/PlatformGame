@@ -628,36 +628,98 @@ void RaidRun::completed(ZoneWorld& z, const std::string& source, const std::stri
     for (const ZoneObjective& zo : z.rules->objectives) {
         if (zo.source != source || zo.trigger != trigger) continue;
         const ObjectiveInfo* info = zo.index >= 0 && zo.index < static_cast<int>(branch_.objectives.size()) ? &branch_.objectives[static_cast<size_t>(zo.index)] : nullptr;
-        if (!info || Branch::done(mask(), info->index)) continue;
-        // A pair (the bellows): never both by one instance.
-        if (!branch_.pairDone(*info, local_).empty()) {
-            z.world->hint("Un autre groupe doit accomplir celui-ci : votre groupe a déjà fait l'autre.", 4.0f);
-            continue;
-        }
-        local_ |= 1u << info->index;
-        alert("GROUPE · Objectif accompli : " + info->label, Alert::Kind::Group, z.zone);
-        // 2.68: an action of one player (a generator hit, a relic taken) is theirs; a fight won
-        // (an arena cleared, a guardian or the gigaboss down) is everyone's in play (in that zone).
-        contrib_.objective(*z.world, trigger == "activate" || trigger == "collected" ? who : -1);
-        Report rep;
-        rep.kind = Report::Kind::Objective;
-        rep.objective = info->id;
-        rep.zone = z.zone;
-        rep.tick = tick_;
-        reports_.push_back(std::move(rep));
-        reportResult(z.zone);
-        // 2.78: an ambush of the zone before a lair: how many are left (the passage says it too).
-        if (info->role == "ambush") {
-            const Branch::AmbushCount c = branch_.ambushes(z.zone, mask());
-            if (c.left > 0) {
-                const std::string text = Branch::ambushesLeftText(c);
-                z.world->hint(text, 3.5f);
-                alert("GROUPE · " + text, Alert::Kind::Group, z.zone);
+        if (!info || Branch::done(mask(), info->index) || info->index >= 32) continue;
+        if (!info->pair.empty()) {
+            // §41 (titan 16): a pair is ONE group's, split in two, both halves at the same time (« à 3 s près »). Its
+            // other halves not validated yet must all be armed within the window; else this one is armed and waits.
+            uint32_t open = 0;
+            bool all = true;
+            for (const ObjectiveInfo& x : branch_.objectives) {
+                if (x.index == info->index || x.pair != info->pair || x.index < 0 || x.index >= 32 || Branch::done(mask(), x.index)) continue;
+                open |= 1u << x.index;
+                all = all && ((armed_ >> x.index) & 1u) && tick_ - armedTick_[x.index] <= kPairWindow;
             }
+            if (open && !all) {
+                if (!((armed_ >> info->index) & 1u)) {
+                    armed_ |= 1u << info->index;
+                    armedTick_[info->index] = tick_;
+                    armedWho_[info->index] = static_cast<int8_t>(std::clamp(who, -1, kMaxInstancePlayers - 1));
+                    armedZone_[info->index] = static_cast<int16_t>(z.zone);
+                    const std::string name = info->label.substr(0, info->label.find(" ("));
+                    z.world->hint(name + " : l'autre moitié maintenant, à 3 s près !", 3.0f);
+                    alert("GROUPE · " + name + " : l'autre moitié dans les 3 s !", Alert::Kind::Group, z.zone);
+                }
+                continue;
+            }
+            // The other halves, each at the step it was hit, by whom hit it (in the same zone: a pair is in one zone).
+            for (const ObjectiveInfo& x : branch_.objectives) {
+                if (!((open >> x.index) & 1u) || x.index < 0 || x.index >= 32) continue;
+                armed_ &= ~(1u << x.index);
+                ZoneWorld* at = zw(armedZone_[x.index]);
+                accomplish(at ? *at : z, x, "activate", armedWho_[x.index], armedTick_[x.index]);
+            }
+            armed_ &= ~(1u << info->index);
+        }
+        accomplish(z, *info, trigger, who, tick_);
+    }
+}
+
+void RaidRun::accomplish(ZoneWorld& z, const ObjectiveInfo& info, const std::string& trigger, int who, uint32_t tick) {
+    local_ |= 1u << info.index;
+    alert("GROUPE · Objectif accompli : " + info.label, Alert::Kind::Group, z.zone);
+    // 2.68: an action of one player (a generator hit, a relic taken) is theirs; a fight won
+    // (an arena cleared, a guardian or the gigaboss down) is everyone's in play (in that zone).
+    contrib_.objective(*z.world, trigger == "activate" || trigger == "collected" ? who : -1);
+    Report rep;
+    rep.kind = Report::Kind::Objective;
+    rep.objective = info.id;
+    rep.zone = z.zone;
+    rep.tick = tick;
+    reports_.push_back(std::move(rep));
+    reportResult(z.zone);
+    // 2.78: an ambush of the zone before a lair: how many are left (the passage says it too).
+    if (info.role == "ambush") {
+        const Branch::AmbushCount c = branch_.ambushes(z.zone, mask());
+        if (c.left > 0) {
+            const std::string text = Branch::ambushesLeftText(c);
+            z.world->hint(text, 3.5f);
+            alert("GROUPE · " + text, Alert::Kind::Group, z.zone);
         }
     }
 }
 
+uint32_t RaidRun::pairStepsLeft(int index) const {
+    if (index < 0 || index >= 32 || !((armed_ >> index) & 1u)) return 0;
+    const uint32_t since = tick_ - armedTick_[index];
+    return since >= kPairWindow ? 0 : kPairWindow - since;
+}
+
+void RaidRun::expirePairs() {
+    if (!armed_) return;
+    for (int k = 0; k < 32 && k < static_cast<int>(branch_.objectives.size()); ++k) {
+        if (!((armed_ >> k) & 1u)) continue;
+        const ObjectiveInfo& info = branch_.objectives[static_cast<size_t>(k)];
+        // Validated meanwhile for the branch (its other half too, by the server): nothing to undo.
+        if (Branch::done(mask(), k)) {
+            armed_ &= ~(1u << k);
+            continue;
+        }
+        if (tick_ - armedTick_[k] <= kPairWindow) continue;
+        armed_ &= ~(1u << k);
+        // Its object closes again (in its world, and in what its zone keeps once left): both halves to do again.
+        const int zone = armedZone_[k];
+        if (const ZoneRules* rules = branch_.zoneRules(zone))
+            for (const ZoneObjective& zo : rules->objectives) {
+                if (zo.index != k) continue;
+                if (ZoneWorld* w = zw(zone))
+                    if (LevelEntity* e = w->world->entity(zo.source)) e->handleAction(*w->world, "reset", Json::object());
+                if (auto m = memory_.find(zone); m != memory_.end()) m->second.objects.erase(zo.source);
+            }
+        const std::string name = info.label.substr(0, info.label.find(" ("));
+        alert("GROUPE · Trop tard : " + name + " se referme. Les deux ensemble, à 3 s près.", Alert::Kind::Group, zone);
+        if (ZoneWorld* w = zw(zone)) w->world->hint("Trop tard : " + name + " se referme. Les deux ensemble, à 3 s près.", 3.5f);
+    }
+}
 void RaidRun::reportResult(int zone) {
     if (lastResult_ == tick_) return;  // one table per step (an objective and a phase together)
     lastResult_ = tick_;
@@ -897,6 +959,7 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask, con
         }
         z.events.clear();
     }
+    expirePairs();  // §41: a half of a pair alone for more than 3 s closes again
     std::vector<std::pair<int, int>> groupMoves;  // (seat, passage) per zone, in order
     std::vector<std::pair<int, std::pair<int, int>>> moves;  // zone → (seat, passage)
     for (auto& zp : zones_) {
@@ -1093,6 +1156,9 @@ uint64_t RaidRun::hash() const {
     for (int i = 0; i < kMaxInstancePlayers; ++i) h = mix(h, static_cast<uint64_t>(seatZone_[i] + 1));
     h = mix(h, tick_);
     h = mix(h, (static_cast<uint64_t>(branchMask_) << 32) | local_);
+    // §41 (titan 16): the halves of pairs armed, and when (nothing armed: the digest of before).
+    for (int k = 0; k < 32; ++k)
+        if ((armed_ >> k) & 1u) h = mix(h, 0x5041495200000000ULL | (static_cast<uint64_t>(k) << 24) | (armedTick_[k] & 0xFFFFFFu));
     h = mix(h, contrib_.hash());  // 2.68 (phase 3)
     if (heart_.pack() != 0) h = mix(h, 0x4845415254000000ULL | heart_.pack());  // 2.72: the heart's shared state (zero elsewhere)
     if (wiped_) h = mix(h, 0x5749504500000000ULL | wipedTick_);                  // 2.75: the group wiped

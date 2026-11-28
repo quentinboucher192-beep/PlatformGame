@@ -11,6 +11,7 @@ import { GIGABOSS_BADGES, RAID_ACHIEVEMENTS, RAID_REWARDS, grantFor, type Contri
 import { catalogByPart } from "../src/raidMap";
 import { checkMap } from "../src/raidWorld";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -77,6 +78,7 @@ function row(seat: number, over: Partial<Contribution> = {}): Contribution {
 async function lairOf(b: (typeof BOSSES)[number], tag: string) {
     const a = await clan(tag, 2);
     const ev = await runningEvent(a);
+    await raidGroups(ev, a.id, { [b.part]: a.players }); // §41: the clan's seven groups, these two in the boss's branch
     const branch = catalogByPart(b.part)!.id;
     for (const o of b.before)
         await env.DB.prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, NULL, ?4)")

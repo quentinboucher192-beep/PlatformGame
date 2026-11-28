@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_ab_4",
  "name": "Asterion · Abdomen · Intestin",
- "description": "L'intestin du titan, long et mouvant. Deux valves : deux groupes, une chacun. L'acide y reflue souvent.",
+ "description": "L'intestin du titan, long et mouvant. Deux valves à fermer ensemble, à 3 s près : le groupe se partage. L'acide y reflue souvent.",
  "planet": "sylvanox",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -568,7 +568,7 @@
     24.0
    ],
    "props": {
-    "text": "Deux valves, deux groupes : chaque groupe en ferme une (un pouvoir de tir).",
+    "text": "Deux valves à fermer ensemble : le groupe se partage, une valve chacun, à 3 s près (un pouvoir de tir).",
     "auto": true
    }
   },

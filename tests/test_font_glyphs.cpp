@@ -190,8 +190,7 @@ TEST_CASE("fonts (2.79): the raid's panel, its menu and the contributions table 
             // « Simuler un raid complet »: each tab of its panel (groups, contributions, the world's events, the titan's map).
             for (int panel = 0; panel < 4; ++panel) {
                 RaidSimSetup s;
-                s.groups = 7;
-                s.bots = 7;
+                s.players = 56;  // §41: seven groups of 8
                 s.capture = true;
                 s.panel = panel;
                 const size_t before = app.sceneCount();
