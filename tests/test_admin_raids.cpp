@@ -143,7 +143,7 @@ TEST_CASE("raid catalogue (2.83): every raid of data/raids with its texts, art, 
     CHECK(a->formats.size() == 3);
     if (a->formats.size() == 3) {
         CHECK(a->formats[0].id == "court" && a->formats[0].minMinutes == 25 && a->formats[0].maxMinutes == 30);
-        CHECK(a->formats[1].id == "standard" && a->formats[1].minMinutes == 45 && a->formats[1].maxMinutes == 60);
+        CHECK(a->formats[1].id == "standard" && a->formats[1].minMinutes == 60 && a->formats[1].maxMinutes == 60);
         CHECK(a->formats[2].id == "legendaire" && a->formats[2].minMinutes == 75 && a->formats[2].maxMinutes == 90);
     }
     CHECK(a->formats[static_cast<size_t>(a->defaultFormat)].id == "standard");

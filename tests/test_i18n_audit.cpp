@@ -279,7 +279,7 @@ TEST_CASE("i18n audit: the texts the server writes, translated by their models")
         "Zone terminée : Biceps de basalte",
         "Groupe éliminé : Veine de magma (zone à reprendre)",
         "Zone reprise par un groupe de renfort : Épaule",
-        "Coude-forge : Détruire le soufflet ouest (un groupe) (0 / 2) · Détruire le soufflet est (un autre groupe) (0 / 2)",
+        "Coude-forge : Détruire le soufflet ouest (en même temps que l'est) (0 / 2) · Détruire le soufflet est (en même temps que l'ouest) (0 / 2)",
         "« Skullmaw ouvre les yeux : son regard traque chacun de vous. »",
         "Record mondial battu de plus de 20 % : vérification manuelle.",
         "Pseudonyme ou mot de passe incorrect.",

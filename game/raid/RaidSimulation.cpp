@@ -281,8 +281,12 @@ void RaidSimulation::setInvincibleSeats(int group, uint32_t seats) {
 }
 
 void RaidSimulation::step(const InputFrame& admin, const std::vector<Human>& humans) {
-    // §41: the raid lost (the time over, every group wiped): nothing steps any more, the titan stays as it ended.
-    if (outcome_ == Outcome::DefeatTime || outcome_ == Outcome::DefeatWiped) return;
+    // §41: the raid lost (the time over, every group wiped): no group steps any more, the titan stays as it ended (only the
+    // raid's clock goes on, so that a loop bounded by time ends).
+    if (outcome_ == Outcome::DefeatTime || outcome_ == Outcome::DefeatWiped) {
+        ++tick_;
+        return;
+    }
     const auto t0 = std::chrono::steady_clock::now();
     // What the heart's instances give each other (raidHeart.ts heartPackFor): the others' part, the
     // shared phase, the relics validated.

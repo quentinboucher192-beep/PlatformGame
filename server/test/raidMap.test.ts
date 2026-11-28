@@ -1,16 +1,18 @@
 // Clan raids « Asterion », phase 4 (raidMap.ts, docs/RAIDS.md): the seven branches of the titan,
 // the links between them (an objective accepted in one branch acts on another, through the state
 // the relays give their games), the consensus on a new branch, the global map that aggregates
-// every instance, and the placement of the players (8 at most per instance, up to 50 per clan,
-// late joiners where they are needed, the raid leader's moves and rebalancing).
+// every instance, and the placement of the players: §41 (titan 16), always seven groups per clan, one
+// per branch (14 to 56 players, a waiting list beyond), never another branch or group, the raid leader's
+// moves between groups (2 to 8 each) and rebalancing, how the raid ends (60 min, every group eliminated).
 
-import { env } from "cloudflare:test";
+import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { CATALOGS, HEART, PARTS, TITAN, catalogByPart, lockOpenIn, reachableIn, stateMaskOf, statesOf } from "../src/raidMap";
+import { Msg, WATCHER_SEAT } from "../src/coop";
 import { HEART_OBJECTIVE } from "../src/raidHeart";
 import { timesOf } from "../src/raids";
 import { branchMaskOf } from "../src/raidZones";
-import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
 import { fillRoster, raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
@@ -305,6 +307,25 @@ describe("§41 (titan 16): seven groups, one per branch", () => {
         // Seven instances per clan, never one more.
         const n = await env.DB.prepare("SELECT COUNT(*) AS n FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2").bind(ev, a.id).first<{ n: number }>();
         expect(n!.n).toBe(7);
+        // The relay too: a seat only in my group's instance; another group's socket only watches.
+        const hello = Uint8Array.from([Msg.Hello, 1, 255, 4, 84, 101, 115, 116]);
+        const seatIn = async (p: TestPlayer, inst: string) => {
+            const res = await SELF.fetch(`http://cosmic.test${V}/raids/instances/${inst}/socket`, {
+                headers: { upgrade: "websocket", authorization: `Bearer ${p.token}`, "cf-connecting-ip": freshIp() },
+            });
+            expect(res.status).toBe(101);
+            const ws = res.webSocket!;
+            const got: Uint8Array[] = [];
+            ws.accept();
+            ws.binaryType = "arraybuffer";
+            ws.addEventListener("message", (m) => got.push(new Uint8Array(m.data as ArrayBuffer)));
+            ws.send(hello);
+            await new Promise((x) => setTimeout(x, 40));
+            ws.close();
+            return got.find((m) => m[0] === Msg.Welcome)?.[1];
+        };
+        expect(await seatIn(a.players[0]!, torse)).toBe(WATCHER_SEAT);
+        expect(await seatIn(a.players[0]!, mine.body.data.instance.id as string)).toBe(0);
     });
 
     it("the raid leader moves a member between groups (2 to 8 each, checked by the server) and evens them out", { timeout: 60000 }, async () => {

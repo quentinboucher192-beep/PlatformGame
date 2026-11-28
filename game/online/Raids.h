@@ -123,7 +123,7 @@ EventResult parseEventResult(const Json& j);
 struct Event {
     std::string id, kind = "world", raid = "asterion", name = "Asterion", displayName = "ASTERION", displayTitle = "LE DÉVOREUR DE MONDES";
     std::string format = "standard";
-    int formatMin = 45, formatMax = 60;
+    int formatMin = 60, formatMax = 60;  // §41: the standard raid lasts 60 min
     int64_t startsAt = 0, lockAt = 0, endsAt = 0;
     int lockMinutes = 30;
     bool registrationOpen = true;
@@ -154,7 +154,7 @@ State stateAt(const Event& e, int64_t now);
 std::string stateLabel(State s);
 /// « Raid court », « Raid standard », « Raid légendaire ».
 std::string formatLabel(const std::string& format);
-/// « Raid standard · 45 à 60 min ».
+/// « Raid standard · 60 min », « Raid court · 25 à 30 min ».
 std::string formatLine(const Event& e);
 /// « Asterion · raid court ».
 std::string eventName(const Event& e);

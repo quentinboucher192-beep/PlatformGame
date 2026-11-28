@@ -351,9 +351,9 @@ TEST_CASE("raid run (§41): a pair is done by ONE group, both halves within 3 s;
         raid::RaidRun::Test test;
         test.on = true;
         test.invincible = true;
-        test.players = 2;
+        test.players = 1;  // only the administrator's seat, idle (no simulated player who would hit a half itself)
         auto t = std::make_unique<raid::TestSession>(s.ws(), *b, test);
-        t->setAdminSeated(false);
+        t->setAdminSeated(true);  // in play, no key (its autopilot only after 15 s: the test lasts 6)
         t->setBranchState(before);
         CHECK(t->begin(4));
         return t;
@@ -513,9 +513,9 @@ TEST_CASE("raid simulation (§41): defeat — « temps écoulé » at the end of
         for (int t = 0; t < 61 * kSimHz; ++t) sim.step(InputFrame{});
         CHECK(sim.outcome() == raid::RaidSimulation::Outcome::DefeatTime);
         CHECK(sim.endedAt() == 60u * kSimHz);
-        const uint32_t frozen = sim.tick();
+        const uint32_t frozen = sim.group(0).session->run().tick();
         sim.step(InputFrame{});
-        CHECK(sim.tick() == frozen);  // the raid is over: nothing steps any more
+        CHECK(sim.group(0).session->run().tick() == frozen);  // the raid is over: no group steps any more
         bool told = false;
         for (const auto& e : sim.feed()) told = told || e.text.find("DÉFAITE · Temps écoulé") == 0;
         CHECK(told);
@@ -534,8 +534,12 @@ TEST_CASE("raid simulation (§41): defeat — « temps écoulé » at the end of
         for (int k = 0; k < 6; ++k) wipeGroup(sim, k);
         for (int t = 0; t < kSimHz; ++t) sim.step(InputFrame{});
         CHECK(sim.outcome() == raid::RaidSimulation::Outcome::Running);  // one group still plays
-        wipeGroup(sim, 6);
-        for (int t = 0; t < kSimHz; ++t) sim.step(InputFrame{});
+        // The last one (a blow may not land while its player is between two states: again until it falls).
+        for (int tries = 0; tries < 20 && !sim.group(6).wiped; ++tries) {
+            wipeGroup(sim, 6);
+            for (int t = 0; t < kSimHz / 4; ++t) sim.step(InputFrame{});
+        }
+        CHECK(sim.group(6).wiped);
         CHECK(sim.outcome() == raid::RaidSimulation::Outcome::DefeatWiped);
         bool told = false;
         for (const auto& e : sim.feed()) told = told || e.text.find("DÉFAITE · Tous les groupes sont éliminés") == 0;

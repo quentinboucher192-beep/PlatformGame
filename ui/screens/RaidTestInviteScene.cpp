@@ -69,8 +69,9 @@ public:
         const auto c = raid::RelayedTestConfig::fromJson(mode, inv.value("config", Json::object()));
         if (!c) return "Un test d'Asterion (réglages illisibles pour cette version du jeu : mettez-la à jour).";
         if (c->fullRaid)
-            return "Raid complet simulé : " + std::to_string(c->groups) + (c->groups > 1 ? " groupes de " : " groupe de ") + std::to_string(c->bots + 1) +
-                   " places · vous jouez dans le Groupe " + std::to_string(jget<int>(inv, "group", 0) + 1) + " à la place d'un joueur simulé.";
+            // §41: always seven groups, the raid's players spread over them.
+            return "Raid complet simulé : " + std::to_string(c->raidPlayers) + " joueurs en 7 groupes · vous jouez dans le Groupe " +
+                   std::to_string(jget<int>(inv, "group", 0) + 1) + " à la place d'un joueur simulé.";
         std::string where = c->branch;
         for (const raid::Branch* b : raid::Branch::all())
             if (b->id == c->branch) {

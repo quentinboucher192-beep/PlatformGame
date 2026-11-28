@@ -254,7 +254,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0xb840f0e1c481a62eULL;  // reference (titan 13: more footholds in the Pyroclast's hand, its nerf): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0x861e5c784d99382fULL;  // reference (titan 16: the Coude-forge says its two bellows are destroyed together, §41; 13: more footholds in the Pyroclast's hand, its nerf): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -462,7 +462,7 @@ TEST_CASE("raid seats: absent 60 s the seat is freed; a late join takes a vacant
     CHECK(run.world().member(7).presence == GameWorld::Presence::Vacant);
 }
 
-TEST_CASE("raid objectives: the instance's completion counts at once, the pair needs another group") {
+TEST_CASE("raid objectives: the instance's completion counts at once, never twice (§41: a pair, both halves by one group: test_raid_sim_rules)") {
     Services s;
     raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
     CHECK(run.begin(0));

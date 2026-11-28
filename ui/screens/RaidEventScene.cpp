@@ -316,7 +316,7 @@ private:
                 {"Participation",
                  e.kind == "world" ? plural(e.clans, "clan", "clans") + " · " + plural(e.players, "joueur", "joueurs")
                                    : (e.capacity > 0 ? std::to_string(e.players) + " / " + std::to_string(e.capacity) + " inscrits" : plural(e.players, "inscrit", "inscrits")),
-                 "groupes de 8 joueurs", false},
+                 "7 groupes de 2 à 8 joueurs", false},  // §41
             };
             for (int i = 0; i < 4; ++i) {
                 const Rect c{left.x + static_cast<float>(i) * (cw + gap), y, cw, ch};

@@ -310,7 +310,7 @@ Event parseEvent(const Json& j) {
     e.displayName = jstr(j, "display_name", "ASTERION");
     e.displayTitle = jstr(j, "display_title", "LE DÉVOREUR DE MONDES");
     e.format = jstr(j, "format", "standard");
-    e.formatMin = jget<int>(j, "format_min", 45);
+    e.formatMin = jget<int>(j, "format_min", 60);
     e.formatMax = jget<int>(j, "format_max", 60);
     e.startsAt = timeOf(j, "starts_at");
     e.lockAt = timeOf(j, "lock_at");
@@ -398,7 +398,11 @@ std::string formatLabel(const std::string& f) {
     return "Raid standard";
 }
 
-std::string formatLine(const Event& e) { return formatLabel(e.format) + " · " + std::to_string(e.formatMin) + " à " + std::to_string(e.formatMax) + " min"; }
+std::string formatLine(const Event& e) {
+    // §41: the standard raid lasts 60 minutes (one number when both ends are the same).
+    if (e.formatMin == e.formatMax) return formatLabel(e.format) + " · " + std::to_string(e.formatMax) + " min";
+    return formatLabel(e.format) + " · " + std::to_string(e.formatMin) + " à " + std::to_string(e.formatMax) + " min";
+}
 
 std::string eventName(const Event& e) {
     const std::string f = e.format == "court" ? "raid court" : e.format == "legendaire" ? "raid légendaire" : "raid standard";
