@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { zoneFinishedIn, catalogById } from "../src/raidMap";
 import { BRANCH, implausibleZone, maskOf, zoneCanonical, type ZoneContribution } from "../src/raidZones";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -55,6 +56,7 @@ async function runningEvent(...clans: Clan[]): Promise<string> {
                 .bind(id, p.id, c.id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
                 .run();
     }
+    for (const c of clans) await raidGroups(id, c.id, { bras_droit: c.players }); // §41: the clan's seven groups (14 registered at least)
     return id;
 }
 
@@ -114,11 +116,11 @@ describe("2.75: a zone finished", () => {
         const titan = await api("GET", `${V}/raids/events/${ev}/titan`, { token: a.players[0]!.token });
         const zoneFeed = titan.body.data.feed.filter((f: { kind: string }) => f.kind === "zone");
         expect(zoneFeed).toHaveLength(1);
-        expect(zoneFeed[0]).toMatchObject({ by: "[AUBE]·1", zone: 2 });
+        expect(zoneFeed[0]).toMatchObject({ by: "[AUBE]·3", zone: 2 });
         expect(zoneFeed[0].text).toContain("Zone terminée");
         const map = await api("GET", `${V}/raids/events/${ev}/branches/bras_droit`, { token: a.players[0]!.token });
         const z2 = map.body.data.zones.find((z: { id: number }) => z.id === 2);
-        expect(z2).toMatchObject({ finished: true, finished_by: "[AUBE]·1" });
+        expect(z2).toMatchObject({ finished: true, finished_by: "[AUBE]·3" });
         expect(map.body.data.zones.find((z: { id: number }) => z.id === 4).finished).toBe(false);
     });
 });
@@ -159,7 +161,7 @@ describe("2.75: the « Tableau des contributions » of a zone", () => {
         expect(res.status).toBe(200);
         const t = res.body.data.zone_tables;
         expect(t).toHaveLength(1);
-        expect(t[0]).toMatchObject({ zone: 2, group: "[AUBE]·1", share_of: "boss" });
+        expect(t[0]).toMatchObject({ zone: 2, group: "[AUBE]·3", share_of: "boss" });
         expect(t[0].rows.map((r: { share: number }) => r.share)).toEqual([0.75, 0.25]);
         expect(t[0].rows.find((r: { me: boolean }) => r.me).seat).toBe(1);
         // Another clan's player never sees this group's tables.

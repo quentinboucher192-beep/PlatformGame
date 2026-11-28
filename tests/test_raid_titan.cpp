@@ -270,7 +270,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x881e57a0e171ad41ULL;  // reference (titan 15: Titanus lightened a little, docs/RAIDS.md §38; 13: more footholds in the lairs and the Heart's arena, the nerf, Voidworm's crown over its body): printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0xa9c96911917c1aa0ULL;  // reference (titan 16: each pair's zone says its two halves are done together by one group, §41; 15: Titanus lightened a little, docs/RAIDS.md §38; 13: more footholds in the lairs and the Heart's arena, the nerf, Voidworm's crown over its body): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }

@@ -29,6 +29,7 @@ import type { PlayerRow } from "./model";
 import { notify } from "./notifications";
 import { aftermathOf } from "./raidHeart";
 import { NO_REVIEWS, reviewSummaries } from "./raidReviews";
+import { CATALOGS, PARTS } from "./raidMap";
 import { bodiesOf, rewardsOf } from "./raidRewards";
 import { requireValidMap, resultSummaries } from "./raidWorld";
 import { RULES, rateLimit } from "./ratelimit";
@@ -36,7 +37,9 @@ import { Validator } from "./validate";
 
 export const RAID_FORMATS = {
     court: { min: 25, max: 30 },
-    standard: { min: 45, max: 60 },
+    // §41 (titan 16): the standard raid lasts 60 minutes (its end, ends_at = start + max: the clan loses if the Cœur
+    // still stands then).
+    standard: { min: 60, max: 60 },
     legendaire: { min: 75, max: 90 },
 } as const;
 export type RaidFormat = keyof typeof RAID_FORMATS;
@@ -58,6 +61,18 @@ export const RAIDS = {
 export type RaidId = keyof typeof RAIDS;
 
 export const GROUP_SIZE = 8;
+/**
+ * §41 (titan 16): ALWAYS seven groups at the start, one per branch of the titan (group k plays branch k, never two
+ * groups of a clan in one branch, no other instance). A clan starts with 14 registered at least (2 per group: the
+ * Gigaboss sheets are tuned for 2 to 8) and plays with 56 at most (8 per group); the others wait, in the order of their
+ * registration, and the first of them takes the place of anyone who unregisters before the start.
+ */
+export const RAID_GROUPS = 7;
+export const MIN_GROUP = 2;
+export const MIN_CLAN_PLAYERS = RAID_GROUPS * MIN_GROUP;
+export const MAX_IN_PLAY = RAID_GROUPS * GROUP_SIZE;
+/** §41: the size of group k (0-based) when `n` players are spread over the seven: as even as possible (sizes differ by 1 at most). */
+export const groupSizeOf = (n: number, k: number) => Math.floor(n / RAID_GROUPS) + (k < n % RAID_GROUPS ? 1 : 0);
 /** Reminders a player may choose (minutes before the start); 0 is the start itself, always sent. */
 export const REMINDER_CHOICES = [1440, 60, 10] as const;
 const TICK_OFFSETS = [1440, 60, 10, 0];
@@ -192,7 +207,18 @@ function eventView(e: EventRow, now: string) {
         organizer: e.clan_id ? { id: e.clan_id, tag: e.org_tag ?? "", name: e.org_name ?? "" } : null,
         clans: e.clans_count ?? 0,
         players: e.players_count ?? 0,
-        my_clan: { registered: !!e.my_clan_in, players: mine, groups: Math.ceil(mine / GROUP_SIZE), leader: e.leader_name ?? null },
+        // §41: seven groups; the players in play (56 at most), the waiting list, the minimum to start (14).
+        my_clan: {
+            registered: !!e.my_clan_in,
+            players: mine,
+            groups: Math.min(RAID_GROUPS, mine),
+            leader: e.leader_name ?? null,
+            in_play: Math.min(mine, MAX_IN_PLAY),
+            waiting: Math.max(0, mine - MAX_IN_PLAY),
+            min_players: MIN_CLAN_PLAYERS,
+            max_in_play: MAX_IN_PLAY,
+            ready: mine >= MIN_CLAN_PLAYERS,
+        },
         registered: !!e.me_in,
         // 2.69 (phase 5): suspended by the administrators (nothing counts until the resumption), the
         // late arrivals (minutes after the start, null: until the end), a catch-up session.
@@ -214,15 +240,31 @@ const EVENT_SELECT = `SELECT e.*, oc.tag AS org_tag, oc.name AS org_name,
     (SELECT p.username FROM raid_clan_entries x JOIN players p ON p.id = x.leader_id WHERE x.event_id = e.id AND x.clan_id = ?1) AS leader_name
   FROM raid_events e LEFT JOIN clans oc ON oc.id = e.clan_id`;
 
-/** The groups of 8 of a clan's roster: the raid leader leads the first one, the first registered each other one. */
+/**
+ * §41 (titan 16): a clan's roster (in the order of registration) split: the first 56 play, the others wait in that
+ * order (the waiting list: its first player takes the place of anyone who unregisters before the start).
+ */
+export function rosterSplit<T>(roster: T[]): { inPlay: T[]; waiting: T[] } {
+    return { inPlay: roster.slice(0, MAX_IN_PLAY), waiting: roster.slice(MAX_IN_PLAY) };
+}
+
+/**
+ * §41 (titan 16): the seven groups of a clan's roster (in the order of registration, the waiting list apart): as even
+ * as possible (sizes differ by one at most), group k for branch k of the titan (`branch`: its index); the raid leader
+ * leads group 1, the first registered each other one. Fewer than seven players: only the groups that have one.
+ */
 export function groupsOf<T extends { id: string }>(roster: T[], leaderId: string | null) {
-    const ordered = [...roster];
+    const ordered = [...rosterSplit(roster).inPlay];
     const li = leaderId ? ordered.findIndex((p) => p.id === leaderId) : -1;
     if (li > 0) ordered.unshift(...ordered.splice(li, 1));
-    const groups: { number: number; leader: T; members: T[] }[] = [];
-    for (let at = 0; at < ordered.length; at += GROUP_SIZE) {
-        const members = ordered.slice(at, at + GROUP_SIZE);
-        groups.push({ number: groups.length + 1, leader: members[0]!, members });
+    const groups: { number: number; branch: number; leader: T; members: T[] }[] = [];
+    let at = 0;
+    for (let k = 0; k < RAID_GROUPS; ++k) {
+        const size = groupSizeOf(ordered.length, k);
+        if (size <= 0) break;
+        const members = ordered.slice(at, at + size);
+        at += size;
+        groups.push({ number: k + 1, branch: k, leader: members[0]!, members });
     }
     return groups;
 }
@@ -530,13 +572,20 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
             registered_at: p.created_at,
             ...(presence[i] ? { presence: presence[i] } : {}),
             ...(adminView[i] ? { presence_hidden: adminView[i]!.presence_hidden, profile_hidden: p.profile_visibility === "private" } : {}),
+            // §41: beyond the 56 in play, the waiting list (its rank, 1 first).
+            ...(i >= MAX_IN_PLAY ? { waiting_rank: i - MAX_IN_PLAY + 1 } : {}),
         })),
         ...(entry && clan ? { roster_online: countOnline(presence) } : {}),
+        // §41: the seven groups, group k for branch k of the titan; the waiting list apart, in its order.
         groups: groupsOf(roster, entry?.leader_id ?? null).map((g) => ({
             number: g.number,
+            branch: PARTS[g.branch] ?? "",
+            branch_name: CATALOGS[g.branch]?.name ?? "",
             leader: { id: g.leader.id, username: g.leader.username },
             members: g.members.map((p) => ({ id: p.id, username: p.username })),
         })),
+        waitlist: rosterSplit(roster).waiting.map((p, i) => ({ id: p.id, username: p.username, rank: i + 1 })),
+        rules: { groups: RAID_GROUPS, min_group: MIN_GROUP, max_group: GROUP_SIZE, min_players: MIN_CLAN_PLAYERS, max_in_play: MAX_IN_PLAY, minutes: RAID_FORMATS[e.format]?.max ?? 60 },
         participants: (partsR!.results as { id: string; tag: string; name: string; players: number }[]).map((p) => ({ ...p })),
         // The invitations of a clan raid: all of them for its organizer, mine for an invited clan.
         invitations: organizer ? invitations.map((i) => ({ clan: { id: i.id, tag: i.tag, name: i.name }, status: i.status, created_at: i.created_at })) : [],
@@ -896,7 +945,16 @@ export async function registerMe(ctx: Ctx): Promise<Response> {
     }
     await notifyMemberUpdate(ctx, e, clan.id, me, "in");
     const after = (await loadEvent(db, id, clan.id, me))!;
-    return json(ctx, { registered: true, event: eventView(after, now) }, { status: 201 });
+    // §41: beyond the 56 in play, the player waits (their rank in the waiting list, in the order of registration).
+    const rank = await db
+        .prepare(
+            `SELECT COUNT(*) AS n FROM raid_registrations r JOIN players p ON p.id = r.player_id, players q
+             WHERE r.event_id = ?1 AND r.clan_id = ?2 AND q.id = ?3 AND (r.created_at < ?4 OR (r.created_at = ?4 AND p.username < q.username))`,
+        )
+        .bind(id, clan.id, me, now)
+        .first<{ n: number }>();
+    const before = rank?.n ?? 0;
+    return json(ctx, { registered: true, event: eventView(after, now), ...(before >= MAX_IN_PLAY ? { waiting_rank: before - MAX_IN_PLAY + 1 } : {}) }, { status: 201 });
 }
 
 /** DELETE /raids/events/{eventId}/register: the player unregisters, until the lock time. */

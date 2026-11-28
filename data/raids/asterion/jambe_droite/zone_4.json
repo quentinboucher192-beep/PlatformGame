@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_jd_4",
  "name": "Asterion · Jambe droite · Genou-forge",
- "description": "Le genou-forge, actionné par deux pistons. Deux groupes, un piston chacun ; l'onde sismique y revient souvent.",
+ "description": "Le genou-forge, actionné par deux pistons à bloquer ensemble, à 3 s près : le groupe se partage ; l'onde sismique y revient souvent.",
  "planet": "pyralis",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -506,7 +506,7 @@
     24.0
    ],
    "props": {
-    "text": "Deux pistons, deux groupes : chaque groupe en bloque un (un pouvoir de tir).",
+    "text": "Deux pistons à bloquer ensemble : le groupe se partage, un piston chacun, à 3 s près (un pouvoir de tir).",
     "auto": true
    }
   },

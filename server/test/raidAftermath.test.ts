@@ -9,6 +9,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { CATALOGS, HEART } from "../src/raidMap";
 import { FILM_DELAY_MS, aftermathOf, checkHeartFall } from "../src/raidHeart";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -52,6 +53,7 @@ async function worldEvent(clans: { id: string; players: TestPlayer[] }[], regist
                 .bind(id, p.id, c.id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
                 .run();
     }
+    for (const c of clans) await raidGroups(id, c.id, { crane: c.players }); // §41: the clan's seven groups (14 registered at least)
     return id;
 }
 

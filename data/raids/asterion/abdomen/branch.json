@@ -88,7 +88,7 @@
    "event": "Reflux d'acide toutes les 50 s (branches hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.4
   },
   {
@@ -242,7 +242,7 @@
    "id": "abd_valve_haute",
    "index": 3,
    "zone": 4,
-   "label": "Fermer la valve haute (un groupe)",
+   "label": "Fermer la valve haute (en même temps que la basse)",
    "optional": false,
    "role": "",
    "pair": "valves"
@@ -251,7 +251,7 @@
    "id": "abd_valve_basse",
    "index": 4,
    "zone": 4,
-   "label": "Fermer la valve basse (un autre groupe)",
+   "label": "Fermer la valve basse (en même temps que la haute)",
    "optional": false,
    "role": "",
    "pair": "valves"

@@ -83,7 +83,7 @@
    "event": "Onde psychique toutes les 80 s (corniches hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.3
   },
   {
@@ -237,7 +237,7 @@
    "id": "crane_nerf_gauche",
    "index": 3,
    "zone": 4,
-   "label": "Trancher le nerf gauche (un groupe)",
+   "label": "Trancher le nerf gauche (en même temps que le droit)",
    "optional": false,
    "role": "",
    "pair": "nerfs"
@@ -246,7 +246,7 @@
    "id": "crane_nerf_droit",
    "index": 4,
    "zone": 4,
-   "label": "Trancher le nerf droit (un autre groupe)",
+   "label": "Trancher le nerf droit (en même temps que le gauche)",
    "optional": false,
    "role": "",
    "pair": "nerfs"

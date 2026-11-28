@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_bg_4",
  "name": "Asterion · Bras gauche · Coude des lames",
- "description": "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames : il faut deux groupes, un par lame. Les griffes balaient le sol.",
+ "description": "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames à briser ensemble, à 3 s près : le groupe se partage. Les griffes balaient le sol.",
  "planet": "glacior",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -506,7 +506,7 @@
     24.0
    ],
    "props": {
-    "text": "Deux lames, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+    "text": "Deux lames à briser ensemble : le groupe se partage, une lame chacun, à 3 s près (un pouvoir de tir).",
     "auto": true
    }
   },

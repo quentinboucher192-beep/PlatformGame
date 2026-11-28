@@ -12,6 +12,7 @@ import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { aggregate, checkMap, worldTick } from "../src/raidWorld";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { raidGroups } from "./raidGroups";
 
 beforeEach(seedAll);
 
@@ -68,6 +69,7 @@ async function runningEvent(...clans: Clan[]): Promise<string> {
                 .bind(id, p.id, c.id, new Date(Date.now() - 60000 + ++k * 10).toISOString())
                 .run();
     }
+    for (const c of clans) await raidGroups(id, c.id, { bras_droit: c.players }); // §41: the clan's seven groups (14 registered at least)
     return id;
 }
 
@@ -326,7 +328,7 @@ describe("raids phase 5: the close, the official result and the exclusive reward
         expect(h.result!.my_clan_rank).toBe(2);
     });
 
-    it("a catch-up session: the silver suit, its own ranking, the official result never changes", async () => {
+    it("a catch-up session: the silver suit, its own ranking, the official result never changes", { timeout: 30000 }, async () => {
         const { a, ev } = await played();
         await endEvent(ev);
         await worldTick(env.DB);
@@ -342,6 +344,7 @@ describe("raids phase 5: the close, the official result and the exclusive reward
         // Absent players of another clan discover it: a member's registration enters the clan.
         const k = await clan("KRN", 2);
         for (const p of k.players) expect((await api("POST", `${V}/raids/events/${cu}/register`, { token: p.token })).status).toBe(201);
+        await raidGroups(cu, k.id, { bras_droit: k.players }); // §41: its seven groups (14 registered at least)
         const sheet = await api("GET", `${V}/raids/events/${cu}`, { token: k.players[0]!.token });
         expect(sheet.body.data.event.catchup).toBe(true);
         expect(sheet.body.data.event.catchup_of).toBe(ev);
@@ -427,8 +430,8 @@ describe("raids phase 5: the administrators", () => {
         expect(d.stats.reconnects).toBe(1);
         expect(d.stats.rejected).toBe(1);
         expect(d.stats.gigaboss).toBe(7);
-        expect(d.stats.registered).toBe(3);
-        expect(d.instances).toHaveLength(1);
+        expect(d.stats.registered).toBe(14); // §41: 14 registered at least for a clan to start
+        expect(d.instances).toHaveLength(7); // §41: the clan's seven groups, the one in play first
         expect(d.instances[0].zone_name).toBe("Épaule");
         expect(d.instances[0].latency_ms).toBeNull(); // no game measured it: nothing invented
         const texts = (d.journal as { text: string }[]).map((j) => j.text);

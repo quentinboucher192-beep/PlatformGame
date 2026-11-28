@@ -83,7 +83,7 @@
    "event": "Balayage des griffes toutes les 75 s (corniches hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2,
+   "groups_required": 1,
    "minutes": 1.1
   },
   {
@@ -237,7 +237,7 @@
    "id": "bg_lame_haute",
    "index": 3,
    "zone": 4,
-   "label": "Briser la lame haute (un groupe)",
+   "label": "Briser la lame haute (en même temps que la basse)",
    "optional": false,
    "role": "",
    "pair": "lames"
@@ -246,7 +246,7 @@
    "id": "bg_lame_basse",
    "index": 4,
    "zone": 4,
-   "label": "Briser la lame basse (un autre groupe)",
+   "label": "Briser la lame basse (en même temps que la haute)",
    "optional": false,
    "role": "",
    "pair": "lames"

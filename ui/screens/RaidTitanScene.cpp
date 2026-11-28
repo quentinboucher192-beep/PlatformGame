@@ -7,10 +7,12 @@
 //   sealed, groups, players and clans in combat) and its links between branches (« Effets sur
 //   Asterion »: what each branch did to the others, or how far it is);
 // * at the right, the seven branches (state, zones, groups there; one focus stop each: Entrée /
-//   A / a click opens the branch's map), the zones that ask for another group, the alerts of the
-//   whole titan (objectives accepted, links on);
-// * at the bottom, « Rejoindre » (my place, or where my clan needs me: the server places) and
-//   « Répartition du clan » (where my clan's players are; the raid leader moves them).
+//   A / a click opens the branch's map), the alerts of the whole titan (objectives accepted, links on);
+// * at the bottom, « Rejoindre mon groupe » (§41, titan 16: my group's branch — seven groups, one per
+//   branch; once the seven Gigaboss fell, its own instance of the Cœur) and « Répartition du clan »
+//   (where my clan's players are; the raid leader moves them between the groups);
+// * §41: how the raid ends for my clan, in the state's pill: « Victoire : Asterion est tombé »,
+//   « Défaite : temps écoulé » (the 60 min over, the Cœur standing), « Défaite : tous les groupes éliminés ».
 //
 // The titan itself (ui/widgets/AsterionFigure) answers the mouse and the focus part by part: a
 // branch opens its map too. Everything comes from GET /raids/events/{id}/titan, every 10 s. Every
@@ -122,9 +124,16 @@ public:
             fit(ui, error_.empty() ? "Chargement du titan…" : error_, {hx, hy}, 17, W - m - hx, error_.empty() ? kDim : ui.theme().danger);
         } else {
             const std::string st = jstr(data_.value("event", Json::object()), "state");
-            const std::string state = st == "en_cours" ? "Événement en cours" : st == "termine" ? "Événement terminé" : "Événement à venir";
-            const float sw = std::min(textW(ui, state, 14, FontFace::Bold) + ui.s(22), (W - m - hx) * 0.3f);
-            pill(ui, W - m - sw, hy, state, st == "en_cours" ? kOrange : Color{42, 58, 122, 255}, st == "en_cours" ? kInk : kText, W - m + ui.s(1), 14);
+            // §41: the raid decided for my clan (victory, or a defeat and why) takes the place of the state.
+            const raids::Outcome outcome = raids::parseOutcome(data_.value("outcome", Json()));
+            const bool decided = outcome.defeat() || outcome.victory();
+            const std::string state = decided ? raids::outcomeText(outcome.id)
+                                      : st == "en_cours" ? "Événement en cours"
+                                      : st == "termine" ? "Événement terminé"
+                                                        : "Événement à venir";
+            const float sw = std::min(textW(ui, state, 14, FontFace::Bold) + ui.s(22), (W - m - hx) * (decided ? 0.42f : 0.3f));
+            const Color fill = outcome.defeat() ? Color{178, 44, 52, 255} : outcome.victory() ? Color{46, 150, 92, 255} : st == "en_cours" ? kOrange : Color{42, 58, 122, 255};
+            pill(ui, W - m - sw, hy, state, fill, decided ? kText : st == "en_cours" ? kInk : kText, W - m + ui.s(1), 14);
             const float tw = fit(ui, "ASTERION", {hx, hy}, 30, (W - m - sw - hx) * 0.45f, kText, FontFace::Title).x;
             fit(ui, "Carte globale du titan · cliquez une branche pour voir ses 8 zones", {hx + tw + ui.s(16), hy}, 15, W - m - sw - ui.s(16) - hx - tw - ui.s(16),
                 kPeach);
@@ -428,26 +437,39 @@ public:
         const bool registered = jget<bool>(my, "registered", false);
         const bool running = jstr(data_.value("event", Json::object()), "state") == "en_cours";
         const Json place = my.value("placement", Json());
-        const std::string placeName = place.is_object() ? jstr(branch(jstr(place, "branch")), "name") : "";
-        const std::string joinLabel = !placeName.empty() ? "Rejoindre ma place · " + placeName : "Rejoindre là où le clan a besoin de moi";
+        // §41: my group (its branch now, waiting there, eliminated), and the raid lost for my clan.
+        const Json group = my.value("group", Json());
+        const bool out = group.is_object() && jget<bool>(group, "out", false);
+        const bool waiting = group.is_object() && jget<bool>(group, "waiting", false);
+        const std::string groupPart = group.is_object() ? jstr(group, "branch") : "";
+        const std::string placeName = !groupPart.empty() ? (groupPart == "coeur" ? std::string("Cœur d'Asterion") : jstr(branch(groupPart), "name"))
+                                      : place.is_object() ? jstr(branch(jstr(place, "branch")), "name")
+                                                          : "";
+        const bool lost = raids::parseOutcome(data_.value("outcome", Json())).defeat();
+        const std::string joinLabel = out ? std::string("Regarder (groupe éliminé)")
+                                      : !placeName.empty() ? "Rejoindre mon groupe · " + placeName
+                                                           : std::string("Rejoindre mon groupe");
         const std::string rosterLabel = "Répartition du clan";
         const float bh = std::min(r.h, ui.s(52));
         const float jw = std::min(textW(ui, joinLabel, 16, FontFace::Bold) + ui.s(44), r.w * 0.42f);
         const float rw = std::min(textW(ui, rosterLabel, 16, FontFace::Bold) + ui.s(44), r.w * 0.25f);
         UIContext::ButtonStyle js;
         js.primary = true;
-        js.enabled = registered && running && !busy_;
+        js.enabled = registered && running && !busy_ && !lost;
         if (ui.button("join", {r.x, r.y, jw, bh}, joinLabel, js)) join();
         UIContext::ButtonStyle rs;
         rs.enabled = registered;
         if (ui.button("roster", {r.x + jw + ui.s(12), r.y, rw, bh}, rosterLabel, rs)) g_.app.pushScene(makeRaidRoster(g_, eventId_));
         std::string note = status_;
         if (note.empty()) {
-            if (!running) note = "Le raid n'est pas en cours : les combats se jouent pendant l'événement.";
+            if (lost) note = raids::outcomeText(raids::parseOutcome(data_.value("outcome", Json())).id) + ".";
+            else if (!running) note = "Le raid n'est pas en cours : les combats se jouent pendant l'événement.";
             else if (!registered) note = "Inscrivez-vous au raid (fiche de l'événement) pour combattre.";
-            else if (place.is_object())
-                note = "Votre place : " + placeName + " · " + jstr(place, "group") + ". Chaque groupe compte 8 joueurs au plus.";
-            else note = "Choisissez une branche sur le titan, ou laissez le serveur vous placer là où le clan a besoin de vous.";
+            else if (out) note = "Votre groupe a été éliminé : vous regardez les autres groupes.";
+            else if (waiting) note = "Votre groupe attend dans sa branche (son Gigaboss est tombé) : il n'en part que pour remplacer un groupe éliminé.";
+            else if (group.is_object())
+                note = "Votre groupe : " + std::to_string(jget<int>(group, "number", 1)) + " · " + placeName + ". Sept groupes, un par branche, de 2 à 8 joueurs.";
+            else note = "Sept groupes, un par branche du titan : « Rejoindre mon groupe » vous mène dans le vôtre.";
         }
         const float nx = r.x + jw + rw + ui.s(28);
         const auto lines = wrap(ui, note, FontFace::Body, 14, r.right() - nx, 2);
