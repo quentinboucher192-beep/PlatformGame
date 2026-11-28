@@ -53,6 +53,13 @@ constexpr int kAimedSlashSimulation = 15;
 /// recorded before plays with the rules of its time.
 constexpr int kLongDashGuardSimulation = 18;
 constexpr float kDashGuardSeconds = 0.05f;
+/// Simulation 20: the slide's hitbox (wider than the standing one) never starts inside a wall.
+/// Before, Nova flush against a wall or a closed door who slid found herself a little inside it,
+/// and the collisions only stop a wall ahead of the box: she went through it, whatever its
+/// thickness (a closed door of an arena, the boss alive). Now the wider box is moved off the wall
+/// it would overlap; without room for it, no slide. A replay recorded before plays with the rules
+/// of its time.
+constexpr int kSlideInWallsSimulation = 20;
 constexpr float kDashBlowGuardSeconds = 0.15f;
 
 /// The player character: state machine, precise platforming physics, melee combat,
@@ -248,6 +255,9 @@ private:
     void moveAndCollide(GameWorld& w, float dt);
     void onLanded(GameWorld& w, float impactSpeed);
     void setHitbox(Vec2 size);
+    /// kSlideInWallsSimulation: the hitbox just made wider than `before` moved off the solids it
+    /// overlaps (by what it grew); false: no room for it (the box is left as it is).
+    bool fitWiderHitbox(const GameWorld& w, const Rect& before);
     int wallDirection(const GameWorld& w) const;
     void chooseAnimation();
     void onAnimEvent(GameWorld& w, const std::string& e);

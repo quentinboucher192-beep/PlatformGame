@@ -134,6 +134,21 @@ void Player::setHitbox(Vec2 size) {
     box = Rect::fromBottomCenter(feetPos, size);
 }
 
+bool Player::fitWiderHitbox(const GameWorld& w, const Rect& before) {
+    const MoveOptions o = moveOptions();
+    if (!w.physics().overlapsSolid(box, o)) return true;
+    // It grew by `grow` on each side: off the wall on one side by that much (never further).
+    const float grow = std::max(0.0f, (box.w - before.w) * 0.5f) + 0.01f;
+    for (float dx : {grow, -grow}) {
+        const Rect moved = box.translated({dx, 0.0f});
+        if (!w.physics().overlapsSolid(moved, o)) {
+            box = moved;
+            return true;
+        }
+    }
+    return false;
+}
+
 MoveOptions Player::moveOptions() const {
     MoveOptions o;
     o.dropThrough = dropThroughTimer_ > 0.0f;
@@ -365,14 +380,18 @@ void Player::stepMovement(GameWorld& w, const PlayerInput& in, float dt) {
         const Collider* ground = w.physics().groundBelow(box, moveOptions());
         bool onOneWay = ground && ground->kind == ColliderKind::OneWay;
         if (!onOneWay) {
-            state_ = PlayerState::Slide;
-            slideTimer_ = cfg_.slideDuration;
-            facing = signf(vel.x);
-            vel.x = facing * cfg_.slideSpeed;
+            const Rect before = box;
             setHitbox(cfg_.slideSize);
-            w.playSound("sounds/slide.wav", box.center(), 0.7f);
-            w.particles().emit("dust_run", box.bottomCenter(), 1.0f, {-facing, -0.3f});
-            return;
+            if (w.simulationVersion() < kSlideInWallsSimulation || fitWiderHitbox(w, before)) {
+                state_ = PlayerState::Slide;
+                slideTimer_ = cfg_.slideDuration;
+                facing = signf(vel.x);
+                vel.x = facing * cfg_.slideSpeed;
+                w.playSound("sounds/slide.wav", box.center(), 0.7f);
+                w.particles().emit("dust_run", box.bottomCenter(), 1.0f, {-facing, -0.3f});
+                return;
+            }
+            box = before;  // simulation 20: no room for the slide (a gap narrower than its box)
         }
     }
 
