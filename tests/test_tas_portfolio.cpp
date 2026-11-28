@@ -271,7 +271,9 @@ TEST_CASE("tas portfolio: Go-Explore gets past a wall the beam's distance says t
     add("mur", "solid", {900, 520, 16, 152});
     add("rebord", "solid", {900, 500, 60, 20});
     add("porte", "door", {900, 672, 16, 128}, {{"open", false}});
-    const float steps[][2] = {{600, 750}, {680, 700}, {760, 650}, {680, 600}, {760, 550}};
+    // The last step (to the ledge) as close as the others: the slide under the closed door, which
+    // the archive found first before simulation 20, no longer goes through it.
+    const float steps[][2] = {{600, 750}, {680, 700}, {760, 650}, {680, 600}, {760, 550}, {830, 525}};
     for (size_t k = 0; k < std::size(steps); ++k) add("marche" + std::to_string(k), "solid", {steps[k][0], steps[k][1], 60, 16});
     LevelEvent ev;
     ev.id = "ev1";
@@ -310,9 +312,8 @@ TEST_CASE("tas portfolio: Go-Explore gets past a wall the beam's distance says t
     CHECK(T.offers > 0);
     if (T.offers == 0) return;
     CHECK(T.clock + 2.0f < g.clock);
-    // Past the wall long before the door opens (here: over it, or — what the archive found first
-    // in this version — SLIDING UNDER THE CLOSED DOOR, feet on the floor, docs/TAS.md), and the run
-    // replays to the time claimed.
+    // Past the wall long before the door opens (over it: simulation 20 no longer lets a slide go
+    // through the closed door, kSlideInWallsSimulation), and the run replays to the time claimed.
     const tas::RunStudy r = sim.study(T.run);
     size_t past = r.feet.size();
     for (size_t i = 1; i < r.feet.size() && past == r.feet.size(); ++i)
